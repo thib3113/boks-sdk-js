@@ -11,5 +11,3 @@ export class NotifyCodeGenerationSuccessPacket extends BoksRXPacket {
   }
   parse() {}
 }
-
-

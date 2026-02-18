@@ -17,5 +17,3 @@ export class ScaleTareLoadedPacket extends BoksPacket {
     return this.data;
   }
 }
-
-

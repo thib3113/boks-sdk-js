@@ -19,5 +19,3 @@ export class RegisterNfcTagScanStartPacket extends AuthPacket {
     return stringToBytes(this.configKey);
   }
 }
-
-

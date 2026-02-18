@@ -14,5 +14,3 @@ export class ScaleTareEmptyPacket extends BoksPacket {
     return new Uint8Array(0);
   }
 }
-
-

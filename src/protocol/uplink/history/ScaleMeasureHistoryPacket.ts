@@ -17,5 +17,3 @@ export class ScaleMeasureHistoryPacket extends BoksHistoryEvent {
     this.data = payload.slice(offset);
   }
 }
-
-

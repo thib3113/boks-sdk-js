@@ -13,5 +13,3 @@ export class KeyOpeningHistoryPacket extends BoksHistoryEvent {
     super.parse(payload);
   }
 }
-
-

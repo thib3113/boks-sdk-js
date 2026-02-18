@@ -11,5 +11,3 @@ export class NotifyNfcTagRegisteredPacket extends BoksRXPacket {
   }
   parse() {}
 }
-
-

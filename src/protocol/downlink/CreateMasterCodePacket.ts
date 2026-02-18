@@ -32,5 +32,3 @@ export class CreateMasterCodePacket extends AuthPacket {
     return payload;
   }
 }
-
-

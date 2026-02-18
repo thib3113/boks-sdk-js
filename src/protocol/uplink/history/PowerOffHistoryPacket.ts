@@ -19,5 +19,3 @@ export class PowerOffHistoryPacket extends BoksHistoryEvent {
     }
   }
 }
-
-

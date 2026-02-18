@@ -11,5 +11,3 @@ export class NotifyScaleBondingForgetSuccessPacket extends BoksRXPacket {
   }
   parse() {}
 }
-
-

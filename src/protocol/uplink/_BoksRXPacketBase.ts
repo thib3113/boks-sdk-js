@@ -20,5 +20,3 @@ export abstract class BoksRXPacket extends BoksPacket {
     return this.rawPayload;
   }
 }
-
-

@@ -7,7 +7,6 @@ import {
   BoksPacketFactory,
   BoksRXPacket,
   RequestLogsPacket,
-  BOKS_UUIDS,
   BoksBatteryStats
 } from '@/protocol';
 import { BoksClientError, BoksClientErrorId } from '@/errors/BoksClientError';
@@ -253,4 +252,3 @@ export class BoksClient {
     });
   }
 }
-

@@ -13,5 +13,3 @@ export class RequestLogsPacket extends BoksPacket {
     return new Uint8Array(0);
   }
 }
-
-

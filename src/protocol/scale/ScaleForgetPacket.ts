@@ -14,5 +14,3 @@ export class ScaleForgetPacket extends BoksPacket {
     return new Uint8Array(0);
   }
 }
-
-

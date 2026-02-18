@@ -90,4 +90,3 @@ export const generateBoksPin = (key: Uint8Array, typePrefix: string, index: numb
   }
   return pin;
 };
-

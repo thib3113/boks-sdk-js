@@ -161,3 +161,4 @@ export const PIN_ALGO_CONFIG = {
 } as const;
 
 export const CHECKSUM_MASK = 0xFF;
+export const UNKNOWN_VALUE = 0xFF;

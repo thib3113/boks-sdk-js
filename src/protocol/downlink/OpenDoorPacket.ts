@@ -24,5 +24,3 @@ export class OpenDoorPacket extends BoksPacket {
     return stringToBytes(this.pin);
   }
 }
-
-

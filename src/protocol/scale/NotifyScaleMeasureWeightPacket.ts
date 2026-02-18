@@ -21,5 +21,3 @@ export class NotifyScaleMeasureWeightPacket extends BoksRXPacket {
     }
   }
 }
-
-

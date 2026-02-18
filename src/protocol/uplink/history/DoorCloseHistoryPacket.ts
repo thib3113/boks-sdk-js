@@ -16,5 +16,3 @@ export class DoorCloseHistoryPacket extends BoksHistoryEvent {
     super.parse(payload);
   }
 }
-
-

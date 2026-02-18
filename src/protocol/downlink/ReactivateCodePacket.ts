@@ -30,5 +30,3 @@ export class ReactivateCodePacket extends AuthPacket {
     return payload;
   }
 }
-
-

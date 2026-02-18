@@ -14,5 +14,3 @@ export class ErrorNfcScanTimeoutPacket extends BoksRXPacket {
 
   parse() {}
 }
-
-

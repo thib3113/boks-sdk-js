@@ -11,5 +11,3 @@ export class ErrorCrcPacket extends BoksRXPacket {
   }
   parse() {}
 }
-
-

@@ -11,5 +11,3 @@ export class NotifyScaleTareLoadedOkPacket extends BoksRXPacket {
   }
   parse() {}
 }
-
-

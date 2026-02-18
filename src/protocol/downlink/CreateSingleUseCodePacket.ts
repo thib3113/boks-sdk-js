@@ -30,5 +30,3 @@ export class CreateSingleUseCodePacket extends AuthPacket {
     return payload;
   }
 }
-
-

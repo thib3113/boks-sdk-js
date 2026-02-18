@@ -13,5 +13,3 @@ export class CountCodesPacket extends BoksPacket {
     return new Uint8Array(0);
   }
 }
-
-

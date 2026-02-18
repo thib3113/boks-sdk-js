@@ -30,5 +30,3 @@ export class DeleteMultiUseCodePacket extends AuthPacket {
     return payload;
   }
 }
-
-

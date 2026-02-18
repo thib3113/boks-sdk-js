@@ -26,5 +26,3 @@ export class RegeneratePartAPacket extends AuthPacket {
     return payload;
   }
 }
-
-

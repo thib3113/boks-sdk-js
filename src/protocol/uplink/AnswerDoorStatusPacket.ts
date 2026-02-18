@@ -20,5 +20,3 @@ export class AnswerDoorStatusPacket extends BoksRXPacket {
     }
   }
 }
-
-

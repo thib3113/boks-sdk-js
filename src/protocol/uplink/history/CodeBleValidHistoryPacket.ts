@@ -30,5 +30,3 @@ export class CodeBleValidHistoryPacket extends BoksHistoryEvent {
     }
   }
 }
-
-
