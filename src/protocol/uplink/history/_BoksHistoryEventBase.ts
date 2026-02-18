@@ -32,5 +32,3 @@ export abstract class BoksHistoryEvent extends BoksRXPacket {
     return this.parseHistoryHeader(payload);
   }
 }
-
-

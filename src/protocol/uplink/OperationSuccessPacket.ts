@@ -11,5 +11,3 @@ export class OperationSuccessPacket extends BoksRXPacket {
   }
   parse() {} // No data
 }
-
-

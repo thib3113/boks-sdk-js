@@ -36,7 +36,10 @@ export class WebBluetoothTransport implements BoksTransport {
       }
 
       if (!this.device?.gatt) {
-        throw new BoksClientError(BoksClientErrorId.CONNECTION_FAILED, 'GATT Server not available.');
+        throw new BoksClientError(
+          BoksClientErrorId.CONNECTION_FAILED,
+          'GATT Server not available.'
+        );
       }
 
       this.server = await this.device.gatt.connect();
@@ -135,4 +138,3 @@ export class WebBluetoothTransport implements BoksTransport {
     }
   }
 }
-

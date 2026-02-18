@@ -20,5 +20,3 @@ export class CodeKeyValidHistoryPacket extends BoksHistoryEvent {
     }
   }
 }
-
-

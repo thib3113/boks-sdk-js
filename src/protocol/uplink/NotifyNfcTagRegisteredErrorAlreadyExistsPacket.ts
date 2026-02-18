@@ -11,5 +11,3 @@ export class NotifyNfcTagRegisteredErrorAlreadyExistsPacket extends BoksRXPacket
   }
   parse() {}
 }
-
-

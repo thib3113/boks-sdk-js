@@ -27,5 +27,3 @@ export class UnregisterNfcTagPacket extends AuthPacket {
     return payload;
   }
 }
-
-

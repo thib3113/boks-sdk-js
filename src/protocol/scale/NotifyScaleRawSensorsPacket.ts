@@ -17,5 +17,3 @@ export class NotifyScaleRawSensorsPacket extends BoksRXPacket {
     this.data = payload;
   }
 }
-
-

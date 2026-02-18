@@ -22,5 +22,3 @@ export class NotifyCodesCountPacket extends BoksRXPacket {
     }
   }
 }
-
-

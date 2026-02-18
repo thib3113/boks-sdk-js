@@ -11,5 +11,3 @@ export class NotifySetConfigurationSuccessPacket extends BoksRXPacket {
   }
   parse() {}
 }
-
-

@@ -11,5 +11,3 @@ export class ErrorBadRequestPacket extends BoksRXPacket {
   }
   parse() {}
 }
-
-

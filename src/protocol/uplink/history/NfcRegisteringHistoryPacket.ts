@@ -17,5 +17,3 @@ export class NfcRegisteringHistoryPacket extends BoksHistoryEvent {
     this.data = payload.slice(offset);
   }
 }
-
-

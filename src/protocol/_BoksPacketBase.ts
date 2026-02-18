@@ -5,7 +5,7 @@ import { calculateChecksum } from '@/utils/converters';
  * Type representing a BoksPacket constructor.
  */
 export type BoksPacketConstructor<T extends BoksPacket = BoksPacket> = {
-  new (...args: any[]): T;
+  new (...args: unknown[]): T;
   readonly opcode: BoksOpcode;
   fromPayload(payload: Uint8Array): T;
 };
@@ -48,4 +48,3 @@ export abstract class BoksPacket {
     return packet;
   }
 }
-

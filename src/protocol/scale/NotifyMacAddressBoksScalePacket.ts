@@ -21,5 +21,3 @@ export class NotifyMacAddressBoksScalePacket extends BoksRXPacket {
         ?.join(':') || '';
   }
 }
-
-

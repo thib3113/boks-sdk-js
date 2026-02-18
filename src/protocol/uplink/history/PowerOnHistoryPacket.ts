@@ -14,5 +14,3 @@ export class PowerOnHistoryPacket extends BoksHistoryEvent {
     super.parse(payload);
   }
 }
-
-

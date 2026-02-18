@@ -25,5 +25,3 @@ export class DeleteMasterCodePacket extends AuthPacket {
     return payload;
   }
 }
-
-

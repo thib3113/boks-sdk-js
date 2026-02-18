@@ -17,5 +17,3 @@ export class NotifyScaleFaultyPacket extends BoksRXPacket {
     this.data = payload;
   }
 }
-
-

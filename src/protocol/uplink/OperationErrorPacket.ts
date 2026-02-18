@@ -19,5 +19,3 @@ export class OperationErrorPacket extends BoksRXPacket {
     }
   }
 }
-
-

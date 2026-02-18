@@ -11,5 +11,3 @@ export class ErrorUnauthorizedPacket extends BoksRXPacket {
   }
   parse() {}
 }
-
-

@@ -30,5 +30,3 @@ export class MultiToSingleCodePacket extends AuthPacket {
     return payload;
   }
 }
-
-
