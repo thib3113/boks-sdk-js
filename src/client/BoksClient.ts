@@ -6,9 +6,12 @@ import {
   BoksPacket,
   BoksPacketFactory,
   BoksRXPacket,
-  RequestLogsPacket
+  RequestLogsPacket,
+  BOKS_UUIDS,
+  BoksBatteryStats
 } from '@/protocol';
 import { BoksClientError, BoksClientErrorId } from '@/errors/BoksClientError';
+import { fetchBatteryLevel, fetchBatteryStats } from '@/utils/battery';
 
 /**
  * Mapping of log events to their respective context data types.
@@ -102,6 +105,22 @@ export class BoksClient {
    */
   async disconnect(): Promise<void> {
     await this.transport.disconnect();
+  }
+
+  /**
+   * Reads the current battery level (standard Bluetooth characteristic).
+   * @returns Battery level (0-100) or undefined if unreliable.
+   */
+  async getBatteryLevel(): Promise<number | undefined> {
+    return fetchBatteryLevel(this.transport);
+  }
+
+  /**
+   * Reads detailed battery statistics (custom Boks characteristic).
+   * @returns Battery stats object or undefined if unreliable.
+   */
+  async getBatteryStats(): Promise<BoksBatteryStats | undefined> {
+    return fetchBatteryStats(this.transport);
   }
 
   /**

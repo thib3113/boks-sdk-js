@@ -1,9 +1,6 @@
 import { BoksTransport } from './transport';
 import { BoksClientError, BoksClientErrorId } from '@/errors/BoksClientError';
-
-const BOKS_SERVICE_UUID = 'a7630001-f491-4f21-95ea-846ba586e361';
-const BOKS_WRITE_CHAR_UUID = 'a7630002-f491-4f21-95ea-846ba586e361';
-const BOKS_NOTIFY_CHAR_UUID = 'a7630003-f491-4f21-95ea-846ba586e361';
+import { BOKS_UUIDS } from '@/protocol/constants';
 
 /**
  * Implementation of BoksTransport using the Web Bluetooth API.
@@ -19,7 +16,7 @@ export class WebBluetoothTransport implements BoksTransport {
   }
 
   async connect(): Promise<void> {
-    if (!navigator?.bluetooth) {
+    if (typeof navigator === 'undefined' || !navigator.bluetooth) {
       throw new BoksClientError(
         BoksClientErrorId.WEB_BLUETOOTH_NOT_SUPPORTED,
         'Web Bluetooth is not supported in this environment.'
@@ -29,23 +26,24 @@ export class WebBluetoothTransport implements BoksTransport {
     try {
       if (!this.device) {
         this.device = await navigator.bluetooth.requestDevice({
-          filters: [{ services: [BOKS_SERVICE_UUID] }],
-          optionalServices: [BOKS_SERVICE_UUID]
+          filters: [{ services: [BOKS_UUIDS.SERVICE] }],
+          optionalServices: [
+            BOKS_UUIDS.SERVICE,
+            BOKS_UUIDS.BATTERY_SERVICE,
+            BOKS_UUIDS.DEVICE_INFO_SERVICE
+          ]
         });
       }
 
-      if (!this.device.gatt) {
-        throw new BoksClientError(
-          BoksClientErrorId.CONNECTION_FAILED,
-          'GATT Server not available.'
-        );
+      if (!this.device?.gatt) {
+        throw new BoksClientError(BoksClientErrorId.CONNECTION_FAILED, 'GATT Server not available.');
       }
 
       this.server = await this.device.gatt.connect();
-      const service = await this.server.getPrimaryService(BOKS_SERVICE_UUID);
+      const service = await this.server.getPrimaryService(BOKS_UUIDS.SERVICE);
 
-      this.writeChar = await service.getCharacteristic(BOKS_WRITE_CHAR_UUID);
-      this.notifyChar = await service.getCharacteristic(BOKS_NOTIFY_CHAR_UUID);
+      this.writeChar = await service.getCharacteristic(BOKS_UUIDS.WRITE);
+      this.notifyChar = await service.getCharacteristic(BOKS_UUIDS.NOTIFY);
     } catch (error) {
       if (error instanceof BoksClientError) throw error;
       throw new BoksClientError(
@@ -58,7 +56,7 @@ export class WebBluetoothTransport implements BoksTransport {
 
   async disconnect(): Promise<void> {
     try {
-      if (this.server && this.server.connected) {
+      if (this.server?.connected) {
         this.server.disconnect();
       }
     } catch (error) {
@@ -79,6 +77,33 @@ export class WebBluetoothTransport implements BoksTransport {
       throw new BoksClientError(
         BoksClientErrorId.WRITE_FAILED,
         'Failed to write to Boks device',
+        error
+      );
+    }
+  }
+
+  async read(uuid: string): Promise<Uint8Array> {
+    if (!this.server?.connected) {
+      throw new BoksClientError(BoksClientErrorId.NOT_CONNECTED, 'Not connected to GATT server.');
+    }
+
+    try {
+      // First try to find the characteristic in the primary services we requested
+      const services = await this.server.getPrimaryServices();
+      for (const service of services) {
+        try {
+          const char = await service.getCharacteristic(uuid);
+          const value = await char.readValue();
+          return new Uint8Array(value.buffer);
+        } catch {
+          // Ignore error and try next service
+        }
+      }
+      throw new Error(`Characteristic ${uuid} not found in any visible service.`);
+    } catch (error) {
+      throw new BoksClientError(
+        BoksClientErrorId.PARSE_ERROR,
+        `Failed to read characteristic ${uuid}`,
         error
       );
     }

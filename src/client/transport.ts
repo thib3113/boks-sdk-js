@@ -20,6 +20,12 @@ export interface BoksTransport {
   write(data: Uint8Array): Promise<void>;
 
   /**
+   * Reads data from a specific characteristic.
+   * @param uuid The characteristic UUID to read.
+   */
+  read(uuid: string): Promise<Uint8Array>;
+
+  /**
    * Subscribes to notifications from the Boks device (Notify Characteristic).
    * @param callback Function called when data is received.
    */

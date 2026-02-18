@@ -102,6 +102,42 @@ export enum BoksOpcode {
 }
 
 /**
+ * Bluetooth UUIDs for Boks Services and Characteristics
+ */
+export const BOKS_UUIDS = {
+  SERVICE: 'a7630001-f491-4f21-95ea-846ba586e361',
+  WRITE: 'a7630002-f491-4f21-95ea-846ba586e361',
+  NOTIFY: 'a7630003-f491-4f21-95ea-846ba586e361',
+  CUSTOM_BATTERY: '00000004-0000-1000-8000-00805f9b34fb',
+
+  BATTERY_SERVICE: '0000180f-0000-1000-8000-00805f9b34fb',
+  BATTERY_LEVEL: '00002a19-0000-1000-8000-00805f9b34fb',
+
+  DEVICE_INFO_SERVICE: '0000180a-0000-1000-8000-00805f9b34fb',
+  SOFTWARE_REVISION: '00002a28-0000-1000-8000-00805f9b34fb',
+  HARDWARE_REVISION: '00002a27-0000-1000-8000-00805f9b34fb'
+} as const;
+
+/**
+ * Detailed battery statistics.
+ */
+export interface BoksBatteryStats {
+  format: 'measures-first-min-mean-max-last' | 'measures-t1-t5-t10' | 'measure-single';
+  level: number; // Main battery level (0-100)
+  temperature?: number; // In Celsius
+  details?: {
+    first?: number;
+    min?: number;
+    mean?: number;
+    max?: number;
+    last?: number;
+    t1?: number;
+    t5?: number;
+    t10?: number;
+  };
+}
+
+/**
  * PIN Algorithm Configuration (Blake2s / SHA-256)
  */
 export const PIN_ALGO_CONFIG = {
