@@ -9,5 +9,7 @@ export class ErrorBadRequestPacket extends BoksRXPacket {
   constructor() {
     super(ErrorBadRequestPacket.opcode);
   }
-  parse() {}
+  parse(payload: Uint8Array) {
+    super.parse(payload);}
 }
+

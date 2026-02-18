@@ -4,13 +4,13 @@ import { bytesToHex } from '@/utils/converters';
 
 describe('OpenDoorPacket', () => {
   it('should generate correct binary for OpenDoor (0x01) with PIN', () => {
-    const packet = new OpenDoorPacket("123456");
+    const packet = new OpenDoorPacket('123456');
     expect(bytesToHex(packet.encode())).toBe('01063132333435363C');
   });
 
-  it('should generate correct binary for OpenDoor (0x01) without PIN', () => {
-    const packet = new OpenDoorPacket();
-    expect(bytesToHex(packet.encode())).toBe('010001');
+  it('should throw error for invalid PIN', () => {
+    expect(() => new OpenDoorPacket('123')).toThrow('PIN must be exactly 6 characters');
+    expect(() => new OpenDoorPacket('12345C')).toThrow('PIN must be exactly 6 characters');
   });
 });
 

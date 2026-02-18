@@ -1,6 +1,7 @@
 import { AuthPacket } from '@/protocol/downlink/_AuthPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
 import { stringToBytes } from '@/utils/converters';
+import { validatePinCode } from '@/utils/pin';
 
 /**
  * Command to create a multi-use code.
@@ -16,6 +17,7 @@ export class CreateMultiUseCodePacket extends AuthPacket {
     public readonly pin: string
   ) {
     super(configKey);
+    validatePinCode(pin);
   }
 
   toPayload(): Uint8Array {

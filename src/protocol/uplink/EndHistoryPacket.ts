@@ -9,5 +9,7 @@ export class EndHistoryPacket extends BoksRXPacket {
   constructor() {
     super(EndHistoryPacket.opcode);
   }
-  parse() {}
+  parse(payload: Uint8Array) {
+    super.parse(payload);}
 }
+

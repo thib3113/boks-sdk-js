@@ -12,5 +12,7 @@ export class ErrorNfcScanTimeoutPacket extends BoksRXPacket {
     super(ErrorNfcScanTimeoutPacket.opcode);
   }
 
-  parse() {}
+  parse(payload: Uint8Array) {
+    super.parse(payload);}
 }
+

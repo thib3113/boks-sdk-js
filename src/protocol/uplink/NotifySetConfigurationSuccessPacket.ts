@@ -9,5 +9,7 @@ export class NotifySetConfigurationSuccessPacket extends BoksRXPacket {
   constructor() {
     super(NotifySetConfigurationSuccessPacket.opcode);
   }
-  parse() {}
+  parse(payload: Uint8Array) {
+    super.parse(payload);}
 }
+

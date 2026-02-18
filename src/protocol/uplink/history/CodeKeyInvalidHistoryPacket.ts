@@ -14,10 +14,10 @@ export class CodeKeyInvalidHistoryPacket extends BoksHistoryEvent {
   }
 
   parse(payload: Uint8Array): void {
-    this.parseHistoryHeader(payload); const offset = 3;
+    this.parseHistoryHeader(payload);
+    const offset = 3;
     if (payload.length >= offset + 6) {
       this.code = bytesToString(payload.slice(offset, offset + 6));
     }
   }
 }
-

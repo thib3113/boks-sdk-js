@@ -9,5 +9,7 @@ export class NotifyScaleDisconnectedPacket extends BoksRXPacket {
   constructor() {
     super(NotifyScaleDisconnectedPacket.opcode);
   }
-  parse() {}
+  parse(payload: Uint8Array) {
+    super.parse(payload);}
 }
+
