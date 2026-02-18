@@ -16,7 +16,9 @@ export async function fetchBatteryLevel(transport: BoksTransport): Promise<numbe
  * @param transport Any implementation of BoksTransport.
  * @returns BoksBatteryStats object or undefined if it fails.
  */
-export async function fetchBatteryStats(transport: BoksTransport): Promise<BoksBatteryStats | undefined> {
+export async function fetchBatteryStats(
+  transport: BoksTransport
+): Promise<BoksBatteryStats | undefined> {
   const payload = await transport.read(BOKS_UUIDS.CUSTOM_BATTERY).catch(() => undefined);
   return parseBatteryStats(payload);
 }
@@ -28,7 +30,7 @@ export async function fetchBatteryStats(transport: BoksTransport): Promise<BoksB
  */
 export function parseBatteryLevel(payload?: Uint8Array): number | undefined {
   const level = payload?.[0];
-  return level !== undefined && level !== 0xff ? level : undefined;
+  return level !== undefined && level !== 255 ? level : undefined;
 }
 
 /**
@@ -37,12 +39,12 @@ export function parseBatteryLevel(payload?: Uint8Array): number | undefined {
  * @returns BoksBatteryStats object or undefined if data is invalid.
  */
 export function parseBatteryStats(payload?: Uint8Array): BoksBatteryStats | undefined {
-  if (!payload || payload.length === 0 || Array.from(payload).every((b) => b === 0xff)) {
+  if (!payload || payload.length === 0 || Array.from(payload).every((b) => b === 255)) {
     return undefined;
   }
 
   const rawTemp = payload[payload.length - 1];
-  const temperature = rawTemp !== 0xff ? rawTemp - 25 : undefined;
+  const temperature = rawTemp !== 255 ? rawTemp - 25 : undefined;
 
   if (payload.length === 6) {
     return {
@@ -54,8 +56,8 @@ export function parseBatteryStats(payload?: Uint8Array): BoksBatteryStats | unde
         min: payload[1],
         mean: payload[2],
         max: payload[3],
-        last: payload[4],
-      },
+        last: payload[4]
+      }
     };
   }
 
@@ -66,9 +68,9 @@ export function parseBatteryStats(payload?: Uint8Array): BoksBatteryStats | unde
       temperature,
       details: {
         t1: payload[0],
-        t5: payload[1] !== 0xff ? payload[1] : undefined,
-        t10: payload[2] !== 0xff ? payload[2] : undefined,
-      },
+        t5: payload[1] !== 255 ? payload[1] : undefined,
+        t10: payload[2] !== 255 ? payload[2] : undefined
+      }
     };
   }
 
