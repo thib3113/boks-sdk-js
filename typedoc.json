@@ -1,0 +1,9 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "entryPoints": ["src/index.ts"],
+  "out": "public/docs",
+  "name": "Boks SDK Documentation",
+  "includeVersion": true,
+  "exclude": ["**/*.test.ts"],
+  "cleanOutputDir": true
+}

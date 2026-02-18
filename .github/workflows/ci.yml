@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install pnpm
+      uses: pnpm/action-setup@v4
+      with:
+        version: 10
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+        cache: 'pnpm'
+        cache-dependency-path: pnpm-lock.yaml
+
+    - name: Install dependencies
+      run: pnpm install
+
+    - name: Lint
+      run: pnpm run lint
+
+    - name: Type Check
+      run: pnpm run type-check
+
+    - name: Test
+      run: pnpm test
+
+    - name: Check Documentation
+      run: pnpm run docs
+
+    - name: Build
+      run: pnpm run build
+
+    - name: Check build artifacts
+      run: |
+        ls -l dist/boks-sdk.js
+        ls -l dist/esm/boks-sdk.js
+        ls -l dist/cjs/boks-sdk.cjs
+        ls -l dist/types/index.d.ts

@@ -1,0 +1,64 @@
+{
+  "name": "@thib3113/boks-sdk",
+  "version": "1.0.0",
+  "description": "Core SDK for Boks Parcel Box communication and PIN generation",
+  "type": "module",
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LEGALS.md"
+  ],
+  "main": "dist/cjs/boks-sdk.cjs",
+  "module": "dist/esm/boks-sdk.js",
+  "types": "dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/esm/boks-sdk.js",
+      "require": "./dist/cjs/boks-sdk.cjs"
+    },
+    "./client": {
+      "types": "./dist/types/client.d.ts",
+      "import": "./dist/esm/client.js",
+      "require": "./dist/cjs/client.cjs"
+    },
+    "./browser": "./dist/boks-sdk.js",
+    "./browser-client": "./dist/boks-client.js"
+  },
+  "unpkg": "dist/boks-sdk.js",
+  "jsdelivr": "dist/boks-sdk.js",
+  "scripts": {
+    "build": "node build.js",
+    "docs": "typedoc",
+    "test": "vitest run",
+    "lint": "eslint src",
+    "type-check": "tsc --noEmit"
+  },
+  "keywords": [
+    "boks",
+    "ble",
+    "iot",
+    "pin",
+    "blake2s"
+  ],
+  "author": "Thib3113",
+  "license": "ISC",
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^22.0.0",
+    "@types/web-bluetooth": "^0.0.21",
+    "esbuild": "^0.25.0",
+    "eslint": "^9.0.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.5",
+    "globals": "^17.3.0",
+    "prettier": "^3.0.0",
+    "typedoc": "^0.28.17",
+    "typescript": "^5.0.0",
+    "typescript-eslint": "^8.56.0",
+    "vitest": "^3.0.0"
+  }
+}

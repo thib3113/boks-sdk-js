@@ -1,0 +1,18 @@
+import { BoksPacket } from '@/protocol/_BoksPacketBase';
+import { BoksOpcode } from '@/protocol/constants';
+
+/**
+ * Command to get the scale's MAC address.
+ * (UNTESTED)
+ */
+export class ScaleGetMacPacket extends BoksPacket {
+  static readonly opcode = BoksOpcode.SCALE_GET_MAC_ADDRESS_BOKS;
+  get opcode() {
+    return ScaleGetMacPacket.opcode;
+  }
+  toPayload() {
+    return new Uint8Array(0);
+  }
+}
+
+
