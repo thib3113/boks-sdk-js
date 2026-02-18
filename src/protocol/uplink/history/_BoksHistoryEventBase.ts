@@ -13,22 +13,19 @@ export abstract class BoksHistoryEvent extends BoksRXPacket {
 
   /**
    * Parses the common history header (Age: 3 bytes Big Endian).
-   * @returns The offset after the age field (3).
    */
-  protected parseHistoryHeader(payload: Uint8Array): number {
+  protected parseHistoryHeader(payload: Uint8Array): void {
     super.parse(payload);
     if (payload.length >= 3) {
       // Big Endian 24-bit
       this.age = (payload[0] << 16) | (payload[1] << 8) | payload[2];
-      return 3;
     }
-    return 0;
   }
 
   /**
    * Default implementation of parse just parses the header.
    */
-  parse(payload: Uint8Array): number {
-    return this.parseHistoryHeader(payload);
+  parse(payload: Uint8Array): void {
+    this.parseHistoryHeader(payload);
   }
 }

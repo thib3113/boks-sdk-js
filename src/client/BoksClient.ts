@@ -5,7 +5,6 @@ import {
   BoksOpcode,
   BoksPacket,
   BoksPacketFactory,
-  BoksRXPacket,
   RequestLogsPacket,
   BoksBatteryStats
 } from '@/protocol';
@@ -49,10 +48,10 @@ export class BoksClient {
   private readonly transport: BoksTransport;
   private readonly logger?: BoksLogger;
   private readonly responseHandlers: Array<{
-    opcode: BoksOpcode;
-    resolve: (packet: BoksRXPacket) => void;
+    opcode: number;
+    resolve: (packet: BoksPacket) => void;
   }> = [];
-  private listeners: Array<(packet: BoksRXPacket) => void> = [];
+  private listeners: Array<(packet: BoksPacket) => void> = [];
   private commandQueue: Promise<void> = Promise.resolve();
 
   constructor(optionsOrTransport?: BoksClientOptions | BoksTransport) {
@@ -146,7 +145,7 @@ export class BoksClient {
    * @param callback Function called for every parsed packet received.
    * @returns A function to unsubscribe.
    */
-  onPacket(callback: (packet: BoksRXPacket) => void): () => void {
+  onPacket(callback: (packet: BoksPacket) => void): () => void {
     this.listeners.push(callback);
     return () => {
       this.listeners = this.listeners.filter((l) => l !== callback);
@@ -229,7 +228,7 @@ export class BoksClient {
    * @param opcode The opcode to wait for.
    * @param timeoutMs Timeout in milliseconds.
    */
-  waitForPacket<T extends BoksRXPacket>(opcode: BoksOpcode, timeoutMs: number = 5000): Promise<T> {
+  waitForPacket<T extends BoksPacket>(opcode: BoksOpcode, timeoutMs: number = 5000): Promise<T> {
     return new Promise((resolve, reject) => {
       const timer = setTimeout(() => {
         const idx = this.responseHandlers.findIndex((h) => h.opcode === opcode);

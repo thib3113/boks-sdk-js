@@ -75,7 +75,7 @@ export class WebBluetoothTransport implements BoksTransport {
       );
     }
     try {
-      await this.writeChar.writeValueWithResponse(data);
+      await this.writeChar.writeValueWithResponse(data as unknown as BufferSource);
     } catch (error) {
       throw new BoksClientError(
         BoksClientErrorId.WRITE_FAILED,

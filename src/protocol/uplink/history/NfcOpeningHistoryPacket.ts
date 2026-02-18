@@ -16,7 +16,8 @@ export class NfcOpeningHistoryPacket extends BoksHistoryEvent {
   }
 
   parse(payload: Uint8Array) {
-    let offset = super.parse(payload);
+    this.parseHistoryHeader(payload);
+    let offset = 3;
     if (payload.length > offset) {
       this.tagType = payload[offset];
       offset++;
