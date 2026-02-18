@@ -22,4 +22,14 @@ describe('Boks PIN Algorithm', () => {
     
     expect(pin0).not.toBe(pin1);
   });
+
+  // Golden Master Test added by Bolt
+  it('should generate exact PIN for known inputs', () => {
+    const key = new Uint8Array(32).fill(0xAA);
+    const index = 12345;
+    const pin = generateBoksPin(key, 'master', index);
+
+    // Expected PIN verified with original implementation
+    expect(pin).toBe('615BB5');
+  });
 });
