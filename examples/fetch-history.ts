@@ -1,9 +1,4 @@
-import { BoksClient } from '../src/client/BoksClient';
-import { 
-    DoorOpenHistoryPacket, 
-    DoorCloseHistoryPacket, 
-    CodeBleValidHistoryPacket 
-} from '../src/protocol';
+import { BoksClient, BoksHistoryEvent, BoksOpcode } from '../src';
 
 /**
  * Example function showing how to retrieve and display history from a Boks.
@@ -27,14 +22,23 @@ async function listRecentEvents() {
             const eventDate = new Date(now - (event.age * 1000));
             let detail = '';
 
-            if (event instanceof DoorOpenHistoryPacket) {
-                detail = '🔓 Door Opened';
-            } else if (event instanceof DoorCloseHistoryPacket) {
-                detail = '🔒 Door Closed';
-            } else if (event instanceof CodeBleValidHistoryPacket) {
-                detail = `📱 BLE Access (Code: ${event.code})`;
-            } else {
-                detail = `Unknown Event (Opcode: 0x${event.opcode.toString(16)})`;
+            // Note: Checking prototype/instanceof might need the specific class to be exported.
+            // But we can also check opcodes.
+
+            switch (event.opcode) {
+                case BoksOpcode.LOG_DOOR_OPEN:
+                    detail = '🔓 Door Opened';
+                    break;
+                case BoksOpcode.LOG_DOOR_CLOSE:
+                    detail = '🔒 Door Closed';
+                    break;
+                case BoksOpcode.LOG_CODE_BLE_VALID:
+                    // Need to cast to access 'code' property if typescript is strict
+                    // But here we are just logging.
+                    detail = `📱 BLE Access`;
+                    break;
+                default:
+                    detail = `Event (Opcode: 0x${event.opcode.toString(16)})`;
             }
 
             console.log(`[${index}] ${eventDate.toLocaleString()} -> ${detail}`);

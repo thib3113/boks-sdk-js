@@ -1,7 +1,9 @@
-import { BoksClient } from '../src/client/BoksClient';
-import { OpenDoorPacket } from '../src/protocol/OpenDoorPacket';
-import { NotifyDoorStatusPacket } from '../src/protocol/NotifyDoorStatusPacket';
-import { BoksOpcode } from '../src/protocol/BoksOpcode';
+import {
+    BoksClient,
+    OpenDoorPacket,
+    NotifyDoorStatusPacket,
+    BoksOpcode
+} from '../src';
 
 /**
  * Example function showing how to open a Boks door using the client.

@@ -9,6 +9,7 @@ export * from './DeleteMultiUseCodePacket';
 export * from './DeleteSingleUseCodePacket';
 export * from './GenerateCodesPacket';
 export * from './GenerateCodesSupportPacket';
+export * from './GetLogsCountPacket';
 export * from './MasterCodeEditPacket';
 export * from './MultiToSingleCodePacket';
 export * from './NfcRegisterPacket';

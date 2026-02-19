@@ -19,6 +19,7 @@ describe('BoksController', () => {
     readCharacteristic: Mock;
     send: Mock;
     waitForOneOf: Mock;
+    onPacket: Mock;
   };
 
   beforeEach(() => {
@@ -31,6 +32,7 @@ describe('BoksController', () => {
       readCharacteristic: vi.fn(),
       send: vi.fn().mockResolvedValue(undefined),
       waitForOneOf: vi.fn(),
+      onPacket: vi.fn(),
     };
 
     // Make the mocked class constructor return our mock instance
@@ -183,6 +185,44 @@ describe('BoksController', () => {
         await controller.scanNFCTags(validConfigKey);
 
         expect(mockClientInstance.waitForOneOf).toHaveBeenCalledWith(expect.any(Array), 10000);
+    });
+  });
+
+  describe('regenerateMasterKey', () => {
+    const configKey = '12345678';
+    const newKeyHex = '00112233445566778899AABBCCDDEEFF00112233445566778899AABBCCDDEEFF';
+
+    it('should regenerate master key successfully', async () => {
+      const onProgress = vi.fn();
+
+      // Mock onPacket to simulate progress and success
+      mockClientInstance.onPacket.mockImplementation((callback: any) => {
+          setTimeout(() => {
+              callback({ opcode: BoksOpcode.NOTIFY_CODE_GENERATION_PROGRESS, progress: 50 });
+              setTimeout(() => {
+                  callback({ opcode: BoksOpcode.NOTIFY_CODE_GENERATION_SUCCESS });
+              }, 10);
+          }, 10);
+          return vi.fn(); // cleanup
+      });
+
+      const result = await controller.regenerateMasterKey(configKey, newKeyHex, onProgress);
+
+      expect(result).toBe(true);
+      expect(mockClientInstance.send).toHaveBeenCalledTimes(2); // Part A and Part B
+      expect(onProgress).toHaveBeenCalledWith(50);
+    });
+
+    it('should handle regeneration failure', async () => {
+      mockClientInstance.onPacket.mockImplementation((callback: any) => {
+          setTimeout(() => {
+              callback({ opcode: BoksOpcode.NOTIFY_CODE_GENERATION_ERROR });
+          }, 10);
+          return vi.fn();
+      });
+
+      const result = await controller.regenerateMasterKey(configKey, newKeyHex);
+      expect(result).toBe(false);
     });
   });
 });
