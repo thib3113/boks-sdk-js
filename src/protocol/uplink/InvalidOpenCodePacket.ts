@@ -10,6 +10,6 @@ export class InvalidOpenCodePacket extends BoksRXPacket {
     super(InvalidOpenCodePacket.opcode);
   }
   parse(payload: Uint8Array) {
-    super.parse(payload);}
+    super.parse(payload);
+  }
 }
-

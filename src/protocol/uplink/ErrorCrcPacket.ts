@@ -10,6 +10,6 @@ export class ErrorCrcPacket extends BoksRXPacket {
     super(ErrorCrcPacket.opcode);
   }
   parse(payload: Uint8Array) {
-    super.parse(payload);}
+    super.parse(payload);
+  }
 }
-

@@ -10,6 +10,6 @@ export class NotifyScaleDisconnectedPacket extends BoksRXPacket {
     super(NotifyScaleDisconnectedPacket.opcode);
   }
   parse(payload: Uint8Array) {
-    super.parse(payload);}
+    super.parse(payload);
+  }
 }
-

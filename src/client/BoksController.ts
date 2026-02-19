@@ -14,6 +14,11 @@ export interface BoksHardwareInfo {
   chipset: string; // Deduced chipset (e.g. "nRF52833")
 }
 
+interface BoksRequirements {
+  minHw?: string;
+  featureName: string;
+}
+
 /**
  * High-level controller for Boks devices.
  * Manages version-specific logic, feature flags, and complex workflows.
@@ -93,6 +98,30 @@ export class BoksController {
   }
 
   /**
+   * Verifies if the device meets the requirements for a specific feature.
+   */
+  private checkRequirements(requirements: BoksRequirements): void {
+    if (!this._hardwareInfo) {
+      throw new BoksClientError(
+        BoksClientErrorId.UNKNOWN_ERROR,
+        'Hardware info not available. Not connected?',
+        { requirements }
+      );
+    }
+
+    if (requirements.minHw && this._hardwareInfo.hardwareVersion !== requirements.minHw) {
+      throw new BoksClientError(
+        BoksClientErrorId.UNSUPPORTED_FEATURE,
+        `${requirements.featureName} requires Hardware Version ${requirements.minHw} (detected ${this._hardwareInfo.hardwareVersion})`,
+        {
+          required: requirements,
+          actual: this._hardwareInfo
+        }
+      );
+    }
+  }
+
+  /**
    * Starts an NFC tag scan sequence.
    * Requires HW >= 4.0.
    *
@@ -104,21 +133,10 @@ export class BoksController {
     configKey: string,
     timeoutMs: number = 10000
   ): Promise<NotifyNfcTagFoundPacket> {
-    if (!this._hardwareInfo) {
-      throw new BoksClientError(
-        BoksClientErrorId.UNKNOWN_ERROR,
-        'Hardware info not available. Not connected?'
-      );
-    }
-
-    // Check if HW version is 4.0 or greater (currently only 4.0 supported for NFC advanced features per spec)
-    // The spec says: "Le chipset nRF52833 (HW 4.0) supporte nativement des fonctions NFC plus avancées."
-    if (this._hardwareInfo.hardwareVersion !== '4.0') {
-      throw new BoksClientError(
-        BoksClientErrorId.UNSUPPORTED_FEATURE,
-        `NFC Scan requires Hardware Version 4.0 (detected ${this._hardwareInfo.hardwareVersion})`
-      );
-    }
+    this.checkRequirements({
+      minHw: '4.0',
+      featureName: 'NFC Scan'
+    });
 
     // Start scan
     // 0x17: RegisterNfcTagScanStartPacket

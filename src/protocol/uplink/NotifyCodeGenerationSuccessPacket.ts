@@ -10,6 +10,6 @@ export class NotifyCodeGenerationSuccessPacket extends BoksRXPacket {
     super(NotifyCodeGenerationSuccessPacket.opcode);
   }
   parse(payload: Uint8Array) {
-    super.parse(payload);}
+    super.parse(payload);
+  }
 }
-
