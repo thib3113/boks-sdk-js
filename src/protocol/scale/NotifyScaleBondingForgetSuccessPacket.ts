@@ -9,7 +9,7 @@ export class NotifyScaleBondingForgetSuccessPacket extends BoksRXPacket {
   constructor() {
     super(NotifyScaleBondingForgetSuccessPacket.opcode);
   }
-  parse() {}
+  parse(payload: Uint8Array) {
+    super.parse(payload);}
 }
-
 

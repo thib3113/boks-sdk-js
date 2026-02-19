@@ -17,5 +17,3 @@ export class ScaleBondPacket extends BoksPacket {
     return this.data;
   }
 }
-
-

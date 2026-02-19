@@ -9,7 +9,7 @@ export class NotifyCodeGenerationErrorPacket extends BoksRXPacket {
   constructor() {
     super(NotifyCodeGenerationErrorPacket.opcode);
   }
-  parse() {}
+  parse(payload: Uint8Array) {
+    super.parse(payload);}
 }
-
 

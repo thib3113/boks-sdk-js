@@ -1,4 +1,4 @@
-import { BOKS_UUIDS, BoksBatteryStats } from '@/protocol/constants';
+import { BOKS_UUIDS, BoksBatteryStats, INVALID_BYTE } from '@/protocol/constants';
 import { BoksTransport } from '@/client/transport';
 
 /**
@@ -30,7 +30,7 @@ export async function fetchBatteryStats(
  */
 export function parseBatteryLevel(payload?: Uint8Array): number | undefined {
   const level = payload?.[0];
-  return level !== undefined && level !== 255 ? level : undefined;
+  return level !== undefined && level !== INVALID_BYTE ? level : undefined;
 }
 
 /**
@@ -39,12 +39,12 @@ export function parseBatteryLevel(payload?: Uint8Array): number | undefined {
  * @returns BoksBatteryStats object or undefined if data is invalid.
  */
 export function parseBatteryStats(payload?: Uint8Array): BoksBatteryStats | undefined {
-  if (!payload || payload.length === 0 || Array.from(payload).every((b) => b === 255)) {
+  if (!payload || payload.length === 0 || Array.from(payload).every((b) => b === INVALID_BYTE)) {
     return undefined;
   }
 
   const rawTemp = payload[payload.length - 1];
-  const temperature = rawTemp !== 255 ? rawTemp - 25 : undefined;
+  const temperature = rawTemp !== INVALID_BYTE ? rawTemp - 25 : undefined;
 
   if (payload.length === 6) {
     return {
@@ -68,8 +68,8 @@ export function parseBatteryStats(payload?: Uint8Array): BoksBatteryStats | unde
       temperature,
       details: {
         t1: payload[0],
-        t5: payload[1] !== 255 ? payload[1] : undefined,
-        t10: payload[2] !== 255 ? payload[2] : undefined
+        t5: payload[1] !== INVALID_BYTE ? payload[1] : undefined,
+        t10: payload[2] !== INVALID_BYTE ? payload[2] : undefined
       }
     };
   }

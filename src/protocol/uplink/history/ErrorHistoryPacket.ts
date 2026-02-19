@@ -14,11 +14,10 @@ export class ErrorHistoryPacket extends BoksHistoryEvent {
   }
 
   parse(payload: Uint8Array) {
-    const offset = super.parse(payload);
+    this.parseHistoryHeader(payload);
+    const offset = 3;
     if (payload.length > offset) {
       this.errorCode = payload[offset];
     }
   }
 }
-
-

@@ -15,7 +15,8 @@ export class CodeBleValidHistoryPacket extends BoksHistoryEvent {
   }
 
   parse(payload: Uint8Array): void {
-    const offset = this.parseHistoryHeader(payload);
+    this.parseHistoryHeader(payload);
+    const offset = 3;
     if (payload.length >= offset + 6) {
       this.code = bytesToString(payload.slice(offset, offset + 6));
     }
@@ -30,5 +31,3 @@ export class CodeBleValidHistoryPacket extends BoksHistoryEvent {
     }
   }
 }
-
-

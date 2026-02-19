@@ -14,5 +14,3 @@ export class ScaleReconnectPacket extends BoksPacket {
     return new Uint8Array(0);
   }
 }
-
-

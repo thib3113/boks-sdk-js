@@ -19,5 +19,3 @@ export class NotifyNfcTagFoundPacket extends BoksRXPacket {
     this.uid = bytesToHex(payload);
   }
 }
-
-

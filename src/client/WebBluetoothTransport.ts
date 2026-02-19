@@ -36,7 +36,10 @@ export class WebBluetoothTransport implements BoksTransport {
       }
 
       if (!this.device?.gatt) {
-        throw new BoksClientError(BoksClientErrorId.CONNECTION_FAILED, 'GATT Server not available.');
+        throw new BoksClientError(
+          BoksClientErrorId.CONNECTION_FAILED,
+          'GATT Server not available.'
+        );
       }
 
       this.server = await this.device.gatt.connect();
@@ -72,7 +75,7 @@ export class WebBluetoothTransport implements BoksTransport {
       );
     }
     try {
-      await this.writeChar.writeValueWithResponse(data);
+      await this.writeChar.writeValueWithResponse(data as unknown as BufferSource);
     } catch (error) {
       throw new BoksClientError(
         BoksClientErrorId.WRITE_FAILED,
@@ -135,4 +138,3 @@ export class WebBluetoothTransport implements BoksTransport {
     }
   }
 }
-

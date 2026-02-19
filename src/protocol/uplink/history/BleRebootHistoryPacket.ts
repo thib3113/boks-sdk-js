@@ -13,5 +13,3 @@ export class BleRebootHistoryPacket extends BoksHistoryEvent {
     super.parse(payload);
   }
 }
-
-

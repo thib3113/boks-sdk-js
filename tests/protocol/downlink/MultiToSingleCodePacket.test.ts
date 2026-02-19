@@ -7,6 +7,10 @@ describe('MultiToSingleCodePacket', () => {
     const packet = new MultiToSingleCodePacket('AABBCCDD', '123456');
     expect(bytesToHex(packet.encode())).toBe('0B0E414142424343444431323334353662');
   });
+
+  it('should throw error for invalid PIN', () => {
+    expect(() => new MultiToSingleCodePacket('AABBCCDD', '123')).toThrow('PIN must be exactly 6 characters');
+  });
 });
 
 

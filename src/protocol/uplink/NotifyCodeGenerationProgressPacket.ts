@@ -19,5 +19,3 @@ export class NotifyCodeGenerationProgressPacket extends BoksRXPacket {
     }
   }
 }
-
-

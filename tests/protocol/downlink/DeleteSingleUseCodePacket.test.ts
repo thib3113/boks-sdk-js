@@ -8,6 +8,10 @@ describe('DeleteSingleUseCodePacket', () => {
     // Sum: 0D (13) + 0E (14) + 532 (Key) + 309 ("123456") = 868 (0x364) -> 0x64
     expect(bytesToHex(packet.encode())).toBe('0D0E414142424343444431323334353664');
   });
+
+  it('should throw error for invalid PIN', () => {
+    expect(() => new DeleteSingleUseCodePacket('AABBCCDD', 'INVALID')).toThrow('PIN must be exactly 6 characters');
+  });
 });
 
 

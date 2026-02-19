@@ -13,5 +13,3 @@ export class BlockResetHistoryPacket extends BoksHistoryEvent {
     super.parse(payload);
   }
 }
-
-

@@ -13,9 +13,7 @@ export class ScaleMeasureHistoryPacket extends BoksHistoryEvent {
   }
 
   parse(payload: Uint8Array) {
-    const offset = super.parse(payload);
-    this.data = payload.slice(offset);
+    this.parseHistoryHeader(payload);
+    this.data = payload.slice(3);
   }
 }
-
-

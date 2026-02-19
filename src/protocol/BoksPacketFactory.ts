@@ -1,4 +1,4 @@
-import { BoksPacket, BoksPacketConstructor, isBoksParsable } from './_BoksPacketBase';
+import { BoksPacket, BoksPacketConstructor } from './_BoksPacketBase';
 import { OpenDoorPacket } from './downlink/OpenDoorPacket';
 import { AskDoorStatusPacket } from './downlink/AskDoorStatusPacket';
 import { RequestLogsPacket } from './downlink/RequestLogsPacket';

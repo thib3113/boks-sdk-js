@@ -1,6 +1,7 @@
 import { AuthPacket } from '@/protocol/downlink/_AuthPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
 import { stringToBytes } from '@/utils/converters';
+import { validatePinCode } from '@/utils/pin';
 
 /**
  * Command to edit an existing master code.
@@ -18,6 +19,7 @@ export class MasterCodeEditPacket extends AuthPacket {
     public readonly newPin: string
   ) {
     super(configKey);
+    validatePinCode(newPin);
   }
 
   toPayload(): Uint8Array {
@@ -33,5 +35,3 @@ export class MasterCodeEditPacket extends AuthPacket {
     return payload;
   }
 }
-
-

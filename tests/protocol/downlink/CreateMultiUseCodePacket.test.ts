@@ -4,8 +4,12 @@ import { bytesToHex } from '@/utils/converters';
 
 describe('CreateMultiUseCodePacket', () => {
   it('should generate correct binary for CreateMultiUseCode (0x13)', () => {
-    const packet = new CreateMultiUseCodePacket('AABBCCDD', '1234');
-    expect(bytesToHex(packet.encode())).toBe('130E4141424243434444313233340000FF');
+    const packet = new CreateMultiUseCodePacket('AABBCCDD', '123456');
+    expect(bytesToHex(packet.encode())).toBe('130E41414242434344443132333435366A');
+  });
+
+  it('should throw error for invalid PIN', () => {
+    expect(() => new CreateMultiUseCodePacket('AABBCCDD', '123')).toThrow('PIN must be exactly 6 characters');
   });
 });
 

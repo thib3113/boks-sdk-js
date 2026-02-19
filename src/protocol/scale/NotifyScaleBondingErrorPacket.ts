@@ -19,5 +19,3 @@ export class NotifyScaleBondingErrorPacket extends BoksRXPacket {
     }
   }
 }
-
-

@@ -1,6 +1,7 @@
 import { AuthPacket } from '@/protocol/downlink/_AuthPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
 import { stringToBytes } from '@/utils/converters';
+import { validatePinCode } from '@/utils/pin';
 
 /**
  * Command to convert a Multi-Use code to Single-Use.
@@ -16,6 +17,7 @@ export class MultiToSingleCodePacket extends AuthPacket {
     public readonly pin: string
   ) {
     super(configKey);
+    validatePinCode(pin);
   }
 
   toPayload(): Uint8Array {
@@ -30,5 +32,3 @@ export class MultiToSingleCodePacket extends AuthPacket {
     return payload;
   }
 }
-
-

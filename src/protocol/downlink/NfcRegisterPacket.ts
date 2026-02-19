@@ -27,5 +27,3 @@ export class NfcRegisterPacket extends AuthPacket {
     return payload;
   }
 }
-
-

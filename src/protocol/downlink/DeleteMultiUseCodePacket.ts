@@ -1,6 +1,7 @@
 import { AuthPacket } from '@/protocol/downlink/_AuthPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
 import { stringToBytes } from '@/utils/converters';
+import { validatePinCode } from '@/utils/pin';
 
 /**
  * Command to delete a multi-use code.
@@ -16,6 +17,7 @@ export class DeleteMultiUseCodePacket extends AuthPacket {
     public readonly pin: string
   ) {
     super(configKey);
+    validatePinCode(pin);
   }
 
   toPayload(): Uint8Array {
@@ -30,5 +32,3 @@ export class DeleteMultiUseCodePacket extends AuthPacket {
     return payload;
   }
 }
-
-

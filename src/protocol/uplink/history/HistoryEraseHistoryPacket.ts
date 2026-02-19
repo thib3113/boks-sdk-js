@@ -13,5 +13,3 @@ export class HistoryEraseHistoryPacket extends BoksHistoryEvent {
     super.parse(payload);
   }
 }
-
-

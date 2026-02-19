@@ -23,5 +23,3 @@ export class NotifyDoorStatusPacket extends BoksRXPacket {
     }
   }
 }
-
-

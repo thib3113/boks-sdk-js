@@ -12,7 +12,7 @@ export class ErrorNfcTagAlreadyExistsScanPacket extends BoksRXPacket {
     super(ErrorNfcTagAlreadyExistsScanPacket.opcode);
   }
 
-  parse() {}
+  parse(payload: Uint8Array) {
+    super.parse(payload);}
 }
-
 

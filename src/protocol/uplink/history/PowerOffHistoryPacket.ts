@@ -13,11 +13,9 @@ export class PowerOffHistoryPacket extends BoksHistoryEvent {
   }
 
   parse(payload: Uint8Array) {
-    const offset = super.parse(payload);
-    if (payload.length > offset) {
-      this.reason = payload[offset];
+    this.parseHistoryHeader(payload);
+    if (payload.length > 3) {
+      this.reason = payload[3];
     }
   }
 }
-
-

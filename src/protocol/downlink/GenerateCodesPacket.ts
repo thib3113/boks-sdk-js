@@ -22,5 +22,3 @@ export class GenerateCodesPacket extends BoksPacket {
     return seedBytes;
   }
 }
-
-

@@ -53,6 +53,3 @@ export class SetConfigurationPacket extends AuthPacket {
     return payload;
   }
 }
-
-
-

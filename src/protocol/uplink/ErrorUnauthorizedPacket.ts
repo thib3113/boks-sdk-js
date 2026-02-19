@@ -9,7 +9,7 @@ export class ErrorUnauthorizedPacket extends BoksRXPacket {
   constructor() {
     super(ErrorUnauthorizedPacket.opcode);
   }
-  parse() {}
+  parse(payload: Uint8Array) {
+    super.parse(payload);}
 }
-
 

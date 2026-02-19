@@ -9,7 +9,7 @@ export class NotifyNfcTagRegisteredErrorAlreadyExistsPacket extends BoksRXPacket
   constructor() {
     super(NotifyNfcTagRegisteredErrorAlreadyExistsPacket.opcode);
   }
-  parse() {}
+  parse(payload: Uint8Array) {
+    super.parse(payload);}
 }
-
 
