@@ -3,7 +3,7 @@ import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolErr
 /**
  * Validates a Boks PIN code.
  * A valid PIN must be exactly 6 characters long and only contain 0-9, A or B.
- * 
+ *
  * @param pin The PIN code to validate.
  * @throws BoksProtocolError if the PIN is invalid.
  */

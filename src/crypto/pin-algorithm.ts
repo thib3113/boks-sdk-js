@@ -20,18 +20,25 @@ const G = (v: Uint32Array, a: number, b: number, c: number, d: number, x: number
   v[b] = ((tmpB2 >>> 7) | (tmpB2 << 25)) >>> 0;
 };
 
-const compress = (h: Uint32Array, block: Uint8Array, t0: number, f0: number): Uint32Array => {
-  const v = new Uint32Array(16);
+// Optimization: Reuse Uint32Array view if possible
+const compress = (
+  h: Uint32Array,
+  block32: Uint32Array,
+  t0: number,
+  f0: number,
+  v: Uint32Array
+): Uint32Array => {
+  // Initialize v
   v.set(h, 0);
   v.set(PIN_ALGO_CONFIG.IV, 8);
   v[12] ^= t0;
   v[14] ^= f0;
 
-  const m = new Uint32Array(16);
-  const view = new DataView(block.buffer, block.byteOffset, block.byteLength);
-  for (let i = 0; i < 16; i++) {
-    m[i] = view.getUint32(i * 4, true);
-  }
+  // No allocation for m needed, use block32 directly
+  // Note: This assumes Little-Endian architecture.
+  // In a cross-platform safe implementation we would check endianness,
+  // but for high-perf Boks SDK (Node/Browser) we assume LE.
+  const m = block32;
 
   for (let i = 0; i < 10; i++) {
     const s = PIN_ALGO_CONFIG.SIGMA[i];
@@ -55,17 +62,26 @@ export const generateBoksPin = (key: Uint8Array, typePrefix: string, index: numb
   const h = new Uint32Array(PIN_ALGO_CONFIG.IV);
   h[0] ^= PIN_ALGO_CONFIG.CONST_1;
 
+  // Pre-allocate buffers to avoid garbage collection
+  // 64 bytes for the block
+  const blockBuffer = new Uint8Array(64);
+  // View as Uint32Array for fast access (16 words)
+  const block32 = new Uint32Array(blockBuffer.buffer);
+  // Workspace vector v (16 words)
+  const v = new Uint32Array(16);
+
   // Block 1: The Key (padded to 64 bytes)
-  const block1 = new Uint8Array(64);
-  block1.set(key);
-  compress(h, block1, 64, 0);
+  blockBuffer.set(key); // Assumes key.length <= 64
+  compress(h, block32, 64, 0, v);
 
   // Block 2: The Message (prefix + " " + index)
   const msgStr = `${typePrefix} ${index}`;
   const msgBytes = stringToBytes(msgStr);
-  const block2 = new Uint8Array(64);
-  block2.set(msgBytes);
-  compress(h, block2, 64 + msgBytes.length, PIN_ALGO_CONFIG.MAX_32);
+
+  // Clear buffer for next block (vital if reusing buffer)
+  blockBuffer.fill(0);
+  blockBuffer.set(msgBytes);
+  compress(h, block32, 64 + msgBytes.length, PIN_ALGO_CONFIG.MAX_32, v);
 
   // Result: First 6 bytes of the hash
   const res = new Uint8Array(6);
