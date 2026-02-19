@@ -5,6 +5,7 @@ import {
   BoksOpcode,
   BOKS_UUIDS,
   RegisterNfcTagScanStartPacket,
+  GenerateCodesPacket,
   CreateMasterCodePacket,
   CreateSingleUseCodePacket,
   CreateMultiUseCodePacket,
@@ -452,6 +453,44 @@ describe('BoksController', () => {
       });
 
       const result = await controller.regenerateMasterKey(newKeyHex);
+      expect(result).toBe(false);
+    });
+  });
+
+  describe('initialize', () => {
+    const seed = '00000000000000000000000000000000000000000000000000000000AABBCCDD';
+
+    it('should initialize successfully', async () => {
+      const onProgress = vi.fn();
+
+      mockClientInstance.onPacket.mockImplementation((callback: any) => {
+          setTimeout(() => {
+              callback({ opcode: BoksOpcode.NOTIFY_CODE_GENERATION_PROGRESS, progress: 50 });
+              setTimeout(() => {
+                  callback({ opcode: BoksOpcode.NOTIFY_CODE_GENERATION_SUCCESS });
+              }, 10);
+          }, 10);
+          return vi.fn();
+      });
+
+      const result = await controller.initialize(seed, onProgress);
+
+      expect(result).toBe(true);
+      expect(mockClientInstance.send).toHaveBeenCalledTimes(1); // 1 packet (GenerateCodesPacket)
+      const packet = mockClientInstance.send.mock.calls[0][0];
+      expect(packet).toBeInstanceOf(GenerateCodesPacket);
+      expect(onProgress).toHaveBeenCalledWith(50);
+    });
+
+    it('should handle initialization failure', async () => {
+      mockClientInstance.onPacket.mockImplementation((callback: any) => {
+          setTimeout(() => {
+              callback({ opcode: BoksOpcode.NOTIFY_CODE_GENERATION_ERROR });
+          }, 10);
+          return vi.fn();
+      });
+
+      const result = await controller.initialize(seed);
       expect(result).toBe(false);
     });
   });

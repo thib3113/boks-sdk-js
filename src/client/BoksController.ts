@@ -22,6 +22,7 @@ import {
   TestBatteryPacket,
   RebootPacket,
   BoksHistoryEvent,
+  GenerateCodesPacket,
   CreateMasterCodePacket,
   CreateSingleUseCodePacket,
   CreateMultiUseCodePacket,
@@ -557,6 +558,71 @@ export class BoksController {
       BoksOpcode.CODE_OPERATION_ERROR
     ]);
     return result.opcode === BoksOpcode.CODE_OPERATION_SUCCESS;
+  }
+
+  /**
+   * Initializes a factory-fresh Boks device with a Master Key seed.
+   * ⚠️ This operation is theoretical and risky. Use with caution.
+   *
+   * @param seed The 32-byte seed for the Master Key (hex string or Uint8Array).
+   * @param onProgress Callback for progress updates (0-100%).
+   * @returns True if initialization was successful.
+   */
+  async initialize(
+    seed: string | Uint8Array,
+    onProgress?: (progress: number) => void
+  ): Promise<boolean> {
+    let seedBytes: Uint8Array;
+
+    if (typeof seed === 'string') {
+      // Clean hex string
+      const hex = seed.replace(/[^0-9A-Fa-f]/g, '');
+      if (hex.length !== 64) {
+        throw new BoksClientError(
+          BoksClientErrorId.INVALID_PARAMETER,
+          `Seed string must be 32 bytes (64 hex chars), got ${hex.length}`
+        );
+      }
+      seedBytes = hexToBytes(hex);
+    } else {
+      seedBytes = seed;
+    }
+
+    if (seedBytes.length !== 32) {
+      throw new BoksClientError(
+        BoksClientErrorId.INVALID_PARAMETER,
+        `Seed bytes must be 32 bytes, got ${seedBytes.length}`
+      );
+    }
+
+    // Setup listener
+    return new Promise((resolve, reject) => {
+      // eslint-disable-next-line prefer-const
+      let cleanup: () => void;
+
+      const handler = (packet: import('@/protocol').BoksPacket) => {
+        if (packet.opcode === BoksOpcode.NOTIFY_CODE_GENERATION_PROGRESS) {
+          const progressPacket = packet as NotifyCodeGenerationProgressPacket;
+          if (onProgress) {
+            onProgress(progressPacket.progress);
+          }
+        } else if (packet.opcode === BoksOpcode.NOTIFY_CODE_GENERATION_SUCCESS) {
+          if (cleanup) cleanup();
+          resolve(true);
+        } else if (packet.opcode === BoksOpcode.NOTIFY_CODE_GENERATION_ERROR) {
+          if (cleanup) cleanup();
+          resolve(false);
+        }
+      };
+
+      cleanup = this.client.onPacket(handler);
+
+      // Send command
+      this.client.send(new GenerateCodesPacket(seedBytes)).catch((err) => {
+        if (cleanup) cleanup();
+        reject(err);
+      });
+    });
   }
 
   /**
