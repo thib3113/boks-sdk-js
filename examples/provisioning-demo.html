@@ -24,8 +24,8 @@
 
     <div class="card">
         <h3>1. Configuration</h3>
-        <label for="configKey">Configuration Key (Hex):</label>
-        <input type="text" id="configKey" placeholder="e.g. 0102030405060708" value="0000000000000000">
+        <label for="currentMasterKey">Current Master Key (64 Hex chars):</label>
+        <input type="text" id="currentMasterKey" placeholder="e.g. 0000...0000" value="0000000000000000000000000000000000000000000000000000000000000000">
 
         <label for="masterKey">New Master Key (32 bytes Hex):</label>
         <div class="row">
@@ -53,7 +53,7 @@
 
     <script>
         const logEl = document.getElementById('log');
-        const configKeyInput = document.getElementById('configKey');
+        const currentMasterKeyInput = document.getElementById('currentMasterKey');
         const masterKeyInput = document.getElementById('masterKey');
         const genKeyBtn = document.getElementById('genKeyBtn');
         const connectBtn = document.getElementById('connectBtn');
@@ -99,9 +99,9 @@
                 return;
             }
 
-            const configKey = configKeyInput.value.trim();
-            if (!configKey) {
-                log('Please enter a Configuration Key.', 'error');
+            const currentMasterKey = currentMasterKeyInput.value.trim();
+            if (!currentMasterKey) {
+                log('Please enter the Current Master Key.', 'error');
                 return;
             }
 
@@ -129,6 +129,15 @@
                     }
                 });
 
+                // Set Credentials
+                try {
+                    boksController.setCredentials(currentMasterKey);
+                    log('Credentials set.', 'success');
+                } catch (e) {
+                    log('Invalid Credentials: ' + e.message, 'error');
+                    return;
+                }
+
                 statusArea.classList.remove('hidden');
                 statusText.textContent = "Connecting...";
                 progressBar.value = 0;
@@ -142,9 +151,9 @@
                 disconnectBtn.disabled = false;
 
                 // Start Provisioning (Regenerate Master Key)
+                // Note: No longer need to pass configKey here
                 log('Starting Master Key Regeneration...');
                 const success = await boksController.regenerateMasterKey(
-                    configKey,
                     generatedKeyBytes,
                     (progress) => {
                         progressBar.value = progress;

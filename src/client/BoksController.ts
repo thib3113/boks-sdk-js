@@ -6,6 +6,11 @@ import {
   NotifyNfcTagFoundPacket,
   ErrorNfcScanTimeoutPacket,
   ErrorNfcTagAlreadyExistsScanPacket,
+  NfcRegisterPacket,
+  UnregisterNfcTagPacket,
+  NotifyNfcTagRegisteredPacket,
+  NotifyNfcTagRegisteredErrorAlreadyExistsPacket,
+  NotifyNfcTagUnregisteredPacket,
   OpenDoorPacket,
   ValidOpenCodePacket,
   InvalidOpenCodePacket,
@@ -30,7 +35,7 @@ import {
   NotifyCodeGenerationProgressPacket
 } from '@/protocol';
 import { BoksClientError, BoksClientErrorId } from '@/errors/BoksClientError';
-import { hexToBytes } from '@/utils/converters';
+import { hexToBytes, bytesToHex } from '@/utils/converters';
 
 export interface BoksHardwareInfo {
   firmwareRevision: string; // Internal FW revision (e.g. "10/125")
@@ -52,6 +57,8 @@ interface BoksRequirements {
 export class BoksController {
   private readonly client: BoksClient;
   private _hardwareInfo: BoksHardwareInfo | null = null;
+  #masterKey: string | null = null;
+  #configKey: string | null = null;
 
   constructor(optionsOrClient?: BoksClientOptions | BoksClient) {
     if (optionsOrClient instanceof BoksClient) {
@@ -59,6 +66,45 @@ export class BoksController {
     } else {
       this.client = new BoksClient(optionsOrClient);
     }
+  }
+
+  /**
+   * Sets the Master Key and derives the Config Key.
+   * @param masterKey The 32-byte Master Key (as hex string or Uint8Array).
+   */
+  setCredentials(masterKey: string | Uint8Array): void {
+    let normalizedHex: string;
+
+    if (typeof masterKey === 'string') {
+      normalizedHex = masterKey.replace(/[^0-9A-Fa-f]/g, '').toUpperCase();
+    } else {
+      normalizedHex = bytesToHex(masterKey);
+    }
+
+    if (normalizedHex.length !== 64) {
+      throw new BoksClientError(
+        BoksClientErrorId.INVALID_PARAMETER,
+        `Master Key must be 32 bytes (64 hex chars), got ${normalizedHex.length} hex chars`
+      );
+    }
+
+    this.#masterKey = normalizedHex;
+
+    // Derive Config Key: Last 8 hex chars of the master key.
+    this.#configKey = normalizedHex.slice(-8);
+  }
+
+  /**
+   * Returns the Config Key or throws if not set.
+   */
+  private getConfigKeyOrThrow(): string {
+    if (!this.#configKey) {
+      throw new BoksClientError(
+        BoksClientErrorId.INVALID_PARAMETER,
+        'Credentials not set. Call setCredentials() first.'
+      );
+    }
+    return this.#configKey;
   }
 
   /**
@@ -81,6 +127,13 @@ export class BoksController {
    */
   get hardwareInfo(): BoksHardwareInfo | null {
     return this._hardwareInfo;
+  }
+
+  /**
+   * Retrieves the current Master Key (hex string).
+   */
+  get masterKey(): string | null {
+    return this.#masterKey;
   }
 
   /**
@@ -191,16 +244,15 @@ export class BoksController {
    * Starts an NFC tag scan sequence.
    * Requires HW >= 4.0 and SW >= 4.3.3.
    *
-   * @param configKey The 8-character hex configuration key required for authentication.
    * @param timeoutMs Timeout in milliseconds for the scan operation.
    * @returns The resulting packet: Found, Timeout, or Already Exists.
    */
   async scanNFCTags(
-    configKey: string,
     timeoutMs: number = 10000
   ): Promise<
     NotifyNfcTagFoundPacket | ErrorNfcScanTimeoutPacket | ErrorNfcTagAlreadyExistsScanPacket
   > {
+    const configKey = this.getConfigKeyOrThrow();
     this.checkRequirements({
       minHw: '4.0',
       minSw: '4.3.3',
@@ -222,6 +274,57 @@ export class BoksController {
       ],
       timeoutMs
     );
+  }
+
+  /**
+   * Registers a specific NFC tag by its UID.
+   * Requires HW >= 4.0 and SW >= 4.3.3.
+   *
+   * @param tagId The UID of the NFC tag (hex string, optional colons).
+   * @returns True if registered successfully, false if the tag already exists.
+   */
+  async registerNfcTag(tagId: string): Promise<boolean> {
+    const configKey = this.getConfigKeyOrThrow();
+    this.checkRequirements({
+      minHw: '4.0',
+      minSw: '4.3.3',
+      featureName: 'NFC Register'
+    });
+
+    await this.client.send(new NfcRegisterPacket(configKey, tagId));
+
+    const result = await this.client.waitForOneOf<
+      NotifyNfcTagRegisteredPacket | NotifyNfcTagRegisteredErrorAlreadyExistsPacket
+    >([
+      BoksOpcode.NOTIFY_NFC_TAG_REGISTERED, // 0xC8
+      BoksOpcode.NOTIFY_NFC_TAG_REGISTERED_ERROR_ALREADY_EXISTS // 0xC9
+    ]);
+
+    return result.opcode === BoksOpcode.NOTIFY_NFC_TAG_REGISTERED;
+  }
+
+  /**
+   * Unregisters a specific NFC tag by its UID.
+   * Requires HW >= 4.0 and SW >= 4.3.3.
+   *
+   * @param tagId The UID of the NFC tag (hex string, optional colons).
+   * @returns True if unregistered successfully.
+   */
+  async unregisterNfcTag(tagId: string): Promise<boolean> {
+    const configKey = this.getConfigKeyOrThrow();
+    this.checkRequirements({
+      minHw: '4.0',
+      minSw: '4.3.3',
+      featureName: 'NFC Unregister'
+    });
+
+    await this.client.send(new UnregisterNfcTagPacket(configKey, tagId));
+
+    await this.client.waitForPacket<NotifyNfcTagUnregisteredPacket>(
+      BoksOpcode.NOTIFY_NFC_TAG_UNREGISTERED // 0xCA
+    );
+
+    return true;
   }
 
   /**
@@ -288,7 +391,8 @@ export class BoksController {
   /**
    * Creates a new master code at the specified index.
    */
-  async createMasterCode(configKey: string, index: number, pin: string): Promise<boolean> {
+  async createMasterCode(index: number, pin: string): Promise<boolean> {
+    const configKey = this.getConfigKeyOrThrow();
     await this.client.send(new CreateMasterCodePacket(configKey, index, pin));
     const result = await this.client.waitForOneOf<OperationSuccessPacket | OperationErrorPacket>([
       BoksOpcode.CODE_OPERATION_SUCCESS,
@@ -300,7 +404,8 @@ export class BoksController {
   /**
    * Creates a new single-use code.
    */
-  async createSingleUseCode(configKey: string, pin: string): Promise<boolean> {
+  async createSingleUseCode(pin: string): Promise<boolean> {
+    const configKey = this.getConfigKeyOrThrow();
     await this.client.send(new CreateSingleUseCodePacket(configKey, pin));
     const result = await this.client.waitForOneOf<OperationSuccessPacket | OperationErrorPacket>([
       BoksOpcode.CODE_OPERATION_SUCCESS,
@@ -312,7 +417,8 @@ export class BoksController {
   /**
    * Creates a new multi-use code.
    */
-  async createMultiUseCode(configKey: string, pin: string): Promise<boolean> {
+  async createMultiUseCode(pin: string): Promise<boolean> {
+    const configKey = this.getConfigKeyOrThrow();
     await this.client.send(new CreateMultiUseCodePacket(configKey, pin));
     const result = await this.client.waitForOneOf<OperationSuccessPacket | OperationErrorPacket>([
       BoksOpcode.CODE_OPERATION_SUCCESS,
@@ -324,7 +430,8 @@ export class BoksController {
   /**
    * Deletes a master code at the specified index.
    */
-  async deleteMasterCode(configKey: string, index: number): Promise<boolean> {
+  async deleteMasterCode(index: number): Promise<boolean> {
+    const configKey = this.getConfigKeyOrThrow();
     await this.client.send(new DeleteMasterCodePacket(configKey, index));
     const result = await this.client.waitForOneOf<OperationSuccessPacket | OperationErrorPacket>([
       BoksOpcode.CODE_OPERATION_SUCCESS,
@@ -336,7 +443,8 @@ export class BoksController {
   /**
    * Deletes a single-use code.
    */
-  async deleteSingleUseCode(configKey: string, pin: string): Promise<boolean> {
+  async deleteSingleUseCode(pin: string): Promise<boolean> {
+    const configKey = this.getConfigKeyOrThrow();
     await this.client.send(new DeleteSingleUseCodePacket(configKey, pin));
     const result = await this.client.waitForOneOf<OperationSuccessPacket | OperationErrorPacket>([
       BoksOpcode.CODE_OPERATION_SUCCESS,
@@ -348,7 +456,8 @@ export class BoksController {
   /**
    * Deletes a multi-use code.
    */
-  async deleteMultiUseCode(configKey: string, pin: string): Promise<boolean> {
+  async deleteMultiUseCode(pin: string): Promise<boolean> {
+    const configKey = this.getConfigKeyOrThrow();
     await this.client.send(new DeleteMultiUseCodePacket(configKey, pin));
     const result = await this.client.waitForOneOf<OperationSuccessPacket | OperationErrorPacket>([
       BoksOpcode.CODE_OPERATION_SUCCESS,
@@ -360,16 +469,15 @@ export class BoksController {
   /**
    * Regenerates the master key (Provisioning).
    *
-   * @param configKey The current configuration key.
    * @param newMasterKey The new 32-byte master key (as hex string or Uint8Array).
    * @param onProgress Callback for progress updates (0-100%).
    * @returns True if regeneration was successful, false otherwise.
    */
   async regenerateMasterKey(
-    configKey: string,
     newMasterKey: string | Uint8Array,
     onProgress?: (progress: number) => void
   ): Promise<boolean> {
+    const configKey = this.getConfigKeyOrThrow();
     let keyBytes: Uint8Array;
 
     if (typeof newMasterKey === 'string') {
