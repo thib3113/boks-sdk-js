@@ -5,7 +5,7 @@ import {
   RegisterNfcTagScanStartPacket,
   NotifyNfcTagFoundPacket,
   ErrorNfcScanTimeoutPacket,
-  ErrorNfcTagAlreadyExistsScanPacket,
+  ErrorNfcTagAlreadyExistsScanPacket
 } from '@/protocol';
 import { BoksClientError, BoksClientErrorId } from '@/errors/BoksClientError';
 
