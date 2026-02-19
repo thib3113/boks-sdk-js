@@ -11,6 +11,12 @@ import {
   DeleteMasterCodePacket,
   DeleteSingleUseCodePacket,
   DeleteMultiUseCodePacket,
+  ReactivateCodePacket,
+  MasterCodeEditPacket,
+  SetConfigurationPacket,
+  MultiToSingleCodePacket,
+  SingleToMultiCodePacket,
+  BoksCodeType
 } from '@/protocol';
 import { BoksClientErrorId } from '@/errors/BoksClientError';
 
@@ -447,6 +453,93 @@ describe('BoksController', () => {
 
       const result = await controller.regenerateMasterKey(newKeyHex);
       expect(result).toBe(false);
+    });
+  });
+
+  describe('Advanced Admin Features', () => {
+    beforeEach(() => {
+      controller.setCredentials(validMasterKey);
+    });
+
+    describe('reactivateCode', () => {
+      it('should reactivate code successfully', async () => {
+        mockClientInstance.waitForOneOf.mockResolvedValue({ opcode: BoksOpcode.CODE_OPERATION_SUCCESS });
+        const result = await controller.reactivateCode('123456');
+
+        expect(mockClientInstance.send).toHaveBeenCalled();
+        const packet = mockClientInstance.send.mock.calls[0][0];
+        expect(packet).toBeInstanceOf(ReactivateCodePacket);
+        expect(packet.configKey).toBe(expectedConfigKey);
+        expect(result).toBe(true);
+      });
+
+      it('should return false on error', async () => {
+        mockClientInstance.waitForOneOf.mockResolvedValue({ opcode: BoksOpcode.CODE_OPERATION_ERROR });
+        const result = await controller.reactivateCode('123456');
+        expect(result).toBe(false);
+      });
+    });
+
+    describe('editMasterCode', () => {
+      it('should edit master code successfully', async () => {
+        mockClientInstance.waitForOneOf.mockResolvedValue({ opcode: BoksOpcode.CODE_OPERATION_SUCCESS });
+        const result = await controller.editMasterCode(1, '654321');
+
+        expect(mockClientInstance.send).toHaveBeenCalled();
+        const packet = mockClientInstance.send.mock.calls[0][0];
+        expect(packet).toBeInstanceOf(MasterCodeEditPacket);
+        expect(packet.configKey).toBe(expectedConfigKey);
+        expect(packet.index).toBe(1);
+        expect(packet.newPin).toBe('654321');
+        expect(result).toBe(true);
+      });
+    });
+
+    describe('setConfiguration', () => {
+      it('should set configuration successfully', async () => {
+        mockClientInstance.waitForOneOf.mockResolvedValue({ opcode: BoksOpcode.NOTIFY_SET_CONFIGURATION_SUCCESS });
+        const result = await controller.setConfiguration({ type: 1, value: true });
+
+        expect(mockClientInstance.send).toHaveBeenCalled();
+        const packet = mockClientInstance.send.mock.calls[0][0];
+        expect(packet).toBeInstanceOf(SetConfigurationPacket);
+        expect(packet.configKey).toBe(expectedConfigKey);
+        expect(packet.configType).toBe(1);
+        expect(packet.value).toBe(true);
+        expect(result).toBe(true);
+      });
+
+      it('should return false on error', async () => {
+        mockClientInstance.waitForOneOf.mockResolvedValue({ opcode: BoksOpcode.CODE_OPERATION_ERROR });
+        const result = await controller.setConfiguration({ type: 1, value: true });
+        expect(result).toBe(false);
+      });
+    });
+
+    describe('convertCodeType', () => {
+      it('should convert Single to Multi', async () => {
+        mockClientInstance.waitForOneOf.mockResolvedValue({ opcode: BoksOpcode.CODE_OPERATION_SUCCESS });
+        const result = await controller.convertCodeType('123456', BoksCodeType.Multi);
+
+        expect(mockClientInstance.send).toHaveBeenCalled();
+        const packet = mockClientInstance.send.mock.calls[0][0];
+        expect(packet).toBeInstanceOf(SingleToMultiCodePacket);
+        expect(packet.configKey).toBe(expectedConfigKey);
+        expect(packet.pin).toBe('123456');
+        expect(result).toBe(true);
+      });
+
+      it('should convert Multi to Single', async () => {
+        mockClientInstance.waitForOneOf.mockResolvedValue({ opcode: BoksOpcode.CODE_OPERATION_SUCCESS });
+        const result = await controller.convertCodeType('123456', BoksCodeType.Single);
+
+        expect(mockClientInstance.send).toHaveBeenCalled();
+        const packet = mockClientInstance.send.mock.calls[0][0];
+        expect(packet).toBeInstanceOf(MultiToSingleCodePacket);
+        expect(packet.configKey).toBe(expectedConfigKey);
+        expect(packet.pin).toBe('123456');
+        expect(result).toBe(true);
+      });
     });
   });
 });
