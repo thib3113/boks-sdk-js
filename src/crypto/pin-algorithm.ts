@@ -2,8 +2,18 @@
  * Boks PIN Algorithm (Modified BLAKE2s with SHA-256 IV)
  */
 
-import { stringToBytes } from '@/utils/converters';
-import { PIN_ALGO_CONFIG, CHECKSUM_MASK } from '../protocol/constants';
+import { PIN_ALGO_CONFIG } from '../protocol/constants';
+
+// Shared buffers to avoid allocation on every call
+// Note: This makes the function non-reentrant. It is safe in single-threaded JS/Node environments
+// as long as generateBoksPin is not called recursively or concurrently (e.g. while yielding).
+// Since generateBoksPin is synchronous, this is safe.
+const h = new Uint32Array(8);
+const blockBuffer = new Uint8Array(64);
+const block32 = new Uint32Array(blockBuffer.buffer);
+const v = new Uint32Array(16);
+const encoder = new TextEncoder();
+const BOKS_CHAR_MAP = '0123456789AB';
 
 const G = (v: Uint32Array, a: number, b: number, c: number, d: number, x: number, y: number) => {
   v[a] = (v[a] + v[b] + x) >>> 0;
@@ -59,50 +69,44 @@ const compress = (
 };
 
 export const generateBoksPin = (key: Uint8Array, typePrefix: string, index: number): string => {
-  const h = new Uint32Array(PIN_ALGO_CONFIG.IV);
+  // Reset h with IV
+  h.set(PIN_ALGO_CONFIG.IV);
   h[0] ^= PIN_ALGO_CONFIG.CONST_1;
 
-  // Pre-allocate buffers to avoid garbage collection
-  // 64 bytes for the block
-  const blockBuffer = new Uint8Array(64);
-  // View as Uint32Array for fast access (16 words)
-  const block32 = new Uint32Array(blockBuffer.buffer);
-  // Workspace vector v (16 words)
-  const v = new Uint32Array(16);
-
   // Block 1: The Key (padded to 64 bytes)
+  // We must clear blockBuffer first because we reuse it
+  blockBuffer.fill(0);
   blockBuffer.set(key); // Assumes key.length <= 64
   compress(h, block32, 64, 0, v);
 
   // Block 2: The Message (prefix + " " + index)
   const msgStr = `${typePrefix} ${index}`;
-  const msgBytes = stringToBytes(msgStr);
 
-  // Clear buffer for next block (vital if reusing buffer)
+  // Clear buffer for next block
   blockBuffer.fill(0);
-  blockBuffer.set(msgBytes);
-  compress(h, block32, 64 + msgBytes.length, PIN_ALGO_CONFIG.MAX_32, v);
 
-  // Result: First 6 bytes of the hash
-  const res = new Uint8Array(6);
+  // Use encodeInto to avoid creating intermediate Uint8Array
+  const { written } = encoder.encodeInto(msgStr, blockBuffer);
 
+  compress(h, block32, 64 + (written ?? 0), PIN_ALGO_CONFIG.MAX_32, v);
+
+  // Result: First 6 bytes of the hash, mapped to Boks Chars
   // Need to extract 6 bytes from h (which is 8x32bit words)
   // The Python ref uses struct.pack('<I', x) for each word then takes [:6]
-  for (let i = 0; i < 2; i++) {
-    const word = h[i];
-    const offset = i * 4;
-    if (offset < 6) {
-      res[offset] = word & CHECKSUM_MASK;
-      if (offset + 1 < 6) res[offset + 1] = (word >> 8) & CHECKSUM_MASK;
-      if (offset + 2 < 6) res[offset + 2] = (word >> 16) & CHECKSUM_MASK;
-      if (offset + 3 < 6) res[offset + 3] = (word >> 24) & CHECKSUM_MASK;
-    }
-  }
 
-  const BOKS_CHAR_MAP = '0123456789AB';
   let pin = '';
-  for (let i = 0; i < 6; i++) {
-    pin += BOKS_CHAR_MAP[res[i] % 12];
-  }
+  // Optimization: Unrolled loop to avoid temporary array allocation
+  // Word 0 (bytes 0, 1, 2, 3)
+  const w0 = h[0];
+  pin += BOKS_CHAR_MAP[(w0 & 255) % 12];
+  pin += BOKS_CHAR_MAP[((w0 >>> 8) & 255) % 12];
+  pin += BOKS_CHAR_MAP[((w0 >>> 16) & 255) % 12];
+  pin += BOKS_CHAR_MAP[((w0 >>> 24) & 255) % 12];
+
+  // Word 1 (bytes 4, 5)
+  const w1 = h[1];
+  pin += BOKS_CHAR_MAP[(w1 & 255) % 12];
+  pin += BOKS_CHAR_MAP[((w1 >>> 8) & 255) % 12];
+
   return pin;
 };
