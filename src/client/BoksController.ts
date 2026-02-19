@@ -279,6 +279,7 @@ export class BoksController {
   /**
    * Registers a specific NFC tag by its UID.
    * Requires HW >= 4.0 and SW >= 4.3.3.
+   * Uses the derived Config Key.
    *
    * @param tagId The UID of the NFC tag (hex string, optional colons).
    * @returns True if registered successfully, false if the tag already exists.
@@ -306,6 +307,7 @@ export class BoksController {
   /**
    * Unregisters a specific NFC tag by its UID.
    * Requires HW >= 4.0 and SW >= 4.3.3.
+   * Uses the derived Config Key.
    *
    * @param tagId The UID of the NFC tag (hex string, optional colons).
    * @returns True if unregistered successfully.

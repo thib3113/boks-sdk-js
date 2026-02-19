@@ -15,4 +15,10 @@ export class ErrorNfcTagAlreadyExistsScanPacket extends BoksRXPacket {
   parse(payload: Uint8Array) {
     super.parse(payload);
   }
+
+  static fromPayload(payload: Uint8Array): ErrorNfcTagAlreadyExistsScanPacket {
+    const packet = new ErrorNfcTagAlreadyExistsScanPacket();
+    packet.parse(payload);
+    return packet;
+  }
 }
