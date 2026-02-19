@@ -23,6 +23,10 @@ describe('BoksController', () => {
     onPacket: Mock;
   };
 
+  // Valid master key (32 bytes = 64 hex chars) ending in AABBCCDD
+  const validMasterKey = '00000000000000000000000000000000000000000000000000000000AABBCCDD';
+  const expectedConfigKey = 'AABBCCDD';
+
   beforeEach(() => {
     vi.clearAllMocks();
 
@@ -113,8 +117,6 @@ describe('BoksController', () => {
   });
 
   describe('scanNFCTags', () => {
-    const validConfigKey = 'AABBCCDD';
-
     const setupControllerVersion = async (fw: string, sw: string) => {
         const textEncoder = new TextEncoder();
         mockClientInstance.readCharacteristic.mockImplementation(async (uuid: string) => {
@@ -125,16 +127,25 @@ describe('BoksController', () => {
         await controller.connect();
     };
 
+    it('should throw INVALID_PARAMETER if credentials not set', async () => {
+        // Do not set credentials
+        await expect(controller.scanNFCTags())
+            .rejects
+            .toThrowError(expect.objectContaining({ id: BoksClientErrorId.INVALID_PARAMETER }));
+    });
+
     it('should throw UNKNOWN_ERROR if not connected (no hardware info)', async () => {
-        await expect(controller.scanNFCTags(validConfigKey))
+        controller.setCredentials(validMasterKey);
+        await expect(controller.scanNFCTags())
             .rejects
             .toThrowError(expect.objectContaining({ id: BoksClientErrorId.UNKNOWN_ERROR }));
     });
 
     it('should throw UNSUPPORTED_FEATURE if Hardware Version < 4.0', async () => {
+        controller.setCredentials(validMasterKey);
         await setupControllerVersion('10/cd', '4.3.3'); // HW 3.0
 
-        await expect(controller.scanNFCTags(validConfigKey))
+        await expect(controller.scanNFCTags())
             .rejects
             .toThrowError(expect.objectContaining({
                 id: BoksClientErrorId.UNSUPPORTED_FEATURE,
@@ -143,9 +154,10 @@ describe('BoksController', () => {
     });
 
     it('should throw UNSUPPORTED_FEATURE if Software Version < 4.3.3', async () => {
+        controller.setCredentials(validMasterKey);
         await setupControllerVersion('10/125', '4.3.0'); // SW 4.3.0
 
-        await expect(controller.scanNFCTags(validConfigKey))
+        await expect(controller.scanNFCTags())
             .rejects
             .toThrowError(expect.objectContaining({
                 id: BoksClientErrorId.UNSUPPORTED_FEATURE,
@@ -154,19 +166,20 @@ describe('BoksController', () => {
     });
 
     it('should send scan packet and wait for result if requirements met', async () => {
+        controller.setCredentials(validMasterKey);
         await setupControllerVersion('10/125', '4.3.3');
 
         const mockResultPacket = { opcode: BoksOpcode.NOTIFY_NFC_TAG_FOUND };
         mockClientInstance.waitForOneOf.mockResolvedValue(mockResultPacket);
 
-        const result = await controller.scanNFCTags(validConfigKey, 5000);
+        const result = await controller.scanNFCTags(5000);
 
         expect(mockClientInstance.send).toHaveBeenCalledTimes(1);
         const sentPacket = mockClientInstance.send.mock.calls[0][0] as RegisterNfcTagScanStartPacket;
         expect(sentPacket).toBeInstanceOf(RegisterNfcTagScanStartPacket);
 
         // Strict check: verify config key was passed correctly
-        expect(sentPacket.configKey).toBe(validConfigKey);
+        expect(sentPacket.configKey).toBe(expectedConfigKey);
 
         expect(mockClientInstance.waitForOneOf).toHaveBeenCalledWith(
             [
@@ -181,17 +194,17 @@ describe('BoksController', () => {
     });
 
     it('should pass default timeout if not provided', async () => {
+        controller.setCredentials(validMasterKey);
         await setupControllerVersion('10/125', '4.3.3');
         mockClientInstance.waitForOneOf.mockResolvedValue({});
 
-        await controller.scanNFCTags(validConfigKey);
+        await controller.scanNFCTags();
 
         expect(mockClientInstance.waitForOneOf).toHaveBeenCalledWith(expect.any(Array), 10000);
     });
   });
 
   describe('registerNfcTag', () => {
-    const validConfigKey = 'AABBCCDD';
     const tagId = '01:02:03:04';
 
     const setupControllerVersion = async (fw: string, sw: string) => {
@@ -205,11 +218,12 @@ describe('BoksController', () => {
     };
 
     it('should register NFC tag successfully', async () => {
+        controller.setCredentials(validMasterKey);
         await setupControllerVersion('10/125', '4.3.3');
 
         mockClientInstance.waitForOneOf.mockResolvedValue({ opcode: BoksOpcode.NOTIFY_NFC_TAG_REGISTERED });
 
-        const result = await controller.registerNfcTag(validConfigKey, tagId);
+        const result = await controller.registerNfcTag(tagId);
 
         expect(mockClientInstance.send).toHaveBeenCalledTimes(1);
         expect(mockClientInstance.waitForOneOf).toHaveBeenCalledWith(
@@ -222,18 +236,18 @@ describe('BoksController', () => {
     });
 
     it('should return false if NFC tag already exists', async () => {
+        controller.setCredentials(validMasterKey);
         await setupControllerVersion('10/125', '4.3.3');
 
         mockClientInstance.waitForOneOf.mockResolvedValue({ opcode: BoksOpcode.NOTIFY_NFC_TAG_REGISTERED_ERROR_ALREADY_EXISTS });
 
-        const result = await controller.registerNfcTag(validConfigKey, tagId);
+        const result = await controller.registerNfcTag(tagId);
 
         expect(result).toBe(false);
     });
   });
 
   describe('unregisterNfcTag', () => {
-    const validConfigKey = 'AABBCCDD';
     const tagId = '01:02:03:04';
 
     const setupControllerVersion = async (fw: string, sw: string) => {
@@ -247,11 +261,12 @@ describe('BoksController', () => {
     };
 
     it('should unregister NFC tag successfully', async () => {
+        controller.setCredentials(validMasterKey);
         await setupControllerVersion('10/125', '4.3.3');
 
         mockClientInstance.waitForPacket.mockResolvedValue({ opcode: BoksOpcode.NOTIFY_NFC_TAG_UNREGISTERED });
 
-        const result = await controller.unregisterNfcTag(validConfigKey, tagId);
+        const result = await controller.unregisterNfcTag(tagId);
 
         expect(mockClientInstance.send).toHaveBeenCalledTimes(1);
         expect(mockClientInstance.waitForPacket).toHaveBeenCalledWith(
@@ -262,10 +277,11 @@ describe('BoksController', () => {
   });
 
   describe('regenerateMasterKey', () => {
-    const configKey = '12345678';
+    // Current master key needs to be set
     const newKeyHex = '00112233445566778899AABBCCDDEEFF00112233445566778899AABBCCDDEEFF';
 
     it('should regenerate master key successfully', async () => {
+      controller.setCredentials(validMasterKey);
       const onProgress = vi.fn();
 
       // Mock onPacket to simulate progress and success
@@ -279,7 +295,7 @@ describe('BoksController', () => {
           return vi.fn(); // cleanup
       });
 
-      const result = await controller.regenerateMasterKey(configKey, newKeyHex, onProgress);
+      const result = await controller.regenerateMasterKey(newKeyHex, onProgress);
 
       expect(result).toBe(true);
       expect(mockClientInstance.send).toHaveBeenCalledTimes(2); // Part A and Part B
@@ -287,6 +303,7 @@ describe('BoksController', () => {
     });
 
     it('should handle regeneration failure', async () => {
+      controller.setCredentials(validMasterKey);
       mockClientInstance.onPacket.mockImplementation((callback: any) => {
           setTimeout(() => {
               callback({ opcode: BoksOpcode.NOTIFY_CODE_GENERATION_ERROR });
@@ -294,7 +311,7 @@ describe('BoksController', () => {
           return vi.fn();
       });
 
-      const result = await controller.regenerateMasterKey(configKey, newKeyHex);
+      const result = await controller.regenerateMasterKey(newKeyHex);
       expect(result).toBe(false);
     });
   });
