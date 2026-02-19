@@ -12,4 +12,10 @@ export class InvalidOpenCodePacket extends BoksRXPacket {
   parse(payload: Uint8Array) {
     super.parse(payload);
   }
+
+  static fromPayload(payload: Uint8Array): InvalidOpenCodePacket {
+    const packet = new InvalidOpenCodePacket();
+    packet.parse(payload);
+    return packet;
+  }
 }

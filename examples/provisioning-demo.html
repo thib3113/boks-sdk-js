@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boks Provisioning Demo</title>
+    <!-- Boks SDK (Local Build) -->
+    <script src="../dist/boks-sdk.js"></script>
+    <style>
+        body { font-family: sans-serif; max-width: 800px; margin: 2rem auto; padding: 0 1rem; }
+        .card { border: 1px solid #ccc; padding: 1rem; margin-bottom: 1rem; border-radius: 8px; }
+        button { padding: 0.5rem 1rem; cursor: pointer; margin-right: 0.5rem; }
+        input { padding: 0.5rem; width: 100%; box-sizing: border-box; margin-bottom: 0.5rem; }
+        label { display: block; margin-bottom: 0.25rem; font-weight: bold; }
+        #log { background: #f0f0f0; padding: 1rem; height: 300px; overflow-y: auto; font-family: monospace; }
+        .hidden { display: none; }
+        .row { display: flex; align-items: center; margin-bottom: 1rem; }
+        .row button { flex-shrink: 0; }
+        .row input { margin-bottom: 0; margin-right: 0.5rem; }
+    </style>
+</head>
+<body>
+    <h1>Boks Provisioning Demo</h1>
+
+    <div class="card">
+        <h3>1. Configuration</h3>
+        <label for="configKey">Configuration Key (Hex):</label>
+        <input type="text" id="configKey" placeholder="e.g. 0102030405060708" value="0000000000000000">
+
+        <label for="masterKey">New Master Key (32 bytes Hex):</label>
+        <div class="row">
+            <input type="text" id="masterKey" placeholder="Generated key will appear here" readonly>
+            <button id="genKeyBtn">Generate Random Key</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>2. Device Connection & Provisioning</h3>
+        <button id="connectBtn">Connect & Provision</button>
+        <button id="disconnectBtn" disabled>Disconnect</button>
+
+        <div id="statusArea" class="hidden" style="margin-top: 1rem;">
+            <p>Status: <strong id="statusText">Disconnected</strong></p>
+            <progress id="progressBar" value="0" max="100" style="width: 100%"></progress>
+            <span id="progressText">0%</span>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>Logs</h3>
+        <div id="log"></div>
+    </div>
+
+    <script>
+        const logEl = document.getElementById('log');
+        const configKeyInput = document.getElementById('configKey');
+        const masterKeyInput = document.getElementById('masterKey');
+        const genKeyBtn = document.getElementById('genKeyBtn');
+        const connectBtn = document.getElementById('connectBtn');
+        const disconnectBtn = document.getElementById('disconnectBtn');
+        const statusArea = document.getElementById('statusArea');
+        const statusText = document.getElementById('statusText');
+        const progressBar = document.getElementById('progressBar');
+        const progressText = document.getElementById('progressText');
+
+        let boksController = null;
+        let generatedKeyBytes = null;
+
+        // Helper to log messages
+        function log(msg, type = 'info') {
+            const div = document.createElement('div');
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+            div.style.color = type === 'error' ? 'red' : type === 'success' ? 'green' : 'black';
+            logEl.appendChild(div);
+            logEl.scrollTop = logEl.scrollHeight;
+            console.log(msg);
+        }
+
+        // Helper to convert buffer to hex string
+        function buf2hex(buffer) {
+            return [...new Uint8Array(buffer)]
+                .map(x => x.toString(16).padStart(2, '0'))
+                .join('');
+        }
+
+        // Generate Random Key using Web Crypto API
+        genKeyBtn.addEventListener('click', () => {
+            const array = new Uint8Array(32);
+            window.crypto.getRandomValues(array);
+            generatedKeyBytes = array;
+            masterKeyInput.value = buf2hex(array);
+            log('Generated new random 32-byte Master Key.', 'success');
+        });
+
+        // Connect and Provision
+        connectBtn.addEventListener('click', async () => {
+            if (!generatedKeyBytes) {
+                log('Please generate a Master Key first.', 'error');
+                return;
+            }
+
+            const configKey = configKeyInput.value.trim();
+            if (!configKey) {
+                log('Please enter a Configuration Key.', 'error');
+                return;
+            }
+
+            try {
+                log('Requesting Bluetooth Device...');
+                const device = await navigator.bluetooth.requestDevice({
+                    filters: [{ services: [BoksSDK.BOKS_SERVICE_UUID] }],
+                    optionalServices: [
+                        BoksSDK.BOKS_SERVICE_UUID,
+                        0x180F, // Battery
+                        0x180A  // Device Info
+                    ]
+                });
+
+                log(`Device selected: ${device.name}`);
+
+                // Initialize Controller
+                // Note: BoksController constructor accepts BoksClientOptions or BoksClient instance.
+                // We pass the device directly in options.
+                boksController = new BoksSDK.BoksController({
+                    device: device,
+                    logger: (level, event, context) => {
+                        if (level === 'error') log(`${event}: ${JSON.stringify(context)}`, 'error');
+                        else console.log(`[SDK:${level}]`, event, context);
+                    }
+                });
+
+                statusArea.classList.remove('hidden');
+                statusText.textContent = "Connecting...";
+                progressBar.value = 0;
+                progressText.textContent = "0%";
+
+                await boksController.connect();
+                log('Connected to device.', 'success');
+                statusText.textContent = "Connected. Starting Provisioning...";
+
+                connectBtn.disabled = true;
+                disconnectBtn.disabled = false;
+
+                // Start Provisioning (Regenerate Master Key)
+                log('Starting Master Key Regeneration...');
+                const success = await boksController.regenerateMasterKey(
+                    configKey,
+                    generatedKeyBytes,
+                    (progress) => {
+                        progressBar.value = progress;
+                        progressText.textContent = `${progress}%`;
+                        log(`Provisioning Progress: ${progress}%`);
+                    }
+                );
+
+                if (success) {
+                    log('Master Key Regenerated Successfully!', 'success');
+                    statusText.textContent = "Provisioning Complete";
+                } else {
+                    log('Master Key Regeneration Failed.', 'error');
+                    statusText.textContent = "Provisioning Failed";
+                }
+
+            } catch (err) {
+                log('Error: ' + err.message, 'error');
+                statusText.textContent = "Error: " + err.message;
+                connectBtn.disabled = false;
+            }
+        });
+
+        disconnectBtn.addEventListener('click', async () => {
+            if (boksController) {
+                try {
+                    await boksController.disconnect();
+                    log('Disconnected.', 'success');
+                } catch (err) {
+                    log('Disconnect error: ' + err.message, 'warn');
+                }
+            }
+            boksController = null;
+            statusText.textContent = "Disconnected";
+            connectBtn.disabled = false;
+            disconnectBtn.disabled = true;
+        });
+
+    </script>
+</body>
+</html>

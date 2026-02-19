@@ -18,4 +18,10 @@ export class NotifyCodeGenerationProgressPacket extends BoksRXPacket {
       this.progress = payload[0];
     }
   }
+
+  static fromPayload(payload: Uint8Array): NotifyCodeGenerationProgressPacket {
+    const packet = new NotifyCodeGenerationProgressPacket();
+    packet.parse(payload);
+    return packet;
+  }
 }

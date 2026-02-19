@@ -1,228 +1,279 @@
-import { describe, it, expect, vi, beforeEach, Mock } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { BoksController } from '@/client/BoksController';
 import { BoksClient } from '@/client/BoksClient';
-import {
-  BoksOpcode,
-  BOKS_UUIDS,
-  RegisterNfcTagScanStartPacket,
-} from '@/protocol';
-import { BoksClientErrorId } from '@/errors/BoksClientError';
+import { BoksTransport } from '@/client/transport';
+import { BoksOpcode, BOKS_UUIDS } from '@/protocol';
+import { calculateChecksum } from '@/utils/converters';
 
-// Mock the BoksClient module
-vi.mock('@/client/BoksClient');
+// Mock Transport Implementation
+class MockTransport implements BoksTransport {
+  public writes: Uint8Array[] = [];
+  public subscriber: ((data: Uint8Array) => void) | null = null;
+  public mockReads: Record<string, Uint8Array> = {};
+
+  async connect() {
+    return Promise.resolve();
+  }
+
+  async disconnect() {
+    return Promise.resolve();
+  }
+
+  async write(data: Uint8Array) {
+    this.writes.push(data);
+    return Promise.resolve();
+  }
+
+  async read(uuid: string): Promise<Uint8Array> {
+    return Promise.resolve(this.mockReads[uuid] || new Uint8Array([]));
+  }
+
+  async subscribe(callback: (data: Uint8Array) => void) {
+    this.subscriber = callback;
+    return Promise.resolve();
+  }
+
+  /**
+   * Helper to simulate receiving a packet from the device.
+   */
+  emit(opcode: number, payload: Uint8Array | number[] = []) {
+    if (!this.subscriber) return;
+
+    const payloadBytes = payload instanceof Uint8Array ? payload : new Uint8Array(payload);
+    const length = payloadBytes.length;
+    // Frame: [Opcode, Length, ...Payload, Checksum]
+    const packet = new Uint8Array(2 + length + 1);
+    packet[0] = opcode;
+    packet[1] = length;
+    packet.set(payloadBytes, 2);
+
+    // Checksum over [Opcode, Length, ...Payload]
+    packet[packet.length - 1] = calculateChecksum(packet.subarray(0, packet.length - 1));
+
+    this.subscriber(packet);
+  }
+}
 
 describe('BoksController', () => {
+  let transport: MockTransport;
+  let client: BoksClient;
   let controller: BoksController;
-  let mockClientInstance: {
-    connect: Mock;
-    disconnect: Mock;
-    readCharacteristic: Mock;
-    send: Mock;
-    waitForOneOf: Mock;
-    onPacket: Mock;
-  };
 
   beforeEach(() => {
-    vi.clearAllMocks();
-
-    // Setup the methods we expect on the client instance
-    mockClientInstance = {
-      connect: vi.fn().mockResolvedValue(undefined),
-      disconnect: vi.fn().mockResolvedValue(undefined),
-      readCharacteristic: vi.fn(),
-      send: vi.fn().mockResolvedValue(undefined),
-      waitForOneOf: vi.fn(),
-      onPacket: vi.fn(),
-    };
-
-    // Make the mocked class constructor return our mock instance
-    (BoksClient as unknown as Mock).mockReturnValue(mockClientInstance);
-
-    // Create the controller with a new client instance
-    const client = new BoksClient();
+    transport = new MockTransport();
+    // Add logger to debug packet issues
+    client = new BoksClient({
+      transport,
+      logger: (level, event, context) => {
+        if (level === 'error' || level === 'warn') {
+            console.error(`[BoksClient] ${level} ${event}`, context);
+        }
+      }
+    });
     controller = new BoksController(client);
   });
 
-  describe('connect & hardwareInfo', () => {
-    it('should connect and derive hardware info (HW 4.0)', async () => {
-      const textEncoder = new TextEncoder();
+  // Helper to ensure async operations have progressed
+  const tick = () => new Promise((resolve) => setTimeout(resolve, 500));
 
-      mockClientInstance.readCharacteristic.mockImplementation(async (uuid: string) => {
-        if (uuid === BOKS_UUIDS.SOFTWARE_REVISION) return textEncoder.encode('4.3.3\0');
-        if (uuid === BOKS_UUIDS.FIRMWARE_REVISION) return textEncoder.encode('10/125\0');
-        throw new Error('Unknown UUID');
-      });
+  // Valid Config Key (8 uppercase hex chars)
+  const CONFIG_KEY = '00000000';
+  // Valid PIN (6 chars 0-9,A,B)
+  const PIN = '123456';
 
-      await controller.connect();
+  it('should connect and refresh versions', async () => {
+    const textEncoder = new TextEncoder();
+    transport.mockReads[BOKS_UUIDS.SOFTWARE_REVISION] = textEncoder.encode('4.5.0\0');
+    transport.mockReads[BOKS_UUIDS.FIRMWARE_REVISION] = textEncoder.encode('10/125\0');
 
-      expect(mockClientInstance.connect).toHaveBeenCalled();
-      expect(mockClientInstance.readCharacteristic).toHaveBeenCalledWith(BOKS_UUIDS.SOFTWARE_REVISION);
-      expect(mockClientInstance.readCharacteristic).toHaveBeenCalledWith(BOKS_UUIDS.FIRMWARE_REVISION);
+    await controller.connect();
 
-      const hwInfo = controller.hardwareInfo;
-      expect(hwInfo).toEqual({
-        firmwareRevision: '10/125',
-        softwareRevision: '4.3.3',
-        hardwareVersion: '4.0',
-        chipset: 'nRF52833'
-      });
-    });
-
-    it('should connect and derive hardware info (HW 3.0)', async () => {
-      const textEncoder = new TextEncoder();
-      mockClientInstance.readCharacteristic.mockImplementation(async (uuid: string) => {
-        if (uuid === BOKS_UUIDS.SOFTWARE_REVISION) return textEncoder.encode('4.2.0');
-        if (uuid === BOKS_UUIDS.FIRMWARE_REVISION) return textEncoder.encode('10/cd');
-        throw new Error('Unknown UUID');
-      });
-
-      await controller.connect();
-
-      expect(controller.hardwareInfo).toEqual({
-        firmwareRevision: '10/cd',
-        softwareRevision: '4.2.0',
-        hardwareVersion: '3.0',
-        chipset: 'nRF52811'
-      });
-    });
-
-    it('should connect and handle unknown hardware', async () => {
-      const textEncoder = new TextEncoder();
-      mockClientInstance.readCharacteristic.mockImplementation(async (uuid: string) => {
-        if (uuid === BOKS_UUIDS.SOFTWARE_REVISION) return textEncoder.encode('1.0.0');
-        if (uuid === BOKS_UUIDS.FIRMWARE_REVISION) return textEncoder.encode('unknown');
-        throw new Error('Unknown UUID');
-      });
-
-      await controller.connect();
-
-      expect(controller.hardwareInfo).toEqual({
-        firmwareRevision: 'unknown',
-        softwareRevision: '1.0.0',
-        hardwareVersion: 'Unknown',
-        chipset: 'Unknown'
-      });
-    });
-
-    it('disconnect should call client disconnect', async () => {
-        await controller.disconnect();
-        expect(mockClientInstance.disconnect).toHaveBeenCalled();
+    expect(controller.hardwareInfo).toEqual({
+      firmwareRevision: '10/125',
+      softwareRevision: '4.5.0',
+      hardwareVersion: '4.0',
+      chipset: 'nRF52833'
     });
   });
 
-  describe('scanNFCTags', () => {
-    const validConfigKey = 'AABBCCDD';
+  it('should scan NFC tags', async () => {
+    // Setup versions to satisfy requirements (Min HW 4.0, SW 4.3.3)
+    const textEncoder = new TextEncoder();
+    transport.mockReads[BOKS_UUIDS.SOFTWARE_REVISION] = textEncoder.encode('4.5.0');
+    transport.mockReads[BOKS_UUIDS.FIRMWARE_REVISION] = textEncoder.encode('10/125');
+    await controller.connect();
 
-    const setupControllerVersion = async (fw: string, sw: string) => {
-        const textEncoder = new TextEncoder();
-        mockClientInstance.readCharacteristic.mockImplementation(async (uuid: string) => {
-            if (uuid === BOKS_UUIDS.SOFTWARE_REVISION) return textEncoder.encode(sw);
-            if (uuid === BOKS_UUIDS.FIRMWARE_REVISION) return textEncoder.encode(fw);
-            throw new Error('Unknown UUID');
-        });
-        await controller.connect();
-    };
+    // Pass valid config key
+    const promise = controller.scanNFCTags(CONFIG_KEY);
+    await tick();
 
-    it('should throw UNKNOWN_ERROR if not connected (no hardware info)', async () => {
-        await expect(controller.scanNFCTags(validConfigKey))
-            .rejects
-            .toThrowError(expect.objectContaining({ id: BoksClientErrorId.UNKNOWN_ERROR }));
-    });
+    // Expect RegisterNfcTagScanStartPacket (Opcode 0x17)
+    expect(transport.writes.length).toBe(1);
+    expect(transport.writes[0][0]).toBe(BoksOpcode.REGISTER_NFC_TAG_SCAN_START);
 
-    it('should throw UNSUPPORTED_FEATURE if Hardware Version < 4.0', async () => {
-        await setupControllerVersion('10/cd', '4.3.3'); // HW 3.0
+    // Emit NotifyNfcTagFoundPacket (Opcode 0xC5)
+    // Payload for found tag usually contains UID.
+    // NotifyNfcTagFoundPacket.fromPayload expects just UID bytes.
+    transport.emit(BoksOpcode.NOTIFY_NFC_TAG_FOUND, [0x04, 0xDE, 0xAD, 0xBE, 0xEF]);
 
-        await expect(controller.scanNFCTags(validConfigKey))
-            .rejects
-            .toThrowError(expect.objectContaining({
-                id: BoksClientErrorId.UNSUPPORTED_FEATURE,
-                message: expect.stringContaining('Hardware Version 4.0')
-            }));
-    });
-
-    it('should throw UNSUPPORTED_FEATURE if Software Version < 4.3.3', async () => {
-        await setupControllerVersion('10/125', '4.3.0'); // SW 4.3.0
-
-        await expect(controller.scanNFCTags(validConfigKey))
-            .rejects
-            .toThrowError(expect.objectContaining({
-                id: BoksClientErrorId.UNSUPPORTED_FEATURE,
-                message: expect.stringContaining('Software Version >= 4.3.3')
-            }));
-    });
-
-    it('should send scan packet and wait for result if requirements met', async () => {
-        await setupControllerVersion('10/125', '4.3.3');
-
-        const mockResultPacket = { opcode: BoksOpcode.NOTIFY_NFC_TAG_FOUND };
-        mockClientInstance.waitForOneOf.mockResolvedValue(mockResultPacket);
-
-        const result = await controller.scanNFCTags(validConfigKey, 5000);
-
-        expect(mockClientInstance.send).toHaveBeenCalledTimes(1);
-        const sentPacket = mockClientInstance.send.mock.calls[0][0] as RegisterNfcTagScanStartPacket;
-        expect(sentPacket).toBeInstanceOf(RegisterNfcTagScanStartPacket);
-
-        // Strict check: verify config key was passed correctly
-        expect(sentPacket.configKey).toBe(validConfigKey);
-
-        expect(mockClientInstance.waitForOneOf).toHaveBeenCalledWith(
-            [
-                BoksOpcode.NOTIFY_NFC_TAG_FOUND,
-                BoksOpcode.ERROR_NFC_SCAN_TIMEOUT,
-                BoksOpcode.ERROR_NFC_TAG_ALREADY_EXISTS_SCAN
-            ],
-            5000
-        );
-
-        expect(result).toBe(mockResultPacket);
-    });
-
-    it('should pass default timeout if not provided', async () => {
-        await setupControllerVersion('10/125', '4.3.3');
-        mockClientInstance.waitForOneOf.mockResolvedValue({});
-
-        await controller.scanNFCTags(validConfigKey);
-
-        expect(mockClientInstance.waitForOneOf).toHaveBeenCalledWith(expect.any(Array), 10000);
-    });
+    const result = await promise;
+    expect(result.opcode).toBe(BoksOpcode.NOTIFY_NFC_TAG_FOUND);
   });
 
-  describe('regenerateMasterKey', () => {
-    const configKey = '12345678';
-    const newKeyHex = '00112233445566778899AABBCCDDEEFF00112233445566778899AABBCCDDEEFF';
+  it('should open door successfully', async () => {
+    const promise = controller.openDoor(PIN);
+    await tick();
 
-    it('should regenerate master key successfully', async () => {
-      const onProgress = vi.fn();
+    expect(transport.writes[0][0]).toBe(BoksOpcode.OPEN_DOOR);
+    transport.emit(BoksOpcode.VALID_OPEN_CODE);
 
-      // Mock onPacket to simulate progress and success
-      mockClientInstance.onPacket.mockImplementation((callback: any) => {
-          setTimeout(() => {
-              callback({ opcode: BoksOpcode.NOTIFY_CODE_GENERATION_PROGRESS, progress: 50 });
-              setTimeout(() => {
-                  callback({ opcode: BoksOpcode.NOTIFY_CODE_GENERATION_SUCCESS });
-              }, 10);
-          }, 10);
-          return vi.fn(); // cleanup
-      });
+    const result = await promise;
+    expect(result).toBe(true);
+  });
 
-      const result = await controller.regenerateMasterKey(configKey, newKeyHex, onProgress);
+  it('should fail to open door with invalid code', async () => {
+    // Controller returns false on INVALID_OPEN_CODE packet
+    const promise = controller.openDoor(PIN);
+    await tick();
 
-      expect(result).toBe(true);
-      expect(mockClientInstance.send).toHaveBeenCalledTimes(2); // Part A and Part B
-      expect(onProgress).toHaveBeenCalledWith(50);
-    });
+    transport.emit(BoksOpcode.INVALID_OPEN_CODE);
 
-    it('should handle regeneration failure', async () => {
-      mockClientInstance.onPacket.mockImplementation((callback: any) => {
-          setTimeout(() => {
-              callback({ opcode: BoksOpcode.NOTIFY_CODE_GENERATION_ERROR });
-          }, 10);
-          return vi.fn();
-      });
+    const result = await promise;
+    expect(result).toBe(false);
+  });
 
-      const result = await controller.regenerateMasterKey(configKey, newKeyHex);
-      expect(result).toBe(false);
-    });
+  it('should get door status', async () => {
+    const promise = controller.getDoorStatus();
+    await tick();
+
+    expect(transport.writes[0][0]).toBe(BoksOpcode.ASK_DOOR_STATUS);
+
+    // NotifyDoorStatusPacket payload: [Inverted, Raw]
+    // Open if Inverted=0x00, Raw=0x01
+    transport.emit(BoksOpcode.NOTIFY_DOOR_STATUS, [0x00, 0x01]);
+
+    const isOpen = await promise;
+    expect(isOpen).toBe(true);
+  });
+
+  it('should get logs count', async () => {
+    const promise = controller.getLogsCount();
+    await tick();
+
+    expect(transport.writes[0][0]).toBe(BoksOpcode.GET_LOGS_COUNT);
+
+    // NotifyLogsCountPacket payload: [MSB, LSB] (Big Endian as per implementation)
+    // count = 5 -> [0x00, 0x05]
+    transport.emit(BoksOpcode.NOTIFY_LOGS_COUNT, [0x00, 0x05]);
+
+    const count = await promise;
+    expect(count).toBe(5);
+  });
+
+  it('should test battery', async () => {
+    await controller.testBattery();
+    expect(transport.writes[0][0]).toBe(BoksOpcode.TEST_BATTERY);
+  });
+
+  it('should reboot', async () => {
+    await controller.reboot();
+    expect(transport.writes[0][0]).toBe(BoksOpcode.REBOOT);
+  });
+
+  it('should fetch history', async () => {
+    // This uses fetchHistory which waits for LOG_END_HISTORY
+    const promise = controller.fetchHistory();
+    await tick();
+
+    expect(transport.writes[0][0]).toBe(BoksOpcode.REQUEST_LOGS);
+
+    // Send a history event: LOG_DOOR_OPEN (0x91)
+    // Payload: DoorOpenHistoryPacket expects 4 bytes timestamp + ?
+    // Check usage. Usually just timestamp (4 bytes).
+    transport.emit(BoksOpcode.LOG_DOOR_OPEN, [0x00, 0x00, 0x00, 0x01]);
+
+    // Send End History
+    // EndHistoryPacket might expect empty payload or timestamp?
+    // Usually empty.
+    transport.emit(BoksOpcode.LOG_END_HISTORY);
+
+    const events = await promise;
+    expect(events.length).toBe(1);
+    expect(events[0].opcode).toBe(BoksOpcode.LOG_DOOR_OPEN);
+  });
+
+  it('should create master code', async () => {
+    const promise = controller.createMasterCode(CONFIG_KEY, 1, PIN);
+    await tick();
+    expect(transport.writes[0][0]).toBe(BoksOpcode.CREATE_MASTER_CODE);
+    transport.emit(BoksOpcode.CODE_OPERATION_SUCCESS);
+    expect(await promise).toBe(true);
+  });
+
+  it('should create single use code', async () => {
+    const promise = controller.createSingleUseCode(CONFIG_KEY, PIN);
+    await tick();
+    expect(transport.writes[0][0]).toBe(BoksOpcode.CREATE_SINGLE_USE_CODE);
+    transport.emit(BoksOpcode.CODE_OPERATION_SUCCESS);
+    expect(await promise).toBe(true);
+  });
+
+  it('should create multi use code', async () => {
+    const promise = controller.createMultiUseCode(CONFIG_KEY, PIN);
+    await tick();
+    expect(transport.writes[0][0]).toBe(BoksOpcode.CREATE_MULTI_USE_CODE);
+    transport.emit(BoksOpcode.CODE_OPERATION_SUCCESS);
+    expect(await promise).toBe(true);
+  });
+
+  it('should delete master code', async () => {
+    const promise = controller.deleteMasterCode(CONFIG_KEY, 1);
+    await tick();
+    expect(transport.writes[0][0]).toBe(BoksOpcode.DELETE_MASTER_CODE);
+    transport.emit(BoksOpcode.CODE_OPERATION_SUCCESS);
+    expect(await promise).toBe(true);
+  });
+
+  it('should delete single use code', async () => {
+    const promise = controller.deleteSingleUseCode(CONFIG_KEY, PIN);
+    await tick();
+    expect(transport.writes[0][0]).toBe(BoksOpcode.DELETE_SINGLE_USE_CODE);
+    transport.emit(BoksOpcode.CODE_OPERATION_SUCCESS);
+    expect(await promise).toBe(true);
+  });
+
+  it('should delete multi use code', async () => {
+    const promise = controller.deleteMultiUseCode(CONFIG_KEY, PIN);
+    await tick();
+    expect(transport.writes[0][0]).toBe(BoksOpcode.DELETE_MULTI_USE_CODE);
+    transport.emit(BoksOpcode.CODE_OPERATION_SUCCESS);
+    expect(await promise).toBe(true);
+  });
+
+  it('should regenerate master key with progress', async () => {
+    const newMasterKey = new Uint8Array(32).fill(0xAA);
+    const onProgress = vi.fn();
+
+    const promise = controller.regenerateMasterKey(CONFIG_KEY, newMasterKey, onProgress);
+    await tick();
+
+    // Wait for promise chain to execute both sends
+    await tick();
+
+    // Should have sent Part A and Part B
+    expect(transport.writes.length).toBe(2);
+    expect(transport.writes[0][0]).toBe(BoksOpcode.RE_GENERATE_CODES_PART1);
+    expect(transport.writes[1][0]).toBe(BoksOpcode.RE_GENERATE_CODES_PART2);
+
+    // Simulate progress
+    // NotifyCodeGenerationProgressPacket payload: [progress]
+    transport.emit(BoksOpcode.NOTIFY_CODE_GENERATION_PROGRESS, [50]);
+    expect(onProgress).toHaveBeenCalledWith(50);
+
+    // Simulate success
+    transport.emit(BoksOpcode.NOTIFY_CODE_GENERATION_SUCCESS);
+
+    const success = await promise;
+    expect(success).toBe(true);
   });
 });

@@ -18,4 +18,10 @@ export class NotifyNfcTagFoundPacket extends BoksRXPacket {
     super.parse(payload);
     this.uid = bytesToHex(payload);
   }
+
+  static fromPayload(payload: Uint8Array): NotifyNfcTagFoundPacket {
+    const packet = new NotifyNfcTagFoundPacket();
+    packet.parse(payload);
+    return packet;
+  }
 }

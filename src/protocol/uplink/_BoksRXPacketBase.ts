@@ -19,4 +19,16 @@ export abstract class BoksRXPacket extends BoksPacket {
   toPayload() {
     return this.rawPayload;
   }
+
+  /**
+   * Default factory implementation for RX packets.
+   * Instantiates the packet and parses the payload.
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static fromPayload(payload: Uint8Array): any {
+    // @ts-expect-error: Instantiate the subclass
+    const packet = new this();
+    packet.parse(payload);
+    return packet;
+  }
 }

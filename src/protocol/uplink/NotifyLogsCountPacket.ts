@@ -19,4 +19,10 @@ export class NotifyLogsCountPacket extends BoksRXPacket {
       this.count = view.getUint16(0, false); // Big Endian
     }
   }
+
+  static fromPayload(payload: Uint8Array): NotifyLogsCountPacket {
+    const packet = new NotifyLogsCountPacket();
+    packet.parse(payload);
+    return packet;
+  }
 }

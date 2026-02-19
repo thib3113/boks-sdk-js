@@ -12,4 +12,10 @@ export class NotifyCodeGenerationSuccessPacket extends BoksRXPacket {
   parse(payload: Uint8Array) {
     super.parse(payload);
   }
+
+  static fromPayload(payload: Uint8Array): NotifyCodeGenerationSuccessPacket {
+    const packet = new NotifyCodeGenerationSuccessPacket();
+    packet.parse(payload);
+    return packet;
+  }
 }

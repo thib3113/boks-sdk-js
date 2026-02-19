@@ -15,4 +15,10 @@ export class DoorOpenHistoryPacket extends BoksHistoryEvent {
   parse(payload: Uint8Array) {
     super.parse(payload);
   }
+
+  static fromPayload(payload: Uint8Array): DoorOpenHistoryPacket {
+    const packet = new DoorOpenHistoryPacket();
+    packet.parse(payload);
+    return packet;
+  }
 }

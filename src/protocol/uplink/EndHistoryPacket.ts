@@ -12,4 +12,10 @@ export class EndHistoryPacket extends BoksRXPacket {
   parse(payload: Uint8Array) {
     super.parse(payload);
   }
+
+  static fromPayload(payload: Uint8Array): EndHistoryPacket {
+    const packet = new EndHistoryPacket();
+    packet.parse(payload);
+    return packet;
+  }
 }

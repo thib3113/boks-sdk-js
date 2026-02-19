@@ -12,4 +12,10 @@ export class OperationSuccessPacket extends BoksRXPacket {
   parse(payload: Uint8Array) {
     super.parse(payload);
   } // No data
+
+  static fromPayload(payload: Uint8Array): OperationSuccessPacket {
+    const packet = new OperationSuccessPacket();
+    packet.parse(payload);
+    return packet;
+  }
 }

@@ -22,4 +22,10 @@ export class NotifyDoorStatusPacket extends BoksRXPacket {
       this.isOpen = raw === 0x01 && inverted === 0x00;
     }
   }
+
+  static fromPayload(payload: Uint8Array): NotifyDoorStatusPacket {
+    const packet = new NotifyDoorStatusPacket();
+    packet.parse(payload);
+    return packet;
+  }
 }
