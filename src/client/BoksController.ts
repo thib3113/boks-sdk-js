@@ -3,7 +3,9 @@ import {
   BoksOpcode,
   BOKS_UUIDS,
   RegisterNfcTagScanStartPacket,
-  NotifyNfcTagFoundPacket
+  NotifyNfcTagFoundPacket,
+  ErrorNfcScanTimeoutPacket,
+  ErrorNfcTagAlreadyExistsScanPacket,
 } from '@/protocol';
 import { BoksClientError, BoksClientErrorId } from '@/errors/BoksClientError';
 
@@ -16,6 +18,7 @@ export interface BoksHardwareInfo {
 
 interface BoksRequirements {
   minHw?: string;
+  minSw?: string;
   featureName: string;
 }
 
@@ -98,6 +101,27 @@ export class BoksController {
   }
 
   /**
+   * Compares two semantic version strings.
+   * Returns:
+   *  1 if v1 > v2
+   * -1 if v1 < v2
+   *  0 if v1 === v2
+   */
+  private compareSemVer(v1: string, v2: string): number {
+    const p1 = v1.split('.').map(Number);
+    const p2 = v2.split('.').map(Number);
+    const len = Math.max(p1.length, p2.length);
+
+    for (let i = 0; i < len; i++) {
+      const n1 = p1[i] || 0;
+      const n2 = p2[i] || 0;
+      if (n1 > n2) return 1;
+      if (n1 < n2) return -1;
+    }
+    return 0;
+  }
+
+  /**
    * Verifies if the device meets the requirements for a specific feature.
    */
   private checkRequirements(requirements: BoksRequirements): void {
@@ -109,6 +133,7 @@ export class BoksController {
       );
     }
 
+    // Hardware Version Check (string equality for now as these are often discrete revisions)
     if (requirements.minHw && this._hardwareInfo.hardwareVersion !== requirements.minHw) {
       throw new BoksClientError(
         BoksClientErrorId.UNSUPPORTED_FEATURE,
@@ -119,22 +144,43 @@ export class BoksController {
         }
       );
     }
+
+    // Software Version Check (SemVer comparison)
+    if (requirements.minSw) {
+      const comparison = this.compareSemVer(
+        this._hardwareInfo.softwareRevision,
+        requirements.minSw
+      );
+      if (comparison < 0) {
+        throw new BoksClientError(
+          BoksClientErrorId.UNSUPPORTED_FEATURE,
+          `${requirements.featureName} requires Software Version >= ${requirements.minSw} (detected ${this._hardwareInfo.softwareRevision})`,
+          {
+            required: requirements,
+            actual: this._hardwareInfo
+          }
+        );
+      }
+    }
   }
 
   /**
    * Starts an NFC tag scan sequence.
-   * Requires HW >= 4.0.
+   * Requires HW >= 4.0 and SW >= 4.3.3.
    *
    * @param configKey The 8-character hex configuration key required for authentication.
    * @param timeoutMs Timeout in milliseconds for the scan operation.
-   * @returns The scanned NFC tag packet.
+   * @returns The resulting packet: Found, Timeout, or Already Exists.
    */
   async scanNFCTags(
     configKey: string,
     timeoutMs: number = 10000
-  ): Promise<NotifyNfcTagFoundPacket> {
+  ): Promise<
+    NotifyNfcTagFoundPacket | ErrorNfcScanTimeoutPacket | ErrorNfcTagAlreadyExistsScanPacket
+  > {
     this.checkRequirements({
       minHw: '4.0',
+      minSw: '4.3.3',
       featureName: 'NFC Scan'
     });
 
@@ -142,10 +188,15 @@ export class BoksController {
     // 0x17: RegisterNfcTagScanStartPacket
     await this.client.send(new RegisterNfcTagScanStartPacket(configKey));
 
-    // Wait for notification
-    // 0xC5: NotifyNfcTagFoundPacket
-    return this.client.waitForPacket<NotifyNfcTagFoundPacket>(
-      BoksOpcode.NOTIFY_NFC_TAG_FOUND,
+    // Wait for one of the possible outcomes
+    return this.client.waitForOneOf<
+      NotifyNfcTagFoundPacket | ErrorNfcScanTimeoutPacket | ErrorNfcTagAlreadyExistsScanPacket
+    >(
+      [
+        BoksOpcode.NOTIFY_NFC_TAG_FOUND, // 0xC5
+        BoksOpcode.ERROR_NFC_SCAN_TIMEOUT, // 0xC7
+        BoksOpcode.ERROR_NFC_TAG_ALREADY_EXISTS_SCAN // 0xC6
+      ],
       timeoutMs
     );
   }
