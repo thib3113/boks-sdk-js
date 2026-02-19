@@ -104,7 +104,11 @@ export enum BoksOpcode {
 /**
  * Bluetooth UUIDs for Boks Services and Characteristics
  */
+export const BOKS_SERVICE_UUID = 'a7630001-f491-4f21-95ea-846ba586e361';
+export const DFU_SERVICE_UUID = 0xFE59;
 export const BOKS_UUIDS = {
+  DFU_SERVICE: '0000fe59-0000-1000-8000-00805f9b34fb',
+  DFU_CONTROL_POINT: '8ec90001-f315-4f60-9fb8-838830daea50',
   SERVICE: 'a7630001-f491-4f21-95ea-846ba586e361',
   WRITE: 'a7630002-f491-4f21-95ea-846ba586e361',
   NOTIFY: 'a7630003-f491-4f21-95ea-846ba586e361',

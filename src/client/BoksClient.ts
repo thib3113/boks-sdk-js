@@ -38,6 +38,7 @@ export type BoksLogger = <K extends keyof BoksLogEvents>(
 export interface BoksClientOptions {
   transport?: BoksTransport;
   logger?: BoksLogger;
+  device?: BluetoothDevice;
 }
 
 /**
@@ -54,18 +55,9 @@ export class BoksClient {
   private listeners: Array<(packet: BoksPacket) => void> = [];
   private commandQueue: Promise<void> = Promise.resolve();
 
-  constructor(optionsOrTransport?: BoksClientOptions | BoksTransport) {
-    let transport: BoksTransport | undefined;
-
-    if (optionsOrTransport && 'transport' in optionsOrTransport) {
-      transport = optionsOrTransport.transport;
-      this.logger = optionsOrTransport.logger;
-    } else {
-      transport = optionsOrTransport as BoksTransport;
-    }
-
-    if (transport) {
-      this.transport = transport;
+  constructor(options?: BoksClientOptions) {
+    if (options?.transport) {
+      this.transport = options.transport;
     } else {
       if (typeof navigator === 'undefined' || !navigator.bluetooth) {
         throw new BoksClientError(
@@ -73,7 +65,11 @@ export class BoksClient {
           'No transport provided and Web Bluetooth is not supported.'
         );
       }
-      this.transport = new WebBluetoothTransport();
+      this.transport = new WebBluetoothTransport(options?.device);
+    }
+
+    if (options?.logger) {
+      this.logger = options.logger;
     }
   }
 
@@ -117,6 +113,10 @@ export class BoksClient {
    * Reads detailed battery statistics (custom Boks characteristic).
    * @returns Battery stats object or undefined if unreliable.
    */
+  async getBatteryStats(): Promise<BoksBatteryStats | undefined> {
+    return fetchBatteryStats(this.transport);
+  }
+
   /**
    * Reads data from a specific BLE characteristic.
    * @param uuid The UUID of the characteristic to read.
@@ -124,10 +124,6 @@ export class BoksClient {
    */
   async readCharacteristic(uuid: string): Promise<Uint8Array> {
     return this.transport.read(uuid);
-  }
-
-  async getBatteryStats(): Promise<BoksBatteryStats | undefined> {
-    return fetchBatteryStats(this.transport);
   }
 
   /**
