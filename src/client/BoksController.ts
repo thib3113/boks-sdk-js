@@ -33,7 +33,14 @@ import {
   OperationErrorPacket,
   RegeneratePartAPacket,
   RegeneratePartBPacket,
-  NotifyCodeGenerationProgressPacket
+  NotifyCodeGenerationProgressPacket,
+  ReactivateCodePacket,
+  MasterCodeEditPacket,
+  SetConfigurationPacket,
+  MultiToSingleCodePacket,
+  SingleToMultiCodePacket,
+  NotifySetConfigurationSuccessPacket,
+  BoksCodeType
 } from '@/protocol';
 import { BoksClientError, BoksClientErrorId } from '@/errors/BoksClientError';
 import { hexToBytes, bytesToHex } from '@/utils/converters';
@@ -43,6 +50,11 @@ export interface BoksHardwareInfo {
   softwareRevision: string; // Application version (e.g. "4.2.0")
   hardwareVersion: string; // Deduced HW version (e.g. "4.0")
   chipset: string; // Deduced chipset (e.g. "nRF52833")
+}
+
+export interface NfcScanResult {
+  tagId: string;
+  register: () => Promise<boolean>;
 }
 
 interface BoksRequirements {
@@ -246,13 +258,10 @@ export class BoksController {
    * Requires HW >= 4.0 and SW >= 4.3.3.
    *
    * @param timeoutMs Timeout in milliseconds for the scan operation.
-   * @returns The resulting packet: Found, Timeout, or Already Exists.
+   * @returns A promise resolving to an NfcScanResult containing the tagId and a register method.
+   * @throws BoksClientError if timeout occurs or tag already exists.
    */
-  async scanNFCTags(
-    timeoutMs: number = 10000
-  ): Promise<
-    NotifyNfcTagFoundPacket | ErrorNfcScanTimeoutPacket | ErrorNfcTagAlreadyExistsScanPacket
-  > {
+  async scanNFCTags(timeoutMs: number = 10000): Promise<NfcScanResult> {
     const configKey = this.getConfigKeyOrThrow();
     this.checkRequirements({
       minHw: '4.0',
@@ -265,7 +274,7 @@ export class BoksController {
     await this.client.send(new RegisterNfcTagScanStartPacket(configKey));
 
     // Wait for one of the possible outcomes
-    return this.client.waitForOneOf<
+    const result = await this.client.waitForOneOf<
       NotifyNfcTagFoundPacket | ErrorNfcScanTimeoutPacket | ErrorNfcTagAlreadyExistsScanPacket
     >(
       [
@@ -274,6 +283,23 @@ export class BoksController {
         BoksOpcode.ERROR_NFC_TAG_ALREADY_EXISTS_SCAN // 0xC6
       ],
       timeoutMs
+    );
+
+    if (result.opcode === BoksOpcode.NOTIFY_NFC_TAG_FOUND) {
+      const foundPacket = result as NotifyNfcTagFoundPacket;
+      return {
+        tagId: foundPacket.uid,
+        register: () => this.registerNfcTag(foundPacket.uid)
+      };
+    } else if (result.opcode === BoksOpcode.ERROR_NFC_SCAN_TIMEOUT) {
+      throw new BoksClientError(BoksClientErrorId.TIMEOUT, 'NFC Scan timed out');
+    } else if (result.opcode === BoksOpcode.ERROR_NFC_TAG_ALREADY_EXISTS_SCAN) {
+      throw new BoksClientError(BoksClientErrorId.ALREADY_EXISTS, 'NFC Tag already exists');
+    }
+
+    throw new BoksClientError(
+      BoksClientErrorId.UNKNOWN_ERROR,
+      `Unexpected packet during scan: ${result.opcode}`
     );
   }
 
@@ -462,6 +488,71 @@ export class BoksController {
   async deleteMultiUseCode(pin: string): Promise<boolean> {
     const configKey = this.getConfigKeyOrThrow();
     await this.client.send(new DeleteMultiUseCodePacket(configKey, pin));
+    const result = await this.client.waitForOneOf<OperationSuccessPacket | OperationErrorPacket>([
+      BoksOpcode.CODE_OPERATION_SUCCESS,
+      BoksOpcode.CODE_OPERATION_ERROR
+    ]);
+    return result.opcode === BoksOpcode.CODE_OPERATION_SUCCESS;
+  }
+
+  /**
+   * Reactivates a disabled code.
+   * @param pin The PIN code to reactivate.
+   */
+  async reactivateCode(pin: string): Promise<boolean> {
+    const configKey = this.getConfigKeyOrThrow();
+    await this.client.send(new ReactivateCodePacket(configKey, pin));
+    const result = await this.client.waitForOneOf<OperationSuccessPacket | OperationErrorPacket>([
+      BoksOpcode.CODE_OPERATION_SUCCESS,
+      BoksOpcode.CODE_OPERATION_ERROR
+    ]);
+    return result.opcode === BoksOpcode.CODE_OPERATION_SUCCESS;
+  }
+
+  /**
+   * Edits a master code at the specified index.
+   * @param index The index of the master code (0-9).
+   * @param newPin The new PIN code.
+   */
+  async editMasterCode(index: number, newPin: string): Promise<boolean> {
+    const configKey = this.getConfigKeyOrThrow();
+    await this.client.send(new MasterCodeEditPacket(configKey, index, newPin));
+    const result = await this.client.waitForOneOf<OperationSuccessPacket | OperationErrorPacket>([
+      BoksOpcode.CODE_OPERATION_SUCCESS,
+      BoksOpcode.CODE_OPERATION_ERROR
+    ]);
+    return result.opcode === BoksOpcode.CODE_OPERATION_SUCCESS;
+  }
+
+  /**
+   * Sets a configuration parameter.
+   * @param params The configuration parameters (type and value).
+   */
+  async setConfiguration(params: { type: number; value: boolean }): Promise<boolean> {
+    const configKey = this.getConfigKeyOrThrow();
+    await this.client.send(new SetConfigurationPacket(configKey, params.type, params.value));
+    const result = await this.client.waitForOneOf<
+      NotifySetConfigurationSuccessPacket | OperationErrorPacket
+    >([BoksOpcode.NOTIFY_SET_CONFIGURATION_SUCCESS, BoksOpcode.CODE_OPERATION_ERROR]);
+    return result.opcode === BoksOpcode.NOTIFY_SET_CONFIGURATION_SUCCESS;
+  }
+
+  /**
+   * Converts a code type (Single <-> Multi).
+   * @param pin The PIN code to convert.
+   * @param targetType The target type (Single or Multi).
+   */
+  async convertCodeType(pin: string, targetType: BoksCodeType): Promise<boolean> {
+    const configKey = this.getConfigKeyOrThrow();
+
+    if (targetType === BoksCodeType.Multi) {
+      // Convert Single to Multi
+      await this.client.send(new SingleToMultiCodePacket(configKey, pin));
+    } else {
+      // Convert Multi to Single
+      await this.client.send(new MultiToSingleCodePacket(configKey, pin));
+    }
+
     const result = await this.client.waitForOneOf<OperationSuccessPacket | OperationErrorPacket>([
       BoksOpcode.CODE_OPERATION_SUCCESS,
       BoksOpcode.CODE_OPERATION_ERROR

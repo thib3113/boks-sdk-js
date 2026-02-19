@@ -12,6 +12,12 @@ import {
   DeleteMasterCodePacket,
   DeleteSingleUseCodePacket,
   DeleteMultiUseCodePacket,
+  ReactivateCodePacket,
+  MasterCodeEditPacket,
+  SetConfigurationPacket,
+  MultiToSingleCodePacket,
+  SingleToMultiCodePacket,
+  BoksCodeType
 } from '@/protocol';
 import { BoksClientErrorId } from '@/errors/BoksClientError';
 
@@ -310,11 +316,11 @@ describe('BoksController', () => {
             }));
       });
 
-      it('should send scan packet and wait for result', async () => {
+      it('should return NfcScanResult on successful scan', async () => {
         controller.setCredentials(validMasterKey);
         await setupControllerVersion('10/125', '4.3.3');
 
-        const mockResultPacket = { opcode: BoksOpcode.NOTIFY_NFC_TAG_FOUND };
+        const mockResultPacket = { opcode: BoksOpcode.NOTIFY_NFC_TAG_FOUND, uid: '01020304' };
         mockClientInstance.waitForOneOf.mockResolvedValue(mockResultPacket);
 
         const result = await controller.scanNFCTags(5000);
@@ -332,7 +338,37 @@ describe('BoksController', () => {
             ],
             5000
         );
-        expect(result).toBe(mockResultPacket);
+
+        expect(result).toHaveProperty('tagId', '01020304');
+        expect(result).toHaveProperty('register');
+
+        // Test register method
+        mockClientInstance.waitForOneOf.mockResolvedValueOnce({ opcode: BoksOpcode.NOTIFY_NFC_TAG_REGISTERED });
+        await expect(result.register()).resolves.toBe(true);
+        // Expect one more send call for register
+        expect(mockClientInstance.send).toHaveBeenCalledTimes(2);
+      });
+
+      it('should throw TIMEOUT error if scan times out', async () => {
+        controller.setCredentials(validMasterKey);
+        await setupControllerVersion('10/125', '4.3.3');
+
+        mockClientInstance.waitForOneOf.mockResolvedValue({ opcode: BoksOpcode.ERROR_NFC_SCAN_TIMEOUT });
+
+        await expect(controller.scanNFCTags(5000))
+            .rejects
+            .toThrowError(expect.objectContaining({ id: BoksClientErrorId.TIMEOUT }));
+      });
+
+      it('should throw ALREADY_EXISTS error if tag already exists', async () => {
+        controller.setCredentials(validMasterKey);
+        await setupControllerVersion('10/125', '4.3.3');
+
+        mockClientInstance.waitForOneOf.mockResolvedValue({ opcode: BoksOpcode.ERROR_NFC_TAG_ALREADY_EXISTS_SCAN });
+
+        await expect(controller.scanNFCTags(5000))
+            .rejects
+            .toThrowError(expect.objectContaining({ id: BoksClientErrorId.ALREADY_EXISTS }));
       });
     });
 
@@ -456,6 +492,93 @@ describe('BoksController', () => {
 
       const result = await controller.initialize(seed);
       expect(result).toBe(false);
+    });
+  });
+
+  describe('Advanced Admin Features', () => {
+    beforeEach(() => {
+      controller.setCredentials(validMasterKey);
+    });
+
+    describe('reactivateCode', () => {
+      it('should reactivate code successfully', async () => {
+        mockClientInstance.waitForOneOf.mockResolvedValue({ opcode: BoksOpcode.CODE_OPERATION_SUCCESS });
+        const result = await controller.reactivateCode('123456');
+
+        expect(mockClientInstance.send).toHaveBeenCalled();
+        const packet = mockClientInstance.send.mock.calls[0][0];
+        expect(packet).toBeInstanceOf(ReactivateCodePacket);
+        expect(packet.configKey).toBe(expectedConfigKey);
+        expect(result).toBe(true);
+      });
+
+      it('should return false on error', async () => {
+        mockClientInstance.waitForOneOf.mockResolvedValue({ opcode: BoksOpcode.CODE_OPERATION_ERROR });
+        const result = await controller.reactivateCode('123456');
+        expect(result).toBe(false);
+      });
+    });
+
+    describe('editMasterCode', () => {
+      it('should edit master code successfully', async () => {
+        mockClientInstance.waitForOneOf.mockResolvedValue({ opcode: BoksOpcode.CODE_OPERATION_SUCCESS });
+        const result = await controller.editMasterCode(1, '654321');
+
+        expect(mockClientInstance.send).toHaveBeenCalled();
+        const packet = mockClientInstance.send.mock.calls[0][0];
+        expect(packet).toBeInstanceOf(MasterCodeEditPacket);
+        expect(packet.configKey).toBe(expectedConfigKey);
+        expect(packet.index).toBe(1);
+        expect(packet.newPin).toBe('654321');
+        expect(result).toBe(true);
+      });
+    });
+
+    describe('setConfiguration', () => {
+      it('should set configuration successfully', async () => {
+        mockClientInstance.waitForOneOf.mockResolvedValue({ opcode: BoksOpcode.NOTIFY_SET_CONFIGURATION_SUCCESS });
+        const result = await controller.setConfiguration({ type: 1, value: true });
+
+        expect(mockClientInstance.send).toHaveBeenCalled();
+        const packet = mockClientInstance.send.mock.calls[0][0];
+        expect(packet).toBeInstanceOf(SetConfigurationPacket);
+        expect(packet.configKey).toBe(expectedConfigKey);
+        expect(packet.configType).toBe(1);
+        expect(packet.value).toBe(true);
+        expect(result).toBe(true);
+      });
+
+      it('should return false on error', async () => {
+        mockClientInstance.waitForOneOf.mockResolvedValue({ opcode: BoksOpcode.CODE_OPERATION_ERROR });
+        const result = await controller.setConfiguration({ type: 1, value: true });
+        expect(result).toBe(false);
+      });
+    });
+
+    describe('convertCodeType', () => {
+      it('should convert Single to Multi', async () => {
+        mockClientInstance.waitForOneOf.mockResolvedValue({ opcode: BoksOpcode.CODE_OPERATION_SUCCESS });
+        const result = await controller.convertCodeType('123456', BoksCodeType.Multi);
+
+        expect(mockClientInstance.send).toHaveBeenCalled();
+        const packet = mockClientInstance.send.mock.calls[0][0];
+        expect(packet).toBeInstanceOf(SingleToMultiCodePacket);
+        expect(packet.configKey).toBe(expectedConfigKey);
+        expect(packet.pin).toBe('123456');
+        expect(result).toBe(true);
+      });
+
+      it('should convert Multi to Single', async () => {
+        mockClientInstance.waitForOneOf.mockResolvedValue({ opcode: BoksOpcode.CODE_OPERATION_SUCCESS });
+        const result = await controller.convertCodeType('123456', BoksCodeType.Single);
+
+        expect(mockClientInstance.send).toHaveBeenCalled();
+        const packet = mockClientInstance.send.mock.calls[0][0];
+        expect(packet).toBeInstanceOf(MultiToSingleCodePacket);
+        expect(packet.configKey).toBe(expectedConfigKey);
+        expect(packet.pin).toBe('123456');
+        expect(result).toBe(true);
+      });
     });
   });
 });
