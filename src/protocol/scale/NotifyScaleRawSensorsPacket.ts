@@ -1,6 +1,7 @@
 import { BoksRXPacket } from '@/protocol/uplink/_BoksRXPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
 
+/** ⚠️ This packet is theoretical; it has never been tested in real-world conditions. */
 /**
  * Notification: Scale raw sensors data.
  */

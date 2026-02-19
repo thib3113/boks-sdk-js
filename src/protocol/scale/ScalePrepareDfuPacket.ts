@@ -1,9 +1,9 @@
 import { BoksPacket } from '@/protocol/_BoksPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
 
+/** ⚠️ This packet is theoretical; it has never been tested in real-world conditions. */
 /**
  * Command to prepare the scale for DFU.
- * (UNTESTED)
  */
 export class ScalePrepareDfuPacket extends BoksPacket {
   static readonly opcode = BoksOpcode.SCALE_PREPARE_DFU;

@@ -1,9 +1,9 @@
 import { BoksPacket } from '@/protocol/_BoksPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
 
+/** ⚠️ This packet is theoretical; it has never been tested in real-world conditions. */
 /**
  * Command to tare the loaded scale.
- * (UNTESTED)
  */
 export class ScaleTareLoadedPacket extends BoksPacket {
   static readonly opcode = BoksOpcode.SCALE_TARE_LOADED;

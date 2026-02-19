@@ -2,6 +2,7 @@ import { BoksRXPacket } from '@/protocol/uplink/_BoksRXPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
 import { bytesToHex } from '../../utils/converters';
 
+/** ⚠️ This packet is theoretical; it has never been tested in real-world conditions. */
 /**
  * Notification: MAC Address of the Boks Scale.
  */

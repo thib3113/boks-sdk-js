@@ -1,6 +1,7 @@
 import { BoksHistoryEvent } from '@/protocol/uplink/history/_BoksHistoryEventBase';
 import { BoksOpcode } from '@/protocol/constants';
 
+/** ⚠️ This packet is theoretical; it has never been tested in real-world conditions. */
 /**
  * Log: Weight measurement from scale.
  */

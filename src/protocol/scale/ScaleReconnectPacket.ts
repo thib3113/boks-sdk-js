@@ -1,9 +1,9 @@
 import { BoksPacket } from '@/protocol/_BoksPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
 
+/** ⚠️ This packet is theoretical; it has never been tested in real-world conditions. */
 /**
  * Command to request the scale to reconnect.
- * (UNTESTED)
  */
 export class ScaleReconnectPacket extends BoksPacket {
   static readonly opcode = BoksOpcode.SCALE_RECONNECT;

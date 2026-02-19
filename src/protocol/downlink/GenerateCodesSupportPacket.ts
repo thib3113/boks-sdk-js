@@ -2,9 +2,9 @@ import { BoksPacket } from '@/protocol/_BoksPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
 import { hexToBytes } from '@/utils/converters';
 
+/** ⚠️ This packet is theoretical; it has never been tested in real-world conditions. */
 /**
  * Command to trigger code generation in support mode.
- * (UNTESTED)
  */
 export class GenerateCodesSupportPacket extends BoksPacket {
   static readonly opcode = BoksOpcode.GENERATE_CODES_SUPPORT;

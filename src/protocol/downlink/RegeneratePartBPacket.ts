@@ -2,6 +2,7 @@ import { AuthPacket } from '@/protocol/downlink/_AuthPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
 import { stringToBytes, bytesToString } from '@/utils/converters';
 
+/** ⚠️ This packet is theoretical; it has never been tested in real-world conditions. */
 /**
  * Provisioning / Regeneration part B (0x21).
  */

@@ -3,7 +3,6 @@ import { BoksOpcode } from '@/protocol/constants';
 
 /**
  * Log: System Error event.
- * (UNTESTED)
  */
 export class ErrorHistoryPacket extends BoksHistoryEvent {
   static readonly opcode = BoksOpcode.LOG_EVENT_ERROR;
