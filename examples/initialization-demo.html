@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Boks Provisioning Demo</title>
+    <title>Boks Initialization Demo</title>
     <!-- Boks SDK (Local Build) -->
     <script src="../dist/boks-sdk.js"></script>
     <style>
@@ -15,6 +15,7 @@
         button { padding: 0.5rem 1rem; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 4px; }
         button:disabled { background: #ccc; cursor: not-allowed; }
         button.secondary { background: #6c757d; }
+        button.danger { background: #dc3545; }
         #log { background: #f8f9fa; padding: 1rem; height: 300px; overflow-y: auto; font-family: monospace; border-radius: 4px; border: 1px solid #dee2e6; }
         .hidden { display: none; }
         progress { width: 100%; height: 20px; }
@@ -49,10 +50,11 @@
         </a>
     </div>
 
-    <h1>Boks Provisioning Demo</h1>
+    <h1>Boks Initialization Demo</h1>
 
     <div class="card">
         <h3>1. Connection</h3>
+        <p>Connect to a factory-fresh or reset Boks device.</p>
         <div class="row">
             <button id="connectBtn">Scan & Connect</button>
             <span id="connectionStatus">Not connected</span>
@@ -62,34 +64,23 @@
         </div>
     </div>
 
-    <div class="card" id="authCard" class="hidden">
-        <h3>2. Authentication</h3>
-        <p>Enter the <strong>current</strong> Master Key to authenticate operations.</p>
-        <div class="row">
-            <input type="text" id="currentMasterKey" placeholder="Current Master Key (64 hex chars)" value="00000000000000000000000000000000000000000000000000000000AABBCCDD">
-        </div>
-        <div class="row">
-            <button id="setCredentialsBtn" disabled>Set Credentials</button>
-        </div>
-    </div>
-
-    <div class="card" id="provisionCard" class="hidden">
-        <h3>3. Re-Keying (Provisioning)</h3>
-        <p>Generate a new random Master Key using Web Crypto API and provision it to the device.</p>
+    <div class="card" id="initCard" class="hidden">
+        <h3>2. Initialization</h3>
+        <p>Initialize the Boks with a new Master Key seed. This packet (0x10) is theoretical.</p>
 
         <div class="row">
-            <button id="generateKeyBtn" class="secondary">Generate New Random Key</button>
+            <button id="generateKeyBtn" class="secondary">Generate Random Seed</button>
         </div>
         <div class="row">
-            <input type="text" id="newMasterKey" placeholder="New Master Key (will be generated)" readonly>
+            <input type="text" id="newSeed" placeholder="New Master Key Seed (will be generated)" readonly>
         </div>
 
         <div class="row">
-            <button id="provisionBtn" disabled>Provision New Key</button>
+            <button id="initBtn" class="danger" disabled>Initialize Boks</button>
         </div>
 
         <div id="progressContainer" class="hidden">
-            <label>Provisioning Progress:</label>
+            <label>Initialization Progress:</label>
             <progress id="progressBar" value="0" max="100"></progress>
             <span id="progressText">0%</span>
         </div>
@@ -109,14 +100,10 @@
         const fwVersion = document.getElementById('fwVersion');
         const hwVersion = document.getElementById('hwVersion');
 
-        const authCard = document.getElementById('authCard');
-        const currentMasterKeyInput = document.getElementById('currentMasterKey');
-        const setCredentialsBtn = document.getElementById('setCredentialsBtn');
-
-        const provisionCard = document.getElementById('provisionCard');
+        const initCard = document.getElementById('initCard');
         const generateKeyBtn = document.getElementById('generateKeyBtn');
-        const newMasterKeyInput = document.getElementById('newMasterKey');
-        const provisionBtn = document.getElementById('provisionBtn');
+        const newSeedInput = document.getElementById('newSeed');
+        const initBtn = document.getElementById('initBtn');
         const progressContainer = document.getElementById('progressContainer');
         const progressBar = document.getElementById('progressBar');
         const progressText = document.getElementById('progressText');
@@ -137,11 +124,6 @@
         connectBtn.addEventListener('click', async () => {
             try {
                 log('Requesting Bluetooth device...');
-                // The SDK's BoksClient handles requestDevice internally if no device is passed,
-                // but usually we want to control filters.
-                // However, BoksController expects a client or options.
-
-                // Let's use the browser API directly to get the device, then pass it to controller.
                 const device = await navigator.bluetooth.requestDevice({
                     filters: [{ namePrefix: 'Boks' }],
                     optionalServices: [
@@ -160,7 +142,6 @@
                 log('Connected successfully!', 'success');
                 connectionStatus.textContent = `Connected to ${device.name}`;
                 connectBtn.disabled = true;
-                setCredentialsBtn.disabled = false;
 
                 if (controller.hardwareInfo) {
                     fwVersion.textContent = controller.hardwareInfo.firmwareRevision;
@@ -168,8 +149,7 @@
                     deviceInfo.classList.remove('hidden');
                 }
 
-                // Enable next step
-                // authCard.classList.remove('hidden'); // It's visible by default but buttons disabled
+                initCard.classList.remove('hidden');
 
             } catch (err) {
                 log(`Connection failed: ${err.message}`, 'error');
@@ -177,24 +157,7 @@
             }
         });
 
-        // 2. Set Credentials
-        setCredentialsBtn.addEventListener('click', () => {
-            const key = currentMasterKeyInput.value.trim();
-            if (key.length !== 64) {
-                log('Master Key must be 64 hex characters.', 'error');
-                return;
-            }
-
-            try {
-                controller.setCredentials(key);
-                log('Credentials set.', 'success');
-                provisionCard.classList.remove('hidden');
-            } catch (err) {
-                log(`Error setting credentials: ${err.message}`, 'error');
-            }
-        });
-
-        // 3. Generate New Key
+        // 2. Generate Seed
         generateKeyBtn.addEventListener('click', () => {
             const array = new Uint8Array(32);
             crypto.getRandomValues(array);
@@ -203,43 +166,42 @@
                 .join('')
                 .toUpperCase();
 
-            newMasterKeyInput.value = hex;
-            provisionBtn.disabled = false;
-            log('New random 32-byte key generated.', 'success');
+            newSeedInput.value = hex;
+            initBtn.disabled = false;
+            log('New random 32-byte seed generated.', 'success');
         });
 
-        // 4. Provision
-        provisionBtn.addEventListener('click', async () => {
-            const newKey = newMasterKeyInput.value;
-            if (!newKey) return;
+        // 3. Initialize
+        initBtn.addEventListener('click', async () => {
+            const seed = newSeedInput.value;
+            if (!seed) return;
 
-            if (!confirm('Are you sure you want to change the Master Key? This cannot be undone.')) return;
+            if (!confirm('CRITICAL WARNING: This may brick your device or break app compatibility. Continue?')) return;
 
             progressContainer.classList.remove('hidden');
             progressBar.value = 0;
             progressText.textContent = '0%';
-            log('Starting provisioning...');
+            log('Starting initialization...');
 
             try {
-                const success = await controller.regenerateMasterKey(newKey, (progress) => {
+                if (!controller.initialize) {
+                     throw new Error('Your BoksSDK build does not support initialize() yet. Please rebuild the SDK.');
+                }
+
+                const success = await controller.initialize(seed, (progress) => {
                     progressBar.value = progress;
                     progressText.textContent = `${progress}%`;
-                    log(`Provisioning: ${progress}%`);
+                    log(`Initialization: ${progress}%`);
                 });
 
                 if (success) {
-                    log('Provisioning complete! The device has a new Master Key.', 'success');
-                    alert('Provisioning Success! Please update your credentials.');
-                    // Update input to reflect new reality
-                    currentMasterKeyInput.value = newKey;
-                    controller.setCredentials(newKey);
+                    log('Initialization complete! The device has been set up with the new Master Key.', 'success');
+                    alert('Initialization Success! Please save your Master Key.');
                 } else {
-                    log('Provisioning failed (device reported error).', 'error');
+                    log('Initialization failed (device reported error).', 'error');
                 }
             } catch (err) {
-                log(`Provisioning error: ${err.message}`, 'error');
-            } finally {
-                // progressContainer.classList.add('hidden');
+                log(`Initialization error: ${err.message}`, 'error');
             }
         });
 
