@@ -35,19 +35,6 @@ describe('BoksClient Constructor', () => {
     expect(WebBluetoothTransport).toHaveBeenCalledWith(mockDevice);
   });
 
-  it('should use provided transport instance directly', () => {
-    const mockTransport = {
-      connect: vi.fn(),
-      disconnect: vi.fn(),
-      write: vi.fn(),
-      read: vi.fn(),
-      subscribe: vi.fn(),
-    };
-    // @ts-ignore
-    const client = new BoksClient(mockTransport);
-    expect((client as any).transport).toBe(mockTransport);
-  });
-
   it('should use provided transport in options', () => {
     const mockTransport = {
       connect: vi.fn(),

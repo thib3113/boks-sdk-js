@@ -55,30 +55,9 @@ export class BoksClient {
   private listeners: Array<(packet: BoksPacket) => void> = [];
   private commandQueue: Promise<void> = Promise.resolve();
 
-  constructor(optionsOrTransport?: BoksClientOptions | BoksTransport) {
-    let transport: BoksTransport | undefined;
-    let device: BluetoothDevice | undefined;
-
-    // Determine if input is Options or Transport
-    const isTransport = (obj: unknown): obj is BoksTransport => {
-      return (
-        typeof obj === 'object' &&
-        obj !== null &&
-        'connect' in obj &&
-        typeof (obj as { connect: unknown }).connect === 'function'
-      );
-    };
-
-    if (isTransport(optionsOrTransport)) {
-      transport = optionsOrTransport;
-    } else if (optionsOrTransport) {
-      transport = optionsOrTransport.transport;
-      this.logger = optionsOrTransport.logger;
-      device = optionsOrTransport.device;
-    }
-
-    if (transport) {
-      this.transport = transport;
+  constructor(options?: BoksClientOptions) {
+    if (options?.transport) {
+      this.transport = options.transport;
     } else {
       if (typeof navigator === 'undefined' || !navigator.bluetooth) {
         throw new BoksClientError(
@@ -86,7 +65,11 @@ export class BoksClient {
           'No transport provided and Web Bluetooth is not supported.'
         );
       }
-      this.transport = new WebBluetoothTransport(device);
+      this.transport = new WebBluetoothTransport(options?.device);
+    }
+
+    if (options?.logger) {
+      this.logger = options.logger;
     }
   }
 
