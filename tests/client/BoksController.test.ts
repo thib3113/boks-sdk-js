@@ -17,7 +17,8 @@ import {
   SetConfigurationPacket,
   MultiToSingleCodePacket,
   SingleToMultiCodePacket,
-  BoksCodeType
+  BoksCodeType,
+  CountCodesPacket
 } from '@/protocol';
 import { BoksClientErrorId } from '@/errors/BoksClientError';
 
@@ -171,6 +172,21 @@ describe('BoksController', () => {
         mockClientInstance.waitForPacket.mockResolvedValue({ count: 42, opcode: BoksOpcode.NOTIFY_LOGS_COUNT });
         const result = await controller.getLogsCount();
         expect(result).toBe(42);
+      });
+    });
+
+    describe('countCodes', () => {
+      it('should return master and other codes count', async () => {
+        mockClientInstance.waitForPacket.mockResolvedValue({
+          masterCount: 5,
+          otherCount: 10,
+          opcode: BoksOpcode.NOTIFY_CODES_COUNT
+        });
+        const result = await controller.countCodes();
+        expect(mockClientInstance.send).toHaveBeenCalled();
+        const packet = mockClientInstance.send.mock.calls[0][0];
+        expect(packet).toBeInstanceOf(CountCodesPacket);
+        expect(result).toEqual({ masterCount: 5, otherCount: 10 });
       });
     });
 
