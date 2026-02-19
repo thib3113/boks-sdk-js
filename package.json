@@ -20,18 +20,12 @@
       "import": "./dist/esm/boks-sdk.js",
       "require": "./dist/cjs/boks-sdk.cjs"
     },
-    "./client": {
-      "types": "./dist/types/client.d.ts",
-      "import": "./dist/esm/client.js",
-      "require": "./dist/cjs/client.cjs"
-    },
     "./core": {
       "types": "./dist/types/core.d.ts",
       "import": "./dist/esm/core.js",
       "require": "./dist/cjs/core.cjs"
     },
     "./browser": "./dist/boks-sdk.js",
-    "./browser-client": "./dist/boks-client.js",
     "./browser-core": "./dist/boks-core.js"
   },
   "unpkg": "dist/boks-sdk.js",

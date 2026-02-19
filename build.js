@@ -18,7 +18,6 @@ async function build() {
     await esbuild.build({
         entryPoints: {
             'boks-sdk': 'src/index.ts',
-            'boks-client': 'src/client.ts',
             'boks-core': 'src/core.ts'
         },
         bundle: true,
@@ -36,7 +35,6 @@ async function build() {
     await esbuild.build({
         entryPoints: {
             'boks-sdk': 'src/index.ts',
-            'client': 'src/client.ts',
             'core': 'src/core.ts'
         },
         bundle: true,
@@ -53,7 +51,6 @@ async function build() {
     await esbuild.build({
         entryPoints: {
             'boks-sdk': 'src/index.ts',
-            'client': 'src/client.ts',
             'core': 'src/core.ts'
         },
         bundle: true,
