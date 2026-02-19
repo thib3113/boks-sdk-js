@@ -44,6 +44,11 @@ export interface BoksHardwareInfo {
   chipset: string; // Deduced chipset (e.g. "nRF52833")
 }
 
+export interface NfcScanResult {
+  tagId: string;
+  register: () => Promise<boolean>;
+}
+
 interface BoksRequirements {
   minHw?: string;
   minSw?: string;
@@ -245,13 +250,10 @@ export class BoksController {
    * Requires HW >= 4.0 and SW >= 4.3.3.
    *
    * @param timeoutMs Timeout in milliseconds for the scan operation.
-   * @returns The resulting packet: Found, Timeout, or Already Exists.
+   * @returns A promise resolving to an NfcScanResult containing the tagId and a register method.
+   * @throws BoksClientError if timeout occurs or tag already exists.
    */
-  async scanNFCTags(
-    timeoutMs: number = 10000
-  ): Promise<
-    NotifyNfcTagFoundPacket | ErrorNfcScanTimeoutPacket | ErrorNfcTagAlreadyExistsScanPacket
-  > {
+  async scanNFCTags(timeoutMs: number = 10000): Promise<NfcScanResult> {
     const configKey = this.getConfigKeyOrThrow();
     this.checkRequirements({
       minHw: '4.0',
@@ -264,7 +266,7 @@ export class BoksController {
     await this.client.send(new RegisterNfcTagScanStartPacket(configKey));
 
     // Wait for one of the possible outcomes
-    return this.client.waitForOneOf<
+    const result = await this.client.waitForOneOf<
       NotifyNfcTagFoundPacket | ErrorNfcScanTimeoutPacket | ErrorNfcTagAlreadyExistsScanPacket
     >(
       [
@@ -273,6 +275,23 @@ export class BoksController {
         BoksOpcode.ERROR_NFC_TAG_ALREADY_EXISTS_SCAN // 0xC6
       ],
       timeoutMs
+    );
+
+    if (result.opcode === BoksOpcode.NOTIFY_NFC_TAG_FOUND) {
+      const foundPacket = result as NotifyNfcTagFoundPacket;
+      return {
+        tagId: foundPacket.uid,
+        register: () => this.registerNfcTag(foundPacket.uid)
+      };
+    } else if (result.opcode === BoksOpcode.ERROR_NFC_SCAN_TIMEOUT) {
+      throw new BoksClientError(BoksClientErrorId.TIMEOUT, 'NFC Scan timed out');
+    } else if (result.opcode === BoksOpcode.ERROR_NFC_TAG_ALREADY_EXISTS_SCAN) {
+      throw new BoksClientError(BoksClientErrorId.ALREADY_EXISTS, 'NFC Tag already exists');
+    }
+
+    throw new BoksClientError(
+      BoksClientErrorId.UNKNOWN_ERROR,
+      `Unexpected packet during scan: ${result.opcode}`
     );
   }
 

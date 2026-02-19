@@ -309,11 +309,11 @@ describe('BoksController', () => {
             }));
       });
 
-      it('should send scan packet and wait for result', async () => {
+      it('should return NfcScanResult on successful scan', async () => {
         controller.setCredentials(validMasterKey);
         await setupControllerVersion('10/125', '4.3.3');
 
-        const mockResultPacket = { opcode: BoksOpcode.NOTIFY_NFC_TAG_FOUND };
+        const mockResultPacket = { opcode: BoksOpcode.NOTIFY_NFC_TAG_FOUND, uid: '01020304' };
         mockClientInstance.waitForOneOf.mockResolvedValue(mockResultPacket);
 
         const result = await controller.scanNFCTags(5000);
@@ -331,7 +331,37 @@ describe('BoksController', () => {
             ],
             5000
         );
-        expect(result).toBe(mockResultPacket);
+
+        expect(result).toHaveProperty('tagId', '01020304');
+        expect(result).toHaveProperty('register');
+
+        // Test register method
+        mockClientInstance.waitForOneOf.mockResolvedValueOnce({ opcode: BoksOpcode.NOTIFY_NFC_TAG_REGISTERED });
+        await expect(result.register()).resolves.toBe(true);
+        // Expect one more send call for register
+        expect(mockClientInstance.send).toHaveBeenCalledTimes(2);
+      });
+
+      it('should throw TIMEOUT error if scan times out', async () => {
+        controller.setCredentials(validMasterKey);
+        await setupControllerVersion('10/125', '4.3.3');
+
+        mockClientInstance.waitForOneOf.mockResolvedValue({ opcode: BoksOpcode.ERROR_NFC_SCAN_TIMEOUT });
+
+        await expect(controller.scanNFCTags(5000))
+            .rejects
+            .toThrowError(expect.objectContaining({ id: BoksClientErrorId.TIMEOUT }));
+      });
+
+      it('should throw ALREADY_EXISTS error if tag already exists', async () => {
+        controller.setCredentials(validMasterKey);
+        await setupControllerVersion('10/125', '4.3.3');
+
+        mockClientInstance.waitForOneOf.mockResolvedValue({ opcode: BoksOpcode.ERROR_NFC_TAG_ALREADY_EXISTS_SCAN });
+
+        await expect(controller.scanNFCTags(5000))
+            .rejects
+            .toThrowError(expect.objectContaining({ id: BoksClientErrorId.ALREADY_EXISTS }));
       });
     });
 
