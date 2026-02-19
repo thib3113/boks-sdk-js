@@ -1,3 +1,0 @@
-
-> @thib3113/boks-sdk@1.0.0 lint /app
-> eslint src
