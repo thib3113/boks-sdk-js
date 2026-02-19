@@ -3,10 +3,7 @@ import { BoksClient } from '@/client/BoksClient';
 import { BoksTransport } from '@/client/transport';
 import {
   BoksOpcode,
-  RequestLogsPacket,
-  DoorOpenHistoryPacket,
-  EndHistoryPacket,
-  BoksHistoryEvent
+  DoorOpenHistoryPacket
 } from '@/protocol';
 import { BoksClientErrorId } from '@/errors/BoksClientError';
 import { calculateChecksum } from '@/utils/converters';
