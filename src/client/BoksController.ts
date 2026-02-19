@@ -6,6 +6,11 @@ import {
   NotifyNfcTagFoundPacket,
   ErrorNfcScanTimeoutPacket,
   ErrorNfcTagAlreadyExistsScanPacket,
+  NfcRegisterPacket,
+  UnregisterNfcTagPacket,
+  NotifyNfcTagRegisteredPacket,
+  NotifyNfcTagRegisteredErrorAlreadyExistsPacket,
+  NotifyNfcTagUnregisteredPacket,
   OpenDoorPacket,
   ValidOpenCodePacket,
   InvalidOpenCodePacket,
@@ -222,6 +227,57 @@ export class BoksController {
       ],
       timeoutMs
     );
+  }
+
+  /**
+   * Registers a specific NFC tag by its UID.
+   * Requires HW >= 4.0 and SW >= 4.3.3.
+   *
+   * @param configKey The 8-character hex configuration key required for authentication.
+   * @param tagId The UID of the NFC tag (hex string, optional colons).
+   * @returns True if registered successfully, false if the tag already exists.
+   */
+  async registerNfcTag(configKey: string, tagId: string): Promise<boolean> {
+    this.checkRequirements({
+      minHw: '4.0',
+      minSw: '4.3.3',
+      featureName: 'NFC Register'
+    });
+
+    await this.client.send(new NfcRegisterPacket(configKey, tagId));
+
+    const result = await this.client.waitForOneOf<
+      NotifyNfcTagRegisteredPacket | NotifyNfcTagRegisteredErrorAlreadyExistsPacket
+    >([
+      BoksOpcode.NOTIFY_NFC_TAG_REGISTERED, // 0xC8
+      BoksOpcode.NOTIFY_NFC_TAG_REGISTERED_ERROR_ALREADY_EXISTS // 0xC9
+    ]);
+
+    return result.opcode === BoksOpcode.NOTIFY_NFC_TAG_REGISTERED;
+  }
+
+  /**
+   * Unregisters a specific NFC tag by its UID.
+   * Requires HW >= 4.0 and SW >= 4.3.3.
+   *
+   * @param configKey The 8-character hex configuration key required for authentication.
+   * @param tagId The UID of the NFC tag (hex string, optional colons).
+   * @returns True if unregistered successfully.
+   */
+  async unregisterNfcTag(configKey: string, tagId: string): Promise<boolean> {
+    this.checkRequirements({
+      minHw: '4.0',
+      minSw: '4.3.3',
+      featureName: 'NFC Unregister'
+    });
+
+    await this.client.send(new UnregisterNfcTagPacket(configKey, tagId));
+
+    await this.client.waitForPacket<NotifyNfcTagUnregisteredPacket>(
+      BoksOpcode.NOTIFY_NFC_TAG_UNREGISTERED // 0xCA
+    );
+
+    return true;
   }
 
   /**
