@@ -46,6 +46,9 @@ describe('BoksClient fetchHistory', () => {
 
     const historyPromise = client.fetchHistory(1000);
 
+    // Wait for the async send operation (command queue) to process
+    await new Promise(resolve => setTimeout(resolve, 0));
+
     // Verify RequestLogsPacket was sent (0x03)
     expect(mockTransport.write).toHaveBeenCalled();
 
@@ -79,13 +82,16 @@ describe('BoksClient fetchHistory', () => {
 
     const historyPromise = client.fetchHistory(100);
 
+    // Wait for send to likely happen
+    await vi.advanceTimersByTimeAsync(1);
+
     // Send one event to make sure timer resets logic is triggered
     const agePayload1 = new Uint8Array([0x00, 0x00, 0x01]);
     const packet1 = createPacketBuffer(BoksOpcode.LOG_DOOR_OPEN, agePayload1);
     notificationCallback!(packet1);
 
     // Advance time past timeout
-    vi.advanceTimersByTime(200);
+    await vi.advanceTimersByTimeAsync(200);
 
     await expect(historyPromise).rejects.toThrowError(expect.objectContaining({ id: BoksClientErrorId.TIMEOUT }));
     vi.useRealTimers();
