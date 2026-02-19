@@ -48,7 +48,6 @@
   "license": "ISC",
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@playwright/test": "^1.58.2",
     "@types/node": "^22.0.0",
     "@types/web-bluetooth": "^0.0.21",
     "esbuild": "^0.25.0",
