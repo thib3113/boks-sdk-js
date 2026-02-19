@@ -117,6 +117,15 @@ export class BoksClient {
    * Reads detailed battery statistics (custom Boks characteristic).
    * @returns Battery stats object or undefined if unreliable.
    */
+  /**
+   * Reads data from a specific BLE characteristic.
+   * @param uuid The UUID of the characteristic to read.
+   * @returns The raw data as a Uint8Array.
+   */
+  async readCharacteristic(uuid: string): Promise<Uint8Array> {
+    return this.transport.read(uuid);
+  }
+
   async getBatteryStats(): Promise<BoksBatteryStats | undefined> {
     return fetchBatteryStats(this.transport);
   }
