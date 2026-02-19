@@ -48,7 +48,7 @@ export class BoksClient {
   private readonly transport: BoksTransport;
   private readonly logger?: BoksLogger;
   private readonly responseHandlers: Array<{
-    opcode: number;
+    opcodes: number[];
     resolve: (packet: BoksPacket) => void;
   }> = [];
   private listeners: Array<(packet: BoksPacket) => void> = [];
@@ -117,6 +117,15 @@ export class BoksClient {
    * Reads detailed battery statistics (custom Boks characteristic).
    * @returns Battery stats object or undefined if unreliable.
    */
+  /**
+   * Reads data from a specific BLE characteristic.
+   * @param uuid The UUID of the characteristic to read.
+   * @returns The raw data as a Uint8Array.
+   */
+  async readCharacteristic(uuid: string): Promise<Uint8Array> {
+    return this.transport.read(uuid);
+  }
+
   async getBatteryStats(): Promise<BoksBatteryStats | undefined> {
     return fetchBatteryStats(this.transport);
   }
@@ -212,7 +221,9 @@ export class BoksClient {
       });
 
       // Check if anyone is waiting for this specific response
-      const handlerIndex = this.responseHandlers.findIndex((h) => h.opcode === packet.opcode);
+      const handlerIndex = this.responseHandlers.findIndex((h) =>
+        h.opcodes.includes(packet.opcode)
+      );
       if (handlerIndex !== -1) {
         const handler = this.responseHandlers[handlerIndex];
         this.responseHandlers.splice(handlerIndex, 1);
@@ -229,20 +240,31 @@ export class BoksClient {
    * @param timeoutMs Timeout in milliseconds.
    */
   waitForPacket<T extends BoksPacket>(opcode: BoksOpcode, timeoutMs: number = 5000): Promise<T> {
+    return this.waitForOneOf<T>([opcode], timeoutMs);
+  }
+
+  /**
+   * Waits for one of the specified packet opcodes to be received.
+   * @param opcodes The list of opcodes to wait for.
+   * @param timeoutMs Timeout in milliseconds.
+   */
+  waitForOneOf<T extends BoksPacket>(opcodes: number[], timeoutMs: number = 5000): Promise<T> {
     return new Promise((resolve, reject) => {
       const timer = setTimeout(() => {
-        const idx = this.responseHandlers.findIndex((h) => h.opcode === opcode);
+        const idx = this.responseHandlers.findIndex(
+          (h) => h.opcodes.length === opcodes.length && h.opcodes.every((o, i) => o === opcodes[i])
+        );
         if (idx !== -1) this.responseHandlers.splice(idx, 1);
         reject(
           new BoksClientError(
             BoksClientErrorId.TIMEOUT,
-            `Timeout waiting for opcode 0x${opcode.toString(16)}`
+            `Timeout waiting for opcodes ${opcodes.map((o) => '0x' + o.toString(16)).join(', ')}`
           )
         );
       }, timeoutMs);
 
       this.responseHandlers.push({
-        opcode,
+        opcodes,
         resolve: (packet) => {
           clearTimeout(timer);
           resolve(packet as T);

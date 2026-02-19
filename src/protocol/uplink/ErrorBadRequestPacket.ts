@@ -10,6 +10,6 @@ export class ErrorBadRequestPacket extends BoksRXPacket {
     super(ErrorBadRequestPacket.opcode);
   }
   parse(payload: Uint8Array) {
-    super.parse(payload);}
+    super.parse(payload);
+  }
 }
-

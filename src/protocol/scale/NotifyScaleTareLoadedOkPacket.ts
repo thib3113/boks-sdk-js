@@ -10,6 +10,6 @@ export class NotifyScaleTareLoadedOkPacket extends BoksRXPacket {
     super(NotifyScaleTareLoadedOkPacket.opcode);
   }
   parse(payload: Uint8Array) {
-    super.parse(payload);}
+    super.parse(payload);
+  }
 }
-
