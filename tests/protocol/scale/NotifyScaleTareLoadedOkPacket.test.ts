@@ -3,11 +3,7 @@ import { NotifyScaleTareLoadedOkPacket } from '@/protocol/scale/NotifyScaleTareL
 
 describe('NotifyScaleTareLoadedOkPacket', () => {
   it('should parse correctly', () => {
-    const packet = new NotifyScaleTareLoadedOkPacket();
-    packet.parse(new Uint8Array(0));
+    const packet = NotifyScaleTareLoadedOkPacket.fromPayload(new Uint8Array(0));
     expect(packet.opcode).toBe(0xB6);
   });
 });
-
-
-

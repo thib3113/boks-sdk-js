@@ -6,16 +6,19 @@ import { BoksOpcode } from '@/protocol/constants';
  */
 export class OperationErrorPacket extends BoksRXPacket {
   static readonly opcode = BoksOpcode.CODE_OPERATION_ERROR;
-  public errorCode: number = 0;
 
-  constructor() {
-    super(OperationErrorPacket.opcode);
+  constructor(
+    public readonly errorCode: number = 0,
+    rawPayload?: Uint8Array
+  ) {
+    super(OperationErrorPacket.opcode, rawPayload);
   }
 
-  parse(payload: Uint8Array) {
-    super.parse(payload);
+  static fromPayload(payload: Uint8Array): OperationErrorPacket {
+    let errorCode = 0;
     if (payload.length > 0) {
-      this.errorCode = payload[0];
+      errorCode = payload[0];
     }
+    return new OperationErrorPacket(errorCode, payload);
   }
 }

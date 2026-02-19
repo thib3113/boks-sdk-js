@@ -5,8 +5,14 @@ import { BoksOpcode } from '@/protocol/constants';
  * Base class for all Boks RX packets (notifications).
  */
 export abstract class BoksRXPacket extends BoksPacket {
-  constructor(protected readonly _opcode: BoksOpcode) {
+  constructor(
+    protected readonly _opcode: BoksOpcode,
+    protected readonly _rawPayload?: Uint8Array
+  ) {
     super();
+    if (_rawPayload) {
+      this.rawPayload = _rawPayload;
+    }
   }
 
   get opcode() {

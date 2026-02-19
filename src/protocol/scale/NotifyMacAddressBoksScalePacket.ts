@@ -7,17 +7,19 @@ import { bytesToHex } from '../../utils/converters';
  */
 export class NotifyMacAddressBoksScalePacket extends BoksRXPacket {
   static readonly opcode = BoksOpcode.NOTIFY_MAC_ADDRESS_BOKS_SCALE;
-  public macAddress: string = '';
 
-  constructor() {
-    super(NotifyMacAddressBoksScalePacket.opcode);
+  constructor(
+    public readonly macAddress: string = '',
+    rawPayload?: Uint8Array
+  ) {
+    super(NotifyMacAddressBoksScalePacket.opcode, rawPayload);
   }
 
-  parse(payload: Uint8Array) {
-    super.parse(payload);
-    this.macAddress =
+  static fromPayload(payload: Uint8Array): NotifyMacAddressBoksScalePacket {
+    const macAddress =
       bytesToHex(payload)
         .match(/.{1,2}/g)
         ?.join(':') || '';
+    return new NotifyMacAddressBoksScalePacket(macAddress, payload);
   }
 }

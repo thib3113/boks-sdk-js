@@ -6,16 +6,19 @@ import { BoksOpcode } from '@/protocol/constants';
  */
 export class NotifyScaleBondingProgressPacket extends BoksRXPacket {
   static readonly opcode = BoksOpcode.NOTIFY_SCALE_BONDING_PROGRESS;
-  public progress: number = 0;
 
-  constructor() {
-    super(NotifyScaleBondingProgressPacket.opcode);
+  constructor(
+    public readonly progress: number = 0,
+    rawPayload?: Uint8Array
+  ) {
+    super(NotifyScaleBondingProgressPacket.opcode, rawPayload);
   }
 
-  parse(payload: Uint8Array) {
-    super.parse(payload);
+  static fromPayload(payload: Uint8Array): NotifyScaleBondingProgressPacket {
+    let progress = 0;
     if (payload.length > 0) {
-      this.progress = payload[0];
+      progress = payload[0];
     }
+    return new NotifyScaleBondingProgressPacket(progress, payload);
   }
 }

@@ -10,6 +10,9 @@ export class ScaleGetMacPacket extends BoksPacket {
   get opcode() {
     return ScaleGetMacPacket.opcode;
   }
+  static fromPayload(_payload: Uint8Array): ScaleGetMacPacket {
+    return new ScaleGetMacPacket();
+  }
   toPayload() {
     return new Uint8Array(0);
   }

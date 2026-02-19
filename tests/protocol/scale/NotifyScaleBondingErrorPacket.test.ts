@@ -4,11 +4,7 @@ import { hexToBytes } from '@/utils/converters';
 
 describe('NotifyScaleBondingErrorPacket', () => {
   it('should parse error code correctly', () => {
-    const packet = new NotifyScaleBondingErrorPacket();
-    packet.parse(hexToBytes('05'));
+    const packet = NotifyScaleBondingErrorPacket.fromPayload(hexToBytes('05'));
     expect(packet.errorCode).toBe(5);
   });
 });
-
-
-

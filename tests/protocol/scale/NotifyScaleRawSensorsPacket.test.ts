@@ -4,11 +4,7 @@ import { hexToBytes, bytesToHex } from '@/utils/converters';
 
 describe('NotifyScaleRawSensorsPacket', () => {
   it('should parse raw data correctly', () => {
-    const packet = new NotifyScaleRawSensorsPacket();
-    packet.parse(hexToBytes('AABBCC'));
+    const packet = NotifyScaleRawSensorsPacket.fromPayload(hexToBytes('AABBCC'));
     expect(bytesToHex(packet.data)).toBe('AABBCC');
   });
 });
-
-
-

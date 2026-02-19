@@ -6,17 +6,20 @@ import { BoksOpcode } from '@/protocol/constants';
  */
 export class NotifyLogsCountPacket extends BoksRXPacket {
   static readonly opcode = BoksOpcode.NOTIFY_LOGS_COUNT;
-  public count: number = 0;
 
-  constructor() {
-    super(NotifyLogsCountPacket.opcode);
+  constructor(
+    public readonly count: number = 0,
+    rawPayload?: Uint8Array
+  ) {
+    super(NotifyLogsCountPacket.opcode, rawPayload);
   }
 
-  parse(payload: Uint8Array) {
-    super.parse(payload);
+  static fromPayload(payload: Uint8Array): NotifyLogsCountPacket {
+    let count = 0;
     if (payload.length >= 2) {
       const view = new DataView(payload.buffer, payload.byteOffset, payload.byteLength);
-      this.count = view.getUint16(0, false); // Big Endian
+      count = view.getUint16(0, false); // Big Endian
     }
+    return new NotifyLogsCountPacket(count, payload);
   }
 }

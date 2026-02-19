@@ -4,11 +4,7 @@ import { hexToBytes } from '@/utils/converters';
 
 describe('BleRebootHistoryPacket', () => {
   it('should parse age correctly', () => {
-    const packet = new BleRebootHistoryPacket();
-    packet.parse(hexToBytes('00003C'));
+    const packet = BleRebootHistoryPacket.fromPayload(hexToBytes('00003C'));
     expect(packet.age).toBe(60);
   });
 });
-
-
-

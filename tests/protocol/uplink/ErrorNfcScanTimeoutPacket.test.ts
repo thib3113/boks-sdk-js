@@ -3,10 +3,7 @@ import { ErrorNfcScanTimeoutPacket } from '@/protocol/uplink/ErrorNfcScanTimeout
 
 describe('ErrorNfcScanTimeoutPacket', () => {
   it('should have correct status', () => {
-    const packet = new ErrorNfcScanTimeoutPacket();
+    const packet = ErrorNfcScanTimeoutPacket.fromPayload(new Uint8Array(0));
     expect(packet.status).toBe('timeout');
   });
 });
-
-
-

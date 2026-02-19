@@ -9,6 +9,9 @@ export class RebootPacket extends BoksPacket {
   get opcode() {
     return RebootPacket.opcode;
   }
+  static fromPayload(_payload: Uint8Array): RebootPacket {
+    return new RebootPacket();
+  }
   toPayload() {
     return new Uint8Array(0);
   }

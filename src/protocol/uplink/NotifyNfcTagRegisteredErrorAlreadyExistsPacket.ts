@@ -6,16 +6,12 @@ import { BoksOpcode } from '@/protocol/constants';
  */
 export class NotifyNfcTagRegisteredErrorAlreadyExistsPacket extends BoksRXPacket {
   static readonly opcode = BoksOpcode.NOTIFY_NFC_TAG_REGISTERED_ERROR_ALREADY_EXISTS;
-  constructor() {
-    super(NotifyNfcTagRegisteredErrorAlreadyExistsPacket.opcode);
-  }
-  parse(payload: Uint8Array) {
-    super.parse(payload);
+
+  constructor(rawPayload?: Uint8Array) {
+    super(NotifyNfcTagRegisteredErrorAlreadyExistsPacket.opcode, rawPayload);
   }
 
   static fromPayload(payload: Uint8Array): NotifyNfcTagRegisteredErrorAlreadyExistsPacket {
-    const packet = new NotifyNfcTagRegisteredErrorAlreadyExistsPacket();
-    packet.parse(payload);
-    return packet;
+    return new NotifyNfcTagRegisteredErrorAlreadyExistsPacket(payload);
   }
 }

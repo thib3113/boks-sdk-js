@@ -6,10 +6,12 @@ import { BoksOpcode } from '@/protocol/constants';
  */
 export class ErrorBadRequestPacket extends BoksRXPacket {
   static readonly opcode = BoksOpcode.ERROR_BAD_REQUEST;
-  constructor() {
-    super(ErrorBadRequestPacket.opcode);
+
+  constructor(rawPayload?: Uint8Array) {
+    super(ErrorBadRequestPacket.opcode, rawPayload);
   }
-  parse(payload: Uint8Array) {
-    super.parse(payload);
+
+  static fromPayload(payload: Uint8Array): ErrorBadRequestPacket {
+    return new ErrorBadRequestPacket(payload);
   }
 }

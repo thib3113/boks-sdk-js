@@ -3,11 +3,7 @@ import { NotifyScaleTareEmptyOkPacket } from '@/protocol/scale/NotifyScaleTareEm
 
 describe('NotifyScaleTareEmptyOkPacket', () => {
   it('should parse correctly', () => {
-    const packet = new NotifyScaleTareEmptyOkPacket();
-    packet.parse(new Uint8Array(0));
+    const packet = NotifyScaleTareEmptyOkPacket.fromPayload(new Uint8Array(0));
     expect(packet.opcode).toBe(0xB5);
   });
 });
-
-
-

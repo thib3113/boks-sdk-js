@@ -6,19 +6,23 @@ import { BoksOpcode } from '@/protocol/constants';
  */
 export class NotifyCodesCountPacket extends BoksRXPacket {
   static readonly opcode = BoksOpcode.NOTIFY_CODES_COUNT;
-  public masterCount: number = 0;
-  public otherCount: number = 0;
 
-  constructor() {
-    super(NotifyCodesCountPacket.opcode);
+  constructor(
+    public readonly masterCount: number = 0,
+    public readonly otherCount: number = 0,
+    rawPayload?: Uint8Array
+  ) {
+    super(NotifyCodesCountPacket.opcode, rawPayload);
   }
 
-  parse(payload: Uint8Array) {
-    super.parse(payload);
+  static fromPayload(payload: Uint8Array): NotifyCodesCountPacket {
+    let masterCount = 0;
+    let otherCount = 0;
     if (payload.length >= 4) {
       const view = new DataView(payload.buffer, payload.byteOffset, payload.byteLength);
-      this.masterCount = view.getUint16(0, false);
-      this.otherCount = view.getUint16(2, false);
+      masterCount = view.getUint16(0, false);
+      otherCount = view.getUint16(2, false);
     }
+    return new NotifyCodesCountPacket(masterCount, otherCount, payload);
   }
 }

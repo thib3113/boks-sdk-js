@@ -4,11 +4,7 @@ import { hexToBytes } from '@/utils/converters';
 
 describe('NotifyMacAddressBoksScalePacket', () => {
   it('should parse MAC address correctly', () => {
-    const packet = new NotifyMacAddressBoksScalePacket();
-    packet.parse(hexToBytes('AABBCCDDEEFF'));
+    const packet = NotifyMacAddressBoksScalePacket.fromPayload(hexToBytes('AABBCCDDEEFF'));
     expect(packet.macAddress).toBe('AA:BB:CC:DD:EE:FF');
   });
 });
-
-
-

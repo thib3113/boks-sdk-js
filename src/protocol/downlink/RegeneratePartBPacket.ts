@@ -1,6 +1,6 @@
 import { AuthPacket } from '@/protocol/downlink/_AuthPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
-import { stringToBytes } from '@/utils/converters';
+import { stringToBytes, bytesToString } from '@/utils/converters';
 
 /**
  * Provisioning / Regeneration part B (0x21).
@@ -17,6 +17,12 @@ export class RegeneratePartBPacket extends AuthPacket {
   ) {
     super(configKey);
     if (part.length !== 16) throw new Error('Token part must be exactly 16 bytes');
+  }
+
+  static fromPayload(payload: Uint8Array): RegeneratePartBPacket {
+    const configKey = bytesToString(payload.slice(0, 8));
+    const part = payload.slice(8, 24);
+    return new RegeneratePartBPacket(configKey, part);
   }
 
   toPayload() {

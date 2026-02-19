@@ -7,17 +7,27 @@ import { BoksOpcode } from '@/protocol/constants';
  */
 export class ErrorHistoryPacket extends BoksHistoryEvent {
   static readonly opcode = BoksOpcode.LOG_EVENT_ERROR;
-  public errorCode: number = 0;
 
-  constructor() {
-    super(ErrorHistoryPacket.opcode);
+  constructor(
+    age: number = 0,
+    public readonly errorCode: number = 0,
+    rawPayload?: Uint8Array
+  ) {
+    super(ErrorHistoryPacket.opcode, age, rawPayload);
   }
 
-  parse(payload: Uint8Array) {
-    this.parseHistoryHeader(payload);
+  static fromPayload(payload: Uint8Array): ErrorHistoryPacket {
+    let age = 0;
+    let errorCode = 0;
+
+    if (payload.length >= 3) {
+      age = (payload[0] << 16) | (payload[1] << 8) | payload[2];
+    }
+
     const offset = 3;
     if (payload.length > offset) {
-      this.errorCode = payload[offset];
+      errorCode = payload[offset];
     }
+    return new ErrorHistoryPacket(age, errorCode, payload);
   }
 }

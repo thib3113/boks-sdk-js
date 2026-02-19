@@ -6,10 +6,12 @@ import { BoksOpcode } from '@/protocol/constants';
  */
 export class NotifyScaleTareEmptyOkPacket extends BoksRXPacket {
   static readonly opcode = BoksOpcode.NOTIFY_SCALE_TARE_EMPTY_OK;
-  constructor() {
-    super(NotifyScaleTareEmptyOkPacket.opcode);
+
+  constructor(rawPayload?: Uint8Array) {
+    super(NotifyScaleTareEmptyOkPacket.opcode, rawPayload);
   }
-  parse(payload: Uint8Array) {
-    super.parse(payload);
+
+  static fromPayload(payload: Uint8Array): NotifyScaleTareEmptyOkPacket {
+    return new NotifyScaleTareEmptyOkPacket(payload);
   }
 }

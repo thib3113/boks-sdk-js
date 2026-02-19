@@ -13,6 +13,9 @@ export class ScaleTareLoadedPacket extends BoksPacket {
   constructor(public readonly data: Uint8Array = new Uint8Array(0)) {
     super();
   }
+  static fromPayload(payload: Uint8Array): ScaleTareLoadedPacket {
+    return new ScaleTareLoadedPacket(payload);
+  }
   toPayload() {
     return this.data;
   }

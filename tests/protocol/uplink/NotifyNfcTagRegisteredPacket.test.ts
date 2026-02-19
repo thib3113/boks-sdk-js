@@ -3,11 +3,7 @@ import { NotifyNfcTagRegisteredPacket } from '@/protocol/uplink/NotifyNfcTagRegi
 
 describe('NotifyNfcTagRegisteredPacket', () => {
   it('should parse correctly', () => {
-    const packet = new NotifyNfcTagRegisteredPacket();
-    packet.parse(new Uint8Array(0));
+    const packet = NotifyNfcTagRegisteredPacket.fromPayload(new Uint8Array(0));
     expect(packet.opcode).toBe(0xC8);
   });
 });
-
-
-

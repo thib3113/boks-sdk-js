@@ -1,6 +1,6 @@
 import { AuthPacket } from '@/protocol/downlink/_AuthPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
-import { stringToBytes, hexToBytes } from '@/utils/converters';
+import { stringToBytes, hexToBytes, bytesToString, bytesToHex } from '@/utils/converters';
 
 /**
  * NFC Tag Registration.
@@ -16,6 +16,21 @@ export class NfcRegisterPacket extends AuthPacket {
     public readonly uid: string
   ) {
     super(configKey);
+  }
+
+  static fromPayload(payload: Uint8Array): NfcRegisterPacket {
+    const configKey = bytesToString(payload.slice(0, 8));
+    let uid = '';
+    if (payload.length > 8) {
+      const len = payload[8];
+      if (payload.length >= 9 + len) {
+        uid =
+          bytesToHex(payload.slice(9, 9 + len))
+            .match(/.{1,2}/g)
+            ?.join(':') || '';
+      }
+    }
+    return new NfcRegisterPacket(configKey, uid);
   }
 
   toPayload() {

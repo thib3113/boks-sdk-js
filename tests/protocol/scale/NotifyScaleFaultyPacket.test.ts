@@ -4,11 +4,7 @@ import { hexToBytes, bytesToHex } from '@/utils/converters';
 
 describe('NotifyScaleFaultyPacket', () => {
   it('should parse raw data correctly', () => {
-    const packet = new NotifyScaleFaultyPacket();
-    packet.parse(hexToBytes('AABBCC'));
+    const packet = NotifyScaleFaultyPacket.fromPayload(hexToBytes('AABBCC'));
     expect(bytesToHex(packet.data)).toBe('AABBCC');
   });
 });
-
-
-

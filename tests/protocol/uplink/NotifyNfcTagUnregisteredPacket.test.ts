@@ -3,11 +3,7 @@ import { NotifyNfcTagUnregisteredPacket } from '@/protocol/uplink/NotifyNfcTagUn
 
 describe('NotifyNfcTagUnregisteredPacket', () => {
   it('should parse correctly', () => {
-    const packet = new NotifyNfcTagUnregisteredPacket();
-    packet.parse(new Uint8Array(0));
+    const packet = NotifyNfcTagUnregisteredPacket.fromPayload(new Uint8Array(0));
     expect(packet.opcode).toBe(0xCA);
   });
 });
-
-
-

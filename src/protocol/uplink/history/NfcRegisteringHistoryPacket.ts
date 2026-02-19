@@ -6,14 +6,26 @@ import { BoksOpcode } from '@/protocol/constants';
  */
 export class NfcRegisteringHistoryPacket extends BoksHistoryEvent {
   static readonly opcode = BoksOpcode.LOG_EVENT_NFC_REGISTERING;
-  public data: Uint8Array = new Uint8Array(0);
 
-  constructor() {
-    super(NfcRegisteringHistoryPacket.opcode);
+  constructor(
+    age: number = 0,
+    public readonly data: Uint8Array = new Uint8Array(0),
+    rawPayload?: Uint8Array
+  ) {
+    super(NfcRegisteringHistoryPacket.opcode, age, rawPayload);
   }
 
-  parse(payload: Uint8Array) {
-    this.parseHistoryHeader(payload);
-    this.data = payload.slice(3);
+  static fromPayload(payload: Uint8Array): NfcRegisteringHistoryPacket {
+    let age = 0;
+    let data = new Uint8Array(0);
+
+    if (payload.length >= 3) {
+      age = (payload[0] << 16) | (payload[1] << 8) | payload[2];
+    }
+
+    if (payload.length > 3) {
+      data = payload.slice(3);
+    }
+    return new NfcRegisteringHistoryPacket(age, data, payload);
   }
 }

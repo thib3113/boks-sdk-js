@@ -4,11 +4,7 @@ import { hexToBytes } from '@/utils/converters';
 
 describe('HistoryEraseHistoryPacket', () => {
   it('should parse age correctly', () => {
-    const packet = new HistoryEraseHistoryPacket();
-    packet.parse(hexToBytes('00003C'));
+    const packet = HistoryEraseHistoryPacket.fromPayload(hexToBytes('00003C'));
     expect(packet.age).toBe(60);
   });
 });
-
-
-
