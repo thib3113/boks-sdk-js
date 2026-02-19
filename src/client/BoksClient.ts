@@ -38,6 +38,7 @@ export type BoksLogger = <K extends keyof BoksLogEvents>(
 export interface BoksClientOptions {
   transport?: BoksTransport;
   logger?: BoksLogger;
+  device?: BluetoothDevice;
 }
 
 /**
@@ -56,12 +57,24 @@ export class BoksClient {
 
   constructor(optionsOrTransport?: BoksClientOptions | BoksTransport) {
     let transport: BoksTransport | undefined;
+    let device: BluetoothDevice | undefined;
 
-    if (optionsOrTransport && 'transport' in optionsOrTransport) {
+    // Determine if input is Options or Transport
+    const isTransport = (obj: unknown): obj is BoksTransport => {
+      return (
+        typeof obj === 'object' &&
+        obj !== null &&
+        'connect' in obj &&
+        typeof (obj as { connect: unknown }).connect === 'function'
+      );
+    };
+
+    if (isTransport(optionsOrTransport)) {
+      transport = optionsOrTransport;
+    } else if (optionsOrTransport) {
       transport = optionsOrTransport.transport;
       this.logger = optionsOrTransport.logger;
-    } else {
-      transport = optionsOrTransport as BoksTransport;
+      device = optionsOrTransport.device;
     }
 
     if (transport) {
@@ -73,7 +86,7 @@ export class BoksClient {
           'No transport provided and Web Bluetooth is not supported.'
         );
       }
-      this.transport = new WebBluetoothTransport();
+      this.transport = new WebBluetoothTransport(device);
     }
   }
 
@@ -117,6 +130,10 @@ export class BoksClient {
    * Reads detailed battery statistics (custom Boks characteristic).
    * @returns Battery stats object or undefined if unreliable.
    */
+  async getBatteryStats(): Promise<BoksBatteryStats | undefined> {
+    return fetchBatteryStats(this.transport);
+  }
+
   /**
    * Reads data from a specific BLE characteristic.
    * @param uuid The UUID of the characteristic to read.
@@ -124,10 +141,6 @@ export class BoksClient {
    */
   async readCharacteristic(uuid: string): Promise<Uint8Array> {
     return this.transport.read(uuid);
-  }
-
-  async getBatteryStats(): Promise<BoksBatteryStats | undefined> {
-    return fetchBatteryStats(this.transport);
   }
 
   /**
