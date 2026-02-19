@@ -513,10 +513,7 @@ export class BoksController {
     await this.client.send(new SetConfigurationPacket(configKey, params.type, params.value));
     const result = await this.client.waitForOneOf<
       NotifySetConfigurationSuccessPacket | OperationErrorPacket
-    >([
-      BoksOpcode.NOTIFY_SET_CONFIGURATION_SUCCESS,
-      BoksOpcode.CODE_OPERATION_ERROR
-    ]);
+    >([BoksOpcode.NOTIFY_SET_CONFIGURATION_SUCCESS, BoksOpcode.CODE_OPERATION_ERROR]);
     return result.opcode === BoksOpcode.NOTIFY_SET_CONFIGURATION_SUCCESS;
   }
 
