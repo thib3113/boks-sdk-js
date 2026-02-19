@@ -15,4 +15,10 @@ export class ErrorNfcScanTimeoutPacket extends BoksRXPacket {
   parse(payload: Uint8Array) {
     super.parse(payload);
   }
+
+  static fromPayload(payload: Uint8Array): ErrorNfcScanTimeoutPacket {
+    const packet = new ErrorNfcScanTimeoutPacket();
+    packet.parse(payload);
+    return packet;
+  }
 }

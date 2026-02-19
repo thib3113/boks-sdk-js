@@ -12,4 +12,10 @@ export class NotifyNfcTagUnregisteredPacket extends BoksRXPacket {
   parse(payload: Uint8Array) {
     super.parse(payload);
   }
+
+  static fromPayload(payload: Uint8Array): NotifyNfcTagUnregisteredPacket {
+    const packet = new NotifyNfcTagUnregisteredPacket();
+    packet.parse(payload);
+    return packet;
+  }
 }
