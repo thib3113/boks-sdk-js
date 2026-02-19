@@ -10,6 +10,6 @@ export class NotifyNfcTagUnregisteredPacket extends BoksRXPacket {
     super(NotifyNfcTagUnregisteredPacket.opcode);
   }
   parse(payload: Uint8Array) {
-    super.parse(payload);}
+    super.parse(payload);
+  }
 }
-

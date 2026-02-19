@@ -10,6 +10,6 @@ export class OperationSuccessPacket extends BoksRXPacket {
     super(OperationSuccessPacket.opcode);
   }
   parse(payload: Uint8Array) {
-    super.parse(payload);} // No data
+    super.parse(payload);
+  } // No data
 }
-
