@@ -19,6 +19,7 @@ describe('BoksController', () => {
     readCharacteristic: Mock;
     send: Mock;
     waitForOneOf: Mock;
+    waitForPacket: Mock;
     onPacket: Mock;
   };
 
@@ -32,6 +33,7 @@ describe('BoksController', () => {
       readCharacteristic: vi.fn(),
       send: vi.fn().mockResolvedValue(undefined),
       waitForOneOf: vi.fn(),
+      waitForPacket: vi.fn(),
       onPacket: vi.fn(),
     };
 
@@ -185,6 +187,77 @@ describe('BoksController', () => {
         await controller.scanNFCTags(validConfigKey);
 
         expect(mockClientInstance.waitForOneOf).toHaveBeenCalledWith(expect.any(Array), 10000);
+    });
+  });
+
+  describe('registerNfcTag', () => {
+    const validConfigKey = 'AABBCCDD';
+    const tagId = '01:02:03:04';
+
+    const setupControllerVersion = async (fw: string, sw: string) => {
+        const textEncoder = new TextEncoder();
+        mockClientInstance.readCharacteristic.mockImplementation(async (uuid: string) => {
+            if (uuid === BOKS_UUIDS.SOFTWARE_REVISION) return textEncoder.encode(sw);
+            if (uuid === BOKS_UUIDS.FIRMWARE_REVISION) return textEncoder.encode(fw);
+            throw new Error('Unknown UUID');
+        });
+        await controller.connect();
+    };
+
+    it('should register NFC tag successfully', async () => {
+        await setupControllerVersion('10/125', '4.3.3');
+
+        mockClientInstance.waitForOneOf.mockResolvedValue({ opcode: BoksOpcode.NOTIFY_NFC_TAG_REGISTERED });
+
+        const result = await controller.registerNfcTag(validConfigKey, tagId);
+
+        expect(mockClientInstance.send).toHaveBeenCalledTimes(1);
+        expect(mockClientInstance.waitForOneOf).toHaveBeenCalledWith(
+            [
+                BoksOpcode.NOTIFY_NFC_TAG_REGISTERED,
+                BoksOpcode.NOTIFY_NFC_TAG_REGISTERED_ERROR_ALREADY_EXISTS
+            ]
+        );
+        expect(result).toBe(true);
+    });
+
+    it('should return false if NFC tag already exists', async () => {
+        await setupControllerVersion('10/125', '4.3.3');
+
+        mockClientInstance.waitForOneOf.mockResolvedValue({ opcode: BoksOpcode.NOTIFY_NFC_TAG_REGISTERED_ERROR_ALREADY_EXISTS });
+
+        const result = await controller.registerNfcTag(validConfigKey, tagId);
+
+        expect(result).toBe(false);
+    });
+  });
+
+  describe('unregisterNfcTag', () => {
+    const validConfigKey = 'AABBCCDD';
+    const tagId = '01:02:03:04';
+
+    const setupControllerVersion = async (fw: string, sw: string) => {
+        const textEncoder = new TextEncoder();
+        mockClientInstance.readCharacteristic.mockImplementation(async (uuid: string) => {
+            if (uuid === BOKS_UUIDS.SOFTWARE_REVISION) return textEncoder.encode(sw);
+            if (uuid === BOKS_UUIDS.FIRMWARE_REVISION) return textEncoder.encode(fw);
+            throw new Error('Unknown UUID');
+        });
+        await controller.connect();
+    };
+
+    it('should unregister NFC tag successfully', async () => {
+        await setupControllerVersion('10/125', '4.3.3');
+
+        mockClientInstance.waitForPacket.mockResolvedValue({ opcode: BoksOpcode.NOTIFY_NFC_TAG_UNREGISTERED });
+
+        const result = await controller.unregisterNfcTag(validConfigKey, tagId);
+
+        expect(mockClientInstance.send).toHaveBeenCalledTimes(1);
+        expect(mockClientInstance.waitForPacket).toHaveBeenCalledWith(
+          BoksOpcode.NOTIFY_NFC_TAG_UNREGISTERED
+        );
+        expect(result).toBe(true);
     });
   });
 
