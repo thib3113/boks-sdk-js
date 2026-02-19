@@ -59,7 +59,7 @@ export class BoksClient {
     if (options?.transport) {
       this.transport = options.transport;
     } else {
-      if (typeof navigator === 'undefined' || !navigator.bluetooth) {
+      if (!options?.device && (typeof navigator === 'undefined' || !navigator.bluetooth)) {
         throw new BoksClientError(
           BoksClientErrorId.WEB_BLUETOOTH_NOT_SUPPORTED,
           'No transport provided and Web Bluetooth is not supported.'

@@ -16,7 +16,7 @@ export class WebBluetoothTransport implements BoksTransport {
   }
 
   async connect(): Promise<void> {
-    if (typeof navigator === 'undefined' || !navigator.bluetooth) {
+    if (!this.device && (typeof navigator === 'undefined' || !navigator.bluetooth)) {
       throw new BoksClientError(
         BoksClientErrorId.WEB_BLUETOOTH_NOT_SUPPORTED,
         'Web Bluetooth is not supported in this environment.'
@@ -25,6 +25,7 @@ export class WebBluetoothTransport implements BoksTransport {
 
     try {
       if (!this.device) {
+        // We checked for navigator.bluetooth above
         this.device = await navigator.bluetooth.requestDevice({
           filters: [{ services: [BOKS_UUIDS.SERVICE] }],
           optionalServices: [
