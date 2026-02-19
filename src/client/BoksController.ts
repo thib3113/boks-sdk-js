@@ -32,7 +32,14 @@ import {
   OperationErrorPacket,
   RegeneratePartAPacket,
   RegeneratePartBPacket,
-  NotifyCodeGenerationProgressPacket
+  NotifyCodeGenerationProgressPacket,
+  ReactivateCodePacket,
+  MasterCodeEditPacket,
+  SetConfigurationPacket,
+  MultiToSingleCodePacket,
+  SingleToMultiCodePacket,
+  NotifySetConfigurationSuccessPacket,
+  BoksCodeType
 } from '@/protocol';
 import { BoksClientError, BoksClientErrorId } from '@/errors/BoksClientError';
 import { hexToBytes, bytesToHex } from '@/utils/converters';
@@ -461,6 +468,74 @@ export class BoksController {
   async deleteMultiUseCode(pin: string): Promise<boolean> {
     const configKey = this.getConfigKeyOrThrow();
     await this.client.send(new DeleteMultiUseCodePacket(configKey, pin));
+    const result = await this.client.waitForOneOf<OperationSuccessPacket | OperationErrorPacket>([
+      BoksOpcode.CODE_OPERATION_SUCCESS,
+      BoksOpcode.CODE_OPERATION_ERROR
+    ]);
+    return result.opcode === BoksOpcode.CODE_OPERATION_SUCCESS;
+  }
+
+  /**
+   * Reactivates a disabled code.
+   * @param pin The PIN code to reactivate.
+   */
+  async reactivateCode(pin: string): Promise<boolean> {
+    const configKey = this.getConfigKeyOrThrow();
+    await this.client.send(new ReactivateCodePacket(configKey, pin));
+    const result = await this.client.waitForOneOf<OperationSuccessPacket | OperationErrorPacket>([
+      BoksOpcode.CODE_OPERATION_SUCCESS,
+      BoksOpcode.CODE_OPERATION_ERROR
+    ]);
+    return result.opcode === BoksOpcode.CODE_OPERATION_SUCCESS;
+  }
+
+  /**
+   * Edits a master code at the specified index.
+   * @param index The index of the master code (0-9).
+   * @param newPin The new PIN code.
+   */
+  async editMasterCode(index: number, newPin: string): Promise<boolean> {
+    const configKey = this.getConfigKeyOrThrow();
+    await this.client.send(new MasterCodeEditPacket(configKey, index, newPin));
+    const result = await this.client.waitForOneOf<OperationSuccessPacket | OperationErrorPacket>([
+      BoksOpcode.CODE_OPERATION_SUCCESS,
+      BoksOpcode.CODE_OPERATION_ERROR
+    ]);
+    return result.opcode === BoksOpcode.CODE_OPERATION_SUCCESS;
+  }
+
+  /**
+   * Sets a configuration parameter.
+   * @param params The configuration parameters (type and value).
+   */
+  async setConfiguration(params: { type: number; value: boolean }): Promise<boolean> {
+    const configKey = this.getConfigKeyOrThrow();
+    await this.client.send(new SetConfigurationPacket(configKey, params.type, params.value));
+    const result = await this.client.waitForOneOf<
+      NotifySetConfigurationSuccessPacket | OperationErrorPacket
+    >([
+      BoksOpcode.NOTIFY_SET_CONFIGURATION_SUCCESS,
+      BoksOpcode.CODE_OPERATION_ERROR
+    ]);
+    return result.opcode === BoksOpcode.NOTIFY_SET_CONFIGURATION_SUCCESS;
+  }
+
+  /**
+   * Converts a code type (Single <-> Multi).
+   * @param pin The PIN code to convert.
+   * @param targetType The target type (Single or Multi).
+   */
+  async convertCodeType(pin: string, targetType: BoksCodeType): Promise<boolean> {
+    const configKey = this.getConfigKeyOrThrow();
+
+    if (targetType === BoksCodeType.Multi) {
+      // Convert Single to Multi
+      await this.client.send(new SingleToMultiCodePacket(configKey, pin));
+    } else {
+      // Convert Multi to Single
+      await this.client.send(new MultiToSingleCodePacket(configKey, pin));
+    }
+
     const result = await this.client.waitForOneOf<OperationSuccessPacket | OperationErrorPacket>([
       BoksOpcode.CODE_OPERATION_SUCCESS,
       BoksOpcode.CODE_OPERATION_ERROR
