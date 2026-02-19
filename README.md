@@ -10,12 +10,12 @@ Core SDK for Boks Parcel Box communication, PIN generation, and protocol handlin
 
 ## Installation
 ```bash
-pnpm add @boks/sdk
+pnpm add @thib3113/boks-sdk
 ```
 
 ## Usage (Web / ESM)
 ```javascript
-import { BoksPacketFactory, generateBoksPin } from '@boks/sdk';
+import { BoksPacketFactory, generateBoksPin } from '@thib3113/boks-sdk';
 
 // Generate a PIN locally
 const pin = generateBoksPin(masterKeyBytes, 'single-use', 0);
@@ -25,9 +25,19 @@ const packet = BoksPacketFactory.createCreateMaster('ABCDEFGH', 0, '123456');
 const bytes = packet.encode();
 ```
 
+## Usage (Client / Code Splitting)
+The `BoksClient` is a powerful but optional feature. To ensure it doesn't add unnecessary weight to your bundle if you only need the PIN/Protocol features, we recommend importing it from its dedicated entry point.
+
+```javascript
+import { BoksClient } from '@thib3113/boks-sdk/client';
+
+// Use the client
+const client = new BoksClient();
+```
+
 ## Usage (Standalone HTML / IIFE)
 ```html
-<script src="dist/boks-sdk.iife.js"></script>
+<script src="https://unpkg.com/@thib3113/boks-sdk/dist/boks-sdk.js"></script>
 <script>
   const pin = BoksSDK.generateBoksPin(key, 'master', 1);
 </script>
