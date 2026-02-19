@@ -6,10 +6,12 @@ import { BoksOpcode } from '@/protocol/constants';
  */
 export class InvalidOpenCodePacket extends BoksRXPacket {
   static readonly opcode = BoksOpcode.INVALID_OPEN_CODE;
-  constructor() {
-    super(InvalidOpenCodePacket.opcode);
+
+  constructor(rawPayload?: Uint8Array) {
+    super(InvalidOpenCodePacket.opcode, rawPayload);
   }
-  parse(payload: Uint8Array) {
-    super.parse(payload);
+
+  static fromPayload(payload: Uint8Array): InvalidOpenCodePacket {
+    return new InvalidOpenCodePacket(payload);
   }
 }

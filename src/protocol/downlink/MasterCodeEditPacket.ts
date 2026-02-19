@@ -1,6 +1,6 @@
 import { AuthPacket } from '@/protocol/downlink/_AuthPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
-import { stringToBytes } from '@/utils/converters';
+import { stringToBytes, bytesToString } from '@/utils/converters';
 import { validatePinCode } from '@/utils/pin';
 
 /**
@@ -20,6 +20,16 @@ export class MasterCodeEditPacket extends AuthPacket {
   ) {
     super(configKey);
     validatePinCode(newPin);
+  }
+
+  static fromPayload(payload: Uint8Array): MasterCodeEditPacket {
+    const configKey = bytesToString(payload.slice(0, 8));
+    let index = 0;
+    if (payload.length > 8) {
+      index = payload[8];
+    }
+    const newPin = bytesToString(payload.slice(9, 15));
+    return new MasterCodeEditPacket(configKey, index, newPin);
   }
 
   toPayload(): Uint8Array {

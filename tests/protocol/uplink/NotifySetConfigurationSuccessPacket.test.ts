@@ -3,11 +3,7 @@ import { NotifySetConfigurationSuccessPacket } from '@/protocol/uplink/NotifySet
 
 describe('NotifySetConfigurationSuccessPacket', () => {
   it('should parse correctly', () => {
-    const packet = new NotifySetConfigurationSuccessPacket();
-    packet.parse(new Uint8Array(0));
+    const packet = NotifySetConfigurationSuccessPacket.fromPayload(new Uint8Array(0));
     expect(packet.opcode).toBe(0xC4);
   });
 });
-
-
-

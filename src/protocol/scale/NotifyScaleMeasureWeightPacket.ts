@@ -6,18 +6,19 @@ import { BoksOpcode } from '@/protocol/constants';
  */
 export class NotifyScaleMeasureWeightPacket extends BoksRXPacket {
   static readonly opcode = BoksOpcode.NOTIFY_SCALE_MEASURE_WEIGHT;
-  public weight: number = 0;
 
-  constructor() {
-    super(NotifyScaleMeasureWeightPacket.opcode);
+  constructor(
+    public readonly weight: number = 0,
+    rawPayload?: Uint8Array
+  ) {
+    super(NotifyScaleMeasureWeightPacket.opcode, rawPayload);
   }
 
-  parse(payload: Uint8Array) {
-    super.parse(payload);
+  static fromPayload(payload: Uint8Array): NotifyScaleMeasureWeightPacket {
+    let weight = 0;
     if (payload.length >= 4) {
-      // Assuming 32-bit float or integer, doc says [DATA]
-      // Let's store raw for now or assume int if we have more info
-      this.weight = (payload[0] << 24) | (payload[1] << 16) | (payload[2] << 8) | payload[3];
+      weight = (payload[0] << 24) | (payload[1] << 16) | (payload[2] << 8) | payload[3];
     }
+    return new NotifyScaleMeasureWeightPacket(weight, payload);
   }
 }

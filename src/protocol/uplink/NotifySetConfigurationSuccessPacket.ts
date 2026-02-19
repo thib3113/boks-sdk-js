@@ -6,10 +6,12 @@ import { BoksOpcode } from '@/protocol/constants';
  */
 export class NotifySetConfigurationSuccessPacket extends BoksRXPacket {
   static readonly opcode = BoksOpcode.NOTIFY_SET_CONFIGURATION_SUCCESS;
-  constructor() {
-    super(NotifySetConfigurationSuccessPacket.opcode);
+
+  constructor(rawPayload?: Uint8Array) {
+    super(NotifySetConfigurationSuccessPacket.opcode, rawPayload);
   }
-  parse(payload: Uint8Array) {
-    super.parse(payload);
+
+  static fromPayload(payload: Uint8Array): NotifySetConfigurationSuccessPacket {
+    return new NotifySetConfigurationSuccessPacket(payload);
   }
 }

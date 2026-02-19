@@ -3,11 +3,7 @@ import { NotifyCodeGenerationErrorPacket } from '@/protocol/uplink/NotifyCodeGen
 
 describe('NotifyCodeGenerationErrorPacket', () => {
   it('should parse correctly', () => {
-    const packet = new NotifyCodeGenerationErrorPacket();
-    packet.parse(new Uint8Array(0));
+    const packet = NotifyCodeGenerationErrorPacket.fromPayload(new Uint8Array(0));
     expect(packet.opcode).toBe(0xC1);
   });
 });
-
-
-

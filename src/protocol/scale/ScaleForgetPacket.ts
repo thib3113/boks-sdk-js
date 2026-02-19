@@ -10,6 +10,9 @@ export class ScaleForgetPacket extends BoksPacket {
   get opcode() {
     return ScaleForgetPacket.opcode;
   }
+  static fromPayload(_payload: Uint8Array): ScaleForgetPacket {
+    return new ScaleForgetPacket();
+  }
   toPayload() {
     return new Uint8Array(0);
   }

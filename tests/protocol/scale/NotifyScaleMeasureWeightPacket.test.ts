@@ -4,11 +4,7 @@ import { hexToBytes } from '@/utils/converters';
 
 describe('NotifyScaleMeasureWeightPacket', () => {
   it('should parse weight correctly', () => {
-    const packet = new NotifyScaleMeasureWeightPacket();
-    packet.parse(hexToBytes('000004D2')); // 1234
+    const packet = NotifyScaleMeasureWeightPacket.fromPayload(hexToBytes('000004D2')); // 1234
     expect(packet.weight).toBe(1234);
   });
 });
-
-
-

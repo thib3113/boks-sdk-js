@@ -10,6 +10,9 @@ export class ScaleReconnectPacket extends BoksPacket {
   get opcode() {
     return ScaleReconnectPacket.opcode;
   }
+  static fromPayload(_payload: Uint8Array): ScaleReconnectPacket {
+    return new ScaleReconnectPacket();
+  }
   toPayload() {
     return new Uint8Array(0);
   }

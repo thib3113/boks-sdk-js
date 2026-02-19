@@ -3,10 +3,7 @@ import { ErrorNfcTagAlreadyExistsScanPacket } from '@/protocol/uplink/ErrorNfcTa
 
 describe('ErrorNfcTagAlreadyExistsScanPacket', () => {
   it('should have correct status', () => {
-    const packet = new ErrorNfcTagAlreadyExistsScanPacket();
+    const packet = ErrorNfcTagAlreadyExistsScanPacket.fromPayload(new Uint8Array(0));
     expect(packet.status).toBe('already_exists');
   });
 });
-
-
-

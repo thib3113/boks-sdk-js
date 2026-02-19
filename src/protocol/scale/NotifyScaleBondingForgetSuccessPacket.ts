@@ -6,10 +6,12 @@ import { BoksOpcode } from '@/protocol/constants';
  */
 export class NotifyScaleBondingForgetSuccessPacket extends BoksRXPacket {
   static readonly opcode = BoksOpcode.NOTIFY_SCALE_BONDING_FORGET_SUCCESS;
-  constructor() {
-    super(NotifyScaleBondingForgetSuccessPacket.opcode);
+
+  constructor(rawPayload?: Uint8Array) {
+    super(NotifyScaleBondingForgetSuccessPacket.opcode, rawPayload);
   }
-  parse(payload: Uint8Array) {
-    super.parse(payload);
+
+  static fromPayload(payload: Uint8Array): NotifyScaleBondingForgetSuccessPacket {
+    return new NotifyScaleBondingForgetSuccessPacket(payload);
   }
 }

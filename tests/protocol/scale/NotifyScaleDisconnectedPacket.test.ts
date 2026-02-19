@@ -3,11 +3,7 @@ import { NotifyScaleDisconnectedPacket } from '@/protocol/scale/NotifyScaleDisco
 
 describe('NotifyScaleDisconnectedPacket', () => {
   it('should parse correctly', () => {
-    const packet = new NotifyScaleDisconnectedPacket();
-    packet.parse(new Uint8Array(0));
+    const packet = NotifyScaleDisconnectedPacket.fromPayload(new Uint8Array(0));
     expect(packet.opcode).toBe(0xB8);
   });
 });
-
-
-

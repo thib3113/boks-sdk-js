@@ -6,16 +6,19 @@ import { BoksOpcode } from '@/protocol/constants';
  */
 export class NotifyScaleBondingErrorPacket extends BoksRXPacket {
   static readonly opcode = BoksOpcode.NOTIFY_SCALE_BONDING_ERROR;
-  public errorCode: number = 0;
 
-  constructor() {
-    super(NotifyScaleBondingErrorPacket.opcode);
+  constructor(
+    public readonly errorCode: number = 0,
+    rawPayload?: Uint8Array
+  ) {
+    super(NotifyScaleBondingErrorPacket.opcode, rawPayload);
   }
 
-  parse(payload: Uint8Array) {
-    super.parse(payload);
+  static fromPayload(payload: Uint8Array): NotifyScaleBondingErrorPacket {
+    let errorCode = 0;
     if (payload.length > 0) {
-      this.errorCode = payload[0];
+      errorCode = payload[0];
     }
+    return new NotifyScaleBondingErrorPacket(errorCode, payload);
   }
 }

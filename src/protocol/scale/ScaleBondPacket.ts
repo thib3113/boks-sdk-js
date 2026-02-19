@@ -13,6 +13,9 @@ export class ScaleBondPacket extends BoksPacket {
   constructor(public readonly data: Uint8Array = new Uint8Array(0)) {
     super();
   }
+  static fromPayload(payload: Uint8Array): ScaleBondPacket {
+    return new ScaleBondPacket(payload);
+  }
   toPayload() {
     return this.data;
   }

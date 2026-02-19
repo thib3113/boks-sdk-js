@@ -8,26 +8,40 @@ import { bytesToHex } from '@/utils/converters';
  */
 export class NfcOpeningHistoryPacket extends BoksHistoryEvent {
   static readonly opcode = BoksOpcode.LOG_EVENT_NFC_OPENING;
-  public tagType: number = 0;
-  public uid: string = '';
 
-  constructor() {
-    super(NfcOpeningHistoryPacket.opcode);
+  constructor(
+    age: number = 0,
+    public readonly tagType: number = 0,
+    public readonly uid: string = '',
+    rawPayload?: Uint8Array
+  ) {
+    super(NfcOpeningHistoryPacket.opcode, age, rawPayload);
   }
 
-  parse(payload: Uint8Array) {
-    this.parseHistoryHeader(payload);
+  static fromPayload(payload: Uint8Array): NfcOpeningHistoryPacket {
+    let age = 0;
+    let tagType = 0;
+    let uid = '';
+
+    if (payload.length >= 3) {
+      age = (payload[0] << 16) | (payload[1] << 8) | payload[2];
+    }
+
     let offset = 3;
     if (payload.length > offset) {
-      this.tagType = payload[offset];
+      tagType = payload[offset];
       offset++;
     }
     if (payload.length > offset) {
+      // Assuming next byte is length? The original code did: const uidLen = payload[offset];
+      // But didn't check if payload had enough bytes for length byte?
+      // "if (payload.length > offset)" covers the length byte existence.
       const uidLen = payload[offset];
       offset++;
       if (payload.length >= offset + uidLen) {
-        this.uid = bytesToHex(payload.slice(offset, offset + uidLen));
+        uid = bytesToHex(payload.slice(offset, offset + uidLen));
       }
     }
+    return new NfcOpeningHistoryPacket(age, tagType, uid, payload);
   }
 }

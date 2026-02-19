@@ -6,17 +6,20 @@ import { BoksOpcode } from '@/protocol/constants';
  */
 export class AnswerDoorStatusPacket extends BoksRXPacket {
   static readonly opcode = BoksOpcode.ANSWER_DOOR_STATUS;
-  public isOpen: boolean = false;
 
-  constructor() {
-    super(AnswerDoorStatusPacket.opcode);
+  constructor(
+    public readonly isOpen: boolean = false,
+    rawPayload?: Uint8Array
+  ) {
+    super(AnswerDoorStatusPacket.opcode, rawPayload);
   }
 
-  parse(payload: Uint8Array) {
-    super.parse(payload);
+  static fromPayload(payload: Uint8Array): AnswerDoorStatusPacket {
+    let isOpen = false;
     if (payload.length >= 2) {
       // Logic: isOpen if Raw == 0x01 and Inverted == 0x00
-      this.isOpen = payload[1] === 0x01 && payload[0] === 0x00;
+      isOpen = payload[1] === 0x01 && payload[0] === 0x00;
     }
+    return new AnswerDoorStatusPacket(isOpen, payload);
   }
 }

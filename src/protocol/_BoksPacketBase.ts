@@ -21,14 +21,6 @@ export abstract class BoksPacket {
   abstract toPayload(): Uint8Array;
 
   /**
-   * Parses the incoming payload and stores it.
-   * Can be overridden by sub-classes to extract specific fields.
-   */
-  parse(payload: Uint8Array): void {
-    this.rawPayload = payload;
-  }
-
-  /**
    * Static factory method to create an instance from a payload.
    * This MUST be implemented by leaf classes for strict parsing.
    */

@@ -10,6 +10,9 @@ export class ScalePrepareDfuPacket extends BoksPacket {
   get opcode() {
     return ScalePrepareDfuPacket.opcode;
   }
+  static fromPayload(_payload: Uint8Array): ScalePrepareDfuPacket {
+    return new ScalePrepareDfuPacket();
+  }
   toPayload() {
     return new Uint8Array(0);
   }

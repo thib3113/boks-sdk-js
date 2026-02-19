@@ -9,6 +9,9 @@ export class RequestLogsPacket extends BoksPacket {
   get opcode() {
     return RequestLogsPacket.opcode;
   }
+  static fromPayload(_payload: Uint8Array): RequestLogsPacket {
+    return new RequestLogsPacket();
+  }
   toPayload() {
     return new Uint8Array(0);
   }

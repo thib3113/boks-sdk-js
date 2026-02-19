@@ -9,6 +9,9 @@ export class AskDoorStatusPacket extends BoksPacket {
   get opcode() {
     return AskDoorStatusPacket.opcode;
   }
+  static fromPayload(_payload: Uint8Array): AskDoorStatusPacket {
+    return new AskDoorStatusPacket();
+  }
   toPayload() {
     return new Uint8Array(0);
   }

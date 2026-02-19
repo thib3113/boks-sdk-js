@@ -6,16 +6,26 @@ import { BoksOpcode } from '@/protocol/constants';
  */
 export class PowerOffHistoryPacket extends BoksHistoryEvent {
   static readonly opcode = BoksOpcode.POWER_OFF;
-  public reason: number = 0;
 
-  constructor() {
-    super(PowerOffHistoryPacket.opcode);
+  constructor(
+    age: number = 0,
+    public readonly reason: number = 0,
+    rawPayload?: Uint8Array
+  ) {
+    super(PowerOffHistoryPacket.opcode, age, rawPayload);
   }
 
-  parse(payload: Uint8Array) {
-    this.parseHistoryHeader(payload);
-    if (payload.length > 3) {
-      this.reason = payload[3];
+  static fromPayload(payload: Uint8Array): PowerOffHistoryPacket {
+    let age = 0;
+    let reason = 0;
+
+    if (payload.length >= 3) {
+      age = (payload[0] << 16) | (payload[1] << 8) | payload[2];
     }
+
+    if (payload.length > 3) {
+      reason = payload[3];
+    }
+    return new PowerOffHistoryPacket(age, reason, payload);
   }
 }

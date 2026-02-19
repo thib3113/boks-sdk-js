@@ -1,6 +1,6 @@
 import { AuthPacket } from '@/protocol/downlink/_AuthPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
-import { stringToBytes } from '@/utils/converters';
+import { stringToBytes, bytesToString } from '@/utils/converters';
 import { validatePinCode } from '@/utils/pin';
 
 /**
@@ -18,6 +18,12 @@ export class DeleteSingleUseCodePacket extends AuthPacket {
   ) {
     super(configKey);
     validatePinCode(pin);
+  }
+
+  static fromPayload(payload: Uint8Array): DeleteSingleUseCodePacket {
+    const configKey = bytesToString(payload.slice(0, 8));
+    const pin = bytesToString(payload.slice(8, 14));
+    return new DeleteSingleUseCodePacket(configKey, pin);
   }
 
   toPayload(): Uint8Array {

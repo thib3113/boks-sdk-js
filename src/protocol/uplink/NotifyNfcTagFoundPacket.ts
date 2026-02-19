@@ -7,21 +7,17 @@ import { bytesToHex } from '@/utils/converters';
  */
 export class NotifyNfcTagFoundPacket extends BoksRXPacket {
   static readonly opcode = BoksOpcode.NOTIFY_NFC_TAG_FOUND;
-  public uid: string = '';
   public readonly status = 'found';
 
-  constructor() {
-    super(NotifyNfcTagFoundPacket.opcode);
-  }
-
-  parse(payload: Uint8Array) {
-    super.parse(payload);
-    this.uid = bytesToHex(payload);
+  constructor(
+    public readonly uid: string = '',
+    rawPayload?: Uint8Array
+  ) {
+    super(NotifyNfcTagFoundPacket.opcode, rawPayload);
   }
 
   static fromPayload(payload: Uint8Array): NotifyNfcTagFoundPacket {
-    const packet = new NotifyNfcTagFoundPacket();
-    packet.parse(payload);
-    return packet;
+    const uid = bytesToHex(payload);
+    return new NotifyNfcTagFoundPacket(uid, payload);
   }
 }

@@ -3,11 +3,7 @@ import { NotifyScaleBondingForgetSuccessPacket } from '@/protocol/scale/NotifySc
 
 describe('NotifyScaleBondingForgetSuccessPacket', () => {
   it('should parse correctly', () => {
-    const packet = new NotifyScaleBondingForgetSuccessPacket();
-    packet.parse(new Uint8Array(0));
+    const packet = NotifyScaleBondingForgetSuccessPacket.fromPayload(new Uint8Array(0));
     expect(packet.opcode).toBe(0xB3);
   });
 });
-
-
-
