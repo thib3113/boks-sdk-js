@@ -57,8 +57,8 @@ interface BoksRequirements {
 export class BoksController {
   private readonly client: BoksClient;
   private _hardwareInfo: BoksHardwareInfo | null = null;
-  private _masterKey: string | null = null;
-  private _configKey: string | null = null;
+  #masterKey: string | null = null;
+  #configKey: string | null = null;
 
   constructor(optionsOrClient?: BoksClientOptions | BoksClient) {
     if (optionsOrClient instanceof BoksClient) {
@@ -88,23 +88,23 @@ export class BoksController {
       );
     }
 
-    this._masterKey = normalizedHex;
+    this.#masterKey = normalizedHex;
 
     // Derive Config Key: Last 8 hex chars of the master key.
-    this._configKey = normalizedHex.slice(-8);
+    this.#configKey = normalizedHex.slice(-8);
   }
 
   /**
    * Returns the Config Key or throws if not set.
    */
   private getConfigKeyOrThrow(): string {
-    if (!this._configKey) {
+    if (!this.#configKey) {
       throw new BoksClientError(
         BoksClientErrorId.INVALID_PARAMETER,
         'Credentials not set. Call setCredentials() first.'
       );
     }
-    return this._configKey;
+    return this.#configKey;
   }
 
   /**
@@ -127,6 +127,13 @@ export class BoksController {
    */
   get hardwareInfo(): BoksHardwareInfo | null {
     return this._hardwareInfo;
+  }
+
+  /**
+   * Retrieves the current Master Key (hex string).
+   */
+  get masterKey(): string | null {
+    return this.#masterKey;
   }
 
   /**
