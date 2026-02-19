@@ -82,6 +82,9 @@ describe('BoksClient fetchHistory', () => {
 
     const historyPromise = client.fetchHistory(100);
 
+    // Create the assertion promise immediately to catch rejection
+    const assertion = expect(historyPromise).rejects.toThrowError(expect.objectContaining({ id: BoksClientErrorId.TIMEOUT }));
+
     // Wait for send to likely happen
     await vi.advanceTimersByTimeAsync(1);
 
@@ -93,7 +96,8 @@ describe('BoksClient fetchHistory', () => {
     // Advance time past timeout
     await vi.advanceTimersByTimeAsync(200);
 
-    await expect(historyPromise).rejects.toThrowError(expect.objectContaining({ id: BoksClientErrorId.TIMEOUT }));
+    // Now wait for the assertion to resolve
+    await assertion;
     vi.useRealTimers();
   });
 });
