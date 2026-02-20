@@ -1,6 +1,8 @@
-# Boks SDK JS
+# Boks SDK JS (Unofficial)
 
-The official JavaScript/TypeScript SDK for communicating with Boks Parcel Boxes. This library provides a high-level controller for managing connections, commands, and security, as well as low-level primitives for custom implementations.
+A community-driven, unofficial JavaScript/TypeScript SDK for communicating with Boks Parcel Boxes. This library provides a high-level controller for managing connections, commands, and security, as well as low-level primitives for custom implementations.
+
+> ⚠️ **Disclaimer:** This project is **not** affiliated with, endorsed by, or associated with the manufacturer of the Boks device. It is an independent open-source effort for interoperability. See [LEGALS.md](./LEGALS.md) for full details.
 
 ## Installation
 
@@ -27,12 +29,22 @@ console.log('Connected to Boks!');
 
 ### 2. Authentication & Configuration
 
-The controller simplifies security by automatically deriving the necessary configuration keys from your Master Key. You do not need to manually calculate the `configKey`.
+The controller simplifies security. You can provide either the full **Master Key** (which allows all operations) or just the **Configuration Key** (if that's all you have, for restricted administrative tasks).
+
+**Option A: Using the Master Key (Recommended)**
+The controller automatically extracts the Configuration Key from it.
 
 ```typescript
 // Set your 32-byte Master Key (hex string)
-// The controller automatically extracts the Config Key (last 8 bytes) for administrative tasks.
 controller.setCredentials('YOUR_MASTER_KEY_HEX_STRING_HERE');
+```
+
+**Option B: Using the Configuration Key Only**
+If you don't possess the Master Key, you can still perform administrative tasks (like NFC management or history retrieval) by providing the Config Key directly. Note that some operations (like generating PINs locally) require the Master Key.
+
+```typescript
+// Set your Configuration Key (derived from Master Key or provided separately)
+controller.setCredentials('YOUR_CONFIG_KEY_HEX_STRING_HERE');
 ```
 
 ### 3. Basic Operations
@@ -65,6 +77,54 @@ await scanResult.register(); // Register the found tag
 // Fetch usage history
 const logs = await controller.fetchHistory();
 console.log(logs);
+```
+
+## Custom Transports (Node.js / Cordova / React Native)
+
+By default, `BoksController` uses the standard WebBluetooth API (Chrome/Edge/Bluefy). However, for environments without WebBluetooth (like Node.js, React Native, or Cordova), you can inject a custom transport layer.
+
+### Example: Node.js with `noble`
+
+You can implement the `BoksTransport` interface using libraries like `noble`.
+
+```typescript
+import { BoksController } from '@thib3113/boks-sdk';
+import { NobleTransport } from './your-custom-transport'; // Your implementation of BoksTransport
+
+// Inject the custom transport into the client options
+const transport = new NobleTransport();
+const controller = new BoksController({ transport });
+
+await controller.connect();
+```
+
+### Example: Cordova / Capacitor
+
+Similarly, you can wrap `cordova-plugin-ble-central` or `capacitor-community/bluetooth-le` in a class implementing `BoksTransport` and pass it to the controller.
+
+## Browser / IIFE Usage
+
+You can use the SDK directly in the browser via a CDN (like unpkg or jsdelivr) without a bundler.
+
+```html
+<!-- Full SDK (includes Client & Protocol) -->
+<script src="https://unpkg.com/@thib3113/boks-sdk/dist/boks-sdk.js"></script>
+<script>
+  // Access via the global BoksSDK object
+  const controller = new BoksSDK.BoksController();
+
+  document.getElementById('connectBtn').onclick = async () => {
+    await controller.connect();
+    console.log('Connected!');
+  };
+</script>
+
+<!-- Core Only (Protocol & Crypto, lighter) -->
+<script src="https://unpkg.com/@thib3113/boks-sdk/dist/boks-core.js"></script>
+<script>
+  // Useful for generating PINs client-side without BLE dependencies
+  const pin = BoksSDK.generateBoksPin(masterKeyBytes, 'single-use', 0);
+</script>
 ```
 
 ## Core Only (Low-Level)
@@ -112,8 +172,20 @@ await controller.regenerateMasterKey(newMasterKeyBytes);
 await controller.initialize(seedBytes);
 ```
 
+## Examples
+
+Check the [examples/](./examples/) folder for complete scripts demonstrating various use cases:
+
+- **Initialization**: How to initialize a brand new Boks device.
+- **Updates**: How to perform firmware updates (if applicable).
+- **Basic Usage**: Simple open/close operations.
+
 ## Sponsor this Project
 
 If you find this SDK useful, please consider sponsoring the project to support ongoing development and maintenance.
 
 [Become a Sponsor](https://github.com/sponsors/thib3113)
+
+---
+
+**Legal Note:** This software is provided "AS IS", without warranty of any kind. The author cannot be held responsible for any damage to your device. See [LEGALS.md](./LEGALS.md).
