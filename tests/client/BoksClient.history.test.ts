@@ -69,11 +69,16 @@ describe('BoksClient fetchHistory', () => {
 
     const events = await historyPromise;
 
+    const now = Date.now();
     expect(events).toHaveLength(2);
     expect(events[0]).toBeInstanceOf(DoorOpenHistoryPacket);
     expect(events[0].age).toBe(258);
+    // Verify date calculation (allow 1000ms tolerance for execution time)
+    expect(Math.abs(events[0].date.getTime() - (now - 258 * 1000))).toBeLessThan(1000);
+
     expect(events[1]).toBeInstanceOf(DoorOpenHistoryPacket);
     expect(events[1].age).toBe(515);
+    expect(Math.abs(events[1].date.getTime() - (now - 515 * 1000))).toBeLessThan(1000);
   });
 
   it('should timeout if end packet is not received', async () => {
