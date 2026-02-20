@@ -18,7 +18,11 @@ export class NotifyScaleMeasureWeightPacket extends BoksRXPacket {
   static fromPayload(payload: Uint8Array): NotifyScaleMeasureWeightPacket {
     let weight = 0;
     if (payload.length >= 4) {
-      weight = (payload[0] << 24) | (payload[1] << 16) | (payload[2] << 8) | payload[3];
+      // payload[0] ? -1 : 1
+      const sign = payload[0] !== 0 ? -1 : 1;
+      // payload[1] << 16 | payload[2] << 8 | payload[3]
+      const val = (payload[1] << 16) | (payload[2] << 8) | payload[3];
+      weight = sign * val;
     }
     return new NotifyScaleMeasureWeightPacket(weight, payload);
   }

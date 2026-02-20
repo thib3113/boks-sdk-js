@@ -42,7 +42,21 @@ import {
   NotifySetConfigurationSuccessPacket,
   BoksCodeType,
   CountCodesPacket,
-  NotifyCodesCountPacket
+  NotifyCodesCountPacket,
+  // Scale
+  ScaleBondPacket,
+  NotifyScaleBondingSuccessPacket,
+  NotifyScaleBondingErrorPacket,
+  ScaleMeasureWeightPacket,
+  NotifyScaleMeasureWeightPacket,
+  ScaleTareEmptyPacket,
+  NotifyScaleTareEmptyOkPacket,
+  ScaleTareLoadedPacket,
+  NotifyScaleTareLoadedOkPacket,
+  ScaleForgetPacket,
+  NotifyScaleBondingForgetSuccessPacket,
+  ScaleGetRawSensorsPacket,
+  NotifyScaleRawSensorsPacket
 } from '@/protocol';
 import { BoksClientError, BoksClientErrorId } from '@/errors/BoksClientError';
 import { hexToBytes, bytesToHex } from '@/utils/converters';
@@ -711,5 +725,73 @@ export class BoksController {
           reject(err);
         });
     });
+  }
+
+  /**
+   * Bonds with the scale.
+   * @experimental
+   */
+  async bondScale(): Promise<boolean> {
+    await this.client.send(new ScaleBondPacket());
+    const result = await this.client.waitForOneOf<
+      NotifyScaleBondingSuccessPacket | NotifyScaleBondingErrorPacket
+    >([BoksOpcode.NOTIFY_SCALE_BONDING_SUCCESS, BoksOpcode.NOTIFY_SCALE_BONDING_ERROR]);
+    return result.opcode === BoksOpcode.NOTIFY_SCALE_BONDING_SUCCESS;
+  }
+
+  /**
+   * Gets the weight from the scale.
+   * @experimental
+   */
+  async getScaleWeight(): Promise<number> {
+    await this.client.send(new ScaleMeasureWeightPacket());
+    const result = await this.client.waitForPacket<NotifyScaleMeasureWeightPacket>(
+      BoksOpcode.NOTIFY_SCALE_MEASURE_WEIGHT
+    );
+    return result.weight;
+  }
+
+  /**
+   * Tares the scale.
+   * @param empty If true, tares as empty. If false, tares as loaded.
+   * @experimental
+   */
+  async tareScale(empty: boolean): Promise<boolean> {
+    if (empty) {
+      await this.client.send(new ScaleTareEmptyPacket());
+      await this.client.waitForPacket<NotifyScaleTareEmptyOkPacket>(
+        BoksOpcode.NOTIFY_SCALE_TARE_EMPTY_OK
+      );
+    } else {
+      await this.client.send(new ScaleTareLoadedPacket());
+      await this.client.waitForPacket<NotifyScaleTareLoadedOkPacket>(
+        BoksOpcode.NOTIFY_SCALE_TARE_LOADED_OK
+      );
+    }
+    return true;
+  }
+
+  /**
+   * Forgets the scale bonding.
+   * @experimental
+   */
+  async forgetScale(): Promise<boolean> {
+    await this.client.send(new ScaleForgetPacket());
+    await this.client.waitForPacket<NotifyScaleBondingForgetSuccessPacket>(
+      BoksOpcode.NOTIFY_SCALE_BONDING_FORGET_SUCCESS
+    );
+    return true;
+  }
+
+  /**
+   * Gets raw sensor data from the scale.
+   * @experimental
+   */
+  async getScaleRawSensors(): Promise<Uint8Array> {
+    await this.client.send(new ScaleGetRawSensorsPacket());
+    const result = await this.client.waitForPacket<NotifyScaleRawSensorsPacket>(
+      BoksOpcode.NOTIFY_SCALE_RAW_SENSORS
+    );
+    return result.data;
   }
 }
