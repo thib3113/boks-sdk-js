@@ -8,6 +8,7 @@ describe('DoorOpenHistoryPacket', () => {
     const packet = DoorOpenHistoryPacket.fromPayload(hexToBytes('00003C')); // 60s
     expect(packet.status).toBe('open');
     expect(packet.age).toBe(60);
+    expect(Math.abs(packet.date.getTime() - (Date.now() - 60000))).toBeLessThan(1000);
     expect(bytesToHex(packet.encode())).toBe(hex);
   });
 });

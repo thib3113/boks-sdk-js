@@ -6,9 +6,11 @@ import { BoksOpcode } from '@/protocol/constants';
  */
 export abstract class BoksHistoryEvent extends BoksRXPacket {
   public age: number = 0;
+  public readonly date: Date;
 
   constructor(opcode: BoksOpcode, age: number = 0, rawPayload?: Uint8Array) {
     super(opcode, rawPayload);
     this.age = age;
+    this.date = new Date(Date.now() - age * 1000);
   }
 }
