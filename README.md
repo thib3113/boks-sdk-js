@@ -1,60 +1,119 @@
 # Boks SDK JS
 
-Core SDK for Boks Parcel Box communication, PIN generation, and protocol handling.
-
-## Features
-- **PIN Algorithm**: Local implementation of the proprietary Boks PIN generation (BLAKE2s based).
-- **Protocol Handling**: Comprehensive enum of Boks BLE opcodes and packet builders.
-- **Provisioning**: Support for Master Key regeneration (Opcodes 0x20/0x21).
-- **Multi-platform**: ESM, UMD, and IIFE support.
-- **Tree-shaking Friendly**: Dedicated core entry point for lighter bundles.
+The official JavaScript/TypeScript SDK for communicating with Boks Parcel Boxes. This library provides a high-level controller for managing connections, commands, and security, as well as low-level primitives for custom implementations.
 
 ## Installation
+
 ```bash
 pnpm add @thib3113/boks-sdk
 ```
 
-## Usage
+## High-Level Usage (Recommended)
 
-### Full SDK (Default)
-Includes everything: Client (WebBluetooth), Protocol, Crypto, and Utilities.
+The `BoksController` is the primary entry point for interacting with Boks devices. It handles the complexity of the protocol, connection management, and state tracking.
 
-```javascript
-import { BoksClient, BoksPacketFactory, generateBoksPin } from '@thib3113/boks-sdk';
+### 1. Initialization & Connection
 
-// Initialize the client
-const client = new BoksClient();
+```typescript
+import { BoksController } from '@thib3113/boks-sdk';
 
-// Generate a PIN locally
-const pin = generateBoksPin(masterKeyBytes, 'single-use', 0);
+// Initialize the controller (uses WebBluetooth by default in browsers)
+const controller = new BoksController();
+
+// Connect to a nearby Boks device
+await controller.connect();
+console.log('Connected to Boks!');
 ```
 
-### Core Only (Lighter Bundle)
-If you only need the protocol definitions, PIN generation, or utilities *without* the WebBluetooth client implementation, use the `core` entry point. This significantly reduces bundle size.
+### 2. Authentication & Configuration
 
-```javascript
+The controller simplifies security by automatically deriving the necessary configuration keys from your Master Key. You do not need to manually calculate the `configKey`.
+
+```typescript
+// Set your 32-byte Master Key (hex string)
+// The controller automatically extracts the Config Key (last 8 bytes) for administrative tasks.
+controller.setCredentials('YOUR_MASTER_KEY_HEX_STRING_HERE');
+```
+
+### 3. Basic Operations
+
+Once connected and authenticated (if required for the operation), you can send commands.
+
+```typescript
+// Open the door with a PIN code
+const success = await controller.openDoor('123456');
+
+if (success) {
+  console.log('Door opened!');
+} else {
+  console.log('Invalid PIN.');
+}
+
+// Get the current door status
+const isOpen = await controller.getDoorStatus();
+console.log(`Door is ${isOpen ? 'Open' : 'Closed'}`);
+```
+
+### 4. Advanced Administrative Tasks
+
+```typescript
+// Scan for NFC tags (requires HW >= 4.0)
+const scanResult = await controller.scanNFCTags();
+console.log(`Found tag: ${scanResult.tagId}`);
+await scanResult.register(); // Register the found tag
+
+// Fetch usage history
+const logs = await controller.fetchHistory();
+console.log(logs);
+```
+
+## Core Only (Low-Level)
+
+For environments where bundle size is critical (e.g., restricted IoT devices) or when you only need specific algorithms without the full client logic, you can import from the `core` entry point.
+
+```typescript
 import { BoksPacketFactory, generateBoksPin } from '@thib3113/boks-sdk/core';
 
-// Create a BLE packet
-const packet = BoksPacketFactory.createCreateMaster('ABCDEFGH', 0, '123456');
+// 1. Generate a PIN locally (BLAKE2s based)
+// Useful for server-side generation or offline apps
+const pin = generateBoksPin(masterKeyBytes, 'single-use', sequenceNumber);
+
+// 2. Create raw BLE packets manually
+const packet = BoksPacketFactory.createOpenDoorPacket('123456');
 const bytes = packet.encode();
 ```
 
-## Usage (Standalone HTML / IIFE)
+## Experimental Features
 
-### Full SDK
-```html
-<script src="https://unpkg.com/@thib3113/boks-sdk/dist/boks-sdk.js"></script>
-<script>
-  const client = new BoksSDK.BoksClient();
-</script>
+> ⚠️ **Warning:** These features are experimental and may change or be removed in future versions. Use with caution.
+
+### Boks Scale
+
+Support for the connected scale accessory.
+
+```typescript
+// Bond with the scale
+await controller.bondScale();
+
+// Get weight
+const weight = await controller.getScaleWeight();
+console.log(`Weight: ${weight}g`);
 ```
 
-### Core Only
-```html
-<script src="https://unpkg.com/@thib3113/boks-sdk/dist/boks-core.js"></script>
-<script>
-  const pin = BoksSDK.generateBoksPin(key, 'master', 1);
-  // BoksSDK.BoksClient is undefined here
-</script>
+### Provisioning (Master Key Regeneration)
+
+Mechanisms to regenerate the Master Key on the device.
+
+```typescript
+// Regenerate the Master Key (requires current credentials)
+await controller.regenerateMasterKey(newMasterKeyBytes);
+
+// Factory Initialization (requires seed, no auth)
+await controller.initialize(seedBytes);
 ```
+
+## Sponsor this Project
+
+If you find this SDK useful, please consider sponsoring the project to support ongoing development and maintenance.
+
+[Become a Sponsor](https://github.com/sponsors/thib3113)
