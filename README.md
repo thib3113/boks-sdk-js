@@ -1,60 +1,191 @@
-# Boks SDK JS
+# Boks SDK JS (Unofficial)
 
-Core SDK for Boks Parcel Box communication, PIN generation, and protocol handling.
+A community-driven, unofficial JavaScript/TypeScript SDK for communicating with Boks Parcel Boxes. This library provides a high-level controller for managing connections, commands, and security, as well as low-level primitives for custom implementations.
 
-## Features
-- **PIN Algorithm**: Local implementation of the proprietary Boks PIN generation (BLAKE2s based).
-- **Protocol Handling**: Comprehensive enum of Boks BLE opcodes and packet builders.
-- **Provisioning**: Support for Master Key regeneration (Opcodes 0x20/0x21).
-- **Multi-platform**: ESM, UMD, and IIFE support.
-- **Tree-shaking Friendly**: Dedicated core entry point for lighter bundles.
+> ⚠️ **Disclaimer:** This project is **not** affiliated with, endorsed by, or associated with the manufacturer of the Boks device. It is an independent open-source effort for interoperability. See [LEGALS.md](./LEGALS.md) for full details.
 
 ## Installation
+
 ```bash
 pnpm add @thib3113/boks-sdk
 ```
 
-## Usage
+## High-Level Usage (Recommended)
 
-### Full SDK (Default)
-Includes everything: Client (WebBluetooth), Protocol, Crypto, and Utilities.
+The `BoksController` is the primary entry point for interacting with Boks devices. It handles the complexity of the protocol, connection management, and state tracking.
 
-```javascript
-import { BoksClient, BoksPacketFactory, generateBoksPin } from '@thib3113/boks-sdk';
+### 1. Initialization & Connection
 
-// Initialize the client
-const client = new BoksClient();
+```typescript
+import { BoksController } from '@thib3113/boks-sdk';
 
-// Generate a PIN locally
-const pin = generateBoksPin(masterKeyBytes, 'single-use', 0);
+// Initialize the controller (uses WebBluetooth by default in browsers)
+const controller = new BoksController();
+
+// Connect to a nearby Boks device
+await controller.connect();
+console.log('Connected to Boks!');
 ```
 
-### Core Only (Lighter Bundle)
-If you only need the protocol definitions, PIN generation, or utilities *without* the WebBluetooth client implementation, use the `core` entry point. This significantly reduces bundle size.
+### 2. Authentication & Configuration
 
-```javascript
+The controller simplifies security. You can provide either the full **Master Key** (which allows all operations) or just the **Configuration Key** (if that's all you have, for restricted administrative tasks).
+
+**Option A: Using the Master Key (Recommended)**
+The controller automatically extracts the Configuration Key from it.
+
+```typescript
+// Set your 32-byte Master Key (hex string)
+controller.setCredentials('YOUR_MASTER_KEY_HEX_STRING_HERE');
+```
+
+**Option B: Using the Configuration Key Only**
+If you don't possess the Master Key, you can still perform administrative tasks (like NFC management or history retrieval) by providing the Config Key directly. Note that some operations (like generating PINs locally) require the Master Key.
+
+```typescript
+// Set your Configuration Key (derived from Master Key or provided separately)
+controller.setCredentials('YOUR_CONFIG_KEY_HEX_STRING_HERE');
+```
+
+### 3. Basic Operations
+
+Once connected and authenticated (if required for the operation), you can send commands.
+
+```typescript
+// Open the door with a PIN code
+const success = await controller.openDoor('123456');
+
+if (success) {
+  console.log('Door opened!');
+} else {
+  console.log('Invalid PIN.');
+}
+
+// Get the current door status
+const isOpen = await controller.getDoorStatus();
+console.log(`Door is ${isOpen ? 'Open' : 'Closed'}`);
+```
+
+### 4. Advanced Administrative Tasks
+
+```typescript
+// Scan for NFC tags (requires HW >= 4.0)
+const scanResult = await controller.scanNFCTags();
+console.log(`Found tag: ${scanResult.tagId}`);
+await scanResult.register(); // Register the found tag
+
+// Fetch usage history
+const logs = await controller.fetchHistory();
+console.log(logs);
+```
+
+## Custom Transports (Node.js / Cordova / React Native)
+
+By default, `BoksController` uses the standard WebBluetooth API (Chrome/Edge/Bluefy). However, for environments without WebBluetooth (like Node.js, React Native, or Cordova), you can inject a custom transport layer.
+
+### Example: Node.js with `noble`
+
+You can implement the `BoksTransport` interface using libraries like `noble`.
+
+```typescript
+import { BoksController } from '@thib3113/boks-sdk';
+import { NobleTransport } from './your-custom-transport'; // Your implementation of BoksTransport
+
+// Inject the custom transport into the client options
+const transport = new NobleTransport();
+const controller = new BoksController({ transport });
+
+await controller.connect();
+```
+
+### Example: Cordova / Capacitor
+
+Similarly, you can wrap `cordova-plugin-ble-central` or `capacitor-community/bluetooth-le` in a class implementing `BoksTransport` and pass it to the controller.
+
+## Browser / IIFE Usage
+
+You can use the SDK directly in the browser via a CDN (like unpkg or jsdelivr) without a bundler.
+
+```html
+<!-- Full SDK (includes Client & Protocol) -->
+<script src="https://unpkg.com/@thib3113/boks-sdk/dist/boks-sdk.js"></script>
+<script>
+  // Access via the global BoksSDK object
+  const controller = new BoksSDK.BoksController();
+
+  document.getElementById('connectBtn').onclick = async () => {
+    await controller.connect();
+    console.log('Connected!');
+  };
+</script>
+
+<!-- Core Only (Protocol & Crypto, lighter) -->
+<script src="https://unpkg.com/@thib3113/boks-sdk/dist/boks-core.js"></script>
+<script>
+  // Useful for generating PINs client-side without BLE dependencies
+  const pin = BoksSDK.generateBoksPin(masterKeyBytes, 'single-use', 0);
+</script>
+```
+
+## Core Only (Low-Level)
+
+For environments where bundle size is critical (e.g., restricted IoT devices) or when you only need specific algorithms without the full client logic, you can import from the `core` entry point.
+
+```typescript
 import { BoksPacketFactory, generateBoksPin } from '@thib3113/boks-sdk/core';
 
-// Create a BLE packet
-const packet = BoksPacketFactory.createCreateMaster('ABCDEFGH', 0, '123456');
+// 1. Generate a PIN locally (BLAKE2s based)
+// Useful for server-side generation or offline apps
+const pin = generateBoksPin(masterKeyBytes, 'single-use', sequenceNumber);
+
+// 2. Create raw BLE packets manually
+const packet = BoksPacketFactory.createOpenDoorPacket('123456');
 const bytes = packet.encode();
 ```
 
-## Usage (Standalone HTML / IIFE)
+## Experimental Features
 
-### Full SDK
-```html
-<script src="https://unpkg.com/@thib3113/boks-sdk/dist/boks-sdk.js"></script>
-<script>
-  const client = new BoksSDK.BoksClient();
-</script>
+> ⚠️ **Warning:** These features are experimental and may change or be removed in future versions. Use with caution.
+
+### Boks Scale
+
+Support for the connected scale accessory.
+
+```typescript
+// Bond with the scale
+await controller.bondScale();
+
+// Get weight
+const weight = await controller.getScaleWeight();
+console.log(`Weight: ${weight}g`);
 ```
 
-### Core Only
-```html
-<script src="https://unpkg.com/@thib3113/boks-sdk/dist/boks-core.js"></script>
-<script>
-  const pin = BoksSDK.generateBoksPin(key, 'master', 1);
-  // BoksSDK.BoksClient is undefined here
-</script>
+### Provisioning (Master Key Regeneration)
+
+Mechanisms to regenerate the Master Key on the device.
+
+```typescript
+// Regenerate the Master Key (requires current credentials)
+await controller.regenerateMasterKey(newMasterKeyBytes);
+
+// Factory Initialization (requires seed, no auth)
+await controller.initialize(seedBytes);
 ```
+
+## Examples
+
+Check the [examples/](./examples/) folder for complete scripts demonstrating various use cases:
+
+- **Initialization**: How to initialize a brand new Boks device.
+- **Updates**: How to perform firmware updates (if applicable).
+- **Basic Usage**: Simple open/close operations.
+
+## Sponsor this Project
+
+If you find this SDK useful, please consider sponsoring the project to support ongoing development and maintenance.
+
+[Become a Sponsor](https://github.com/sponsors/thib3113)
+
+---
+
+**Legal Note:** This software is provided "AS IS", without warranty of any kind. The author cannot be held responsible for any damage to your device. See [LEGALS.md](./LEGALS.md).
