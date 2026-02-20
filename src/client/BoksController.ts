@@ -40,7 +40,9 @@ import {
   MultiToSingleCodePacket,
   SingleToMultiCodePacket,
   NotifySetConfigurationSuccessPacket,
-  BoksCodeType
+  BoksCodeType,
+  CountCodesPacket,
+  NotifyCodesCountPacket
 } from '@/protocol';
 import { BoksClientError, BoksClientErrorId } from '@/errors/BoksClientError';
 import { hexToBytes, bytesToHex } from '@/utils/converters';
@@ -393,6 +395,21 @@ export class BoksController {
       BoksOpcode.NOTIFY_LOGS_COUNT
     );
     return packet.count;
+  }
+
+  /**
+   * Requests the number of active codes.
+   * @returns An object containing the count of master codes and other codes.
+   */
+  async countCodes(): Promise<{ masterCount: number; otherCount: number }> {
+    await this.client.send(new CountCodesPacket());
+    const packet = await this.client.waitForPacket<NotifyCodesCountPacket>(
+      BoksOpcode.NOTIFY_CODES_COUNT
+    );
+    return {
+      masterCount: packet.masterCount,
+      otherCount: packet.otherCount
+    };
   }
 
   /**
