@@ -4,6 +4,11 @@ import { CHECKSUM_MASK } from '../protocol/constants';
  * Utility functions for Boks SDK
  */
 
+// Optimization: Precompute hex lookup table to avoid expensive toString(16) calls
+const HEX_TABLE = Array.from({ length: 256 }, (_, i) =>
+  i.toString(16).padStart(2, '0').toUpperCase()
+);
+
 export const hexToBytes = (hex: string): Uint8Array => {
   const cleanHex = hex.replace(/\s/g, '');
   if (cleanHex.length % 2 !== 0) {
@@ -17,10 +22,12 @@ export const hexToBytes = (hex: string): Uint8Array => {
 };
 
 export const bytesToHex = (bytes: Uint8Array): string => {
-  return Array.from(bytes)
-    .map((b) => b.toString(16).padStart(2, '0'))
-    .join('')
-    .toUpperCase();
+  const len = bytes.length;
+  const arr = new Array(len);
+  for (let i = 0; i < len; i++) {
+    arr[i] = HEX_TABLE[bytes[i]];
+  }
+  return arr.join('');
 };
 
 export const stringToBytes = (str: string): Uint8Array => {
