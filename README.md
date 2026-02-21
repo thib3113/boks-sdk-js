@@ -242,6 +242,37 @@ simulator.triggerDoorOpen(BoksOpenSource.PhysicalKey);
 const history = simulator.getState().logs;
 ```
 
+### Integration Testing
+
+You can use the simulator to run full integration tests for your application logic without needing physical hardware. The simulator faithfully reproduces protocol behavior, including asynchronous notifications and state changes.
+
+```typescript
+import { BoksController } from '@thib3113/boks-sdk';
+import { BoksHardwareSimulator, SimulatorTransport } from '@thib3113/boks-sdk/simulator';
+
+// 1. Setup Simulator
+const simulator = new BoksHardwareSimulator();
+const transport = new SimulatorTransport(simulator);
+
+// 2. Setup Controller with Simulator Transport
+const controller = new BoksController({ transport });
+await controller.connect();
+
+// 3. Run Test Scenario
+// Initialize device (Provisioning)
+const seed = new Uint8Array(32).fill(0xAA); // 32-byte seed
+await controller.initialize(seed);
+
+// Authenticate using the seed (Controller derives keys)
+controller.setCredentials(seed);
+
+// Create a code and use it
+await controller.createSingleUseCode('123456');
+const success = await controller.openDoor('123456');
+
+console.log('Door opened:', success); // true
+```
+
 ## Sponsor this Project
 
 If you find this SDK useful, please consider sponsoring the project to support ongoing development and maintenance.
