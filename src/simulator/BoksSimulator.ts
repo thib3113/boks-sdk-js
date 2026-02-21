@@ -1,5 +1,5 @@
 import { BoksOpcode, BoksCodeType, BoksOpenSource } from '../protocol/constants';
-import { calculateChecksum, bytesToString } from '../utils/converters';
+import { calculateChecksum, bytesToString, bytesToHex } from '../utils/converters';
 
 /**
  * Represents a log entry in the Boks Simulator.
@@ -31,6 +31,7 @@ export class BoksHardwareSimulator {
   private configKey: string = '00000000';
   private softwareVersion: string = '4.6.0';
   private firmwareVersion: string = '10/125';
+  private pendingProvisioningPartA: Uint8Array | null = null;
 
   // Simulation Parameters
   private packetLossProbability: number = 0;
@@ -307,17 +308,26 @@ export class BoksHardwareSimulator {
 
     // 4. Send Response (if any)
     if (response) {
-      // Simulate Processing Delay
-      if (this.responseDelayMs > 0) {
-        await new Promise((resolve) => setTimeout(resolve, this.responseDelayMs));
-      }
+      const send = async () => {
+        // Simulate Processing Delay
+        if (this.responseDelayMs > 0) {
+          await new Promise((resolve) => setTimeout(resolve, this.responseDelayMs));
+        } else {
+          // Even with 0 delay, we must yield to allow client.send() to resolve
+          // before the response is processed by the client listeners.
+          // This mimics real BLE where Write Response and Notification are distinct events.
+          await new Promise((resolve) => setTimeout(resolve, 0));
+        }
 
-      // Simulate Packet Loss (Outgoing)
-      if (Math.random() < this.packetLossProbability) {
-        return; // Drop response
-      }
+        // Simulate Packet Loss (Outgoing)
+        if (Math.random() < this.packetLossProbability) {
+          return; // Drop response
+        }
 
-      this.emit(response);
+        this.emit(response);
+      };
+
+      send();
     }
   }
 
@@ -345,6 +355,18 @@ export class BoksHardwareSimulator {
         return this.handleCountCodes();
       case BoksOpcode.DELETE_SINGLE_USE_CODE:
         return this.handleDeleteSingleUseCode(payload);
+      case BoksOpcode.GET_LOGS_COUNT:
+        return this.handleGetLogsCount();
+      case BoksOpcode.CREATE_SINGLE_USE_CODE:
+        return this.handleCreateCode(payload, BoksCodeType.Single);
+      case BoksOpcode.CREATE_MULTI_USE_CODE:
+        return this.handleCreateCode(payload, BoksCodeType.Multi);
+      case BoksOpcode.GENERATE_CODES:
+        return this.handleGenerateCodes(payload);
+      case BoksOpcode.RE_GENERATE_CODES_PART1:
+        return this.handleRegeneratePartA(payload);
+      case BoksOpcode.RE_GENERATE_CODES_PART2:
+        return this.handleRegeneratePartB(payload);
       // Add more handlers as needed
       default:
         // Default: Operation Success (generic) or ignore if unknown
@@ -490,5 +512,107 @@ export class BoksHardwareSimulator {
 
     // BUG: ALWAYS return ERROR even if deleted.
     return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
+  }
+
+  private handleGetLogsCount(): Uint8Array {
+    const count = this.logs.length;
+    const payload = new Uint8Array(2);
+    payload[0] = (count >> 8) & 255;
+    payload[1] = count & 255;
+    return this.createResponse(BoksOpcode.NOTIFY_LOGS_COUNT, payload);
+  }
+
+  private handleCreateCode(payload: Uint8Array, type: BoksCodeType): Uint8Array {
+    // Payload: ConfigKey (8 bytes) + PIN (6 bytes)
+    if (payload.length < 14)
+      return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
+
+    const rxConfigKey = bytesToString(payload.slice(0, 8));
+    if (rxConfigKey !== this.configKey) {
+      return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
+    }
+
+    const pin = bytesToString(payload.slice(8, 14));
+    this.addPinCode(pin, type);
+    return this.createResponse(BoksOpcode.CODE_OPERATION_SUCCESS, new Uint8Array(0));
+  }
+
+  private async handleGenerateCodes(payload: Uint8Array): Promise<Uint8Array | null> {
+    if (payload.length !== 32) {
+      this.emit(this.createResponse(BoksOpcode.NOTIFY_CODE_GENERATION_ERROR, new Uint8Array(0)));
+      return null;
+    }
+
+    // Simulate progress
+    for (let i = 0; i <= 100; i += 20) {
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      this.emit(
+        this.createResponse(BoksOpcode.NOTIFY_CODE_GENERATION_PROGRESS, new Uint8Array([i]))
+      );
+    }
+
+    // Set Config Key (last 4 bytes of seed)
+    const configKeyBytes = payload.slice(28, 32);
+    this.configKey = bytesToHex(configKeyBytes);
+
+    // Reset Pins (Factory Reset behavior)
+    this.pinCodes.clear();
+    this.saveState();
+
+    this.emit(this.createResponse(BoksOpcode.NOTIFY_CODE_GENERATION_SUCCESS, new Uint8Array(0)));
+    return null;
+  }
+
+  private async handleRegeneratePartA(payload: Uint8Array): Promise<Uint8Array | null> {
+    if (payload.length < 24) return null;
+
+    // Verify Config Key
+    const receivedConfigKey = bytesToString(payload.slice(0, 8));
+    if (receivedConfigKey !== this.configKey) {
+      // Maybe return unauthorized error? Or just ignore/fail silently as per some specs.
+      // Let's return error to be helpful in tests.
+      return this.createResponse(BoksOpcode.ERROR_UNAUTHORIZED, new Uint8Array(0));
+    }
+
+    this.pendingProvisioningPartA = payload.slice(8, 24);
+    return this.createResponse(BoksOpcode.CODE_OPERATION_SUCCESS, new Uint8Array(0));
+  }
+
+  private async handleRegeneratePartB(payload: Uint8Array): Promise<Uint8Array | null> {
+    if (payload.length < 24) return null;
+
+    // Verify Config Key
+    const receivedConfigKey = bytesToString(payload.slice(0, 8));
+    if (receivedConfigKey !== this.configKey) {
+      return this.createResponse(BoksOpcode.ERROR_UNAUTHORIZED, new Uint8Array(0));
+    }
+
+    if (!this.pendingProvisioningPartA) {
+      this.emit(this.createResponse(BoksOpcode.NOTIFY_CODE_GENERATION_ERROR, new Uint8Array(0)));
+      return null;
+    }
+
+    const partB = payload.slice(8, 24);
+    const fullKey = new Uint8Array(32);
+    fullKey.set(this.pendingProvisioningPartA, 0);
+    fullKey.set(partB, 16);
+
+    this.pendingProvisioningPartA = null;
+
+    // Simulate progress
+    for (let i = 0; i <= 100; i += 20) {
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      this.emit(
+        this.createResponse(BoksOpcode.NOTIFY_CODE_GENERATION_PROGRESS, new Uint8Array([i]))
+      );
+    }
+
+    // Update Config Key
+    const configKeyBytes = fullKey.slice(28, 32);
+    this.configKey = bytesToHex(configKeyBytes);
+    this.saveState();
+
+    this.emit(this.createResponse(BoksOpcode.NOTIFY_CODE_GENERATION_SUCCESS, new Uint8Array(0)));
+    return null;
   }
 }
