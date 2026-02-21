@@ -1,5 +1,5 @@
 import { BoksOpcode, BoksCodeType, BoksOpenSource } from '../protocol/constants';
-import { calculateChecksum, bytesToString } from '../utils/converters';
+import { calculateChecksum, bytesToString, bytesToHex } from '../utils/converters';
 
 /**
  * Represents a log entry in the Boks Simulator.
@@ -58,9 +58,12 @@ export class BoksHardwareSimulator {
     const savedLogs = this.storage.get('logs');
     if (savedLogs) {
       try {
-        const parsedLogs = JSON.parse(savedLogs);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        this.logs = parsedLogs.map((log: any) => ({
+        const parsedLogs = JSON.parse(savedLogs) as Array<{
+          opcode: number;
+          timestamp: number;
+          payload: number[] | Record<string, number>;
+        }>;
+        this.logs = parsedLogs.map((log) => ({
           ...log,
           payload: new Uint8Array(Object.values(log.payload)) // Rehydrate Uint8Array
         }));
@@ -167,9 +170,6 @@ export class BoksHardwareSimulator {
 
     // 3. Log the generic door open event (0x91) - Usually follows successful validation
     // The existing handleOpenDoor logs 0x91. Real hardware usually logs both.
-    // If we want "realistic", we include it.
-    // However, if source is Physical Key (0x99), maybe 0x91 is implicit or replaced?
-    // Let's include it for consistency with handleOpenDoor.
     this.addLog(BoksOpcode.LOG_DOOR_OPEN, payload);
 
     // 4. Handle Single-Use Code consumption

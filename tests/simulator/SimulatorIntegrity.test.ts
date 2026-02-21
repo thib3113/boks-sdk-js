@@ -27,6 +27,7 @@ describe('Boks Hardware Simulator Integrity', () => {
     simulator.addPinCode('123456', BoksCodeType.Single);
     const packet = new OpenDoorPacket('123456').encode();
     await transport.write(packet);
+    await new Promise((r) => setTimeout(r, 10));
 
     expect(responseCallback).toHaveBeenCalled();
     const response = responseCallback.mock.calls[0][0];
@@ -66,6 +67,7 @@ describe('Boks Hardware Simulator Integrity', () => {
   test('Should handle invalid OPEN_DOOR (0x01)', async () => {
     const packet = new OpenDoorPacket('000000').encode();
     await transport.write(packet);
+    await new Promise((r) => setTimeout(r, 10));
 
     expect(responseCallback).toHaveBeenCalled();
     const response = responseCallback.mock.calls[0][0];
@@ -85,6 +87,7 @@ describe('Boks Hardware Simulator Integrity', () => {
 
     // 3. Verification:
     // A. Must return ERROR (0x78) despite success (The Bug)
+    await new Promise((r) => setTimeout(r, 10));
     expect(responseCallback).toHaveBeenCalled();
     const response = responseCallback.mock.calls[0][0];
     expect(response[0]).toBe(BoksOpcode.CODE_OPERATION_ERROR); // 0x78
