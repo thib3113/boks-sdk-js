@@ -1,4 +1,4 @@
-import { BoksOpcode } from '../protocol/constants';
+import { BoksOpcode, BoksCodeType, BoksOpenSource } from '../protocol/constants';
 import { calculateChecksum, bytesToString } from '../utils/converters';
 
 /**
@@ -11,9 +11,12 @@ export interface SimulatorLog {
 }
 
 /**
- * Represents the type of a PIN code in the simulator.
+ * Interface for persisting simulator state.
  */
-export type SimulatorPinType = 'master' | 'single' | 'multi';
+export interface SimulatorStorage {
+  get(key: string): string | null;
+  set(key: string, val: string): void;
+}
 
 /**
  * Boks Hardware Simulator
@@ -23,7 +26,7 @@ export class BoksHardwareSimulator {
   // Internal State
   private isOpen: boolean = false;
   private batteryLevel: number = 100;
-  private pinCodes: Map<string, SimulatorPinType> = new Map();
+  private pinCodes: Map<string, BoksCodeType> = new Map();
   private logs: SimulatorLog[] = [];
   private configKey: string = '00000000';
   private softwareVersion: string = '4.6.0';
@@ -35,9 +38,61 @@ export class BoksHardwareSimulator {
   private opcodeOverrides: Map<number, Uint8Array | Error> = new Map();
   private subscribers: ((data: Uint8Array) => void)[] = [];
   private doorAutoCloseTimeout: NodeJS.Timeout | null = null;
+  private storage?: SimulatorStorage;
 
-  constructor() {
-    // Default initial state
+  constructor(storage?: SimulatorStorage) {
+    this.storage = storage;
+    if (this.storage) {
+      this.loadState();
+    }
+  }
+
+  // --- Persistence ---
+
+  private loadState(): void {
+    if (!this.storage) return;
+
+    const savedConfigKey = this.storage.get('configKey');
+    if (savedConfigKey) this.configKey = savedConfigKey;
+
+    const savedLogs = this.storage.get('logs');
+    if (savedLogs) {
+      try {
+        const parsedLogs = JSON.parse(savedLogs);
+        this.logs = parsedLogs.map((log: any) => ({
+          ...log,
+          payload: new Uint8Array(Object.values(log.payload)) // Rehydrate Uint8Array
+        }));
+      } catch (e) {
+        console.warn('Failed to load logs:', e);
+      }
+    }
+
+    const savedPins = this.storage.get('pinCodes');
+    if (savedPins) {
+      try {
+        const parsedPins = JSON.parse(savedPins);
+        this.pinCodes = new Map(parsedPins);
+      } catch (e) {
+        console.warn('Failed to load pin codes:', e);
+      }
+    }
+  }
+
+  private saveState(): void {
+    if (!this.storage) return;
+
+    this.storage.set('configKey', this.configKey);
+
+    // Serialize logs (handle Uint8Array)
+    const serializableLogs = this.logs.map(log => ({
+      ...log,
+      payload: Array.from(log.payload)
+    }));
+    this.storage.set('logs', JSON.stringify(serializableLogs));
+
+    // Serialize Map
+    this.storage.set('pinCodes', JSON.stringify(Array.from(this.pinCodes.entries())));
   }
 
   // --- Mandatory Setters (Force Behavior) ---
@@ -58,6 +113,69 @@ export class BoksHardwareSimulator {
   }
 
   /**
+   * Triggers a door opening event from a specific source, generating realistic history logs.
+   */
+  public triggerDoorOpen(source: BoksOpenSource, codeOrTagId: string = ''): void {
+    let logOpcode: number;
+    let payload: Uint8Array;
+
+    const encoder = new TextEncoder();
+
+    switch (source) {
+      case BoksOpenSource.Ble:
+        logOpcode = BoksOpcode.LOG_CODE_BLE_VALID; // 0x86
+        payload = encoder.encode(codeOrTagId.padEnd(6, '\0').substring(0, 6)); // Usually PIN
+        break;
+      case BoksOpenSource.Keypad:
+        logOpcode = BoksOpcode.LOG_CODE_KEY_VALID; // 0x87
+        payload = encoder.encode(codeOrTagId.padEnd(6, '\0').substring(0, 6)); // Usually PIN
+        break;
+      case BoksOpenSource.PhysicalKey:
+        logOpcode = BoksOpcode.LOG_EVENT_KEY_OPENING; // 0x99
+        payload = new Uint8Array(0);
+        break;
+      case BoksOpenSource.Nfc:
+        logOpcode = BoksOpcode.LOG_EVENT_NFC_OPENING; // 0xA1
+        // Tag ID usually hex string or bytes? Let's assume passed as string or bytes.
+        // For simplicity, encode as bytes if hex string, or just empty if not critical.
+        // Usually NFC log payload is Tag ID (4/7 bytes).
+        // If codeOrTagId is provided, use it.
+        // Assuming hex string for Tag ID.
+        if (codeOrTagId) {
+             // Simple hex to bytes
+             const match = codeOrTagId.match(/.{1,2}/g);
+             if (match) {
+                 payload = new Uint8Array(match.map(byte => parseInt(byte, 16)));
+             } else {
+                 payload = new Uint8Array(0);
+             }
+        } else {
+            payload = new Uint8Array(0);
+        }
+        break;
+      default:
+        logOpcode = BoksOpcode.LOG_DOOR_OPEN; // Fallback
+        payload = new Uint8Array(0);
+    }
+
+    // 1. Log the source event
+    this.addLog(logOpcode, payload);
+
+    // 2. Open the door
+    this.isOpen = true;
+
+    // 3. Log the generic door open event (0x91) - Usually follows successful validation
+    // The existing handleOpenDoor logs 0x91. Real hardware usually logs both.
+    // If we want "realistic", we include it.
+    // However, if source is Physical Key (0x99), maybe 0x91 is implicit or replaced?
+    // Let's include it for consistency with handleOpenDoor.
+    this.addLog(BoksOpcode.LOG_DOOR_OPEN, payload);
+
+    this.scheduleAutoClose();
+    this.saveState();
+  }
+
+  /**
    * Forces battery level (0-100).
    */
   public setBatteryLevel(level: number): void {
@@ -67,15 +185,18 @@ export class BoksHardwareSimulator {
   /**
    * Manually injects a valid PIN.
    */
-  public addPinCode(code: string, type: SimulatorPinType): void {
+  public addPinCode(code: string, type: BoksCodeType): void {
     this.pinCodes.set(code, type);
+    this.saveState();
   }
 
   /**
    * Removes a PIN code.
    */
   public removePinCode(code: string): boolean {
-    return this.pinCodes.delete(code);
+    const deleted = this.pinCodes.delete(code);
+    if (deleted) this.saveState();
+    return deleted;
   }
 
   /**
@@ -91,6 +212,7 @@ export class BoksHardwareSimulator {
    */
   public setConfigKey(key: string): void {
     this.configKey = key;
+    this.saveState();
   }
 
   /**
@@ -254,6 +376,7 @@ export class BoksHardwareSimulator {
       timestamp: Date.now(),
       payload
     });
+    this.saveState();
   }
 
   // --- Specific Opcode Handlers ---
@@ -261,28 +384,20 @@ export class BoksHardwareSimulator {
   private handleOpenDoor(payload: Uint8Array): Uint8Array {
     // Payload: [Pin(6 bytes)] or [ConfigKey(8 bytes) + Pin(6 bytes)]?
     // Usually OPEN_DOOR (0x01) payload is just the PIN (6 chars).
-    // Let's assume standard format: 6 bytes.
-    // If authenticated open, it might be different. Let's assume simple PIN open for now as per spec "If PIN exists...".
 
-    // Wait, the standard packet might include other things.
-    // If the payload is short, it's just the PIN.
     let pin: string;
     if (payload.length === 6) {
       pin = bytesToString(payload);
     } else if (payload.length >= 14) {
-      // Maybe Auth? But standard OPEN_DOOR is usually just PIN.
-      // Let's assume 6 bytes for simplicity unless it fails.
-      // The spec doesn't specify payload format, so we assume standard protocol.
-      // If it's a 6-digit PIN.
       pin = bytesToString(payload.slice(0, 6));
     } else {
       return this.createResponse(BoksOpcode.INVALID_OPEN_CODE, new Uint8Array(0));
     }
 
     if (this.pinCodes.has(pin)) {
-      this.isOpen = true;
-      this.scheduleAutoClose();
-      this.addLog(BoksOpcode.LOG_DOOR_OPEN, payload);
+      // Use triggerDoorOpen to ensure consistent logging
+      // Source: Ble (since this is command 0x01)
+      this.triggerDoorOpen(BoksOpenSource.Ble, pin);
       return this.createResponse(BoksOpcode.VALID_OPEN_CODE, new Uint8Array(0));
     } else {
       return this.createResponse(BoksOpcode.INVALID_OPEN_CODE, new Uint8Array(0));
@@ -339,7 +454,7 @@ export class BoksHardwareSimulator {
     let masterCount = 0;
     let otherCount = 0;
     for (const type of this.pinCodes.values()) {
-      if (type === 'master') masterCount++;
+      if (type === BoksCodeType.Master) masterCount++;
       else otherCount++;
     }
 
@@ -363,8 +478,9 @@ export class BoksHardwareSimulator {
 
     if (this.pinCodes.has(pin)) {
       const type = this.pinCodes.get(pin);
-      if (type === 'single') {
+      if (type === BoksCodeType.Single) {
         this.pinCodes.delete(pin);
+        this.saveState();
       }
     }
 

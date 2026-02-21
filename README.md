@@ -180,6 +180,68 @@ Check the [examples/](./examples/) folder for complete scripts demonstrating var
 - **Updates**: How to perform firmware updates (if applicable).
 - **Basic Usage**: Simple open/close operations.
 
+## Hardware Simulator
+
+The SDK includes a high-fidelity hardware simulator, `BoksHardwareSimulator`, designed for integration testing without a physical device. It accurately mimics the protocol state machine, including history logging, error conditions, and even specific firmware bugs.
+
+### Installation
+
+The simulator is available via a dedicated entry point:
+
+```typescript
+import { BoksHardwareSimulator, SimulatorTransport } from '@thib3113/boks-sdk/simulator';
+import { BoksController, BoksCodeType, BoksOpenSource } from '@thib3113/boks-sdk';
+```
+
+### Basic Usage
+
+You can inject the simulator into the `BoksController` using a `SimulatorTransport`.
+
+```typescript
+// 1. Create the simulator
+const simulator = new BoksHardwareSimulator();
+
+// 2. Configure the simulator state
+simulator.addPinCode('123456', BoksCodeType.Single); // Add a valid PIN
+simulator.setBatteryLevel(85);
+
+// 3. Create a transport linked to the simulator
+const transport = new SimulatorTransport(simulator);
+
+// 4. Use the controller as usual
+const controller = new BoksController({ transport });
+await controller.connect(); // Connects to the simulator immediately
+await controller.openDoor('123456'); // Validates against simulator state
+```
+
+### Persistence (Storage)
+
+You can persist the simulator's state (PINs, logs, configuration) by injecting a storage implementation.
+
+```typescript
+const storage = {
+  get: (key) => localStorage.getItem('boks-sim-' + key),
+  set: (key, val) => localStorage.setItem('boks-sim-' + key, val)
+};
+
+const simulator = new BoksHardwareSimulator(storage);
+```
+
+### Simulating Events
+
+You can trigger hardware events programmatically to test your application's reaction to real-world scenarios.
+
+```typescript
+// Simulate a user opening the door via the Keypad
+simulator.triggerDoorOpen(BoksOpenSource.Keypad, '123456');
+
+// Simulate a physical key opening (no code)
+simulator.triggerDoorOpen(BoksOpenSource.PhysicalKey);
+
+// Verify that the history logs reflect these events
+const history = simulator.getState().logs;
+```
+
 ## Sponsor this Project
 
 If you find this SDK useful, please consider sponsoring the project to support ongoing development and maintenance.
