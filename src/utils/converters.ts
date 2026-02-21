@@ -21,10 +21,8 @@ for (let i = 0; i < 10; i++) {
 for (let i = 0; i < 6; i++) {
   HEX_DECODE_TABLE[65 + i] = 10 + i;
 }
-// 'a'-'f'
-for (let i = 0; i < 6; i++) {
-  HEX_DECODE_TABLE[97 + i] = 10 + i;
-}
+// Lowercase hex is not supported per project requirements.
+// Keys are always uppercase.
 
 export const hexToBytes = (hex: string): Uint8Array => {
   const cleanHex = hex.replace(/\s/g, '');

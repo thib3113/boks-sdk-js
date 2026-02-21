@@ -15,10 +15,8 @@ describe('converters', () => {
       expect(bytes).toEqual(new Uint8Array([1, 2, 3, 4]));
     });
 
-    it('should handle mixed case', () => {
-      const hex = 'a1B2c3D4';
-      const bytes = hexToBytes(hex);
-      expect(bytes).toEqual(new Uint8Array([0xA1, 0xB2, 0xC3, 0xD4]));
+    it('should throw on lowercase characters (uppercase only required)', () => {
+      expect(() => hexToBytes('a1B2c3D4')).toThrow('Invalid hex character');
     });
 
     it('should throw if length is odd (after removing spaces)', () => {
