@@ -227,6 +227,10 @@ const storage = {
 const simulator = new BoksHardwareSimulator(storage);
 ```
 
+### Peripheral Mode (Node.js / Bleno)
+
+You can also use the simulator to create a virtual Boks peripheral on Linux/Raspberry Pi that real clients can connect to. See [SIMULATOR_PERIPHERAL.md](./docs/SIMULATOR_PERIPHERAL.md) for details.
+
 ### Simulating Events
 
 You can trigger hardware events programmatically to test your application's reaction to real-world scenarios.

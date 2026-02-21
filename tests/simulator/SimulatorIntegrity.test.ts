@@ -195,4 +195,42 @@ describe('Boks Hardware Simulator Integrity', () => {
       expect(lastLogs[1].opcode).toBe(BoksOpcode.LOG_DOOR_OPEN);
     });
   });
+
+  describe('GATT Schema', () => {
+    test('Should expose correct GATT Schema structure', () => {
+      const schema = simulator.getGattSchema();
+
+      // Verify Boks Service
+      const boksService = schema.find(
+        (s) => s.uuid === 'a7630001-f491-4f21-95ea-846ba586e361'
+      );
+      expect(boksService).toBeDefined();
+
+      const writeChar = boksService?.characteristics.find(
+        (c) => c.uuid === 'a7630002-f491-4f21-95ea-846ba586e361'
+      );
+      expect(writeChar).toBeDefined();
+      expect(writeChar?.properties).toContain('write');
+      expect(writeChar?.properties).toContain('writeWithoutResponse');
+
+      const notifyChar = boksService?.characteristics.find(
+        (c) => c.uuid === 'a7630003-f491-4f21-95ea-846ba586e361'
+      );
+      expect(notifyChar).toBeDefined();
+      expect(notifyChar?.properties).toContain('notify');
+
+      // Verify Battery Service
+      const batteryService = schema.find(
+        (s) => s.uuid === '0000180f-0000-1000-8000-00805f9b34fb'
+      );
+      expect(batteryService).toBeDefined();
+
+      const batteryChar = batteryService?.characteristics.find(
+        (c) => c.uuid === '00002a19-0000-1000-8000-00805f9b34fb'
+      );
+      expect(batteryChar).toBeDefined();
+      expect(batteryChar?.properties).toContain('read');
+      expect(batteryChar?.initialValue).toBeInstanceOf(Uint8Array);
+    });
+  });
 });

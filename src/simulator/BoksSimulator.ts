@@ -1,5 +1,22 @@
-import { BoksOpcode, BoksCodeType, BoksOpenSource } from '../protocol/constants';
-import { calculateChecksum, bytesToString, bytesToHex } from '../utils/converters';
+import { BoksOpcode, BoksCodeType, BoksOpenSource, BOKS_UUIDS } from '../protocol/constants';
+import { calculateChecksum, bytesToString, bytesToHex, stringToBytes } from '../utils/converters';
+
+/**
+ * Represents a GATT Characteristic structure for simulation.
+ */
+export interface SimulatedCharacteristic {
+  uuid: string;
+  properties: ('read' | 'write' | 'notify' | 'writeWithoutResponse')[];
+  initialValue?: Uint8Array; // Optional static value for read-only characteristics
+}
+
+/**
+ * Represents a GATT Service structure for simulation.
+ */
+export interface SimulatedService {
+  uuid: string;
+  characteristics: SimulatedCharacteristic[];
+}
 
 /**
  * Represents a log entry in the Boks Simulator.
@@ -266,6 +283,53 @@ export class BoksHardwareSimulator {
       softwareVersion: this.softwareVersion,
       firmwareVersion: this.firmwareVersion
     };
+  }
+
+  /**
+   * Returns the GATT Schema for the simulated device.
+   * Useful for exposing the simulator via bleno or other BLE peripherals.
+   */
+  public getGattSchema(): SimulatedService[] {
+    return [
+      {
+        uuid: BOKS_UUIDS.SERVICE,
+        characteristics: [
+          {
+            uuid: BOKS_UUIDS.WRITE,
+            properties: ['write', 'writeWithoutResponse']
+          },
+          {
+            uuid: BOKS_UUIDS.NOTIFY,
+            properties: ['notify']
+          }
+        ]
+      },
+      {
+        uuid: BOKS_UUIDS.BATTERY_SERVICE,
+        characteristics: [
+          {
+            uuid: BOKS_UUIDS.BATTERY_LEVEL,
+            properties: ['read'],
+            initialValue: new Uint8Array([this.batteryLevel])
+          }
+        ]
+      },
+      {
+        uuid: BOKS_UUIDS.DEVICE_INFO_SERVICE,
+        characteristics: [
+          {
+            uuid: BOKS_UUIDS.SOFTWARE_REVISION,
+            properties: ['read'],
+            initialValue: stringToBytes(this.softwareVersion)
+          },
+          {
+            uuid: BOKS_UUIDS.FIRMWARE_REVISION,
+            properties: ['read'],
+            initialValue: stringToBytes(this.firmwareVersion)
+          }
+        ]
+      }
+    ];
   }
 
   // --- Command Emulation ---
