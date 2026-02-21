@@ -25,6 +25,11 @@
       "import": "./dist/esm/core.js",
       "require": "./dist/cjs/core.cjs"
     },
+    "./simulator": {
+      "types": "./dist/types/simulator.d.ts",
+      "import": "./dist/esm/simulator.js",
+      "require": "./dist/cjs/simulator.cjs"
+    },
     "./browser": "./dist/boks-sdk.js",
     "./browser-core": "./dist/boks-core.js"
   },
