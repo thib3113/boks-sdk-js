@@ -58,8 +58,12 @@ export class BoksHardwareSimulator {
     const savedLogs = this.storage.get('logs');
     if (savedLogs) {
       try {
-        const parsedLogs = JSON.parse(savedLogs);
-        this.logs = parsedLogs.map((log: any) => ({
+        const parsedLogs = JSON.parse(savedLogs) as Array<{
+          opcode: number;
+          timestamp: number;
+          payload: number[] | Record<string, number>;
+        }>;
+        this.logs = parsedLogs.map((log) => ({
           ...log,
           payload: new Uint8Array(Object.values(log.payload)) // Rehydrate Uint8Array
         }));
@@ -85,7 +89,7 @@ export class BoksHardwareSimulator {
     this.storage.set('configKey', this.configKey);
 
     // Serialize logs (handle Uint8Array)
-    const serializableLogs = this.logs.map(log => ({
+    const serializableLogs = this.logs.map((log) => ({
       ...log,
       payload: Array.from(log.payload)
     }));
@@ -142,15 +146,15 @@ export class BoksHardwareSimulator {
         // If codeOrTagId is provided, use it.
         // Assuming hex string for Tag ID.
         if (codeOrTagId) {
-             // Simple hex to bytes
-             const match = codeOrTagId.match(/.{1,2}/g);
-             if (match) {
-                 payload = new Uint8Array(match.map(byte => parseInt(byte, 16)));
-             } else {
-                 payload = new Uint8Array(0);
-             }
-        } else {
+          // Simple hex to bytes
+          const match = codeOrTagId.match(/.{1,2}/g);
+          if (match) {
+            payload = new Uint8Array(match.map((byte) => parseInt(byte, 16)));
+          } else {
             payload = new Uint8Array(0);
+          }
+        } else {
+          payload = new Uint8Array(0);
         }
         break;
       default:
