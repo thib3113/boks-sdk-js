@@ -171,10 +171,15 @@ export class BoksHardwareSimulator {
 
     // 3. Log the generic door open event (0x91) - Usually follows successful validation
     // The existing handleOpenDoor logs 0x91. Real hardware usually logs both.
-    // If we want "realistic", we include it.
-    // However, if source is Physical Key (0x99), maybe 0x91 is implicit or replaced?
-    // Let's include it for consistency with handleOpenDoor.
     this.addLog(BoksOpcode.LOG_DOOR_OPEN, payload);
+
+    // 4. Handle Single-Use Code consumption
+    if (codeOrTagId && this.pinCodes.has(codeOrTagId)) {
+      const type = this.pinCodes.get(codeOrTagId);
+      if (type === BoksCodeType.Single) {
+        this.pinCodes.delete(codeOrTagId);
+      }
+    }
 
     this.scheduleAutoClose();
     this.saveState();

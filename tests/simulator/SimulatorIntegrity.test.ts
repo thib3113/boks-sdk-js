@@ -43,6 +43,25 @@ describe('Boks Hardware Simulator Integrity', () => {
     expect(state.logs.length).toBeGreaterThanOrEqual(2);
     expect(state.logs[state.logs.length - 2].opcode).toBe(BoksOpcode.LOG_CODE_BLE_VALID);
     expect(state.logs[state.logs.length - 1].opcode).toBe(BoksOpcode.LOG_DOOR_OPEN);
+
+    // Verify code consumption (Single Use)
+    expect(simulator.getState().pinCodes.has('123456')).toBe(false);
+  });
+
+  test('Should consume Single-Use codes when triggered via simulator', () => {
+    simulator.addPinCode('777777', BoksCodeType.Single);
+    simulator.triggerDoorOpen(BoksOpenSource.Keypad, '777777');
+
+    expect(simulator.getState().isOpen).toBe(true);
+    expect(simulator.getState().pinCodes.has('777777')).toBe(false);
+  });
+
+  test('Should NOT consume Multi-Use codes when triggered', () => {
+    simulator.addPinCode('888888', BoksCodeType.Multi);
+    simulator.triggerDoorOpen(BoksOpenSource.Keypad, '888888');
+
+    expect(simulator.getState().isOpen).toBe(true);
+    expect(simulator.getState().pinCodes.has('888888')).toBe(true);
   });
 
   test('Should handle invalid OPEN_DOOR (0x01)', async () => {
