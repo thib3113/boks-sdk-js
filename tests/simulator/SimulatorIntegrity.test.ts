@@ -35,7 +35,6 @@ describe('Boks Hardware Simulator Integrity', () => {
 
     // Check Logs
     const state = simulator.getState();
-    const lastLog = state.logs[state.logs.length - 1];
     // Should log OPEN_DOOR (0x91) as per handleOpenDoor implementation
     // And handleOpenDoor now calls triggerDoorOpen(Ble), so it should also log LOG_CODE_BLE_VALID (0x86)
 
