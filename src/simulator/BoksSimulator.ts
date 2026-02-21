@@ -1,5 +1,22 @@
-import { BoksOpcode, BoksCodeType, BoksOpenSource } from '../protocol/constants';
-import { calculateChecksum, bytesToString, bytesToHex } from '../utils/converters';
+import { BoksOpcode, BoksCodeType, BoksOpenSource, BOKS_UUIDS } from '../protocol/constants';
+import { calculateChecksum, bytesToString, bytesToHex, stringToBytes } from '../utils/converters';
+
+/**
+ * Represents a GATT Characteristic structure for simulation.
+ */
+export interface SimulatedCharacteristic {
+  uuid: string;
+  properties: ('read' | 'write' | 'notify' | 'writeWithoutResponse')[];
+  initialValue?: Uint8Array; // Optional static value for read-only characteristics
+}
+
+/**
+ * Represents a GATT Service structure for simulation.
+ */
+export interface SimulatedService {
+  uuid: string;
+  characteristics: SimulatedCharacteristic[];
+}
 
 /**
  * Represents a log entry in the Boks Simulator.
@@ -226,6 +243,32 @@ export class BoksHardwareSimulator {
   }
 
   /**
+   * Sets the Master Key (and derives the internal Config Key).
+   * This is the recommended way to initialize the simulator credentials.
+   *
+   * @param masterKey The 32-byte Master Key (as hex string or Uint8Array).
+   */
+  public setMasterKey(masterKey: string | Uint8Array): void {
+    let normalizedHex: string;
+
+    if (typeof masterKey === 'string') {
+      normalizedHex = masterKey.replace(/[^0-9A-Fa-f]/g, '').toUpperCase();
+    } else {
+      normalizedHex = bytesToHex(masterKey);
+    }
+
+    if (normalizedHex.length !== 64) {
+      throw new Error(
+        `Master Key must be 32 bytes (64 hex chars), got ${normalizedHex.length} hex chars`
+      );
+    }
+
+    // Derive Config Key: Last 8 hex chars of the master key.
+    this.configKey = normalizedHex.slice(-8);
+    this.saveState();
+  }
+
+  /**
    * Sets probability (0-1) of dropping incoming/outgoing packets.
    */
   public setPacketLoss(probability: number): void {
@@ -266,6 +309,53 @@ export class BoksHardwareSimulator {
       softwareVersion: this.softwareVersion,
       firmwareVersion: this.firmwareVersion
     };
+  }
+
+  /**
+   * Returns the GATT Schema for the simulated device.
+   * Useful for exposing the simulator via bleno or other BLE peripherals.
+   */
+  public getGattSchema(): SimulatedService[] {
+    return [
+      {
+        uuid: BOKS_UUIDS.SERVICE,
+        characteristics: [
+          {
+            uuid: BOKS_UUIDS.WRITE,
+            properties: ['write', 'writeWithoutResponse']
+          },
+          {
+            uuid: BOKS_UUIDS.NOTIFY,
+            properties: ['notify']
+          }
+        ]
+      },
+      {
+        uuid: BOKS_UUIDS.BATTERY_SERVICE,
+        characteristics: [
+          {
+            uuid: BOKS_UUIDS.BATTERY_LEVEL,
+            properties: ['read'],
+            initialValue: new Uint8Array([this.batteryLevel])
+          }
+        ]
+      },
+      {
+        uuid: BOKS_UUIDS.DEVICE_INFO_SERVICE,
+        characteristics: [
+          {
+            uuid: BOKS_UUIDS.SOFTWARE_REVISION,
+            properties: ['read'],
+            initialValue: stringToBytes(this.softwareVersion)
+          },
+          {
+            uuid: BOKS_UUIDS.FIRMWARE_REVISION,
+            properties: ['read'],
+            initialValue: stringToBytes(this.firmwareVersion)
+          }
+        ]
+      }
+    ];
   }
 
   // --- Command Emulation ---

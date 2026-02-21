@@ -105,6 +105,15 @@ describe('Boks Hardware Simulator Integrity', () => {
     simulator.setBatteryLevel(10);
     expect(simulator.getState().batteryLevel).toBe(10);
 
+    // Force Master Key (should update Config Key)
+    const testMasterKey = 'AA'.repeat(32); // 64 chars
+    simulator.setMasterKey(testMasterKey);
+    expect(simulator.getState().configKey).toBe('AAAAAAAA'); // Last 8 chars
+
+    const testMasterKeyBytes = new Uint8Array(32).fill(0xBB);
+    simulator.setMasterKey(testMasterKeyBytes);
+    expect(simulator.getState().configKey).toBe('BBBBBBBB');
+
     // Force Packet Loss (100%)
     simulator.setPacketLoss(1.0);
     // Even if valid, it should be dropped
@@ -193,6 +202,44 @@ describe('Boks Hardware Simulator Integrity', () => {
       const lastLogs = logs.slice(-2);
       expect(lastLogs[0].opcode).toBe(BoksOpcode.LOG_EVENT_NFC_OPENING);
       expect(lastLogs[1].opcode).toBe(BoksOpcode.LOG_DOOR_OPEN);
+    });
+  });
+
+  describe('GATT Schema', () => {
+    test('Should expose correct GATT Schema structure', () => {
+      const schema = simulator.getGattSchema();
+
+      // Verify Boks Service
+      const boksService = schema.find(
+        (s) => s.uuid === 'a7630001-f491-4f21-95ea-846ba586e361'
+      );
+      expect(boksService).toBeDefined();
+
+      const writeChar = boksService?.characteristics.find(
+        (c) => c.uuid === 'a7630002-f491-4f21-95ea-846ba586e361'
+      );
+      expect(writeChar).toBeDefined();
+      expect(writeChar?.properties).toContain('write');
+      expect(writeChar?.properties).toContain('writeWithoutResponse');
+
+      const notifyChar = boksService?.characteristics.find(
+        (c) => c.uuid === 'a7630003-f491-4f21-95ea-846ba586e361'
+      );
+      expect(notifyChar).toBeDefined();
+      expect(notifyChar?.properties).toContain('notify');
+
+      // Verify Battery Service
+      const batteryService = schema.find(
+        (s) => s.uuid === '0000180f-0000-1000-8000-00805f9b34fb'
+      );
+      expect(batteryService).toBeDefined();
+
+      const batteryChar = batteryService?.characteristics.find(
+        (c) => c.uuid === '00002a19-0000-1000-8000-00805f9b34fb'
+      );
+      expect(batteryChar).toBeDefined();
+      expect(batteryChar?.properties).toContain('read');
+      expect(batteryChar?.initialValue).toBeInstanceOf(Uint8Array);
     });
   });
 });
