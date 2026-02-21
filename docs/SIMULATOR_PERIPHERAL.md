@@ -41,6 +41,12 @@ simulator.setBatteryLevel(90);
 // Set the Master Key (Important: This allows the client to authenticate)
 // You can provide a hex string (64 chars) or Uint8Array.
 // For example, this corresponds to a test master key.
+//
+// You can generate a random one using:
+// const masterKey = require('crypto').randomBytes(32).toString('hex').toUpperCase();
+// console.log('Master Key:', masterKey);
+// simulator.setMasterKey(masterKey);
+
 simulator.setMasterKey('00112233445566778899AABBCCDDEEFF00112233445566778899AABBCCDDEEFF');
 
 // Add a Single Use code '123456'
