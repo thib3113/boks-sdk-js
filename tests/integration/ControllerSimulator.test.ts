@@ -1,19 +1,15 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { BoksController } from '../../src/client/BoksController';
-import { BoksClient } from '../../src/client/BoksClient';
 import { BoksHardwareSimulator } from '../../src/simulator/BoksSimulator';
 import { SimulatorTransport } from '../../src/simulator/SimulatorTransport';
-import { BoksOpenSource, BoksCodeType } from '../../src/protocol/constants';
-import { bytesToHex } from '../../src/utils/converters';
+import { BoksOpenSource } from '../../src/protocol/constants';
 
 describe('BoksController Integration with Simulator', () => {
   let simulator: BoksHardwareSimulator;
   let transport: SimulatorTransport;
-  let client: BoksClient;
   let controller: BoksController;
 
   const TEST_SEED = new Uint8Array(32).fill(0xAA); // Dummy seed
-  const TEST_SEED_HEX = bytesToHex(TEST_SEED);
   const TEST_PIN = '123456';
 
   beforeEach(async () => {
@@ -42,8 +38,6 @@ describe('BoksController Integration with Simulator', () => {
     expect(onProgress).toHaveBeenCalledWith(100);
 
     // Verify simulator state (Config Key should be set)
-    // Config Key is last 4 bytes of seed.
-    const expectedConfigKey = bytesToHex(TEST_SEED.slice(28, 32));
     // We can't access simulator private state easily unless we cast to any or check behavior.
     // However, we can try to use the controller with the new credentials.
 
