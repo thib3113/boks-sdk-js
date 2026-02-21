@@ -37,7 +37,14 @@ const simulator = new BoksHardwareSimulator();
 
 // Configure initial state
 simulator.setBatteryLevel(90);
-simulator.addPinCode('123456', 0); // Add a Single Use code '123456'
+
+// Set the Master Key (Important: This allows the client to authenticate)
+// You can provide a hex string (64 chars) or Uint8Array.
+// For example, this corresponds to a test master key.
+simulator.setMasterKey('00112233445566778899AABBCCDDEEFF00112233445566778899AABBCCDDEEFF');
+
+// Add a Single Use code '123456'
+simulator.addPinCode('123456', 0);
 
 console.log('Boks Simulator Initialized.');
 

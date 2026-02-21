@@ -243,6 +243,32 @@ export class BoksHardwareSimulator {
   }
 
   /**
+   * Sets the Master Key (and derives the internal Config Key).
+   * This is the recommended way to initialize the simulator credentials.
+   *
+   * @param masterKey The 32-byte Master Key (as hex string or Uint8Array).
+   */
+  public setMasterKey(masterKey: string | Uint8Array): void {
+    let normalizedHex: string;
+
+    if (typeof masterKey === 'string') {
+      normalizedHex = masterKey.replace(/[^0-9A-Fa-f]/g, '').toUpperCase();
+    } else {
+      normalizedHex = bytesToHex(masterKey);
+    }
+
+    if (normalizedHex.length !== 64) {
+      throw new Error(
+        `Master Key must be 32 bytes (64 hex chars), got ${normalizedHex.length} hex chars`
+      );
+    }
+
+    // Derive Config Key: Last 8 hex chars of the master key.
+    this.configKey = normalizedHex.slice(-8);
+    this.saveState();
+  }
+
+  /**
    * Sets probability (0-1) of dropping incoming/outgoing packets.
    */
   public setPacketLoss(probability: number): void {

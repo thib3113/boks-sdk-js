@@ -105,6 +105,15 @@ describe('Boks Hardware Simulator Integrity', () => {
     simulator.setBatteryLevel(10);
     expect(simulator.getState().batteryLevel).toBe(10);
 
+    // Force Master Key (should update Config Key)
+    const testMasterKey = 'AA'.repeat(32); // 64 chars
+    simulator.setMasterKey(testMasterKey);
+    expect(simulator.getState().configKey).toBe('AAAAAAAA'); // Last 8 chars
+
+    const testMasterKeyBytes = new Uint8Array(32).fill(0xBB);
+    simulator.setMasterKey(testMasterKeyBytes);
+    expect(simulator.getState().configKey).toBe('BBBBBBBB');
+
     // Force Packet Loss (100%)
     simulator.setPacketLoss(1.0);
     // Even if valid, it should be dropped
