@@ -1,18 +1,18 @@
-# Examples
+# Interactive Examples
 
-Explore interactive examples and demos directly in your browser.
+Welcome to the interactive examples gallery. You can use these demos to test the SDK features either with a local hardware simulator or with your real Boks device.
 
-## Interactive Demos
+<BoksGlobalProvider />
 
-- [Initialization Demo](./initialization.md): Generate a Master Key and initialize a Boks device.
+::: tip Session Persistence
+The connection state and simulated data are shared across all pages in this section. You only need to connect once.
+:::
 
-## Code Examples
+## Available Demos
 
-The following examples are available in the repository:
+- [**Initialization**](./initialization): Set up a factory-fresh Boks with a new Master Key.
+- [**Open Door**](./open-door): Send a PIN code to unlock the device.
+- [**History Sync**](./history): Download and parse the internal event log.
+- [**Battery & Hardware**](./battery): Read battery levels and detailed statistics.
 
-- **DFU Update**: `dfu_update.html`
-- **Firmware Update**: `firmware-update.html`
-- **Open Door**: `open-door.ts`
-- **Fetch History**: `fetch-history.ts`
-
-[View all examples on GitHub](https://github.com/thib3113/boks-sdk/tree/main/examples)
+<BoksPacketLogger />

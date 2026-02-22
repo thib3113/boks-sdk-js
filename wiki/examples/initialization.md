@@ -1,5 +1,7 @@
 # Initialization Demo
 
+<BoksGlobalProvider />
+
 This interactive tool allows you to safely generate a **Master Key** and initialize a Boks device.
 
 ::: danger CRITICAL WARNING
@@ -8,10 +10,6 @@ The Master Key generated here is **stored in your browser's LocalStorage**.
 If you clear your browser data or lose this key, you will permanently lose administrative access to your device.
 **Always back up your key immediately after generation.**
 :::
-
-<script setup>
-import InitializationDemo from '../.vitepress/components/InitializationDemo.vue'
-</script>
 
 <InitializationDemo />
 
@@ -24,3 +22,5 @@ import InitializationDemo from '../.vitepress/components/InitializationDemo.vue'
 ::: tip Note
 This tool uses the Web Bluetooth API and requires a compatible browser (Chrome, Edge, Opera) and Bluetooth hardware.
 :::
+
+<BoksPacketLogger />

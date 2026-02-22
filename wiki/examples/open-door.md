@@ -1,5 +1,7 @@
 # Open Door Example
 
+<BoksGlobalProvider />
+
 This example demonstrates how to open a Boks device using a PIN code.
 
 ## Interactive Demo
@@ -45,3 +47,5 @@ async function openDoorExample() {
   }
 }
 ```
+
+<BoksPacketLogger />

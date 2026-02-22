@@ -85,12 +85,68 @@ export class BoksHardwareSimulator {
   private subscribers: ((data: Uint8Array) => void)[] = [];
   private doorAutoCloseTimeout: NodeJS.Timeout | null = null;
   private storage?: SimulatorStorage;
+  private chaosMode: boolean = false;
+  private chaosInterval: NodeJS.Timeout | null = null;
 
   constructor(storage?: SimulatorStorage) {
     this.storage = storage;
     if (this.storage) {
       this.loadState();
     }
+  }
+
+  /**
+   * Enables or disables Chaos Mode (random events and issues).
+   */
+  public setChaosMode(enabled: boolean): void {
+    this.chaosMode = enabled;
+    if (enabled) {
+      this.startChaosLoop();
+    } else {
+      if (this.chaosInterval) {
+        clearInterval(this.chaosInterval);
+        this.chaosInterval = null;
+      }
+    }
+  }
+
+  private startChaosLoop() {
+    if (this.chaosInterval) clearInterval(this.chaosInterval);
+    this.chaosInterval = setInterval(() => {
+      if (!this.chaosMode) return;
+      const rand = Math.random();
+      if (rand < 0.1 && !this.isOpen) {
+        // 10% chance to open door via NFC randomly
+        this.triggerDoorOpen(BoksOpenSource.Nfc, 'DEADC0DE');
+      } else if (rand > 0.9) {
+        // 10% chance to drop battery slightly
+        this.setBatteryLevel(this.batteryLevel - 1);
+      }
+    }, 10000);
+  }
+
+  /**
+   * Manually injects a custom log entry.
+   */
+  public injectLog(opcode: number, payload: Uint8Array): void {
+    this.addLog(opcode, payload);
+  }
+
+  /**
+   * Get public status for UI binding.
+   */
+  public getPublicState() {
+    return {
+      isOpen: this.isOpen,
+      batteryLevel: this.batteryLevel,
+      softwareVersion: this.softwareVersion,
+      firmwareVersion: this.firmwareVersion,
+      packetLossProbability: this.packetLossProbability,
+      responseDelayMs: this.responseDelayMs,
+      chaosMode: this.chaosMode,
+      pinsCount: this.pinCodes.size,
+      logsCount: this.logs.length
+    };
   }
 
   // --- Persistence ---

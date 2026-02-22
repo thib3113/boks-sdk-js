@@ -1,10 +1,8 @@
 # Battery & Hardware
 
-This example demonstrates how to retrieve hardware information and battery statistics from a Boks device.
+<BoksGlobalProvider />
 
-<script setup>
-import BatteryDemo from '../.vitepress/components/BatteryDemo.vue'
-</script>
+This example demonstrates how to retrieve hardware information and battery statistics from a Boks device.
 
 <BatteryDemo />
 
@@ -56,3 +54,5 @@ if (stats) {
 ::: tip Note
 Battery statistics are read from a custom characteristic and provide more insight than the standard service, including temperature and historical measures.
 :::
+
+<BoksPacketLogger />
