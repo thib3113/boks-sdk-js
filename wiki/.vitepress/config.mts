@@ -4,7 +4,7 @@ import { fileURLToPath, URL } from 'node:url'
 export default defineConfig({
   title: "Boks SDK",
   description: "Unofficial Reverse Engineering & SDK for Boks Parcel Boxes",
-  base: '/',
+  base: process.env.BASE_URL || '/',
   outDir: '../public',
 
   head: [
