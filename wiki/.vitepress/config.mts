@@ -42,7 +42,8 @@ export default defineConfig({
           text: 'Interactive Examples',
           items: [
             { text: 'Overview', link: '/examples/' },
-            { text: 'Initialization Demo', link: '/examples/initialization' }
+            { text: 'Initialization Demo', link: '/examples/initialization' },
+            { text: 'Open Door Demo', link: '/examples/open-door' }
           ]
         }
       ]
