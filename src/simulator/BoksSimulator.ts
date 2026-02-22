@@ -38,6 +38,34 @@ export interface SimulatorStorage {
 /**
  * Boks Hardware Simulator
  * A high-fidelity hardware mock designed to allow full SDK integration testing without physical hardware.
+ *
+ * @remarks
+ * ## Creating a Virtual Boks Peripheral with Node.js and Bleno
+ *
+ * The `BoksHardwareSimulator` is decoupled from browser-specific APIs, making it possible to run a
+ * high-fidelity Boks simulation on real hardware (like a Raspberry Pi) using [bleno](https://github.com/noble/bleno).
+ *
+ * ### Example: Integrating with Bleno
+ * ```javascript
+ * const bleno = require('bleno');
+ * const { BoksHardwareSimulator } = require('@thib3113/boks-sdk/simulator');
+ *
+ * const simulator = new BoksHardwareSimulator();
+ * const schema = simulator.getGattSchema();
+ *
+ * // Map schema to bleno Services/Characteristics...
+ * // (See docs/SIMULATOR_PERIPHERAL.md for full implementation)
+ * ```
+ *
+ * ### Example: Persistence in Node.js
+ * ```typescript
+ * import * as fs from 'fs';
+ * class FileStorage implements SimulatorStorage {
+ *   get(key) { ... }
+ *   set(key, val) { ... }
+ * }
+ * const simulator = new BoksHardwareSimulator(new FileStorage('./data.json'));
+ * ```
  */
 export class BoksHardwareSimulator {
   // Internal State

@@ -39,6 +39,8 @@ jobs:
 
       - name: Generate Documentation
         run: pnpm run docs
+        env:
+          BASE_URL: /boks-sdk-js/
       
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
