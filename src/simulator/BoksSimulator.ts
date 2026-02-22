@@ -722,9 +722,9 @@ export class BoksHardwareSimulator {
       return null;
     }
 
-    // Simulate progress
-    for (let i = 0; i <= 100; i += 20) {
-      await new Promise((resolve) => setTimeout(resolve, 50));
+    // Simulate progress: ~1 minute total
+    for (let i = 0; i <= 100; i += 1) {
+      await new Promise((resolve) => setTimeout(resolve, 600));
       this.emit(
         this.createResponse(BoksOpcode.NOTIFY_CODE_GENERATION_PROGRESS, new Uint8Array([i]))
       );
@@ -778,9 +778,9 @@ export class BoksHardwareSimulator {
 
     this.pendingProvisioningPartA = null;
 
-    // Simulate progress
-    for (let i = 0; i <= 100; i += 20) {
-      await new Promise((resolve) => setTimeout(resolve, 50));
+    // Simulate progress: ~1 minute total
+    for (let i = 0; i <= 100; i += 1) {
+      await new Promise((resolve) => setTimeout(resolve, 600));
       this.emit(
         this.createResponse(BoksOpcode.NOTIFY_CODE_GENERATION_PROGRESS, new Uint8Array([i]))
       );

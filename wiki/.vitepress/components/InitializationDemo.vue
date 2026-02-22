@@ -133,6 +133,18 @@ function copy(text: string) {
         </table>
       </div>
     </div>
+
+    <!-- Sponsoring Call -->
+    <div class="sponsoring-card">
+      <div class="sponsor-content">
+        <span class="heart">💖</span>
+        <div class="text">
+          <p><strong>Support this development</strong></p>
+          <p>Hardware initialization is a critical feature that we currently cannot test on real devices. Your donations help us buy hardware to validate these experimental features safely.</p>
+          <a href="https://github.com/sponsors/thib3113" target="_blank" class="sponsor-link">Become a Sponsor on GitHub</a>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -164,4 +176,20 @@ function copy(text: string) {
 .h-value-row { display: flex; gap: 0.5rem; align-items: center; }
 .icon-btn.tiny { padding: 0.1rem 0.25rem; font-size: 0.7rem; }
 .secondary-btn { padding: 0.3rem 0.6rem; border-radius: 4px; border: 1px solid var(--vp-c-divider); cursor: pointer; }
+
+/* Sponsoring Styles */
+.sponsoring-card {
+  margin-top: 2rem; padding: 1.5rem; border-radius: 12px;
+  background: linear-gradient(135deg, var(--vp-c-brand-soft) 0%, var(--vp-c-bg-soft) 100%);
+  border: 1px solid var(--vp-c-brand-1);
+}
+.sponsor-content { display: flex; gap: 1.5rem; align-items: center; }
+.heart { font-size: 2.5rem; }
+.text p { margin: 0 0 0.5rem 0; font-size: 0.9rem; }
+.sponsor-link { 
+  display: inline-block; margin-top: 0.5rem; padding: 0.5rem 1rem; 
+  background: var(--vp-c-brand-1); color: white; border-radius: 6px; 
+  text-decoration: none; font-weight: bold; font-size: 0.85rem;
+}
+.sponsor-link:hover { background: var(--vp-c-brand-2); color: white; }
 </style>
