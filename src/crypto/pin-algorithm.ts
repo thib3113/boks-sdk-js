@@ -69,6 +69,14 @@ const compress = (
 };
 
 export const generateBoksPin = (key: Uint8Array, typePrefix: string, index: number): string => {
+  // Input Validation
+  if (key.length !== 32) {
+    throw new Error(`Invalid key length: expected 32 bytes, got ${key.length}`);
+  }
+  if (index < 0 || !Number.isInteger(index)) {
+    throw new Error(`Invalid index: expected positive integer, got ${index}`);
+  }
+
   // Reset h with IV
   h.set(PIN_ALGO_CONFIG.IV);
   h[0] ^= PIN_ALGO_CONFIG.CONST_1;
