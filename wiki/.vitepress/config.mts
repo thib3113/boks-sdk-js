@@ -43,6 +43,7 @@ export default defineConfig({
           items: [
             { text: 'Overview', link: '/examples/' },
             { text: 'Initialization Demo', link: '/examples/initialization' },
+            { text: 'History Sync', link: '/examples/history' },
             { text: 'Battery & Hardware', link: '/examples/battery' }
           ]
         }
