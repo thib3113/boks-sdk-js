@@ -49,12 +49,12 @@ export default defineConfig({
     },
 
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/thib3113/boks-sdk' }
+      { icon: 'github', link: 'https://github.com/thib3113/boks-sdk-js' }
     ],
 
     footer: {
       message: 'Released under ISC License. Not affiliated with Boks.',
-      copyright: 'Copyright © 2024-present Thib3113'
+      copyright: 'Copyright © 2025-present Thib3113'
     }
   }
 })

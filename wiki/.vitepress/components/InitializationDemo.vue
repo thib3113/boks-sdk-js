@@ -1,7 +1,6 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import { BoksController } from '../../../src/client/BoksController'
-import { WebBluetoothTransport } from '../../../src/client/WebBluetoothTransport'
 
 // State
 const isClient = typeof window !== 'undefined'
@@ -64,24 +63,16 @@ async function connect() {
 
   try {
     log('Requesting Bluetooth device...')
-    const device = await navigator.bluetooth.requestDevice({
-      filters: [{ namePrefix: 'Boks' }],
-      optionalServices: [
-        'a7630001-f491-4f21-95ea-846ba586e361', // Boks Service
-        '0000180a-0000-1000-8000-00805f9b34fb'  // Device Info
-      ]
-    })
-
-    log(`Device selected: ${device.name}`)
-
-    // Create controller with WebBluetooth transport
-    controller = new BoksController({ transport: new WebBluetoothTransport(device) })
+    
+    // Create controller (defaults to WebBluetooth)
+    controller = new BoksController()
 
     log('Connecting...')
     await controller.connect()
 
     isConnected.value = true
-    deviceName.value = device.name
+    // Get info from controller
+    deviceName.value = controller.hardwareInfo?.hardwareVersion ? `Boks (${controller.hardwareInfo.hardwareVersion})` : 'Boks Device'
     log('Connected successfully!', 'success')
 
   } catch (err) {
@@ -133,9 +124,10 @@ async function initializeDevice() {
   log('Starting initialization...', 'warning')
 
   try {
-    // Assuming the SDK exposes initialize() on the controller
-    // Note: The user mentioned 'initialize(seed)' earlier.
-    const success = await controller.initialize(masterKey.value) //, (p) => initProgress.value = p)
+    const success = await controller.initialize(masterKey.value, (p) => {
+      initProgress.value = p
+      log(`Initialization progress: ${p}%`)
+    })
 
     if (success) {
       log('Initialization complete! Device is now paired with this Master Key.', 'success')
