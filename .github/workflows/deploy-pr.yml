@@ -33,7 +33,7 @@ jobs:
       - name: Generate Documentation
         run: pnpm run docs
         env:
-          BASE_URL: /pr-${{ github.event.number }}/
+          BASE_URL: /boks-sdk-js/pr-${{ github.event.number }}/
 
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
