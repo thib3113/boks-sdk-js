@@ -80,15 +80,28 @@ export const generateBoksPin = (key: Uint8Array, typePrefix: string, index: numb
   compress(h, block32, 64, 0, v);
 
   // Block 2: The Message (prefix + " " + index)
-  const msgStr = `${typePrefix} ${index}`;
+  // Optimization: Write parts directly to buffer to avoid string concatenation `${typePrefix} ${index}`
+  // which allocates a new string.
 
   // Clear buffer for next block
   blockBuffer.fill(0);
 
-  // Use encodeInto to avoid creating intermediate Uint8Array
-  const { written } = encoder.encodeInto(msgStr, blockBuffer);
+  let offset = 0;
 
-  compress(h, block32, 64 + (written ?? 0), PIN_ALGO_CONFIG.MAX_32, v);
+  // Write typePrefix
+  const r1 = encoder.encodeInto(typePrefix, blockBuffer);
+  offset += r1.written!;
+
+  // Write space ' '
+  blockBuffer[offset++] = 32;
+
+  // Write index
+  const idxStr = index.toString();
+  // Use subarray to write at offset without copying buffer
+  const r2 = encoder.encodeInto(idxStr, blockBuffer.subarray(offset));
+  offset += r2.written!;
+
+  compress(h, block32, 64 + offset, PIN_ALGO_CONFIG.MAX_32, v);
 
   // Result: First 6 bytes of the hash, mapped to Boks Chars
   // Need to extract 6 bytes from h (which is 8x32bit words)
