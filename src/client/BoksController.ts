@@ -43,6 +43,7 @@ import {
   BoksCodeType,
   CountCodesPacket,
   NotifyCodesCountPacket,
+  BoksBatteryStats,
   // Scale
   ScaleBondPacket,
   NotifyScaleBondingSuccessPacket,
@@ -431,6 +432,22 @@ export class BoksController {
    */
   async testBattery(): Promise<void> {
     await this.client.send(new TestBatteryPacket());
+  }
+
+  /**
+   * Reads the current battery level (standard Bluetooth characteristic).
+   * @returns Battery level (0-100) or undefined if unreliable.
+   */
+  async getBatteryLevel(): Promise<number | undefined> {
+    return this.client.getBatteryLevel();
+  }
+
+  /**
+   * Reads detailed battery statistics (custom Boks characteristic).
+   * @returns Battery stats object or undefined if unreliable.
+   */
+  async getBatteryStats(): Promise<BoksBatteryStats | undefined> {
+    return this.client.getBatteryStats();
   }
 
   /**
