@@ -14,7 +14,7 @@ describe('BoksController Integration with Simulator', () => {
 
   beforeEach(async () => {
     simulator = new BoksHardwareSimulator();
-    simulator.setProgressDelay(1); // Speed up tests
+    simulator.setProgressDelay(0); // Instant progress for tests
     transport = new SimulatorTransport(simulator);
     // Use controller with custom transport
     controller = new BoksController({ transport });
