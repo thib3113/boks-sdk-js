@@ -43,6 +43,9 @@ export default tseslint.config(
       'dist',
       'node_modules',
       'coverage',
+      'examples',
+      'public',
+      'wiki/.vitepress/cache',
       '**/*.test.ts'
     ]
   },

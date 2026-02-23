@@ -620,7 +620,8 @@ export class BoksController {
   ): Promise<boolean> {
     validateSeed(seed);
 
-    const seedBytes = typeof seed === 'string' ? hexToBytes(seed.replace(/[^0-9A-Fa-f]/g, '')) : seed;
+    const seedBytes =
+      typeof seed === 'string' ? hexToBytes(seed.replace(/[^0-9A-Fa-f]/g, '')) : seed;
 
     // Setup listener
     return new Promise((resolve, reject) => {

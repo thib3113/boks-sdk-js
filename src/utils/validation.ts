@@ -39,8 +39,7 @@ export function validateMasterCodeIndex(index: number): void {
  * @throws BoksProtocolError if the seed is invalid.
  */
 export function validateSeed(seed: Uint8Array | string): void {
-  const len =
-    typeof seed === 'string' ? seed.replace(/[^0-9A-Fa-f]/g, '').length / 2 : seed.length;
+  const len = typeof seed === 'string' ? seed.replace(/[^0-9A-Fa-f]/g, '').length / 2 : seed.length;
   if (len !== 32) {
     throw new BoksProtocolError(BoksProtocolErrorId.INVALID_SEED_LENGTH, undefined, {
       received: len,

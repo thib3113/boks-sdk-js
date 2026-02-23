@@ -1,9 +1,9 @@
-import { reactive, shallowRef } from 'vue'
-import { BoksController } from '../../src/client/BoksController'
-import { BoksClient } from '../../src/client/BoksClient'
-import { BoksHardwareSimulator } from '../../src/simulator/BoksSimulator'
-import { SimulatorTransport } from '../../src/simulator/SimulatorTransport'
-import { BoksCodeType, BoksOpcode } from '../../src/protocol/constants'
+import { reactive, shallowRef } from 'vue';
+import { BoksController } from '../../src/client/BoksController';
+import { BoksClient } from '../../src/client/BoksClient';
+import { BoksHardwareSimulator } from '../../src/simulator/BoksSimulator';
+import { SimulatorTransport } from '../../src/simulator/SimulatorTransport';
+import { BoksCodeType, BoksOpcode } from '../../src/protocol/constants';
 
 export interface BoksLog {
   time: string;
@@ -28,7 +28,7 @@ export const boksStore = reactive({
   deviceName: '',
   logs: [] as BoksLog[],
   packetLogs: [] as BoksPacketLog[],
-  
+
   // Real/Sim device stats
   batteryLevel: 100,
   masterCodesCount: 0,
@@ -38,7 +38,7 @@ export const boksStore = reactive({
 
   // Master Key Vault
   activeMasterKey: '',
-  keyHistory: [] as { key: string, configKey: string, date: string }[],
+  keyHistory: [] as { key: string; configKey: string; date: string }[],
 
   // Instances
   controller: shallowRef<BoksController | null>(null),
@@ -65,21 +65,24 @@ export const boksStore = reactive({
 
   saveVault() {
     if (typeof window === 'undefined') return;
-    localStorage.setItem('boks_vault', JSON.stringify({
-      activeKey: this.activeMasterKey,
-      history: this.keyHistory
-    }));
+    localStorage.setItem(
+      'boks_vault',
+      JSON.stringify({
+        activeKey: this.activeMasterKey,
+        history: this.keyHistory
+      })
+    );
   },
 
   setActiveKey(key: string) {
     this.activeMasterKey = key.toUpperCase();
     const configKey = this.deriveConfigKey(this.activeMasterKey);
     // Add to history if not already there
-    if (!this.keyHistory.find(h => h.key === this.activeMasterKey)) {
-      this.keyHistory.unshift({ 
-        key: this.activeMasterKey, 
+    if (!this.keyHistory.find((h) => h.key === this.activeMasterKey)) {
+      this.keyHistory.unshift({
+        key: this.activeMasterKey,
         configKey,
-        date: new Date().toISOString() 
+        date: new Date().toISOString()
       });
     }
     this.saveVault();
@@ -90,8 +93,8 @@ export const boksStore = reactive({
       time: new Date().toLocaleTimeString(),
       msg,
       type
-    })
-    if (this.logs.length > 100) this.logs.pop()
+    });
+    if (this.logs.length > 100) this.logs.pop();
   },
 
   logPacket(direction: 'TX' | 'RX', opcode: number, length: number, packet?: any) {
@@ -123,8 +126,8 @@ export const boksStore = reactive({
       const logger = (level: string, event: string, context: any) => {
         if (event === 'send' || event === 'receive') {
           this.logPacket(
-            event === 'send' ? 'TX' : 'RX', 
-            context.opcode, 
+            event === 'send' ? 'TX' : 'RX',
+            context.opcode,
             context.length || 0,
             (context as any).packet
           );
@@ -132,44 +135,44 @@ export const boksStore = reactive({
       };
 
       if (this.useSimulator) {
-        this.log('Initializing Simulator...', 'info')
-        const sim = new BoksHardwareSimulator()
-        sim.addPinCode('123456', BoksCodeType.Multi)
-        this.simulator = sim
+        this.log('Initializing Simulator...', 'info');
+        const sim = new BoksHardwareSimulator();
+        sim.addPinCode('123456', BoksCodeType.Multi);
+        this.simulator = sim;
 
-        const transport = new SimulatorTransport(sim)
-        const client = new BoksClient({ transport, logger })
-        this.controller = new BoksController(client)
-        
-        await this.controller.connect()
-        this.deviceName = 'Boks Simulator'
+        const transport = new SimulatorTransport(sim);
+        const client = new BoksClient({ transport, logger });
+        this.controller = new BoksController(client);
+
+        await this.controller.connect();
+        this.deviceName = 'Boks Simulator';
       } else {
-        this.log('Requesting Bluetooth device...', 'info')
-        const client = new BoksClient({ logger })
-        this.controller = new BoksController(client)
-        await this.controller.connect()
-        
+        this.log('Requesting Bluetooth device...', 'info');
+        const client = new BoksClient({ logger });
+        this.controller = new BoksController(client);
+        await this.controller.connect();
+
         // Get the real BLE name if possible
         const bleName = (this.controller as any).client?.transport?.device?.name || 'Boks Device';
         this.deviceName = `${bleName} (${this.controller.hardwareInfo?.hardwareVersion || '?'})`;
-        
+
         // Populate versions
         this.softwareVersion = this.controller.hardwareInfo?.softwareRevision || '';
         this.firmwareVersion = this.controller.hardwareInfo?.firmwareRevision || '';
-        
+
         // Fetch initial status if possible (counts)
-        this.controller.getBatteryLevel().then(l => this.batteryLevel = l || 0);
-        this.controller.countCodes().then(c => {
+        this.controller.getBatteryLevel().then((l) => (this.batteryLevel = l || 0));
+        this.controller.countCodes().then((c) => {
           this.masterCodesCount = c.master;
           this.singleCodesCount = c.singleUse;
         });
       }
 
       this.isConnected = true;
-      this.log('Global Connection Established!', 'success')
+      this.log('Global Connection Established!', 'success');
     } catch (err: any) {
-      this.log(`Connection failed: ${err.message}`, 'error')
-      throw err
+      this.log(`Connection failed: ${err.message}`, 'error');
+      throw err;
     } finally {
       this.isConnecting = false;
     }
@@ -177,12 +180,12 @@ export const boksStore = reactive({
 
   async disconnect() {
     if (this.controller) {
-      await this.controller.disconnect()
-      this.controller = null
-      this.simulator = null
-      this.isConnected = false
-      this.deviceName = ''
-      this.log('Disconnected.', 'info')
+      await this.controller.disconnect();
+      this.controller = null;
+      this.simulator = null;
+      this.isConnected = false;
+      this.deviceName = '';
+      this.log('Disconnected.', 'info');
     }
   }
-})
+});
