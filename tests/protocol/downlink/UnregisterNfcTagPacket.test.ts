@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { BoksProtocolErrorId } from '../../../src/errors/BoksProtocolError';
 import { UnregisterNfcTagPacket } from '@/protocol/downlink/UnregisterNfcTagPacket';
 import { bytesToHex } from '@/utils/converters';
 

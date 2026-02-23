@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { BoksProtocolErrorId } from '../../../src/errors/BoksProtocolError';
 import { RegisterNfcTagScanStartPacket } from '@/protocol/downlink/RegisterNfcTagScanStartPacket';
 import { bytesToHex } from '@/utils/converters';
 

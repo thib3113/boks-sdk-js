@@ -1,7 +1,7 @@
 import { BoksPacket } from '@/protocol/_BoksPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
 import { stringToBytes, bytesToString } from '@/utils/converters';
-import { validatePinCode } from '@/utils/pin';
+import { validatePinCode } from '@/utils/validation';
 
 /**
  * Command to open the door with an optional PIN.

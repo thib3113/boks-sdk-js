@@ -122,7 +122,9 @@ describe('BoksController', () => {
 
   describe('setCredentials', () => {
     it('should throw if master key is invalid length', () => {
-      expect(() => controller.setCredentials('ABC')).toThrowError(expect.objectContaining({ id: BoksClientErrorId.INVALID_PARAMETER }));
+      expect(() => controller.setCredentials('ABC')).toThrowError(
+        expect.objectContaining({ id: 'INVALID_SEED_LENGTH' })
+      );
     });
 
     it('should derive config key correctly', () => {

@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { BoksProtocolErrorId } from '../../../src/errors/BoksProtocolError';
 import { SingleToMultiCodePacket } from '@/protocol/downlink/SingleToMultiCodePacket';
 import { bytesToHex } from '@/utils/converters';
 
@@ -9,7 +10,7 @@ describe('SingleToMultiCodePacket', () => {
   });
 
   it('should throw error for invalid PIN', () => {
-    expect(() => new SingleToMultiCodePacket('AABBCCDD', '123')).toThrow('PIN must be exactly 6 characters');
+    expect(() => new SingleToMultiCodePacket('AABBCCDD', '123')).toThrow(BoksProtocolErrorId.INVALID_PIN_FORMAT);
   });
 });
 

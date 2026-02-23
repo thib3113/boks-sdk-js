@@ -1,6 +1,7 @@
 import { AuthPacket } from '@/protocol/downlink/_AuthPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
 import { stringToBytes, bytesToString } from '@/utils/converters';
+import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';
 
 /** ⚠️ This packet is theoretical; it has never been tested in real-world conditions. */
 /**
@@ -17,7 +18,13 @@ export class RegeneratePartBPacket extends AuthPacket {
     public readonly part: Uint8Array
   ) {
     super(configKey);
-    if (part.length !== 16) throw new Error('Token part must be exactly 16 bytes');
+    if (part.length !== 16) {
+      throw new BoksProtocolError(BoksProtocolErrorId.INVALID_VALUE, undefined, {
+        received: part.length,
+        expected: 16,
+        field: 'part'
+      });
+    }
   }
 
   static fromPayload(payload: Uint8Array): RegeneratePartBPacket {

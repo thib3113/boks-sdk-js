@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { BoksProtocolErrorId } from '../../../src/errors/BoksProtocolError';
 import { DeleteMultiUseCodePacket } from '@/protocol/downlink/DeleteMultiUseCodePacket';
 import { bytesToHex } from '@/utils/converters';
 
@@ -9,7 +10,7 @@ describe('DeleteMultiUseCodePacket', () => {
   });
 
   it('should throw error for invalid PIN', () => {
-    expect(() => new DeleteMultiUseCodePacket('AABBCCDD', 'INVALID')).toThrow('PIN must be exactly 6 characters');
+    expect(() => new DeleteMultiUseCodePacket('AABBCCDD', 'INVALID')).toThrow(BoksProtocolErrorId.INVALID_PIN_FORMAT);
   });
 });
 

@@ -1,5 +1,6 @@
 import { BoksOpcode } from '@/protocol/constants';
 import { calculateChecksum } from '@/utils/converters';
+import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';
 
 /**
  * Type representing a BoksPacket constructor.
@@ -25,7 +26,7 @@ export abstract class BoksPacket {
    * This MUST be implemented by leaf classes for strict parsing.
    */
   static fromPayload(_payload: Uint8Array): BoksPacket {
-    throw new Error('fromPayload not implemented');
+    throw new BoksProtocolError(BoksProtocolErrorId.MALFORMED_DATA, 'fromPayload not implemented');
   }
 
   /**

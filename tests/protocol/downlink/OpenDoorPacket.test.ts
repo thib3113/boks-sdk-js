@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { BoksProtocolErrorId } from '../../../src/errors/BoksProtocolError';
 import { OpenDoorPacket } from '@/protocol/downlink/OpenDoorPacket';
 import { bytesToHex } from '@/utils/converters';
 
@@ -9,8 +10,8 @@ describe('OpenDoorPacket', () => {
   });
 
   it('should throw error for invalid PIN', () => {
-    expect(() => new OpenDoorPacket('123')).toThrow('PIN must be exactly 6 characters');
-    expect(() => new OpenDoorPacket('12345C')).toThrow('PIN must be exactly 6 characters');
+    expect(() => new OpenDoorPacket('123')).toThrow(BoksProtocolErrorId.INVALID_PIN_FORMAT);
+    expect(() => new OpenDoorPacket('12345C')).toThrow(BoksProtocolErrorId.INVALID_PIN_FORMAT);
   });
 });
 

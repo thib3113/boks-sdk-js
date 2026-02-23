@@ -6,6 +6,7 @@ import {
   bytesToString,
   calculateChecksum,
 } from '../../src/utils/converters';
+import { BoksProtocolErrorId } from '../../src/errors/BoksProtocolError';
 
 describe('converters', () => {
   describe('hexToBytes', () => {
@@ -22,20 +23,20 @@ describe('converters', () => {
     });
 
     it('should throw on lowercase characters (uppercase only required)', () => {
-      expect(() => hexToBytes('a1B2c3D4')).toThrow('Invalid hex character');
+      expect(() => hexToBytes('a1B2c3D4')).toThrow(BoksProtocolErrorId.INVALID_VALUE);
     });
 
     it('should throw if length is odd (after removing spaces)', () => {
-      expect(() => hexToBytes('010')).toThrow('Invalid hex string');
+      expect(() => hexToBytes('010')).toThrow(BoksProtocolErrorId.INVALID_VALUE);
     });
 
     it('should throw on invalid characters (strict mode)', () => {
-      expect(() => hexToBytes('G1')).toThrow('Invalid hex character');
-      expect(() => hexToBytes('1G')).toThrow('Invalid hex character');
+      expect(() => hexToBytes('G1')).toThrow(BoksProtocolErrorId.INVALID_VALUE);
+      expect(() => hexToBytes('1G')).toThrow(BoksProtocolErrorId.INVALID_VALUE);
     });
 
     it('should throw on unicode characters > 255', () => {
-      expect(() => hexToBytes('€€')).toThrow('Invalid hex character');
+      expect(() => hexToBytes('€€')).toThrow(BoksProtocolErrorId.INVALID_VALUE);
     });
   });
 

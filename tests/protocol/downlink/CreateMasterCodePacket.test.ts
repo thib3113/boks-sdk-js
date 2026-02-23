@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { BoksProtocolErrorId } from '../../../src/errors/BoksProtocolError';
 import { CreateMasterCodePacket } from '@/protocol/downlink/CreateMasterCodePacket';
 import { bytesToHex } from '@/utils/converters';
 
@@ -9,12 +10,12 @@ describe('CreateMasterCodePacket', () => {
   });
 
   it('should throw error for invalid PIN', () => {
-    expect(() => new CreateMasterCodePacket('AABBCCDD', 1, '123')).toThrow('PIN must be exactly 6 characters');
+    expect(() => new CreateMasterCodePacket('AABBCCDD', 1, '123')).toThrow(BoksProtocolErrorId.INVALID_PIN_FORMAT);
   });
 
   it('should throw error for invalid index', () => {
-    expect(() => new CreateMasterCodePacket('AABBCCDD', -1, '123456')).toThrow('Invalid master code index');
-    expect(() => new CreateMasterCodePacket('AABBCCDD', 256, '123456')).toThrow('Invalid master code index');
-    expect(() => new CreateMasterCodePacket('AABBCCDD', 1.5, '123456')).toThrow('Invalid master code index');
+    expect(() => new CreateMasterCodePacket('AABBCCDD', -1, '123456')).toThrow(BoksProtocolErrorId.INVALID_INDEX_RANGE);
+    expect(() => new CreateMasterCodePacket('AABBCCDD', 256, '123456')).toThrow(BoksProtocolErrorId.INVALID_INDEX_RANGE);
+    expect(() => new CreateMasterCodePacket('AABBCCDD', 1.5, '123456')).toThrow(BoksProtocolErrorId.INVALID_INDEX_RANGE);
   });
 });

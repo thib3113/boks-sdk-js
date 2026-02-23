@@ -1,4 +1,5 @@
 import { CHECKSUM_MASK } from '../protocol/constants';
+import { BoksProtocolError, BoksProtocolErrorId } from '../errors/BoksProtocolError';
 
 /**
  * Utility functions for Boks SDK
@@ -51,7 +52,10 @@ export const hexToBytes = (hex: string): Uint8Array => {
   // and throws specific errors for invalid structure/chars.
   const cleanHex = hex.replace(/\s/g, '');
   if (cleanHex.length % 2 !== 0) {
-    throw new Error('Invalid hex string');
+    throw new BoksProtocolError(BoksProtocolErrorId.INVALID_VALUE, undefined, {
+      received: cleanHex.length,
+      reason: 'ODD_LENGTH'
+    });
   }
   const len = cleanHex.length;
   const bytes = new Uint8Array(len / 2);
@@ -61,7 +65,10 @@ export const hexToBytes = (hex: string): Uint8Array => {
     const low = HEX_DECODE_TABLE[cleanHex.charCodeAt(i + 1)];
 
     if (high === undefined || low === undefined || high === 255 || low === 255) {
-      throw new Error('Invalid hex character');
+      throw new BoksProtocolError(BoksProtocolErrorId.INVALID_VALUE, undefined, {
+        received: cleanHex[i] + (cleanHex[i + 1] || ''),
+        reason: 'INVALID_HEX_CHAR'
+      });
     }
 
     bytes[i / 2] = (high << 4) | low;

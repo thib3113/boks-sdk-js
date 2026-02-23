@@ -1,6 +1,7 @@
 import { AuthPacket } from '@/protocol/downlink/_AuthPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
 import { stringToBytes, bytesToString } from '@/utils/converters';
+import { validateMasterCodeIndex } from '@/utils/validation';
 
 /**
  * Command to delete a master code by index.
@@ -16,6 +17,7 @@ export class DeleteMasterCodePacket extends AuthPacket {
     public readonly index: number
   ) {
     super(configKey);
+    validateMasterCodeIndex(index);
   }
 
   static fromPayload(payload: Uint8Array): DeleteMasterCodePacket {

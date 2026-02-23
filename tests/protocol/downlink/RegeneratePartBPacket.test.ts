@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { BoksProtocolErrorId } from '../../../src/errors/BoksProtocolError';
 import { RegeneratePartBPacket } from '@/protocol/downlink/RegeneratePartBPacket';
 import { bytesToHex } from '@/utils/converters';
 

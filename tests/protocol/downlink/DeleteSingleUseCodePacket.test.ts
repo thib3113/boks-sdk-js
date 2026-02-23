@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { BoksProtocolErrorId } from '../../../src/errors/BoksProtocolError';
 import { DeleteSingleUseCodePacket } from '@/protocol/downlink/DeleteSingleUseCodePacket';
 import { bytesToHex } from '@/utils/converters';
 
@@ -10,7 +11,7 @@ describe('DeleteSingleUseCodePacket', () => {
   });
 
   it('should throw error for invalid PIN', () => {
-    expect(() => new DeleteSingleUseCodePacket('AABBCCDD', 'INVALID')).toThrow('PIN must be exactly 6 characters');
+    expect(() => new DeleteSingleUseCodePacket('AABBCCDD', 'INVALID')).toThrow(BoksProtocolErrorId.INVALID_PIN_FORMAT);
   });
 });
 

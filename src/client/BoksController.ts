@@ -61,6 +61,7 @@ import {
 } from '@/protocol';
 import { BoksClientError, BoksClientErrorId } from '@/errors/BoksClientError';
 import { hexToBytes, bytesToHex } from '@/utils/converters';
+import { validateMasterCodeIndex, validateSeed } from '@/utils/validation';
 
 export interface BoksHardwareInfo {
   firmwareRevision: string; // Internal FW revision (e.g. "10/125")
@@ -103,19 +104,13 @@ export class BoksController {
    * @param masterKey The 32-byte Master Key (as hex string or Uint8Array).
    */
   setCredentials(masterKey: string | Uint8Array): void {
-    let normalizedHex: string;
+    validateSeed(masterKey);
 
+    let normalizedHex: string;
     if (typeof masterKey === 'string') {
       normalizedHex = masterKey.replace(/[^0-9A-Fa-f]/g, '').toUpperCase();
     } else {
       normalizedHex = bytesToHex(masterKey);
-    }
-
-    if (normalizedHex.length !== 64) {
-      throw new BoksClientError(
-        BoksClientErrorId.INVALID_PARAMETER,
-        `Master Key must be 32 bytes (64 hex chars), got ${normalizedHex.length} hex chars`
-      );
     }
 
     this.#masterKey = normalizedHex;
@@ -470,6 +465,7 @@ export class BoksController {
    */
   async createMasterCode(index: number, pin: string): Promise<boolean> {
     const configKey = this.getConfigKeyOrThrow();
+    validateMasterCodeIndex(index);
     await this.client.send(new CreateMasterCodePacket(configKey, index, pin));
     const result = await this.client.waitForOneOf<OperationSuccessPacket | OperationErrorPacket>([
       BoksOpcode.CODE_OPERATION_SUCCESS,
@@ -509,6 +505,7 @@ export class BoksController {
    */
   async deleteMasterCode(index: number): Promise<boolean> {
     const configKey = this.getConfigKeyOrThrow();
+    validateMasterCodeIndex(index);
     await this.client.send(new DeleteMasterCodePacket(configKey, index));
     const result = await this.client.waitForOneOf<OperationSuccessPacket | OperationErrorPacket>([
       BoksOpcode.CODE_OPERATION_SUCCESS,
@@ -564,6 +561,7 @@ export class BoksController {
    */
   async editMasterCode(index: number, newPin: string): Promise<boolean> {
     const configKey = this.getConfigKeyOrThrow();
+    validateMasterCodeIndex(index);
     await this.client.send(new MasterCodeEditPacket(configKey, index, newPin));
     const result = await this.client.waitForOneOf<OperationSuccessPacket | OperationErrorPacket>([
       BoksOpcode.CODE_OPERATION_SUCCESS,
@@ -620,28 +618,9 @@ export class BoksController {
     seed: string | Uint8Array,
     onProgress?: (progress: number) => void
   ): Promise<boolean> {
-    let seedBytes: Uint8Array;
+    validateSeed(seed);
 
-    if (typeof seed === 'string') {
-      // Clean hex string
-      const hex = seed.replace(/[^0-9A-Fa-f]/g, '');
-      if (hex.length !== 64) {
-        throw new BoksClientError(
-          BoksClientErrorId.INVALID_PARAMETER,
-          `Seed string must be 32 bytes (64 hex chars), got ${hex.length}`
-        );
-      }
-      seedBytes = hexToBytes(hex);
-    } else {
-      seedBytes = seed;
-    }
-
-    if (seedBytes.length !== 32) {
-      throw new BoksClientError(
-        BoksClientErrorId.INVALID_PARAMETER,
-        `Seed bytes must be 32 bytes, got ${seedBytes.length}`
-      );
-    }
+    const seedBytes = typeof seed === 'string' ? hexToBytes(seed.replace(/[^0-9A-Fa-f]/g, '')) : seed;
 
     // Setup listener
     return new Promise((resolve, reject) => {
@@ -685,28 +664,12 @@ export class BoksController {
     onProgress?: (progress: number) => void
   ): Promise<boolean> {
     const configKey = this.getConfigKeyOrThrow();
-    let keyBytes: Uint8Array;
+    validateSeed(newMasterKey);
 
-    if (typeof newMasterKey === 'string') {
-      // Clean hex string
-      const hex = newMasterKey.replace(/[^0-9A-Fa-f]/g, '');
-      if (hex.length !== 64) {
-        throw new BoksClientError(
-          BoksClientErrorId.INVALID_PARAMETER,
-          `Master Key string must be 32 bytes (64 hex chars), got ${hex.length}`
-        );
-      }
-      keyBytes = hexToBytes(hex);
-    } else {
-      keyBytes = newMasterKey;
-    }
-
-    if (keyBytes.length !== 32) {
-      throw new BoksClientError(
-        BoksClientErrorId.INVALID_PARAMETER,
-        `Master Key bytes must be 32 bytes, got ${keyBytes.length}`
-      );
-    }
+    const keyBytes =
+      typeof newMasterKey === 'string'
+        ? hexToBytes(newMasterKey.replace(/[^0-9A-Fa-f]/g, ''))
+        : newMasterKey;
 
     const partA = keyBytes.slice(0, 16);
     const partB = keyBytes.slice(16, 32);

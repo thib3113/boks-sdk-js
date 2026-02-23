@@ -1,7 +1,7 @@
 import { AuthPacket } from '@/protocol/downlink/_AuthPacketBase';
-import { BoksOpcode, MAX_MASTER_CODE_INDEX } from '@/protocol/constants';
+import { BoksOpcode } from '@/protocol/constants';
 import { stringToBytes, bytesToString } from '@/utils/converters';
-import { validatePinCode } from '@/utils/pin';
+import { validatePinCode, validateMasterCodeIndex } from '@/utils/validation';
 
 /**
  * Command to create a permanent master code at a specific index.
@@ -18,11 +18,7 @@ export class CreateMasterCodePacket extends AuthPacket {
     public readonly pin: string
   ) {
     super(configKey);
-    if (!Number.isInteger(index) || index < 0 || index > MAX_MASTER_CODE_INDEX) {
-      throw new Error(
-        `Invalid master code index: ${index}. Must be an integer between 0 and ${MAX_MASTER_CODE_INDEX}.`
-      );
-    }
+    validateMasterCodeIndex(index);
     validatePinCode(pin);
   }
 

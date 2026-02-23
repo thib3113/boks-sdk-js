@@ -264,7 +264,13 @@ export class BoksPacketFactory {
     newMasterKey: Uint8Array | string
   ): [RegeneratePartAPacket, RegeneratePartBPacket] {
     const keyBytes = typeof newMasterKey === 'string' ? hexToBytes(newMasterKey) : newMasterKey;
-    if (keyBytes.length !== 32) throw new Error('Master Key must be 32 bytes');
+    if (keyBytes.length !== 32) {
+      throw new BoksProtocolError(BoksProtocolErrorId.INVALID_VALUE, undefined, {
+        received: keyBytes.length,
+        expected: 32,
+        field: 'newMasterKey'
+      });
+    }
     return [
       new RegeneratePartAPacket(configKey, keyBytes.slice(0, 16)),
       new RegeneratePartBPacket(configKey, keyBytes.slice(16, 32))

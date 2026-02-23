@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { BoksProtocolErrorId } from '../../../src/errors/BoksProtocolError';
 import { CountCodesPacket } from '@/protocol/downlink/CountCodesPacket';
 import { bytesToHex } from '@/utils/converters';
 
