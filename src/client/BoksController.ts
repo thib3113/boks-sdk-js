@@ -1,5 +1,6 @@
 import { BoksClient, BoksClientOptions } from './BoksClient';
 import {
+  BoksPacket,
   BoksOpcode,
   BOKS_UUIDS,
   RegisterNfcTagScanStartPacket,
@@ -90,11 +91,38 @@ export class BoksController {
   #masterKey: string | null = null;
   #configKey: string | null = null;
 
+  private _doorOpen: boolean = false;
+  private _codeCount: { master: number; other: number } = { master: 0, other: 0 };
+  private _logCount: number = 0;
+
   constructor(optionsOrClient?: BoksClientOptions | BoksClient) {
     if (optionsOrClient instanceof BoksClient) {
       this.client = optionsOrClient;
     } else {
       this.client = new BoksClient(optionsOrClient);
+    }
+    this.client.onPacket(this.handleInternalPacket.bind(this));
+  }
+
+  get doorOpen(): boolean {
+    return this._doorOpen;
+  }
+
+  get codeCount(): { master: number; other: number } {
+    return { ...this._codeCount };
+  }
+
+  get logCount(): number {
+    return this._logCount;
+  }
+
+  private handleInternalPacket(packet: BoksPacket): void {
+    if (packet instanceof AnswerDoorStatusPacket || packet instanceof NotifyDoorStatusPacket) {
+      this._doorOpen = packet.isOpen;
+    } else if (packet instanceof NotifyCodesCountPacket) {
+      this._codeCount = { master: packet.masterCount, other: packet.otherCount };
+    } else if (packet instanceof NotifyLogsCountPacket) {
+      this._logCount = packet.count;
     }
   }
 
