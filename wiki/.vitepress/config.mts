@@ -11,6 +11,61 @@ export default defineConfig({
     ['link', { rel: 'icon', href: '/favicon.ico' }]
   ],
 
+  locales: {
+    root: {
+      label: 'English',
+      lang: 'en'
+    },
+    fr: {
+      label: 'Français',
+      lang: 'fr',
+      link: '/fr/',
+      title: "SDK Boks",
+      description: "Reverse Engineering et SDK non-officiel pour les colisettes Boks",
+      themeConfig: {
+        nav: [
+          { text: 'Accueil', link: '/fr/' },
+          { text: 'Guide', link: '/fr/guide/' },
+          { text: 'Exemples', link: '/fr/examples/' },
+          { text: 'Référence API', link: '/docs/index.html', target: '_blank' }
+        ],
+        sidebar: {
+          '/fr/guide/': [
+            {
+              text: 'Introduction',
+              items: [
+                { text: 'Démarrage', link: '/fr/guide/' },
+                { text: 'Récupérer ses Clés', link: '/fr/guide/credentials' },
+                { text: 'Glossaire', link: '/fr/guide/glossary' }
+              ]
+            },
+            {
+              text: 'Protocole & Architecture',
+              items: [
+                { text: 'Protocole BLE', link: '/fr/guide/protocol' },
+                { text: 'Algorithme PIN', link: '/fr/guide/pin-algorithm' },
+                { text: 'Historique Firmware', link: '/fr/guide/firmware-history' },
+                { text: 'Bugs & Particularités', link: '/fr/guide/quirks' }
+              ]
+            }
+          ],
+          '/fr/examples/': [
+            {
+              text: 'Exemples Interactifs',
+              items: [
+                { text: 'Présentation', link: '/fr/examples/' },
+                { text: 'Démo Initialisation', link: '/fr/examples/initialization' },
+                { text: 'Démo Ouverture', link: '/fr/examples/open-door' },
+                { text: 'Sync Historique', link: '/fr/examples/history' },
+                { text: 'Batterie & Matériel', link: '/fr/examples/battery' }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  },
+
   vite: {
     resolve: {
       alias: [
@@ -33,7 +88,17 @@ export default defineConfig({
           text: 'Introduction',
           items: [
             { text: 'Getting Started', link: '/guide/' },
-            { text: 'Protocol Details', link: '/guide/protocol' }
+            { text: 'Retrieving Credentials', link: '/guide/credentials' },
+            { text: 'Glossary', link: '/guide/glossary' }
+          ]
+        },
+        {
+          text: 'Protocol & Architecture',
+          items: [
+            { text: 'BLE Protocol', link: '/guide/protocol' },
+            { text: 'PIN Algorithm', link: '/guide/pin-algorithm' },
+            { text: 'Firmware History', link: '/guide/firmware-history' },
+            { text: 'Known Quirks', link: '/guide/quirks' }
           ]
         }
       ],
