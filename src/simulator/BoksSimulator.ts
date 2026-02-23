@@ -1,5 +1,11 @@
 import { BoksOpcode, BoksCodeType, BoksOpenSource, BOKS_UUIDS } from '../protocol/constants';
-import { calculateChecksum, bytesToString, bytesToHex, stringToBytes, hexToBytes } from '../utils/converters';
+import {
+  calculateChecksum,
+  bytesToString,
+  bytesToHex,
+  stringToBytes,
+  hexToBytes
+} from '../utils/converters';
 
 /**
  * Represents a GATT Characteristic structure for simulation.
@@ -133,7 +139,7 @@ export class BoksHardwareSimulator {
   /**
    * Manually injects a custom log entry.
    */
-    /**
+  /**
    * Simulates an NFC tag scan.
    */
   public simulateNfcScan(uid: string): void {
@@ -156,7 +162,7 @@ export class BoksHardwareSimulator {
     }
   }
 
-public injectLog(opcode: number, payload: Uint8Array): void {
+  public injectLog(opcode: number, payload: Uint8Array): void {
     this.addLog(opcode, payload);
   }
 
@@ -606,7 +612,7 @@ public injectLog(opcode: number, payload: Uint8Array): void {
         return this.handleRegeneratePartA(payload);
       case BoksOpcode.RE_GENERATE_CODES_PART2:
         return this.handleRegeneratePartB(payload);
-            case BoksOpcode.CREATE_MASTER_CODE:
+      case BoksOpcode.CREATE_MASTER_CODE:
         return this.handleCreateMasterCode(payload);
       case BoksOpcode.MASTER_CODE_EDIT:
         return this.handleEditMasterCode(payload);
@@ -802,22 +808,28 @@ public injectLog(opcode: number, payload: Uint8Array): void {
     return this.createResponse(BoksOpcode.CODE_OPERATION_SUCCESS, new Uint8Array(0));
   }
 
-      private handleRegisterNfcScanStart(): Uint8Array {
+  private handleRegisterNfcScanStart(): Uint8Array {
     this.isNfcScanning = true;
     return this.createResponse(BoksOpcode.CODE_OPERATION_SUCCESS, new Uint8Array(0));
   }
 
   private handleRegisterNfcTag(payload: Uint8Array): Uint8Array {
-    if (payload.length < 9) return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
+    if (payload.length < 9)
+      return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
 
     const rxConfigKey = bytesToString(payload.slice(0, 8));
-    if (rxConfigKey !== this.configKey) return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
+    if (rxConfigKey !== this.configKey)
+      return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
 
     const len = payload[8];
-    if (payload.length < 9 + len) return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
+    if (payload.length < 9 + len)
+      return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
 
     const uidBytes = payload.slice(9, 9 + len);
-    const uid = bytesToHex(uidBytes).match(/.{1,2}/g)?.join(':') || '';
+    const uid =
+      bytesToHex(uidBytes)
+        .match(/.{1,2}/g)
+        ?.join(':') || '';
 
     this.nfcTags.add(uid);
     this.isNfcScanning = false;
@@ -827,16 +839,22 @@ public injectLog(opcode: number, payload: Uint8Array): void {
   }
 
   private handleUnregisterNfcTag(payload: Uint8Array): Uint8Array {
-    if (payload.length < 9) return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
+    if (payload.length < 9)
+      return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
 
     const rxConfigKey = bytesToString(payload.slice(0, 8));
-    if (rxConfigKey !== this.configKey) return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
+    if (rxConfigKey !== this.configKey)
+      return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
 
     const len = payload[8];
-    if (payload.length < 9 + len) return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
+    if (payload.length < 9 + len)
+      return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
 
     const uidBytes = payload.slice(9, 9 + len);
-    const uid = bytesToHex(uidBytes).match(/.{1,2}/g)?.join(':') || '';
+    const uid =
+      bytesToHex(uidBytes)
+        .match(/.{1,2}/g)
+        ?.join(':') || '';
 
     if (this.nfcTags.has(uid)) {
       this.nfcTags.delete(uid);
@@ -846,11 +864,13 @@ public injectLog(opcode: number, payload: Uint8Array): void {
     return this.createResponse(BoksOpcode.NOTIFY_NFC_TAG_UNREGISTERED, new Uint8Array(0));
   }
 
-private handleCreateMasterCode(payload: Uint8Array): Uint8Array {
-    if (payload.length < 15) return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
+  private handleCreateMasterCode(payload: Uint8Array): Uint8Array {
+    if (payload.length < 15)
+      return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
 
     const rxConfigKey = bytesToString(payload.slice(0, 8));
-    if (rxConfigKey !== this.configKey) return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
+    if (rxConfigKey !== this.configKey)
+      return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
 
     const pin = bytesToString(payload.slice(8, 14));
     const index = payload[14];
@@ -862,10 +882,12 @@ private handleCreateMasterCode(payload: Uint8Array): Uint8Array {
   }
 
   private handleEditMasterCode(payload: Uint8Array): Uint8Array {
-    if (payload.length < 15) return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
+    if (payload.length < 15)
+      return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
 
     const rxConfigKey = bytesToString(payload.slice(0, 8));
-    if (rxConfigKey !== this.configKey) return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
+    if (rxConfigKey !== this.configKey)
+      return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
 
     const index = payload[8];
     const newPin = bytesToString(payload.slice(9, 15));
@@ -882,10 +904,12 @@ private handleCreateMasterCode(payload: Uint8Array): Uint8Array {
   }
 
   private handleDeleteMasterCode(payload: Uint8Array): Uint8Array {
-    if (payload.length < 9) return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
+    if (payload.length < 9)
+      return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
 
     const rxConfigKey = bytesToString(payload.slice(0, 8));
-    if (rxConfigKey !== this.configKey) return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
+    if (rxConfigKey !== this.configKey)
+      return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
 
     const index = payload[8];
     const pin = this.masterCodes.get(index);
@@ -900,10 +924,12 @@ private handleCreateMasterCode(payload: Uint8Array): Uint8Array {
   }
 
   private handleDeleteMultiUseCode(payload: Uint8Array): Uint8Array {
-    if (payload.length < 14) return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
+    if (payload.length < 14)
+      return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
 
     const rxConfigKey = bytesToString(payload.slice(0, 8));
-    if (rxConfigKey !== this.configKey) return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
+    if (rxConfigKey !== this.configKey)
+      return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
 
     const pin = bytesToString(payload.slice(8, 14));
     if (this.pinCodes.has(pin)) {
@@ -918,10 +944,12 @@ private handleCreateMasterCode(payload: Uint8Array): Uint8Array {
   }
 
   private handleSingleToMulti(payload: Uint8Array): Uint8Array {
-    if (payload.length < 14) return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
+    if (payload.length < 14)
+      return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
 
     const rxConfigKey = bytesToString(payload.slice(0, 8));
-    if (rxConfigKey !== this.configKey) return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
+    if (rxConfigKey !== this.configKey)
+      return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
 
     const pin = bytesToString(payload.slice(8, 14));
     if (this.pinCodes.has(pin) && this.pinCodes.get(pin) === BoksCodeType.Single) {
@@ -933,10 +961,12 @@ private handleCreateMasterCode(payload: Uint8Array): Uint8Array {
   }
 
   private handleMultiToSingle(payload: Uint8Array): Uint8Array {
-    if (payload.length < 14) return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
+    if (payload.length < 14)
+      return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
 
     const rxConfigKey = bytesToString(payload.slice(0, 8));
-    if (rxConfigKey !== this.configKey) return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
+    if (rxConfigKey !== this.configKey)
+      return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
 
     const pin = bytesToString(payload.slice(8, 14));
     if (this.pinCodes.has(pin) && this.pinCodes.get(pin) === BoksCodeType.Multi) {
@@ -948,10 +978,12 @@ private handleCreateMasterCode(payload: Uint8Array): Uint8Array {
   }
 
   private handleReactivateCode(payload: Uint8Array): Uint8Array {
-    if (payload.length < 14) return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
+    if (payload.length < 14)
+      return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
 
     const rxConfigKey = bytesToString(payload.slice(0, 8));
-    if (rxConfigKey !== this.configKey) return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
+    if (rxConfigKey !== this.configKey)
+      return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
 
     const pin = bytesToString(payload.slice(8, 14));
     if (this.pinCodes.has(pin)) {
@@ -961,17 +993,19 @@ private handleCreateMasterCode(payload: Uint8Array): Uint8Array {
   }
 
   private handleSetConfiguration(payload: Uint8Array): Uint8Array {
-    if (payload.length < 10) return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
+    if (payload.length < 10)
+      return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
 
     const rxConfigKey = bytesToString(payload.slice(0, 8));
-    if (rxConfigKey !== this.configKey) return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
+    if (rxConfigKey !== this.configKey)
+      return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
 
-    const configType = payload[8];
+    // const configType = payload[8];
     const value = payload[9];
 
     // Assuming configType 0 or 1 relates to La Poste or general config.
     // User said it enables/disables La Poste scans.
-    this.configuration.laPosteEnabled = (value === 0x01);
+    this.configuration.laPosteEnabled = value === 0x01;
     this.saveState();
 
     return this.createResponse(BoksOpcode.NOTIFY_SET_CONFIGURATION_SUCCESS, new Uint8Array(0));
@@ -987,7 +1021,7 @@ private handleCreateMasterCode(payload: Uint8Array): Uint8Array {
     return this.createResponse(BoksOpcode.CODE_OPERATION_SUCCESS, new Uint8Array(0));
   }
 
-private async handleGenerateCodes(payload: Uint8Array): Promise<Uint8Array | null> {
+  private async handleGenerateCodes(payload: Uint8Array): Promise<Uint8Array | null> {
     if (payload.length !== 32) {
       this.emit(this.createResponse(BoksOpcode.NOTIFY_CODE_GENERATION_ERROR, new Uint8Array(0)));
       return null;
