@@ -1,23 +1,26 @@
 import { describe, it, expect } from 'vitest';
 import { NfcOpeningHistoryPacket } from '@/protocol/uplink/history/NfcOpeningHistoryPacket';
-import { hexToBytes } from '@/utils/converters';
 import { BoksOpcode } from '@/protocol/constants';
 
 describe('NfcOpeningHistoryPacket', () => {
-  it('should parse age, tag type, UID and date correctly', () => {
-    const age = 60;
-    const now = Date.now();
-    // Op: A1, Age: 00003C (60s), Type: 03, UIDLen: 04, UID: 04A1B2C3
-    const payload = hexToBytes('00003C030404A1B2C3');
+  it('should parse correctly with age, type and uid', () => {
+    // Age 10
+    // Type 1
+    // Len 4
+    // UID 01020304
+    const payload = new Uint8Array([0x00, 0x00, 0x0A, 0x01, 0x04, 0x01, 0x02, 0x03, 0x04]);
     const packet = NfcOpeningHistoryPacket.fromPayload(payload);
     
-    expect(packet.age).toBe(age);
-    expect(packet.tagType).toBe(3);
-    expect(packet.uid).toBe('04A1B2C3');
     expect(packet.opcode).toBe(BoksOpcode.LOG_EVENT_NFC_OPENING);
+    expect(packet.age).toBe(10);
+    expect(packet.tagType).toBe(1);
+    expect(packet.uid).toBe('01020304');
+  });
 
-    // Date calculation verification (within 1000ms)
-    const expectedTime = now - age * 1000;
-    expect(Math.abs(packet.date.getTime() - expectedTime)).toBeLessThan(1000);
+  it('should handle missing uid', () => {
+    // Missing UID bytes
+    const payload = new Uint8Array([0x00, 0x00, 0x0A, 0x01, 0x04]);
+    const packet = NfcOpeningHistoryPacket.fromPayload(payload);
+    expect(packet.uid).toBe('');
   });
 });

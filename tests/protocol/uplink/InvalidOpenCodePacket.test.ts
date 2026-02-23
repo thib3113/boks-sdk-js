@@ -1,9 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { InvalidOpenCodePacket } from '@/protocol';
+import { InvalidOpenCodePacket } from '@/protocol/uplink/InvalidOpenCodePacket';
+import { BoksOpcode } from '@/protocol/constants';
 
 describe('InvalidOpenCodePacket', () => {
   it('should parse correctly', () => {
-    const packet = InvalidOpenCodePacket.fromPayload(new Uint8Array(0));
-    expect(packet.opcode).toBe(0x82);
+    const payload = new Uint8Array(0);
+    const packet = InvalidOpenCodePacket.fromPayload(payload);
+    expect(packet.opcode).toBe(BoksOpcode.INVALID_OPEN_CODE);
   });
 });

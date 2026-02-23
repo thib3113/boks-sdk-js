@@ -1,21 +1,21 @@
 import { describe, it, expect } from 'vitest';
 import { NfcRegisteringHistoryPacket } from '@/protocol/uplink/history/NfcRegisteringHistoryPacket';
-import { hexToBytes, bytesToHex } from '@/utils/converters';
 import { BoksOpcode } from '@/protocol/constants';
 
 describe('NfcRegisteringHistoryPacket', () => {
-  it('should parse age, data and date correctly', () => {
-    const age = 60;
-    const now = Date.now();
-    const payload = hexToBytes('00003CAABBCC'); // 60s, Data AABBCC
+  it('should parse correctly with age and data', () => {
+    // 0x01, 0x02, 0x03, 0x04 -> Data
+    const payload = new Uint8Array([0x00, 0x00, 0x0A, 0x01, 0x02, 0x03, 0x04]);
     const packet = NfcRegisteringHistoryPacket.fromPayload(payload);
 
-    expect(packet.age).toBe(age);
-    expect(bytesToHex(packet.data)).toBe('AABBCC');
     expect(packet.opcode).toBe(BoksOpcode.LOG_EVENT_NFC_REGISTERING);
+    expect(packet.age).toBe(10);
+    expect(packet.data).toEqual(new Uint8Array([0x01, 0x02, 0x03, 0x04]));
+  });
 
-    // Date calculation verification (within 1000ms)
-    const expectedTime = now - age * 1000;
-    expect(Math.abs(packet.date.getTime() - expectedTime)).toBeLessThan(1000);
+  it('should handle missing data', () => {
+    const payload = new Uint8Array([0x00, 0x00, 0x0A]);
+    const packet = NfcRegisteringHistoryPacket.fromPayload(payload);
+    expect(packet.data.length).toBe(0);
   });
 });

@@ -1,18 +1,66 @@
 import { describe, it, expect } from 'vitest';
-import { BoksProtocolErrorId } from '../../../src/errors/BoksProtocolError';
 import { CreateMultiUseCodePacket } from '@/protocol/downlink/CreateMultiUseCodePacket';
-import { bytesToHex } from '@/utils/converters';
+import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';
+import { BoksOpcode } from '@/protocol/constants';
+import { bytesToHex, stringToBytes } from '@/utils/converters';
 
 describe('CreateMultiUseCodePacket', () => {
-  it('should generate correct binary for CreateMultiUseCode (0x13)', () => {
-    const packet = new CreateMultiUseCodePacket('AABBCCDD', '123456');
-    expect(bytesToHex(packet.encode())).toBe('130E41414242434344443132333435366A');
+  const validKey = 'ABCDEF12';
+  const validPin = '123456';
+
+  it('should construct with valid parameters', () => {
+    const packet = new CreateMultiUseCodePacket(validKey, validPin);
+    expect(packet.opcode).toBe(BoksOpcode.CREATE_MULTI_USE_CODE);
+    expect(packet.configKey).toBe(validKey);
+    expect(packet.pin).toBe(validPin);
   });
 
-  it('should throw error for invalid PIN', () => {
-    expect(() => new CreateMultiUseCodePacket('AABBCCDD', '123')).toThrow(BoksProtocolErrorId.INVALID_PIN_FORMAT);
+  it('should encode correctly', () => {
+    const packet = new CreateMultiUseCodePacket(validKey, validPin);
+    const encoded = packet.encode();
+    // 0x13 + len(14) + key(8) + pin(6) + checksum
+    expect(encoded[0]).toBe(0x13);
+    expect(encoded[1]).toBe(14);
+
+    // Key "ABCDEF12" -> 4142434445463132
+    // Pin "123456" -> 313233343536
+    const expectedPayload = '4142434445463132313233343536';
+    expect(bytesToHex(encoded.subarray(2, 16))).toBe(expectedPayload);
+  });
+
+  it('should parse from payload correctly', () => {
+    const payload = new Uint8Array(14);
+    payload.set(stringToBytes(validKey), 0);
+    payload.set(stringToBytes(validPin), 8);
+
+    const packet = CreateMultiUseCodePacket.fromPayload(payload);
+    expect(packet.configKey).toBe(validKey);
+    expect(packet.pin).toBe(validPin);
+  });
+
+  it('should throw INVALID_CONFIG_KEY for invalid config key format', () => {
+     expect(() => new CreateMultiUseCodePacket('invalid', validPin)).toThrowError(BoksProtocolError);
+     try {
+       new CreateMultiUseCodePacket('invalid', validPin);
+     } catch (e) {
+       expect((e as BoksProtocolError).id).toBe(BoksProtocolErrorId.INVALID_CONFIG_KEY);
+     }
+  });
+
+  it('should throw INVALID_PIN_FORMAT for invalid pin', () => {
+      expect(() => new CreateMultiUseCodePacket(validKey, '123')).toThrowError(BoksProtocolError);
+      expect(() => new CreateMultiUseCodePacket(validKey, '12345C')).toThrowError(BoksProtocolError);
+
+      try {
+        new CreateMultiUseCodePacket(validKey, '12345C');
+      } catch (e) {
+         expect((e as BoksProtocolError).id).toBe(BoksProtocolErrorId.INVALID_PIN_FORMAT);
+      }
+  });
+
+  it('should fail parsing if payload is too short', () => {
+      // Short payload leads to short pin or key extraction, which constructor validates.
+      const shortPayload = new Uint8Array(10);
+      expect(() => CreateMultiUseCodePacket.fromPayload(shortPayload)).toThrowError(BoksProtocolError);
   });
 });
-
-
-

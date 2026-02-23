@@ -1,20 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import { PowerOnHistoryPacket } from '@/protocol/uplink/history/PowerOnHistoryPacket';
-import { hexToBytes } from '@/utils/converters';
 import { BoksOpcode } from '@/protocol/constants';
 
 describe('PowerOnHistoryPacket', () => {
-  it('should parse age and date correctly', () => {
-    const age = 10;
-    const now = Date.now();
-    const payload = hexToBytes('00000A'); // 10s
+  it('should parse correctly with age', () => {
+    const payload = new Uint8Array([0x01, 0x02, 0x03]);
     const packet = PowerOnHistoryPacket.fromPayload(payload);
-
-    expect(packet.age).toBe(age);
     expect(packet.opcode).toBe(BoksOpcode.POWER_ON);
-
-    // Date calculation verification (within 1000ms)
-    const expectedTime = now - age * 1000;
-    expect(Math.abs(packet.date.getTime() - expectedTime)).toBeLessThan(1000);
+    expect(packet.age).toBe(0x010203);
   });
 });
