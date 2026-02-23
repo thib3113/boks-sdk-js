@@ -1,5 +1,5 @@
 import { AuthPacket } from '@/protocol/downlink/_AuthPacketBase';
-import { BoksOpcode } from '@/protocol/constants';
+import { BoksOpcode, MAX_MASTER_CODE_INDEX } from '@/protocol/constants';
 import { stringToBytes, bytesToString } from '@/utils/converters';
 import { validatePinCode } from '@/utils/pin';
 
@@ -19,8 +19,8 @@ export class MasterCodeEditPacket extends AuthPacket {
     public readonly newPin: string
   ) {
     super(configKey);
-    if (!Number.isInteger(index) || index < 0 || index > 255) {
-      throw new Error(`Invalid master code index: ${index}. Must be an integer between 0 and 255.`);
+    if (!Number.isInteger(index) || index < 0 || index > MAX_MASTER_CODE_INDEX) {
+      throw new Error(`Invalid master code index: ${index}. Must be an integer between 0 and ${MAX_MASTER_CODE_INDEX}.`);
     }
     validatePinCode(newPin);
   }
