@@ -2,21 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { BoksController } from '../../src/client/BoksController';
 import { BoksHardwareSimulator } from '../../src/simulator/BoksSimulator';
 import { SimulatorTransport } from '../../src/simulator/SimulatorTransport';
-import { BoksOpcode } from '../../src/protocol/constants';
-import { calculateChecksum } from '../../src/utils/converters';
-import { BoksPacket } from '../../src/protocol';
-
-// Helper to access private emit method
-function emitPacket(simulator: BoksHardwareSimulator, opcode: number, payload: number[]) {
-  const data = new Uint8Array(payload.length + 3);
-  data[0] = opcode;
-  data[1] = payload.length;
-  data.set(payload, 2);
-  data[data.length - 1] = calculateChecksum(data.subarray(0, data.length - 1));
-
-  // Call private emit via any cast
-  (simulator as any).emit(data);
-}
+import { BoksOpcode, BoksOpenSource } from '../../src/protocol/constants';
 
 describe('BoksController Internal State', () => {
   let simulator: BoksHardwareSimulator;
@@ -25,6 +11,8 @@ describe('BoksController Internal State', () => {
 
   beforeEach(async () => {
     simulator = new BoksHardwareSimulator();
+    // Use 0ms delay for instant test execution
+    simulator.setProgressDelay(0);
     transport = new SimulatorTransport(simulator);
     controller = new BoksController({ transport });
     await controller.connect();
@@ -35,60 +23,64 @@ describe('BoksController Internal State', () => {
   });
 
   it('should update door status when AnswerDoorStatusPacket (0x85) is received', async () => {
-    // Simulate door open response: Inverted=0x00, Raw=0x01
-    emitPacket(simulator, BoksOpcode.ANSWER_DOOR_STATUS, [0x00, 0x01]);
+    // 1. Force state in simulator
+    simulator.setDoorStatus(true);
+    
+    // 2. Trigger request (0x02 -> 0x85)
+    await controller.getDoorStatus();
 
-    // Allow event loop to process
-    await new Promise(resolve => setTimeout(resolve, 10));
-
+    // 3. Verify controller state was updated by the response
     expect(controller.doorOpen).toBe(true);
 
-    // Simulate door closed response: Inverted=0x01, Raw=0x00
-    emitPacket(simulator, BoksOpcode.ANSWER_DOOR_STATUS, [0x01, 0x00]);
-    await new Promise(resolve => setTimeout(resolve, 10));
-
+    simulator.setDoorStatus(false);
+    await controller.getDoorStatus();
     expect(controller.doorOpen).toBe(false);
   });
 
   it('should update door status when NotifyDoorStatusPacket (0x84) is received', async () => {
-    // Simulate door open notification
-    emitPacket(simulator, BoksOpcode.NOTIFY_DOOR_STATUS, [0x00, 0x01]);
-    await new Promise(resolve => setTimeout(resolve, 10));
-
-    expect(controller.doorOpen).toBe(true);
+    // Manually trigger door open in simulator (now emits 0x84)
+    simulator.triggerDoorOpen(BoksOpenSource.Ble, 'NON_EXISTENT');
+    
+    // Give some time for notification delivery
+    await vi.waitFor(() => expect(controller.doorOpen).toBe(true), { timeout: 1000 });
   });
 
   it('should update code count when NotifyCodesCountPacket (0xC3) is received', async () => {
-    // Master: 5 (0x0005), Other: 10 (0x000A)
-    emitPacket(simulator, BoksOpcode.NOTIFY_CODES_COUNT, [0x00, 0x05, 0x00, 0x0A]);
-    await new Promise(resolve => setTimeout(resolve, 10));
-
-    expect(controller.codeCount).toEqual({ master: 5, other: 10 });
+    // Initial request
+    await controller.countCodes();
+    
+    // Default: 5 master, 3300 others (approx due to collisions)
+    expect(controller.codeCount.master).toBe(5);
+    expect(controller.codeCount.other).toBeGreaterThan(3200);
   });
 
   it('should update log count when NotifyLogsCountPacket (0x79) is received', async () => {
-    // Count: 123 (0x007B)
-    emitPacket(simulator, BoksOpcode.NOTIFY_LOGS_COUNT, [0x00, 0x7B]);
-    await new Promise(resolve => setTimeout(resolve, 10));
-
-    expect(controller.logCount).toBe(123);
+    // Generate one log
+    simulator.triggerDoorOpen(BoksOpenSource.PhysicalKey);
+    
+    // Get count (0x07 -> 0x79)
+    const count = await controller.getLogsCount();
+    
+    expect(count).toBeGreaterThan(0);
+    await vi.waitFor(() => expect(controller.logCount).toBe(count), { timeout: 1000 });
   });
 
   it('should allow external listeners to receive packets', async () => {
-    const listener = vi.fn();
-    // Access underlying client to add listener
-    (controller as any).client.onPacket(listener);
+    // 1. Trigger an event to ensure logCount > 0
+    simulator.triggerDoorOpen(BoksOpenSource.PhysicalKey);
+    
+    let capturedOpcode: number | null = null;
+    controller.onPacket((p) => {
+        capturedOpcode = p.opcode;
+    });
 
-    // Emit a packet
-    emitPacket(simulator, BoksOpcode.NOTIFY_LOGS_COUNT, [0x00, 0x01]);
-    await new Promise(resolve => setTimeout(resolve, 10));
-
-    // Internal state should update
-    expect(controller.logCount).toBe(1);
-
-    // External listener should be called
-    expect(listener).toHaveBeenCalled();
-    const packet = listener.mock.calls[0][0] as BoksPacket;
-    expect(packet.opcode).toBe(BoksOpcode.NOTIFY_LOGS_COUNT);
+    // 2. Trigger the count request (which also emits NOTIFY_LOGS_COUNT)
+    await controller.getLogsCount();
+    
+    // 3. Wait for the packet to arrive at the external listener
+    await vi.waitFor(() => expect(capturedOpcode).not.toBeNull(), { timeout: 1000 });
+    
+    expect(capturedOpcode).toBe(BoksOpcode.NOTIFY_LOGS_COUNT);
+    expect(controller.logCount).toBeGreaterThan(0);
   });
 });

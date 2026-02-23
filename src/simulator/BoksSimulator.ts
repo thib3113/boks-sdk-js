@@ -420,6 +420,9 @@ export class BoksHardwareSimulator {
    */
   public setDoorStatus(open: boolean): void {
     this.#isOpen = open;
+    this.emit(
+      this.createResponse(BoksOpcode.NOTIFY_DOOR_STATUS, new Uint8Array([open ? 0x00 : 0x01, open ? 0x01 : 0x00]))
+    );
     if (open) {
       this.scheduleAutoClose();
     } else {
@@ -474,6 +477,7 @@ export class BoksHardwareSimulator {
 
     // 2. Open the door
     this.#isOpen = true;
+    this.emit(this.createResponse(BoksOpcode.NOTIFY_DOOR_STATUS, new Uint8Array([0x00, 0x01])));
 
     // 3. Log the generic door open event (0x91) - Usually follows successful validation
     this.addLog(BoksOpcode.LOG_DOOR_OPEN, payload);
@@ -656,8 +660,11 @@ export class BoksHardwareSimulator {
    * Handles an incoming packet from the transport.
    */
   public async handlePacket(data: Uint8Array): Promise<void> {
-    if (Math.random() < this.#packetLossProbability) return;
+    const prob = this.#packetLossProbability;
+    if (prob >= 1) return;
+    if (prob > 0 && Math.random() < prob) return;
     if (data.length < 3) return;
+
     const opcode = data[0];
     const len = data[1];
     if (data.length !== len + 3) return;
@@ -690,14 +697,31 @@ export class BoksHardwareSimulator {
       const send = async () => {
         const delay = this.#responseDelayMs > 0 ? this.#responseDelayMs : 0;
         await new Promise((resolve) => setTimeout(resolve, delay));
-        if (Math.random() < this.#packetLossProbability) return;
+        const currentProb = this.#packetLossProbability;
+        if (currentProb >= 1) return;
+        if (currentProb > 0 && Math.random() < currentProb) return;
         this.emit(response!);
       };
       send();
     }
   }
 
+  public destroy(): void {
+    if (this.#doorAutoCloseTimeout) {
+      clearTimeout(this.#doorAutoCloseTimeout);
+      this.#doorAutoCloseTimeout = null;
+    }
+    if (this.#chaosInterval) {
+      clearInterval(this.#chaosInterval);
+      this.#chaosInterval = null;
+    }
+    this.#subscribers = [];
+  }
+
   private emit(data: Uint8Array): void {
+    const prob = this.#packetLossProbability;
+    if (prob >= 1) return;
+    if (prob > 0 && Math.random() < prob) return;
     this.log('debug', 'send', { opcode: data[0], length: data.length });
     this.#subscribers.forEach((cb) => cb(data));
   }
@@ -779,6 +803,7 @@ export class BoksHardwareSimulator {
     this.#doorAutoCloseTimeout = setTimeout(() => {
       if (this.#isOpen) {
         this.#isOpen = false;
+        this.emit(this.createResponse(BoksOpcode.NOTIFY_DOOR_STATUS, new Uint8Array([0x01, 0x00])));
         // Log door close
         this.addLog(BoksOpcode.LOG_DOOR_CLOSE, new Uint8Array(0));
       }

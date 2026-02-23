@@ -87,44 +87,62 @@ interface BoksRequirements {
  * Manages version-specific logic, feature flags, and complex workflows.
  */
 export class BoksController {
-  private readonly client: BoksClient;
+  readonly #client: BoksClient;
   private _hardwareInfo: BoksHardwareInfo | null = null;
   #masterKey: string | null = null;
   #configKey: string | null = null;
 
-  private _doorOpen: boolean = false;
-  private _codeCount: { master: number; other: number } = { master: 0, other: 0 };
-  private _logCount: number = 0;
+  #doorOpen: boolean = false;
+  #codeCount: { master: number; other: number } = { master: 0, other: 0 };
+  #logCount: number = 0;
 
   constructor(optionsOrClient?: BoksClientOptions | BoksClient) {
     if (optionsOrClient instanceof BoksClient) {
-      this.client = optionsOrClient;
+      this.#client = optionsOrClient;
     } else {
-      this.client = new BoksClient(optionsOrClient);
+      this.#client = new BoksClient(optionsOrClient);
     }
-    this.client.onPacket(this.handleInternalPacket.bind(this));
+    this.#client.onPacket(this.handleInternalPacket.bind(this));
   }
 
   get doorOpen(): boolean {
-    return this._doorOpen;
+    return this.#doorOpen;
   }
 
   get codeCount(): { master: number; other: number } {
-    return { ...this._codeCount };
+    return { ...this.#codeCount };
   }
 
   get logCount(): number {
-    return this._logCount;
+    return this.#logCount;
   }
 
   private handleInternalPacket(packet: BoksPacket): void {
-    if (packet instanceof AnswerDoorStatusPacket || packet instanceof NotifyDoorStatusPacket) {
-      this._doorOpen = packet.isOpen;
-    } else if (packet instanceof NotifyCodesCountPacket) {
-      this._codeCount = { master: packet.masterCount, other: packet.otherCount };
-    } else if (packet instanceof NotifyLogsCountPacket) {
-      this._logCount = packet.count;
+    switch (packet.opcode) {
+      case BoksOpcode.ANSWER_DOOR_STATUS:
+      case BoksOpcode.NOTIFY_DOOR_STATUS:
+        this.#doorOpen = (packet as AnswerDoorStatusPacket | NotifyDoorStatusPacket).isOpen;
+        break;
+      case BoksOpcode.NOTIFY_CODES_COUNT:
+        const countPacket = packet as NotifyCodesCountPacket;
+        this.#codeCount = {
+          master: countPacket.masterCount,
+          other: countPacket.otherCount
+        };
+        break;
+      case BoksOpcode.NOTIFY_LOGS_COUNT:
+        this.#logCount = (packet as NotifyLogsCountPacket).count;
+        break;
     }
+  }
+
+  /**
+   * Subscribes to all incoming packets.
+   * @param callback Function called for every parsed packet received.
+   * @returns A function to unsubscribe.
+   */
+  onPacket(callback: (packet: BoksPacket) => void): () => void {
+    return this.#client.onPacket(callback);
   }
 
   /**
@@ -164,7 +182,7 @@ export class BoksController {
    * Connects to the Boks device and retrieves version information.
    */
   async connect(): Promise<void> {
-    await this.client.connect();
+    await this.#client.connect();
     await this.refreshVersions();
   }
 
@@ -172,7 +190,7 @@ export class BoksController {
    * Disconnects from the Boks device.
    */
   async disconnect(): Promise<void> {
-    await this.client.disconnect();
+    await this.#client.disconnect();
   }
 
   /**
@@ -196,11 +214,11 @@ export class BoksController {
     const textDecoder = new TextDecoder('utf-8');
 
     // Read Software Revision
-    const swBytes = await this.client.readCharacteristic(BOKS_UUIDS.SOFTWARE_REVISION);
+    const swBytes = await this.#client.readCharacteristic(BOKS_UUIDS.SOFTWARE_REVISION);
     const swRevision = textDecoder.decode(swBytes).replace(/\0/g, '').trim();
 
     // Read Firmware Revision (Internal)
-    const fwBytes = await this.client.readCharacteristic(BOKS_UUIDS.FIRMWARE_REVISION);
+    const fwBytes = await this.#client.readCharacteristic(BOKS_UUIDS.FIRMWARE_REVISION);
     const fwRevision = textDecoder.decode(fwBytes).replace(/\0/g, '').trim();
 
     this._hardwareInfo = this.deriveHardwareInfo(fwRevision, swRevision);
@@ -311,10 +329,10 @@ export class BoksController {
 
     // Start scan
     // 0x17: RegisterNfcTagScanStartPacket
-    await this.client.send(new RegisterNfcTagScanStartPacket(configKey));
+    await this.#client.send(new RegisterNfcTagScanStartPacket(configKey));
 
     // Wait for one of the possible outcomes
-    const result = await this.client.waitForOneOf<
+    const result = await this.#client.waitForOneOf<
       NotifyNfcTagFoundPacket | ErrorNfcScanTimeoutPacket | ErrorNfcTagAlreadyExistsScanPacket
     >(
       [
@@ -359,9 +377,9 @@ export class BoksController {
       featureName: 'NFC Register'
     });
 
-    await this.client.send(new NfcRegisterPacket(configKey, tagId));
+    await this.#client.send(new NfcRegisterPacket(configKey, tagId));
 
-    const result = await this.client.waitForOneOf<
+    const result = await this.#client.waitForOneOf<
       NotifyNfcTagRegisteredPacket | NotifyNfcTagRegisteredErrorAlreadyExistsPacket
     >([
       BoksOpcode.NOTIFY_NFC_TAG_REGISTERED, // 0xC8
@@ -387,9 +405,9 @@ export class BoksController {
       featureName: 'NFC Unregister'
     });
 
-    await this.client.send(new UnregisterNfcTagPacket(configKey, tagId));
+    await this.#client.send(new UnregisterNfcTagPacket(configKey, tagId));
 
-    await this.client.waitForPacket<NotifyNfcTagUnregisteredPacket>(
+    await this.#client.waitForPacket<NotifyNfcTagUnregisteredPacket>(
       BoksOpcode.NOTIFY_NFC_TAG_UNREGISTERED // 0xCA
     );
 
@@ -402,8 +420,8 @@ export class BoksController {
    * @returns True if the door opened successfully, false if the PIN was invalid.
    */
   async openDoor(pin: string): Promise<boolean> {
-    await this.client.send(new OpenDoorPacket(pin));
-    const result = await this.client.waitForOneOf<ValidOpenCodePacket | InvalidOpenCodePacket>([
+    await this.#client.send(new OpenDoorPacket(pin));
+    const result = await this.#client.waitForOneOf<ValidOpenCodePacket | InvalidOpenCodePacket>([
       BoksOpcode.VALID_OPEN_CODE,
       BoksOpcode.INVALID_OPEN_CODE
     ]);
@@ -415,8 +433,8 @@ export class BoksController {
    * @returns True if the door is open, false if closed.
    */
   async getDoorStatus(): Promise<boolean> {
-    await this.client.send(new AskDoorStatusPacket());
-    const packet = await this.client.waitForOneOf<AnswerDoorStatusPacket | NotifyDoorStatusPacket>([
+    await this.#client.send(new AskDoorStatusPacket());
+    const packet = await this.#client.waitForOneOf<AnswerDoorStatusPacket | NotifyDoorStatusPacket>([
       BoksOpcode.ANSWER_DOOR_STATUS,
       BoksOpcode.NOTIFY_DOOR_STATUS
     ]);
@@ -428,8 +446,8 @@ export class BoksController {
    * @returns The number of logs.
    */
   async getLogsCount(): Promise<number> {
-    await this.client.send(new GetLogsCountPacket());
-    const packet = await this.client.waitForPacket<NotifyLogsCountPacket>(
+    await this.#client.send(new GetLogsCountPacket());
+    const packet = await this.#client.waitForPacket<NotifyLogsCountPacket>(
       BoksOpcode.NOTIFY_LOGS_COUNT
     );
     return packet.count;
@@ -440,8 +458,8 @@ export class BoksController {
    * @returns An object containing the count of master codes and other codes.
    */
   async countCodes(): Promise<{ masterCount: number; otherCount: number }> {
-    await this.client.send(new CountCodesPacket());
-    const packet = await this.client.waitForPacket<NotifyCodesCountPacket>(
+    await this.#client.send(new CountCodesPacket());
+    const packet = await this.#client.waitForPacket<NotifyCodesCountPacket>(
       BoksOpcode.NOTIFY_CODES_COUNT
     );
     return {
@@ -454,7 +472,7 @@ export class BoksController {
    * Triggers a battery test on the device.
    */
   async testBattery(): Promise<void> {
-    await this.client.send(new TestBatteryPacket());
+    await this.#client.send(new TestBatteryPacket());
   }
 
   /**
@@ -462,7 +480,7 @@ export class BoksController {
    * @returns Battery level (0-100) or undefined if unreliable.
    */
   async getBatteryLevel(): Promise<number | undefined> {
-    return this.client.getBatteryLevel();
+    return this.#client.getBatteryLevel();
   }
 
   /**
@@ -470,14 +488,14 @@ export class BoksController {
    * @returns Battery stats object or undefined if unreliable.
    */
   async getBatteryStats(): Promise<BoksBatteryStats | undefined> {
-    return this.client.getBatteryStats();
+    return this.#client.getBatteryStats();
   }
 
   /**
    * Reboots the Boks device.
    */
   async reboot(): Promise<void> {
-    await this.client.send(new RebootPacket());
+    await this.#client.send(new RebootPacket());
   }
 
   /**
@@ -485,7 +503,7 @@ export class BoksController {
    * @param timeoutMs Timeout between two history packets.
    */
   async fetchHistory(timeoutMs?: number): Promise<BoksHistoryEvent[]> {
-    return this.client.fetchHistory(timeoutMs);
+    return this.#client.fetchHistory(timeoutMs);
   }
 
   /**
@@ -494,8 +512,8 @@ export class BoksController {
   async createMasterCode(index: number, pin: string): Promise<boolean> {
     const configKey = this.getConfigKeyOrThrow();
     validateMasterCodeIndex(index);
-    await this.client.send(new CreateMasterCodePacket(configKey, index, pin));
-    const result = await this.client.waitForOneOf<OperationSuccessPacket | OperationErrorPacket>([
+    await this.#client.send(new CreateMasterCodePacket(configKey, index, pin));
+    const result = await this.#client.waitForOneOf<OperationSuccessPacket | OperationErrorPacket>([
       BoksOpcode.CODE_OPERATION_SUCCESS,
       BoksOpcode.CODE_OPERATION_ERROR
     ]);
@@ -507,8 +525,8 @@ export class BoksController {
    */
   async createSingleUseCode(pin: string): Promise<boolean> {
     const configKey = this.getConfigKeyOrThrow();
-    await this.client.send(new CreateSingleUseCodePacket(configKey, pin));
-    const result = await this.client.waitForOneOf<OperationSuccessPacket | OperationErrorPacket>([
+    await this.#client.send(new CreateSingleUseCodePacket(configKey, pin));
+    const result = await this.#client.waitForOneOf<OperationSuccessPacket | OperationErrorPacket>([
       BoksOpcode.CODE_OPERATION_SUCCESS,
       BoksOpcode.CODE_OPERATION_ERROR
     ]);
@@ -520,8 +538,8 @@ export class BoksController {
    */
   async createMultiUseCode(pin: string): Promise<boolean> {
     const configKey = this.getConfigKeyOrThrow();
-    await this.client.send(new CreateMultiUseCodePacket(configKey, pin));
-    const result = await this.client.waitForOneOf<OperationSuccessPacket | OperationErrorPacket>([
+    await this.#client.send(new CreateMultiUseCodePacket(configKey, pin));
+    const result = await this.#client.waitForOneOf<OperationSuccessPacket | OperationErrorPacket>([
       BoksOpcode.CODE_OPERATION_SUCCESS,
       BoksOpcode.CODE_OPERATION_ERROR
     ]);
@@ -534,8 +552,8 @@ export class BoksController {
   async deleteMasterCode(index: number): Promise<boolean> {
     const configKey = this.getConfigKeyOrThrow();
     validateMasterCodeIndex(index);
-    await this.client.send(new DeleteMasterCodePacket(configKey, index));
-    const result = await this.client.waitForOneOf<OperationSuccessPacket | OperationErrorPacket>([
+    await this.#client.send(new DeleteMasterCodePacket(configKey, index));
+    const result = await this.#client.waitForOneOf<OperationSuccessPacket | OperationErrorPacket>([
       BoksOpcode.CODE_OPERATION_SUCCESS,
       BoksOpcode.CODE_OPERATION_ERROR
     ]);
@@ -547,8 +565,8 @@ export class BoksController {
    */
   async deleteSingleUseCode(pin: string): Promise<boolean> {
     const configKey = this.getConfigKeyOrThrow();
-    await this.client.send(new DeleteSingleUseCodePacket(configKey, pin));
-    const result = await this.client.waitForOneOf<OperationSuccessPacket | OperationErrorPacket>([
+    await this.#client.send(new DeleteSingleUseCodePacket(configKey, pin));
+    const result = await this.#client.waitForOneOf<OperationSuccessPacket | OperationErrorPacket>([
       BoksOpcode.CODE_OPERATION_SUCCESS,
       BoksOpcode.CODE_OPERATION_ERROR
     ]);
@@ -560,8 +578,8 @@ export class BoksController {
    */
   async deleteMultiUseCode(pin: string): Promise<boolean> {
     const configKey = this.getConfigKeyOrThrow();
-    await this.client.send(new DeleteMultiUseCodePacket(configKey, pin));
-    const result = await this.client.waitForOneOf<OperationSuccessPacket | OperationErrorPacket>([
+    await this.#client.send(new DeleteMultiUseCodePacket(configKey, pin));
+    const result = await this.#client.waitForOneOf<OperationSuccessPacket | OperationErrorPacket>([
       BoksOpcode.CODE_OPERATION_SUCCESS,
       BoksOpcode.CODE_OPERATION_ERROR
     ]);
@@ -574,8 +592,8 @@ export class BoksController {
    */
   async reactivateCode(pin: string): Promise<boolean> {
     const configKey = this.getConfigKeyOrThrow();
-    await this.client.send(new ReactivateCodePacket(configKey, pin));
-    const result = await this.client.waitForOneOf<OperationSuccessPacket | OperationErrorPacket>([
+    await this.#client.send(new ReactivateCodePacket(configKey, pin));
+    const result = await this.#client.waitForOneOf<OperationSuccessPacket | OperationErrorPacket>([
       BoksOpcode.CODE_OPERATION_SUCCESS,
       BoksOpcode.CODE_OPERATION_ERROR
     ]);
@@ -590,8 +608,8 @@ export class BoksController {
   async editMasterCode(index: number, newPin: string): Promise<boolean> {
     const configKey = this.getConfigKeyOrThrow();
     validateMasterCodeIndex(index);
-    await this.client.send(new MasterCodeEditPacket(configKey, index, newPin));
-    const result = await this.client.waitForOneOf<OperationSuccessPacket | OperationErrorPacket>([
+    await this.#client.send(new MasterCodeEditPacket(configKey, index, newPin));
+    const result = await this.#client.waitForOneOf<OperationSuccessPacket | OperationErrorPacket>([
       BoksOpcode.CODE_OPERATION_SUCCESS,
       BoksOpcode.CODE_OPERATION_ERROR
     ]);
@@ -604,8 +622,8 @@ export class BoksController {
    */
   async setConfiguration(params: { type: number; value: boolean }): Promise<boolean> {
     const configKey = this.getConfigKeyOrThrow();
-    await this.client.send(new SetConfigurationPacket(configKey, params.type, params.value));
-    const result = await this.client.waitForOneOf<
+    await this.#client.send(new SetConfigurationPacket(configKey, params.type, params.value));
+    const result = await this.#client.waitForOneOf<
       NotifySetConfigurationSuccessPacket | OperationErrorPacket
     >([BoksOpcode.NOTIFY_SET_CONFIGURATION_SUCCESS, BoksOpcode.CODE_OPERATION_ERROR]);
     return result.opcode === BoksOpcode.NOTIFY_SET_CONFIGURATION_SUCCESS;
@@ -621,13 +639,13 @@ export class BoksController {
 
     if (targetType === BoksCodeType.Multi) {
       // Convert Single to Multi
-      await this.client.send(new SingleToMultiCodePacket(configKey, pin));
+      await this.#client.send(new SingleToMultiCodePacket(configKey, pin));
     } else {
       // Convert Multi to Single
-      await this.client.send(new MultiToSingleCodePacket(configKey, pin));
+      await this.#client.send(new MultiToSingleCodePacket(configKey, pin));
     }
 
-    const result = await this.client.waitForOneOf<OperationSuccessPacket | OperationErrorPacket>([
+    const result = await this.#client.waitForOneOf<OperationSuccessPacket | OperationErrorPacket>([
       BoksOpcode.CODE_OPERATION_SUCCESS,
       BoksOpcode.CODE_OPERATION_ERROR
     ]);
@@ -671,10 +689,10 @@ export class BoksController {
         }
       };
 
-      cleanup = this.client.onPacket(handler);
+      cleanup = this.#client.onPacket(handler);
 
       // Send command
-      this.client.send(new GenerateCodesPacket(seedBytes)).catch((err) => {
+      this.#client.send(new GenerateCodesPacket(seedBytes)).catch((err) => {
         if (cleanup) cleanup();
         reject(err);
       });
@@ -723,12 +741,12 @@ export class BoksController {
         }
       };
 
-      cleanup = this.client.onPacket(handler);
+      cleanup = this.#client.onPacket(handler);
 
       // Send commands
-      this.client
+      this.#client
         .send(new RegeneratePartAPacket(configKey, partA))
-        .then(() => this.client.send(new RegeneratePartBPacket(configKey, partB)))
+        .then(() => this.#client.send(new RegeneratePartBPacket(configKey, partB)))
         .catch((err) => {
           if (cleanup) cleanup();
           reject(err);
@@ -741,8 +759,8 @@ export class BoksController {
    * @experimental
    */
   async bondScale(): Promise<boolean> {
-    await this.client.send(new ScaleBondPacket());
-    const result = await this.client.waitForOneOf<
+    await this.#client.send(new ScaleBondPacket());
+    const result = await this.#client.waitForOneOf<
       NotifyScaleBondingSuccessPacket | NotifyScaleBondingErrorPacket
     >([BoksOpcode.NOTIFY_SCALE_BONDING_SUCCESS, BoksOpcode.NOTIFY_SCALE_BONDING_ERROR]);
     return result.opcode === BoksOpcode.NOTIFY_SCALE_BONDING_SUCCESS;
@@ -753,8 +771,8 @@ export class BoksController {
    * @experimental
    */
   async getScaleWeight(): Promise<number> {
-    await this.client.send(new ScaleMeasureWeightPacket());
-    const result = await this.client.waitForPacket<NotifyScaleMeasureWeightPacket>(
+    await this.#client.send(new ScaleMeasureWeightPacket());
+    const result = await this.#client.waitForPacket<NotifyScaleMeasureWeightPacket>(
       BoksOpcode.NOTIFY_SCALE_MEASURE_WEIGHT
     );
     return result.weight;
@@ -767,13 +785,13 @@ export class BoksController {
    */
   async tareScale(empty: boolean): Promise<boolean> {
     if (empty) {
-      await this.client.send(new ScaleTareEmptyPacket());
-      await this.client.waitForPacket<NotifyScaleTareEmptyOkPacket>(
+      await this.#client.send(new ScaleTareEmptyPacket());
+      await this.#client.waitForPacket<NotifyScaleTareEmptyOkPacket>(
         BoksOpcode.NOTIFY_SCALE_TARE_EMPTY_OK
       );
     } else {
-      await this.client.send(new ScaleTareLoadedPacket());
-      await this.client.waitForPacket<NotifyScaleTareLoadedOkPacket>(
+      await this.#client.send(new ScaleTareLoadedPacket());
+      await this.#client.waitForPacket<NotifyScaleTareLoadedOkPacket>(
         BoksOpcode.NOTIFY_SCALE_TARE_LOADED_OK
       );
     }
@@ -785,8 +803,8 @@ export class BoksController {
    * @experimental
    */
   async forgetScale(): Promise<boolean> {
-    await this.client.send(new ScaleForgetPacket());
-    await this.client.waitForPacket<NotifyScaleBondingForgetSuccessPacket>(
+    await this.#client.send(new ScaleForgetPacket());
+    await this.#client.waitForPacket<NotifyScaleBondingForgetSuccessPacket>(
       BoksOpcode.NOTIFY_SCALE_BONDING_FORGET_SUCCESS
     );
     return true;
@@ -797,8 +815,8 @@ export class BoksController {
    * @experimental
    */
   async getScaleRawSensors(): Promise<Uint8Array> {
-    await this.client.send(new ScaleGetRawSensorsPacket());
-    const result = await this.client.waitForPacket<NotifyScaleRawSensorsPacket>(
+    await this.#client.send(new ScaleGetRawSensorsPacket());
+    const result = await this.#client.waitForPacket<NotifyScaleRawSensorsPacket>(
       BoksOpcode.NOTIFY_SCALE_RAW_SENSORS
     );
     return result.data;

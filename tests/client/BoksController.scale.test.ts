@@ -48,6 +48,7 @@ describe('Scale Features', () => {
         send: Mock;
         waitForOneOf: Mock;
         waitForPacket: Mock;
+        onPacket: Mock;
     };
 
     beforeEach(() => {
@@ -56,6 +57,7 @@ describe('Scale Features', () => {
         send: vi.fn().mockResolvedValue(undefined),
         waitForOneOf: vi.fn(),
         waitForPacket: vi.fn(),
+        onPacket: vi.fn().mockReturnValue(() => {}),
       };
       (BoksClient as unknown as Mock).mockReturnValue(mockClientInstance);
       controller = new BoksController(new BoksClient());

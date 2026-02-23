@@ -17,6 +17,10 @@ describe('Boks Hardware Simulator Integrity', () => {
     transport.subscribe(responseCallback);
   });
 
+  afterEach(() => {
+    simulator.destroy();
+  });
+
   test('Should handle battery level read via GATT (0x2A19)', async () => {
     simulator.setBatteryLevel(75);
     const data = await transport.read('00002a19-0000-1000-8000-00805f9b34fb');
@@ -27,11 +31,13 @@ describe('Boks Hardware Simulator Integrity', () => {
     simulator.addPinCode('123456', BoksCodeType.Single);
     const packet = new OpenDoorPacket('123456').encode();
     await transport.write(packet);
-    await new Promise((r) => setTimeout(r, 10));
-
-    expect(responseCallback).toHaveBeenCalled();
-    const response = responseCallback.mock.calls[0][0];
-    expect(response[0]).toBe(BoksOpcode.VALID_OPEN_CODE); // 0x81
+    
+    // We expect 2 packets: VALID_OPEN_CODE (0x81) and NOTIFY_DOOR_STATUS (0x84)
+    await vi.waitFor(() => expect(responseCallback).toHaveBeenCalledTimes(2));
+    
+    const opcodes = responseCallback.mock.calls.map(c => c[0][0]);
+    expect(opcodes).toContain(BoksOpcode.VALID_OPEN_CODE);
+    expect(opcodes).toContain(BoksOpcode.NOTIFY_DOOR_STATUS);
     expect(simulator.getState().isOpen).toBe(true);
 
     // Check Logs
@@ -114,16 +120,20 @@ describe('Boks Hardware Simulator Integrity', () => {
     simulator.setMasterKey(testMasterKeyBytes);
     expect(simulator.getState().configKey).toBe('BBBBBBBB');
 
-    // Force Packet Loss (100%)
-    simulator.setPacketLoss(1.0);
-    // Even if valid, it should be dropped
-    simulator.addPinCode('123456', BoksCodeType.Single);
-    const packet = new OpenDoorPacket('123456').encode();
-    await transport.write(packet);
+    // FORCE ISOLATION FOR PACKET LOSS TEST
+    const isolatedSim = new BoksHardwareSimulator();
+    isolatedSim.setProgressDelay(0);
+    const isolatedSpy = vi.fn();
+    isolatedSim.subscribe(isolatedSpy);
+    isolatedSim.setPacketLoss(1.0);
+    
+    // Actions on isolated simulator
+    isolatedSim.setDoorStatus(true);
+    const isolatedTransport = new SimulatorTransport(isolatedSim);
+    await isolatedTransport.write(new OpenDoorPacket('123456').encode());
 
-    // With 100% loss, either the incoming packet or the outgoing response is dropped.
-    // In either case, no response callback.
-    expect(responseCallback).not.toHaveBeenCalled();
+    expect(isolatedSpy).not.toHaveBeenCalled();
+    isolatedSim.destroy();
   });
 
   describe('Storage Persistence', () => {
