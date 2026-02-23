@@ -88,6 +88,7 @@ export class BoksHardwareSimulator {
   private nfcTags: Set<string> = new Set();
   private configuration: { laPosteEnabled: boolean } = { laPosteEnabled: false };
   private isNfcScanning: boolean = false;
+  private pendingNfcTag: string | null = null;
 
   // Simulation Parameters
   private packetLossProbability: number = 0;
@@ -137,49 +138,23 @@ export class BoksHardwareSimulator {
   }
 
   /**
-   * Simulates an NFC tag scan that triggers a door opening attempt (normal usage).
+   * Simulates presenting an NFC tag for registration.
+   * If scanning is active, it emits the found tag immediately.
+   * If not, it queues the tag to be emitted as soon as scanning starts.
    */
-  public simulateNfcOpening(uid: string): void {
+  public simulateNfcScan(uid: string): void {
     const cleanUid = uid.replace(/:/g, '').toUpperCase();
-    const formattedUid = cleanUid.match(/.{1,2}/g)?.join(':') || '';
 
-    // Only works if NOT in scanning/registration mode (in reality, hardware might support both,
-    // but usually registration mode is exclusive or prioritizes reporting).
-    // For simulation clarity:
-    if (!this.isNfcScanning) {
-      if (this.nfcTags.has(formattedUid)) {
-        this.triggerDoorOpen(BoksOpenSource.Nfc, cleanUid);
-      } else {
-        // Optionally log failure
-      }
-    }
-  }
-
-  /**
-   * Simulates presenting an NFC tag during registration mode.
-   */
-  public simulateNfcRegistrationScan(uid: string): void {
     if (this.isNfcScanning) {
-      const cleanUid = uid.replace(/:/g, '').toUpperCase();
       const uidBytes = hexToBytes(cleanUid);
-
       // Notify Found
       // Payload: Length (1) + UID Bytes
       const payload = new Uint8Array(1 + uidBytes.length);
       payload[0] = uidBytes.length;
       payload.set(uidBytes, 1);
       this.emit(this.createResponse(BoksOpcode.NOTIFY_NFC_TAG_FOUND, payload));
-    }
-  }
-
-  /**
-   * @deprecated Use simulateNfcOpening or simulateNfcRegistrationScan instead.
-   */
-  public simulateNfcScan(uid: string): void {
-    if (this.isNfcScanning) {
-      this.simulateNfcRegistrationScan(uid);
     } else {
-      this.simulateNfcOpening(uid);
+      this.pendingNfcTag = cleanUid;
     }
   }
 
@@ -206,8 +181,6 @@ export class BoksHardwareSimulator {
       logsCount: this.logs.length
     };
   }
-
-  // --- Persistence ---
 
   private loadState(): void {
     if (!this.storage) return;
@@ -834,6 +807,17 @@ export class BoksHardwareSimulator {
 
   private handleRegisterNfcScanStart(): Uint8Array {
     this.isNfcScanning = true;
+    if (this.pendingNfcTag) {
+      const uidBytes = hexToBytes(this.pendingNfcTag);
+      const payload = new Uint8Array(1 + uidBytes.length);
+      payload[0] = uidBytes.length;
+      payload.set(uidBytes, 1);
+      // Emit asynchronously to simulate discovery delay? Or sync?
+      // "attendre le prochain scan avant d'émettre" -> emit when scan starts.
+      // We can emit immediately.
+      this.emit(this.createResponse(BoksOpcode.NOTIFY_NFC_TAG_FOUND, payload));
+      this.pendingNfcTag = null;
+    }
     return this.createResponse(BoksOpcode.CODE_OPERATION_SUCCESS, new Uint8Array(0));
   }
 
