@@ -81,6 +81,7 @@ export class BoksHardwareSimulator {
   // Simulation Parameters
   private packetLossProbability: number = 0;
   private responseDelayMs: number = 0;
+  private progressDelayMs: number = 600;
   private opcodeOverrides: Map<number, Uint8Array | Error> = new Map();
   private subscribers: ((data: Uint8Array) => void)[] = [];
   private doorAutoCloseTimeout: NodeJS.Timeout | null = null;
@@ -364,6 +365,13 @@ export class BoksHardwareSimulator {
    */
   public setResponseDelay(ms: number): void {
     this.responseDelayMs = ms;
+  }
+
+  /**
+   * Sets the delay between progress updates during long operations (e.g., code generation).
+   */
+  public setProgressDelay(ms: number): void {
+    this.progressDelayMs = ms;
   }
 
   /**
@@ -722,9 +730,11 @@ export class BoksHardwareSimulator {
       return null;
     }
 
-    // Simulate progress: ~1 minute total
+    // Simulate progress
     for (let i = 0; i <= 100; i += 1) {
-      await new Promise((resolve) => setTimeout(resolve, 600));
+      if (this.progressDelayMs > 0) {
+        await new Promise((resolve) => setTimeout(resolve, this.progressDelayMs));
+      }
       this.emit(
         this.createResponse(BoksOpcode.NOTIFY_CODE_GENERATION_PROGRESS, new Uint8Array([i]))
       );
@@ -778,9 +788,11 @@ export class BoksHardwareSimulator {
 
     this.pendingProvisioningPartA = null;
 
-    // Simulate progress: ~1 minute total
+    // Simulate progress
     for (let i = 0; i <= 100; i += 1) {
-      await new Promise((resolve) => setTimeout(resolve, 600));
+      if (this.progressDelayMs > 0) {
+        await new Promise((resolve) => setTimeout(resolve, this.progressDelayMs));
+      }
       this.emit(
         this.createResponse(BoksOpcode.NOTIFY_CODE_GENERATION_PROGRESS, new Uint8Array([i]))
       );
