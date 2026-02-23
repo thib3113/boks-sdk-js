@@ -480,7 +480,6 @@ export class BoksHardwareSimulator {
       );
     }
 
-    // Derive Config Key: Last 8 hex chars of the master key.
     this.configKey = normalizedHex.slice(-8);
     this.saveState('configKey');
   }
@@ -576,6 +575,11 @@ export class BoksHardwareSimulator {
     ];
   }
 
+  // --- Command Emulation ---
+
+  /**
+   * Handles an incoming packet from the transport.
+   */
   public async handlePacket(data: Uint8Array): Promise<void> {
     if (Math.random() < this.packetLossProbability) return;
     if (data.length < 3) return;
@@ -700,6 +704,7 @@ export class BoksHardwareSimulator {
     this.doorAutoCloseTimeout = setTimeout(() => {
       if (this.isOpen) {
         this.isOpen = false;
+        // Log door close
         this.addLog(BoksOpcode.LOG_DOOR_CLOSE, new Uint8Array(0));
       }
       this.doorAutoCloseTimeout = null;
@@ -712,6 +717,8 @@ export class BoksHardwareSimulator {
     this.serializableLogs.push({ opcode, timestamp, payload: Array.from(payload) });
     this.saveState('logs');
   }
+
+  // --- Specific Opcode Handlers ---
 
   private handleOpenDoor(payload: Uint8Array): Uint8Array {
     let pin: string;
