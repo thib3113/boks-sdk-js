@@ -92,6 +92,34 @@ export interface BoksHardwareSimulatorOptions {
 /**
  * Boks Hardware Simulator
  * A high-fidelity hardware mock designed to allow full SDK integration testing without physical hardware.
+ *
+ * @remarks
+ * ## Creating a Virtual Boks Peripheral with Node.js and Bleno
+ *
+ * The `BoksHardwareSimulator` is decoupled from browser-specific APIs, making it possible to run a
+ * high-fidelity Boks simulation on real hardware (like a Raspberry Pi) using [bleno](https://github.com/noble/bleno).
+ *
+ * ### Example: Integrating with Bleno
+ * ```javascript
+ * const bleno = require('bleno');
+ * const { BoksHardwareSimulator } = require('@thib3113/boks-sdk/simulator');
+ *
+ * const simulator = new BoksHardwareSimulator();
+ * const schema = simulator.getGattSchema();
+ *
+ * // Map schema to bleno Services/Characteristics...
+ * // (See docs/SIMULATOR_PERIPHERAL.md for full implementation)
+ * ```
+ *
+ * ### Example: Persistence in Node.js
+ * ```typescript
+ * import * as fs from 'fs';
+ * class FileStorage implements SimulatorStorage {
+ *   get(key) { ... }
+ *   set(key, val) { ... }
+ * }
+ * const simulator = new BoksHardwareSimulator(new FileStorage('./data.json'));
+ * ```
  */
 export class BoksHardwareSimulator {
   // Internal State
@@ -171,8 +199,10 @@ export class BoksHardwareSimulator {
       if (!this.chaosMode) return;
       const rand = Math.random();
       if (rand < 0.1 && !this.isOpen) {
+        // 10% chance to open door via NFC randomly
         this.triggerDoorOpen(BoksOpenSource.Nfc, 'DEADC0DE');
       } else if (rand > 0.9) {
+        // 10% chance to drop battery slightly
         this.setBatteryLevel(this.batteryLevel - 1);
       }
     }, 10000);
@@ -180,12 +210,16 @@ export class BoksHardwareSimulator {
 
   /**
    * Simulates presenting an NFC tag for registration.
+   * If scanning is active, it emits the found tag immediately.
+   * If not, it queues the tag to be emitted as soon as scanning starts.
    */
   public simulateNfcScan(uid: string): void {
     const cleanUid = uid.replace(/:/g, '').toUpperCase();
 
     if (this.isNfcScanning) {
       const uidBytes = hexToBytes(cleanUid);
+      // Notify Found
+      // Payload: Length (1) + UID Bytes
       const payload = new Uint8Array(1 + uidBytes.length);
       payload[0] = uidBytes.length;
       payload.set(uidBytes, 1);
@@ -313,6 +347,9 @@ export class BoksHardwareSimulator {
 
   // --- Mandatory Setters (Force Behavior) ---
 
+  /**
+   * Forces the door state.
+   */
   public setDoorStatus(open: boolean): void {
     this.isOpen = open;
     if (open) {
@@ -325,6 +362,9 @@ export class BoksHardwareSimulator {
     }
   }
 
+  /**
+   * Triggers a door opening event from a specific source, generating realistic history logs.
+   */
   public triggerDoorOpen(source: BoksOpenSource, codeOrTagId: string = ''): void {
     let logOpcode: number;
     let payload: Uint8Array;
@@ -360,10 +400,16 @@ export class BoksHardwareSimulator {
         payload = new Uint8Array(0);
     }
 
+    // 1. Log the source event
     this.addLog(logOpcode, payload);
+
+    // 2. Open the door
     this.isOpen = true;
+
+    // 3. Log the generic door open event (0x91) - Usually follows successful validation
     this.addLog(BoksOpcode.LOG_DOOR_OPEN, payload);
 
+    // 4. Handle Single-Use Code consumption
     if (codeOrTagId && this.pinCodes.has(codeOrTagId)) {
       if (this.pinCodes.get(codeOrTagId) === BoksCodeType.Single) {
         this.pinCodes.delete(codeOrTagId);
@@ -374,31 +420,52 @@ export class BoksHardwareSimulator {
     this.scheduleAutoClose();
   }
 
+  /**
+   * Forces battery level (0-100).
+   */
   public setBatteryLevel(level: number): void {
     this.batteryLevel = Math.max(0, Math.min(100, level));
   }
 
+  /**
+   * Manually injects a valid PIN.
+   */
   public addPinCode(code: string, type: BoksCodeType): void {
     this.pinCodes.set(code, type);
     this.saveState('pinCodes');
   }
 
+  /**
+   * Removes a PIN code.
+   */
   public removePinCode(code: string): boolean {
     const deleted = this.pinCodes.delete(code);
     if (deleted) this.saveState('pinCodes');
     return deleted;
   }
 
+  /**
+   * Overrides reported versions.
+   */
   public setVersion(software: string, firmware: string): void {
     this.softwareVersion = software;
     this.firmwareVersion = firmware;
   }
 
+  /**
+   * Sets the configuration key.
+   */
   public setConfigKey(key: string): void {
     this.configKey = key;
     this.saveState('configKey');
   }
 
+  /**
+   * Sets the Master Key (and derives the internal Config Key).
+   * This is the recommended way to initialize the simulator credentials.
+   *
+   * @param masterKey The 32-byte Master Key (as hex string or Uint8Array).
+   */
   public setMasterKey(masterKey: string | Uint8Array): void {
     let normalizedHex: string;
     if (typeof masterKey === 'string') {
@@ -413,30 +480,49 @@ export class BoksHardwareSimulator {
       );
     }
 
+    // Derive Config Key: Last 8 hex chars of the master key.
     this.configKey = normalizedHex.slice(-8);
     this.saveState('configKey');
   }
 
+  /**
+   * Sets probability (0-1) of dropping incoming/outgoing packets.
+   */
   public setPacketLoss(probability: number): void {
     this.packetLossProbability = Math.max(0, Math.min(1, probability));
   }
 
+  /**
+   * Adds artificial latency to responses.
+   */
   public setResponseDelay(ms: number): void {
     this.responseDelayMs = ms;
   }
 
+  /**
+   * Sets the delay for progress notifications (e.g. during provisioning).
+   */
   public setProgressDelay(ms: number): void {
     this.progressDelayMs = ms;
   }
 
+  /**
+   * Forces a specific response or error for a given opcode.
+   */
   public setOpcodeOverride(opcode: number, responsePayload: Uint8Array | Error): void {
     this.opcodeOverrides.set(opcode, responsePayload);
   }
 
+  /**
+   * Clears an opcode override.
+   */
   public clearOpcodeOverride(opcode: number): void {
     this.opcodeOverrides.delete(opcode);
   }
 
+  /**
+   * Get internal state (for debugging/assertions)
+   */
   public getState() {
     return {
       isOpen: this.isOpen,
@@ -449,6 +535,10 @@ export class BoksHardwareSimulator {
     };
   }
 
+  /**
+   * Returns the GATT Schema for the simulated device.
+   * Useful for exposing the simulator via bleno or other BLE peripherals.
+   */
   public getGattSchema(): SimulatedService[] {
     return [
       {
@@ -891,8 +981,9 @@ export class BoksHardwareSimulator {
       return null;
     }
     for (let i = 0; i <= 100; i += 1) {
-      const delay = this.progressDelayMs > 0 ? this.progressDelayMs : 0;
-      await new Promise((resolve) => setTimeout(resolve, delay));
+      if (this.progressDelayMs > 0) {
+        await new Promise((resolve) => setTimeout(resolve, this.progressDelayMs));
+      }
       this.emit(
         this.createResponse(BoksOpcode.NOTIFY_CODE_GENERATION_PROGRESS, new Uint8Array([i]))
       );
@@ -930,8 +1021,9 @@ export class BoksHardwareSimulator {
     fullKey.set(partB, 16);
     this.pendingProvisioningPartA = null;
     for (let i = 0; i <= 100; i += 1) {
-      const delay = this.progressDelayMs > 0 ? this.progressDelayMs : 0;
-      await new Promise((resolve) => setTimeout(resolve, delay));
+      if (this.progressDelayMs > 0) {
+        await new Promise((resolve) => setTimeout(resolve, this.progressDelayMs));
+      }
       this.emit(
         this.createResponse(BoksOpcode.NOTIFY_CODE_GENERATION_PROGRESS, new Uint8Array([i]))
       );
