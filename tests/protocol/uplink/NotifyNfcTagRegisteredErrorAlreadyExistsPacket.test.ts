@@ -1,9 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import { NotifyNfcTagRegisteredErrorAlreadyExistsPacket } from '@/protocol/uplink/NotifyNfcTagRegisteredErrorAlreadyExistsPacket';
+import { BoksOpcode } from '@/protocol/constants';
 
 describe('NotifyNfcTagRegisteredErrorAlreadyExistsPacket', () => {
   it('should parse correctly', () => {
-    const packet = NotifyNfcTagRegisteredErrorAlreadyExistsPacket.fromPayload(new Uint8Array(0));
-    expect(packet.opcode).toBe(0xC9);
+    const payload = new Uint8Array(0);
+    const packet = NotifyNfcTagRegisteredErrorAlreadyExistsPacket.fromPayload(payload);
+    expect(packet.opcode).toBe(BoksOpcode.NOTIFY_NFC_TAG_REGISTERED_ERROR_ALREADY_EXISTS);
   });
 });

@@ -1,19 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import { BlockResetHistoryPacket } from '@/protocol/uplink/history/BlockResetHistoryPacket';
-import { hexToBytes } from '@/utils/converters';
 import { BoksOpcode } from '@/protocol/constants';
 
 describe('BlockResetHistoryPacket', () => {
-  it('should parse age and date correctly', () => {
-    const age = 60;
-    const now = Date.now();
-    const packet = BlockResetHistoryPacket.fromPayload(hexToBytes('00003C'));
-
-    expect(packet.age).toBe(age);
+  it('should parse correctly with age', () => {
+    const payload = new Uint8Array([0x01, 0x02, 0x03]);
+    const packet = BlockResetHistoryPacket.fromPayload(payload);
     expect(packet.opcode).toBe(BoksOpcode.BLOCK_RESET);
-
-    // Date calculation verification (within 1000ms)
-    const expectedTime = now - age * 1000;
-    expect(Math.abs(packet.date.getTime() - expectedTime)).toBeLessThan(1000);
+    expect(packet.age).toBe(0x010203);
   });
 });

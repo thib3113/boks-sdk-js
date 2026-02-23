@@ -20,10 +20,10 @@ export enum BoksClientErrorId {
 export class BoksClientError extends Error {
   constructor(
     public readonly id: BoksClientErrorId,
-    message: string,
-    public readonly cause?: unknown
+    message?: string,
+    public readonly context?: Record<string, unknown>
   ) {
-    super(message);
+    super(message || id);
     this.name = 'BoksClientError';
   }
 }

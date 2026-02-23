@@ -1,6 +1,7 @@
 import { BoksPacket } from '@/protocol/_BoksPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
 import { hexToBytes } from '@/utils/converters';
+import { validateSeed } from '@/utils/validation';
 
 /** ⚠️ This packet is theoretical; it has never been tested in real-world conditions. */
 /**
@@ -14,6 +15,7 @@ export class GenerateCodesPacket extends BoksPacket {
 
   constructor(public readonly seed: Uint8Array | string) {
     super();
+    validateSeed(seed);
   }
 
   static fromPayload(payload: Uint8Array): GenerateCodesPacket {

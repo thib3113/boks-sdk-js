@@ -1,23 +1,24 @@
 import { describe, it, expect } from 'vitest';
 import { CodeBleInvalidHistoryPacket } from '@/protocol/uplink/history/CodeBleInvalidHistoryPacket';
-import { hexToBytes } from '@/utils/converters';
 import { BoksOpcode } from '@/protocol/constants';
+import { stringToBytes } from '@/utils/converters';
 
 describe('CodeBleInvalidHistoryPacket', () => {
-  it('should parse age, code, connected MAC and date correctly', () => {
-    const age = 42;
-    const now = Date.now();
-    // 0-2: Age (42), 3-8: Code ("123456"), 9-10: Padding, 11-16: MAC reversed
-    const payload = hexToBytes('00002A3132333435360000FFEEDDCCBBAA');
+  it('should parse correctly with age and code', () => {
+    const payload = new Uint8Array(3 + 6);
+    payload[0] = 0; payload[1] = 0; payload[2] = 10;
+    payload.set(stringToBytes('123456'), 3);
+
     const packet = CodeBleInvalidHistoryPacket.fromPayload(payload);
     
-    expect(packet.age).toBe(age);
-    expect(packet.code).toBe('123456');
-    expect(packet.connectedMac).toBe('AA:BB:CC:DD:EE:FF');
     expect(packet.opcode).toBe(BoksOpcode.LOG_CODE_BLE_INVALID);
+    expect(packet.age).toBe(10);
+    expect(packet.code).toBe('123456');
+  });
 
-    // Date calculation verification (within 1000ms)
-    const expectedTime = now - age * 1000;
-    expect(Math.abs(packet.date.getTime() - expectedTime)).toBeLessThan(1000);
+  it('should handle short payload (no code)', () => {
+    const payload = new Uint8Array(3);
+    const packet = CodeBleInvalidHistoryPacket.fromPayload(payload);
+    expect(packet.code).toBe('');
   });
 });

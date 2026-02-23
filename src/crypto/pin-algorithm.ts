@@ -3,6 +3,7 @@
  */
 
 import { PIN_ALGO_CONFIG } from '../protocol/constants';
+import { BoksProtocolError, BoksProtocolErrorId } from '../errors/BoksProtocolError';
 
 // Shared buffers to avoid allocation on every call
 // Note: This makes the function non-reentrant. It is safe in single-threaded JS/Node environments
@@ -71,10 +72,17 @@ const compress = (
 export const generateBoksPin = (key: Uint8Array, typePrefix: string, index: number): string => {
   // Input Validation
   if (key.length !== 32) {
-    throw new Error(`Invalid key length: expected 32 bytes, got ${key.length}`);
+    throw new BoksProtocolError(BoksProtocolErrorId.INVALID_VALUE, undefined, {
+      received: key.length,
+      expected: 32,
+      field: 'key'
+    });
   }
   if (index < 0 || !Number.isInteger(index)) {
-    throw new Error(`Invalid index: expected positive integer, got ${index}`);
+    throw new BoksProtocolError(BoksProtocolErrorId.INVALID_VALUE, undefined, {
+      received: index,
+      field: 'index'
+    });
   }
 
   // Reset h with IV

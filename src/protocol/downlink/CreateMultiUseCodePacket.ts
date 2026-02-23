@@ -1,7 +1,7 @@
 import { AuthPacket } from '@/protocol/downlink/_AuthPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
 import { stringToBytes, bytesToString } from '@/utils/converters';
-import { validatePinCode } from '@/utils/pin';
+import { validatePinCode } from '@/utils/validation';
 
 /**
  * Command to create a multi-use code.

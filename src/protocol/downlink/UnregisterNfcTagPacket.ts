@@ -1,6 +1,7 @@
 import { AuthPacket } from '@/protocol/downlink/_AuthPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
 import { stringToBytes, hexToBytes, bytesToString, bytesToHex } from '@/utils/converters';
+import { validateNfcUid } from '@/utils/validation';
 
 /**
  * Command to unregister an NFC tag.
@@ -16,6 +17,7 @@ export class UnregisterNfcTagPacket extends AuthPacket {
     public readonly uid: string
   ) {
     super(configKey);
+    validateNfcUid(uid);
   }
 
   static fromPayload(payload: Uint8Array): UnregisterNfcTagPacket {

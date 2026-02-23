@@ -1,17 +1,26 @@
 import { describe, it, expect } from 'vitest';
 import { generateBoksPin } from '@/crypto/pin-algorithm';
+import { BoksProtocolErrorId } from '@/errors/BoksProtocolError';
 
 describe('PIN Algorithm - Stress & Fuzzing', () => {
   const VALID_KEY = new Uint8Array(32).fill(0xAA);
 
   it('should throw error for invalid key sizes', () => {
-    expect(() => generateBoksPin(new Uint8Array(16), 'master', 0)).toThrow('Invalid key length');
-    expect(() => generateBoksPin(new Uint8Array(64), 'master', 0)).toThrow('Invalid key length');
+    expect(() => generateBoksPin(new Uint8Array(16), 'master', 0)).toThrow(
+      BoksProtocolErrorId.INVALID_VALUE
+    );
+    expect(() => generateBoksPin(new Uint8Array(64), 'master', 0)).toThrow(
+      BoksProtocolErrorId.INVALID_VALUE
+    );
   });
 
   it('should throw error for invalid indices', () => {
-    expect(() => generateBoksPin(VALID_KEY, 'master', -1)).toThrow('Invalid index');
-    expect(() => generateBoksPin(VALID_KEY, 'master', 1.5)).toThrow('Invalid index');
+    expect(() => generateBoksPin(VALID_KEY, 'master', -1)).toThrow(
+      BoksProtocolErrorId.INVALID_VALUE
+    );
+    expect(() => generateBoksPin(VALID_KEY, 'master', 1.5)).toThrow(
+      BoksProtocolErrorId.INVALID_VALUE
+    );
   });
 
   it('should pass stress test (10,000 sequential calls)', () => {

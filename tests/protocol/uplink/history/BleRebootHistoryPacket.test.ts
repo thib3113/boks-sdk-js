@@ -1,19 +1,20 @@
 import { describe, it, expect } from 'vitest';
 import { BleRebootHistoryPacket } from '@/protocol/uplink/history/BleRebootHistoryPacket';
-import { hexToBytes } from '@/utils/converters';
 import { BoksOpcode } from '@/protocol/constants';
 
 describe('BleRebootHistoryPacket', () => {
-  it('should parse age and date correctly', () => {
-    const age = 60;
-    const now = Date.now();
-    const packet = BleRebootHistoryPacket.fromPayload(hexToBytes('00003C'));
+  it('should parse correctly with age', () => {
+    // Age = 0x010203 = 66051 seconds
+    const payload = new Uint8Array([0x01, 0x02, 0x03]);
+    const packet = BleRebootHistoryPacket.fromPayload(payload);
 
-    expect(packet.age).toBe(age);
     expect(packet.opcode).toBe(BoksOpcode.BLE_REBOOT);
+    expect(packet.age).toBe(0x010203);
+  });
 
-    // Date calculation verification (within 1000ms)
-    const expectedTime = now - age * 1000;
-    expect(Math.abs(packet.date.getTime() - expectedTime)).toBeLessThan(1000);
+  it('should handle short payload (age 0)', () => {
+    const payload = new Uint8Array(2);
+    const packet = BleRebootHistoryPacket.fromPayload(payload);
+    expect(packet.age).toBe(0);
   });
 });

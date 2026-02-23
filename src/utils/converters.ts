@@ -1,4 +1,5 @@
 import { CHECKSUM_MASK } from '../protocol/constants';
+import { BoksProtocolError, BoksProtocolErrorId } from '../errors/BoksProtocolError';
 
 /**
  * Utility functions for Boks SDK
@@ -25,9 +26,36 @@ for (let i = 0; i < 6; i++) {
 // Keys are always uppercase.
 
 export const hexToBytes = (hex: string): Uint8Array => {
+  // Optimization: fast path for clean hex strings (no spaces)
+  // This avoids allocation of a new string via replace() for the common case.
+  if (hex.length % 2 === 0) {
+    const len = hex.length;
+    const bytes = new Uint8Array(len / 2);
+    let isClean = true;
+
+    for (let i = 0; i < len; i += 2) {
+      const high = HEX_DECODE_TABLE[hex.charCodeAt(i)];
+      const low = HEX_DECODE_TABLE[hex.charCodeAt(i + 1)];
+
+      if (high === 255 || low === 255 || high === undefined || low === undefined) {
+        isClean = false;
+        break;
+      }
+      bytes[i / 2] = (high << 4) | low;
+    }
+
+    if (isClean) return bytes;
+  }
+
+  // Slow path: contains whitespace or invalid characters
+  // We fall back to the original logic which handles whitespace stripping
+  // and throws specific errors for invalid structure/chars.
   const cleanHex = hex.replace(/\s/g, '');
   if (cleanHex.length % 2 !== 0) {
-    throw new Error('Invalid hex string');
+    throw new BoksProtocolError(BoksProtocolErrorId.INVALID_VALUE, undefined, {
+      received: cleanHex.length,
+      reason: 'ODD_LENGTH'
+    });
   }
   const len = cleanHex.length;
   const bytes = new Uint8Array(len / 2);
@@ -37,7 +65,10 @@ export const hexToBytes = (hex: string): Uint8Array => {
     const low = HEX_DECODE_TABLE[cleanHex.charCodeAt(i + 1)];
 
     if (high === undefined || low === undefined || high === 255 || low === 255) {
-      throw new Error('Invalid hex character');
+      throw new BoksProtocolError(BoksProtocolErrorId.INVALID_VALUE, undefined, {
+        received: cleanHex[i] + (cleanHex[i + 1] || ''),
+        reason: 'INVALID_HEX_CHAR'
+      });
     }
 
     bytes[i / 2] = (high << 4) | low;
