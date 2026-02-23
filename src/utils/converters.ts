@@ -36,7 +36,7 @@ export const hexToBytes = (hex: string): Uint8Array => {
     const high = HEX_DECODE_TABLE[cleanHex.charCodeAt(i)];
     const low = HEX_DECODE_TABLE[cleanHex.charCodeAt(i + 1)];
 
-    if (high === 255 || low === 255) {
+    if (high === undefined || low === undefined || high === 255 || low === 255) {
       throw new Error('Invalid hex character');
     }
 
