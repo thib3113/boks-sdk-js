@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boks Initialization Demo</title>
+    <!-- Boks SDK (Local Build) -->
+    <script src="../dist/boks-sdk.js"></script>
+    <style>
+        body { font-family: system-ui, -apple-system, sans-serif; max-width: 800px; margin: 2rem auto; padding: 0 1rem; }
+        .card { border: 1px solid #ccc; padding: 1.5rem; margin-bottom: 1.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .card h3 { margin-top: 0; }
+        .row { display: flex; gap: 1rem; align-items: center; margin-bottom: 1rem; }
+        input[type="text"] { flex: 1; padding: 0.5rem; font-family: monospace; }
+        button { padding: 0.5rem 1rem; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 4px; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+        button.secondary { background: #6c757d; }
+        button.danger { background: #dc3545; }
+        #log { background: #f8f9fa; padding: 1rem; height: 300px; overflow-y: auto; font-family: monospace; border-radius: 4px; border: 1px solid #dee2e6; }
+        .hidden { display: none; }
+        progress { width: 100%; height: 20px; }
+        .warning-banner {
+            background-color: #ffcc00;
+            color: black;
+            padding: 20px;
+            text-align: center;
+            border-bottom: 2px solid #e6b800;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+        .sponsor-link {
+            font-weight: bold;
+            color: #cc0000;
+            text-decoration: none;
+        }
+        .sponsor-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="warning-banner">
+        <strong>⚠️ CRITICAL WARNING ⚠️</strong><br>
+        This software is currently <strong>theoretical</strong> and has <strong>not been tested on real hardware</strong>.<br>
+        Using this initialization/provisioning process will likely <strong>break compatibility with the official Boks app</strong>.<br>
+        Use at your own risk. This is reverse-engineered software.<br>
+        <br>
+        <a href="https://github.com/sponsors/thib3113" target="_blank" class="sponsor-link">
+            💖 Support development and hardware testing by sponsoring on GitHub
+        </a>
+    </div>
+
+    <h1>Boks Initialization Demo</h1>
+
+    <div class="card">
+        <h3>1. Connection</h3>
+        <p>Connect to a factory-fresh or reset Boks device.</p>
+        <div class="row">
+            <button id="connectBtn">Scan & Connect</button>
+            <span id="connectionStatus">Not connected</span>
+        </div>
+        <div id="deviceInfo" class="hidden">
+            <p><strong>FW:</strong> <span id="fwVersion">-</span> | <strong>HW:</strong> <span id="hwVersion">-</span></p>
+        </div>
+    </div>
+
+    <div class="card" id="initCard" class="hidden">
+        <h3>2. Initialization</h3>
+        <p>Initialize the Boks with a new Master Key seed. This packet (0x10) is theoretical.</p>
+
+        <div class="row">
+            <button id="generateKeyBtn" class="secondary">Generate Random Seed</button>
+        </div>
+        <div class="row">
+            <input type="text" id="newSeed" placeholder="New Master Key Seed (will be generated)" readonly>
+        </div>
+
+        <div class="row">
+            <button id="initBtn" class="danger" disabled>Initialize Boks</button>
+        </div>
+
+        <div id="progressContainer" class="hidden">
+            <label>Initialization Progress:</label>
+            <progress id="progressBar" value="0" max="100"></progress>
+            <span id="progressText">0%</span>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>Logs</h3>
+        <div id="log"></div>
+    </div>
+
+    <script>
+        const { BoksController, BoksClient, bytesToHex } = BoksSDK;
+
+        const connectBtn = document.getElementById('connectBtn');
+        const connectionStatus = document.getElementById('connectionStatus');
+        const deviceInfo = document.getElementById('deviceInfo');
+        const fwVersion = document.getElementById('fwVersion');
+        const hwVersion = document.getElementById('hwVersion');
+
+        const initCard = document.getElementById('initCard');
+        const generateKeyBtn = document.getElementById('generateKeyBtn');
+        const newSeedInput = document.getElementById('newSeed');
+        const initBtn = document.getElementById('initBtn');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressBar = document.getElementById('progressBar');
+        const progressText = document.getElementById('progressText');
+
+        const logEl = document.getElementById('log');
+
+        let controller = null;
+
+        function log(msg, type = 'info') {
+            const div = document.createElement('div');
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+            div.style.color = type === 'error' ? 'red' : type === 'success' ? 'green' : '#333';
+            logEl.appendChild(div);
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+
+        // 1. Connect
+        connectBtn.addEventListener('click', async () => {
+            try {
+                log('Requesting Bluetooth device...');
+                const device = await navigator.bluetooth.requestDevice({
+                    filters: [{ namePrefix: 'Boks' }],
+                    optionalServices: [
+                        'a7630001-f491-4f21-95ea-846ba586e361', // Boks Service
+                        '0000180a-0000-1000-8000-00805f9b34fb'  // Device Info
+                    ]
+                });
+
+                log(`Device selected: ${device.name}`);
+
+                controller = new BoksController({ device });
+
+                log('Connecting...');
+                await controller.connect();
+
+                log('Connected successfully!', 'success');
+                connectionStatus.textContent = `Connected to ${device.name}`;
+                connectBtn.disabled = true;
+
+                if (controller.hardwareInfo) {
+                    fwVersion.textContent = controller.hardwareInfo.firmwareRevision;
+                    hwVersion.textContent = controller.hardwareInfo.hardwareVersion;
+                    deviceInfo.classList.remove('hidden');
+                }
+
+                initCard.classList.remove('hidden');
+
+            } catch (err) {
+                log(`Connection failed: ${err.message}`, 'error');
+                console.error(err);
+            }
+        });
+
+        // 2. Generate Seed
+        generateKeyBtn.addEventListener('click', () => {
+            const array = new Uint8Array(32);
+            crypto.getRandomValues(array);
+            const hex = Array.from(array)
+                .map(b => b.toString(16).padStart(2, '0'))
+                .join('')
+                .toUpperCase();
+
+            newSeedInput.value = hex;
+            initBtn.disabled = false;
+            log('New random 32-byte seed generated.', 'success');
+        });
+
+        // 3. Initialize
+        initBtn.addEventListener('click', async () => {
+            const seed = newSeedInput.value;
+            if (!seed) return;
+
+            if (!confirm('CRITICAL WARNING: This may brick your device or break app compatibility. Continue?')) return;
+
+            progressContainer.classList.remove('hidden');
+            progressBar.value = 0;
+            progressText.textContent = '0%';
+            log('Starting initialization...');
+
+            try {
+                if (!controller.initialize) {
+                     throw new Error('Your BoksSDK build does not support initialize() yet. Please rebuild the SDK.');
+                }
+
+                const success = await controller.initialize(seed, (progress) => {
+                    progressBar.value = progress;
+                    progressText.textContent = `${progress}%`;
+                    log(`Initialization: ${progress}%`);
+                });
+
+                if (success) {
+                    log('Initialization complete! The device has been set up with the new Master Key.', 'success');
+                    alert('Initialization Success! Please save your Master Key.');
+                } else {
+                    log('Initialization failed (device reported error).', 'error');
+                }
+            } catch (err) {
+                log(`Initialization error: ${err.message}`, 'error');
+            }
+        });
+
+    </script>
+</body>
+</html>
