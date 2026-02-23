@@ -722,11 +722,9 @@ export class BoksHardwareSimulator {
       return null;
     }
 
-    // Simulate progress: ~1 minute total (reduced to ~100ms for tests if responseDelayMs is small)
-    // Use this.responseDelayMs if set, otherwise default to 600 for "realism"
-    const delay = this.responseDelayMs > 0 ? this.responseDelayMs : 600;
+    // Simulate progress: ~1 minute total
     for (let i = 0; i <= 100; i += 1) {
-      await new Promise((resolve) => setTimeout(resolve, delay));
+      await new Promise((resolve) => setTimeout(resolve, 600));
       this.emit(
         this.createResponse(BoksOpcode.NOTIFY_CODE_GENERATION_PROGRESS, new Uint8Array([i]))
       );
@@ -780,10 +778,9 @@ export class BoksHardwareSimulator {
 
     this.pendingProvisioningPartA = null;
 
-    // Simulate progress
-    const delay = this.responseDelayMs > 0 ? this.responseDelayMs : 600;
+    // Simulate progress: ~1 minute total
     for (let i = 0; i <= 100; i += 1) {
-      await new Promise((resolve) => setTimeout(resolve, delay));
+      await new Promise((resolve) => setTimeout(resolve, 600));
       this.emit(
         this.createResponse(BoksOpcode.NOTIFY_CODE_GENERATION_PROGRESS, new Uint8Array([i]))
       );
