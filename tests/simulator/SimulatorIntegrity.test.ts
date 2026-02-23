@@ -130,7 +130,7 @@ describe('Boks Hardware Simulator Integrity', () => {
     test('Should load state from storage', () => {
       const mockStorage: SimulatorStorage = {
         get: vi.fn((key) => {
-          if (key === 'configKey') return '12345678';
+          if (key === 'masterKey') return 'AA'.repeat(32);
           if (key === 'pinCodes') return JSON.stringify([['111111', BoksCodeType.Master]]);
           return null;
         }),
@@ -140,7 +140,7 @@ describe('Boks Hardware Simulator Integrity', () => {
       const sim = new BoksHardwareSimulator(mockStorage);
       const state = sim.getState();
 
-      expect(state.configKey).toBe('12345678');
+      expect(state.configKey).toBe('AAAAAAAA');
       expect(state.pinCodes.get('111111')).toBe(BoksCodeType.Master);
     });
 
@@ -156,9 +156,9 @@ describe('Boks Hardware Simulator Integrity', () => {
       sim.addPinCode('222222', BoksCodeType.Multi);
       expect(mockStorage.set).toHaveBeenCalledWith('pinCodes', expect.stringContaining('222222'));
 
-      // Set Config Key
-      sim.setConfigKey('87654321');
-      expect(mockStorage.set).toHaveBeenCalledWith('configKey', '87654321');
+      // Set Master Key
+      sim.setMasterKey('BB'.repeat(32));
+      expect(mockStorage.set).toHaveBeenCalledWith('masterKey', 'BB'.repeat(32).toUpperCase());
     });
   });
 

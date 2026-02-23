@@ -33,6 +33,10 @@ describe('converters', () => {
       expect(() => hexToBytes('G1')).toThrow('Invalid hex character');
       expect(() => hexToBytes('1G')).toThrow('Invalid hex character');
     });
+
+    it('should throw on unicode characters > 255', () => {
+      expect(() => hexToBytes('€€')).toThrow('Invalid hex character');
+    });
   });
 
   describe('bytesToHex', () => {
