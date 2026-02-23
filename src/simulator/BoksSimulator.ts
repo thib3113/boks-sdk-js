@@ -130,8 +130,8 @@ export class BoksHardwareSimulator {
   private chaosInterval: NodeJS.Timeout | null = null;
 
   constructor(storageOrOptions?: SimulatorStorage | BoksHardwareSimulatorOptions) {
-    if (typeof (storageOrOptions as any)?.get === 'function') {
-      this.storage = storageOrOptions as SimulatorStorage;
+    if (storageOrOptions && 'get' in storageOrOptions) {
+      this.storage = storageOrOptions;
     } else if (storageOrOptions) {
       const options = storageOrOptions as BoksHardwareSimulatorOptions;
       this.storage = options.storage;
@@ -665,9 +665,9 @@ export class BoksHardwareSimulator {
         return this.handleDeleteSingleUseCode(payload);
       case BoksOpcode.GET_LOGS_COUNT:
         return this.handleGetLogsCount();
-      case BoksCodeType.Single:
+      case BoksOpcode.CREATE_SINGLE_USE_CODE:
         return this.handleCreateCode(payload, BoksCodeType.Single);
-      case BoksCodeType.Multi:
+      case BoksOpcode.CREATE_MULTI_USE_CODE:
         return this.handleCreateCode(payload, BoksCodeType.Multi);
       case BoksOpcode.GENERATE_CODES:
         return this.handleGenerateCodes(payload);
