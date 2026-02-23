@@ -168,6 +168,8 @@ export const PIN_ALGO_CONFIG = {
 export const CHECKSUM_MASK = 0xFF;
 export const INVALID_BYTE = 0xFF;
 
+export const MAX_MASTER_CODE_INDEX = 255;
+
 export enum BoksCodeType {
   Single = 0,
   Multi = 1,
