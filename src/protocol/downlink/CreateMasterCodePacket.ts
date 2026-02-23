@@ -19,7 +19,9 @@ export class CreateMasterCodePacket extends AuthPacket {
   ) {
     super(configKey);
     if (!Number.isInteger(index) || index < 0 || index > MAX_MASTER_CODE_INDEX) {
-      throw new Error(`Invalid master code index: ${index}. Must be an integer between 0 and ${MAX_MASTER_CODE_INDEX}.`);
+      throw new Error(
+        `Invalid master code index: ${index}. Must be an integer between 0 and ${MAX_MASTER_CODE_INDEX}.`
+      );
     }
     validatePinCode(pin);
   }
