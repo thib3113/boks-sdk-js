@@ -36,6 +36,33 @@ export interface SimulatorStorage {
 }
 
 /**
+ * Mapping of simulator log events to their respective context data types.
+ */
+export interface BoksSimulatorLogEvents {
+  storage_read_error: { key: string; error: unknown };
+  send: { opcode: number; length: number };
+  receive: { opcode: number; length: number };
+  checksum_error: { opcode: number; expected: number; received: number };
+}
+
+/**
+ * Logging function signature for the BoksHardwareSimulator.
+ */
+export type BoksSimulatorLogger = <K extends keyof BoksSimulatorLogEvents>(
+  level: 'info' | 'warn' | 'error' | 'debug',
+  event: K,
+  context: BoksSimulatorLogEvents[K]
+) => void;
+
+/**
+ * Configuration options for the BoksHardwareSimulator.
+ */
+export interface BoksHardwareSimulatorOptions {
+  storage?: SimulatorStorage;
+  logger?: BoksSimulatorLogger;
+}
+
+/**
  * Boks Hardware Simulator
  * A high-fidelity hardware mock designed to allow full SDK integration testing without physical hardware.
  *
@@ -81,17 +108,38 @@ export class BoksHardwareSimulator {
   // Simulation Parameters
   private packetLossProbability: number = 0;
   private responseDelayMs: number = 0;
+  private progressDelayMs: number = 600;
   private opcodeOverrides: Map<number, Uint8Array | Error> = new Map();
   private subscribers: ((data: Uint8Array) => void)[] = [];
   private doorAutoCloseTimeout: NodeJS.Timeout | null = null;
   private storage?: SimulatorStorage;
+  private readonly logger?: BoksSimulatorLogger;
   private chaosMode: boolean = false;
   private chaosInterval: NodeJS.Timeout | null = null;
 
-  constructor(storage?: SimulatorStorage) {
-    this.storage = storage;
+  constructor(storageOrOptions?: SimulatorStorage | BoksHardwareSimulatorOptions) {
+    if (storageOrOptions && 'get' in storageOrOptions) {
+      this.storage = storageOrOptions;
+    } else if (storageOrOptions) {
+      this.storage = storageOrOptions.storage;
+      this.logger = storageOrOptions.logger;
+    }
+
     if (this.storage) {
       this.loadState();
+    }
+  }
+
+  /**
+   * Helper for internal logging.
+   */
+  private log<K extends keyof BoksSimulatorLogEvents>(
+    level: 'info' | 'warn' | 'error' | 'debug',
+    event: K,
+    context: BoksSimulatorLogEvents[K]
+  ) {
+    if (this.logger) {
+      this.logger(level, event, context);
     }
   }
 
@@ -170,7 +218,7 @@ export class BoksHardwareSimulator {
           payload: new Uint8Array(Object.values(log.payload)) // Rehydrate Uint8Array
         }));
       } catch (e) {
-        console.warn('Failed to load logs:', e);
+        this.log('warn', 'storage_read_error', { key: 'logs', error: e });
       }
     }
 
@@ -180,7 +228,7 @@ export class BoksHardwareSimulator {
         const parsedPins = JSON.parse(savedPins);
         this.pinCodes = new Map(parsedPins);
       } catch (e) {
-        console.warn('Failed to load pin codes:', e);
+        this.log('warn', 'storage_read_error', { key: 'pinCodes', error: e });
       }
     }
   }
@@ -367,6 +415,13 @@ export class BoksHardwareSimulator {
   }
 
   /**
+   * Sets the delay for progress notifications (e.g. during provisioning).
+   */
+  public setProgressDelay(ms: number): void {
+    this.progressDelayMs = ms;
+  }
+
+  /**
    * Forces a specific response or error for a given opcode.
    */
   public setOpcodeOverride(opcode: number, responsePayload: Uint8Array | Error): void {
@@ -466,8 +521,15 @@ export class BoksHardwareSimulator {
     const calculatedChecksum = calculateChecksum(data.subarray(0, data.length - 1));
 
     if (checksum !== calculatedChecksum) {
+      this.log('warn', 'checksum_error', {
+        opcode,
+        expected: calculatedChecksum,
+        received: checksum
+      });
       return; // Invalid checksum, ignore
     }
+
+    this.log('debug', 'receive', { opcode, length: data.length });
 
     // 3. Process Command
     let response: Uint8Array | null = null;
@@ -511,6 +573,7 @@ export class BoksHardwareSimulator {
   }
 
   private emit(data: Uint8Array): void {
+    this.log('debug', 'send', { opcode: data[0], length: data.length });
     this.subscribers.forEach((cb) => cb(data));
   }
 
@@ -722,9 +785,11 @@ export class BoksHardwareSimulator {
       return null;
     }
 
-    // Simulate progress: ~1 minute total
+    // Simulate progress
     for (let i = 0; i <= 100; i += 1) {
-      await new Promise((resolve) => setTimeout(resolve, 600));
+      if (this.progressDelayMs > 0) {
+        await new Promise((resolve) => setTimeout(resolve, this.progressDelayMs));
+      }
       this.emit(
         this.createResponse(BoksOpcode.NOTIFY_CODE_GENERATION_PROGRESS, new Uint8Array([i]))
       );
@@ -778,9 +843,11 @@ export class BoksHardwareSimulator {
 
     this.pendingProvisioningPartA = null;
 
-    // Simulate progress: ~1 minute total
+    // Simulate progress
     for (let i = 0; i <= 100; i += 1) {
-      await new Promise((resolve) => setTimeout(resolve, 600));
+      if (this.progressDelayMs > 0) {
+        await new Promise((resolve) => setTimeout(resolve, this.progressDelayMs));
+      }
       this.emit(
         this.createResponse(BoksOpcode.NOTIFY_CODE_GENERATION_PROGRESS, new Uint8Array([i]))
       );
