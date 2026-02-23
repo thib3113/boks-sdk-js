@@ -137,31 +137,55 @@ export class BoksHardwareSimulator {
   }
 
   /**
-   * Manually injects a custom log entry.
+   * Simulates an NFC tag scan that triggers a door opening attempt (normal usage).
    */
-  /**
-   * Simulates an NFC tag scan.
-   */
-  public simulateNfcScan(uid: string): void {
+  public simulateNfcOpening(uid: string): void {
     const cleanUid = uid.replace(/:/g, '').toUpperCase();
-    const uidBytes = hexToBytes(cleanUid);
     const formattedUid = cleanUid.match(/.{1,2}/g)?.join(':') || '';
 
+    // Only works if NOT in scanning/registration mode (in reality, hardware might support both,
+    // but usually registration mode is exclusive or prioritizes reporting).
+    // For simulation clarity:
+    if (!this.isNfcScanning) {
+      if (this.nfcTags.has(formattedUid)) {
+        this.triggerDoorOpen(BoksOpenSource.Nfc, cleanUid);
+      } else {
+        // Optionally log failure
+      }
+    }
+  }
+
+  /**
+   * Simulates presenting an NFC tag during registration mode.
+   */
+  public simulateNfcRegistrationScan(uid: string): void {
     if (this.isNfcScanning) {
+      const cleanUid = uid.replace(/:/g, '').toUpperCase();
+      const uidBytes = hexToBytes(cleanUid);
+
       // Notify Found
       // Payload: Length (1) + UID Bytes
       const payload = new Uint8Array(1 + uidBytes.length);
       payload[0] = uidBytes.length;
       payload.set(uidBytes, 1);
       this.emit(this.createResponse(BoksOpcode.NOTIFY_NFC_TAG_FOUND, payload));
-    } else {
-      // Normal scan
-      if (this.nfcTags.has(formattedUid)) {
-        this.triggerDoorOpen(BoksOpenSource.Nfc, cleanUid);
-      }
     }
   }
 
+  /**
+   * @deprecated Use simulateNfcOpening or simulateNfcRegistrationScan instead.
+   */
+  public simulateNfcScan(uid: string): void {
+    if (this.isNfcScanning) {
+      this.simulateNfcRegistrationScan(uid);
+    } else {
+      this.simulateNfcOpening(uid);
+    }
+  }
+
+  /**
+   * Manually injects a custom log entry.
+   */
   public injectLog(opcode: number, payload: Uint8Array): void {
     this.addLog(opcode, payload);
   }
