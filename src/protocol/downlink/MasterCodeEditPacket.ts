@@ -19,6 +19,9 @@ export class MasterCodeEditPacket extends AuthPacket {
     public readonly newPin: string
   ) {
     super(configKey);
+    if (!Number.isInteger(index) || index < 0 || index > 255) {
+      throw new Error(`Invalid master code index: ${index}. Must be an integer between 0 and 255.`);
+    }
     validatePinCode(newPin);
   }
 

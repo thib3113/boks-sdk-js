@@ -18,6 +18,9 @@ export class CreateMasterCodePacket extends AuthPacket {
     public readonly pin: string
   ) {
     super(configKey);
+    if (!Number.isInteger(index) || index < 0 || index > 255) {
+      throw new Error(`Invalid master code index: ${index}. Must be an integer between 0 and 255.`);
+    }
     validatePinCode(pin);
   }
 

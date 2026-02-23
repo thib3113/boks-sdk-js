@@ -11,7 +11,10 @@ describe('MasterCodeEditPacket', () => {
   it('should throw error for invalid PIN', () => {
     expect(() => new MasterCodeEditPacket('AABBCCDD', 2, 'INVALID')).toThrow('PIN must be exactly 6 characters');
   });
+
+  it('should throw error for invalid index', () => {
+    expect(() => new MasterCodeEditPacket('AABBCCDD', -1, '123456')).toThrow('Invalid master code index');
+    expect(() => new MasterCodeEditPacket('AABBCCDD', 256, '123456')).toThrow('Invalid master code index');
+    expect(() => new MasterCodeEditPacket('AABBCCDD', 1.5, '123456')).toThrow('Invalid master code index');
+  });
 });
-
-
-
