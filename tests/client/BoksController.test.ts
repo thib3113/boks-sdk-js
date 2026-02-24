@@ -133,6 +133,22 @@ describe('BoksController', () => {
       controller.setCredentials(validMasterKey);
       // Logic verified in downstream tests
     });
+
+    it('should accept 4-byte config key and clear master key', async () => {
+      const configKey = 'AABBCCDD';
+      controller.setCredentials(configKey);
+
+      // Verify that operations requiring config key still work
+      mockClientInstance.waitForOneOf.mockResolvedValue({ opcode: BoksOpcode.CODE_OPERATION_SUCCESS });
+      const result = await controller.createSingleUseCode('123456');
+      expect(result).toBe(true);
+      const packet = mockClientInstance.send.mock.calls[0][0];
+      expect(packet).toBeInstanceOf(CreateSingleUseCodePacket);
+      expect(packet.configKey).toBe(configKey);
+
+      // Verify master key is null via getter
+      expect(controller.masterKey).toBeNull();
+    });
   });
 
   describe('Business Methods', () => {

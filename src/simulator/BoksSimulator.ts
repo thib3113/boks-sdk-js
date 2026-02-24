@@ -537,29 +537,43 @@ export class BoksHardwareSimulator {
   }
 
   /**
-   * Sets the Master Key (and derives the internal Config Key).
+   * Sets the Master Key or Config Key.
    * This is the recommended way to initialize the simulator credentials.
    *
-   * @param masterKey The 32-byte Master Key (as hex string or Uint8Array).
+   * @param key The 32-byte Master Key or 4-byte Config Key (as hex string or Uint8Array).
    *
    * @security This method allows setting the root credential without any protection.
    */
-  public setMasterKey(masterKey: string | Uint8Array): void {
+  public setMasterKey(key: string | Uint8Array): void {
     let keyBytes: Uint8Array;
-    if (typeof masterKey === 'string') {
-      keyBytes = hexToBytes(masterKey.replace(/[^0-9A-Fa-f]/g, ''));
+    if (typeof key === 'string') {
+      keyBytes = hexToBytes(key.replace(/[^0-9A-Fa-f]/g, ''));
     } else {
-      keyBytes = masterKey;
+      keyBytes = key;
     }
 
-    if (keyBytes.length !== 32) {
-      throw new Error(`Master Key must be 32 bytes (64 hex chars), got ${keyBytes.length} bytes`);
-    }
+    if (keyBytes.length === 32) {
+      // Master Key provided
+      this.masterKey = keyBytes;
+      this.saveState('masterKey');
+      this.saveState('pinCodes');
+      this.saveState('masterCodes');
+    } else if (keyBytes.length === 4) {
+      // Config Key provided
+      this.#configKey = bytesToHex(keyBytes).toUpperCase();
+      this.#masterKey = new Uint8Array(32).fill(0); // Clear master key
+      this.#pinCodes.clear(); // Cannot generate pins without master key
+      this.#masterCodes.clear();
 
-    this.masterKey = keyBytes;
-    this.saveState('masterKey');
-    this.saveState('pinCodes');
-    this.saveState('masterCodes');
+      // Persist changes
+      this.saveState('masterKey');
+      this.saveState('pinCodes');
+      this.saveState('masterCodes');
+    } else {
+      throw new Error(
+        `Key must be 32 bytes (Master Key) or 4 bytes (Config Key), got ${keyBytes.length} bytes`
+      );
+    }
   }
 
   /**
