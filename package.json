@@ -6,6 +6,10 @@
     "type": "git",
     "url": "git+https://github.com/thib3113/boks-sdk-js.git"
   },
+  "bugs": {
+    "url": "https://github.com/thib3113/boks-sdk-js/issues"
+  },
+  "homepage": "https://thib3113.github.io/boks-sdk-js/",
   "type": "module",
   "publishConfig": {
     "access": "public"
@@ -13,8 +17,14 @@
   "files": [
     "dist",
     "README.md",
-    "LEGALS.md"
+    "LEGALS.md",
+    "LICENSE"
   ],
+  "sideEffects": false,
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "packageManager": "pnpm@10.0.0",
   "main": "dist/cjs/boks-sdk.cjs",
   "module": "dist/esm/boks-sdk.js",
   "types": "dist/types/index.d.ts",
@@ -50,10 +60,10 @@
   },
   "keywords": [
     "boks",
+    "smart-lock",
+    "parcel-box",
     "ble",
-    "iot",
-    "pin",
-    "blake2s"
+    "sdk"
   ],
   "author": "Thib3113",
   "license": "ISC",
