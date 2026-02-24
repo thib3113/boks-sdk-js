@@ -49,4 +49,11 @@ export class SimulatorTransport implements BoksTransport {
   async subscribe(callback: (data: Uint8Array) => void): Promise<void> {
     this.simulator.subscribe(callback);
   }
+
+  async subscribeTo(uuid: string, callback: (data: Uint8Array) => void): Promise<void> {
+    // If it's battery level
+    if (uuid.includes('2a19') || uuid.includes('2A19')) {
+      this.simulator.subscribeToBattery(callback);
+    }
+  }
 }

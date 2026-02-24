@@ -49,6 +49,22 @@ export function validateSeed(seed: Uint8Array | string): void {
 }
 
 /**
+ * Validates a credential key (Master Key or Config Key).
+ *
+ * @param key The key to validate (Uint8Array or hex string).
+ * @throws BoksProtocolError if the key length is invalid.
+ */
+export function validateCredentialsKey(key: Uint8Array | string): void {
+  const len = typeof key === 'string' ? key.replace(/[^0-9A-Fa-f]/g, '').length / 2 : key.length;
+  if (len !== 32 && len !== 4) {
+    throw new BoksProtocolError(BoksProtocolErrorId.INVALID_SEED_LENGTH, undefined, {
+      received: len,
+      expected: '32 or 4'
+    });
+  }
+}
+
+/**
  * Validates an NFC Tag UID.
  * A valid UID is a hex string (optional colons) between 4 and 10 bytes (8-20 hex chars).
  *

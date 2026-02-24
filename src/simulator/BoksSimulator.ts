@@ -158,6 +158,7 @@ export class BoksHardwareSimulator {
   #progressDelayMs: number = 600;
   #opcodeOverrides: Map<number, Uint8Array | Error> = new Map();
   #subscribers: ((data: Uint8Array) => void)[] = [];
+  #batterySubscribers: ((data: Uint8Array) => void)[] = [];
   #doorAutoCloseTimeout: NodeJS.Timeout | null = null;
   #storage?: SimulatorStorage;
   readonly #logger?: BoksSimulatorLogger;
@@ -501,6 +502,14 @@ export class BoksHardwareSimulator {
    */
   public setBatteryLevel(level: number): void {
     this.#batteryLevel = Math.max(0, Math.min(100, level));
+    const data = new Uint8Array([this.#batteryLevel]);
+    this.#batterySubscribers.forEach((cb) => cb(data));
+  }
+
+  public subscribeToBattery(callback: (data: Uint8Array) => void): void {
+    this.#batterySubscribers.push(callback);
+    // Immediately notify current level
+    callback(new Uint8Array([this.#batteryLevel]));
   }
 
   /**
@@ -544,22 +553,36 @@ export class BoksHardwareSimulator {
    *
    * @security This method allows setting the root credential without any protection.
    */
-  public setMasterKey(masterKey: string | Uint8Array): void {
+  public setMasterKey(key: string | Uint8Array): void {
     let keyBytes: Uint8Array;
-    if (typeof masterKey === 'string') {
-      keyBytes = hexToBytes(masterKey.replace(/[^0-9A-Fa-f]/g, ''));
+    if (typeof key === 'string') {
+      keyBytes = hexToBytes(key.replace(/[^0-9A-Fa-f]/g, ''));
     } else {
-      keyBytes = masterKey;
+      keyBytes = key;
     }
 
-    if (keyBytes.length !== 32) {
-      throw new Error(`Master Key must be 32 bytes (64 hex chars), got ${keyBytes.length} bytes`);
-    }
+    if (keyBytes.length === 32) {
+      // Master Key provided
+      this.masterKey = keyBytes;
+      this.saveState('masterKey');
+      this.saveState('pinCodes');
+      this.saveState('masterCodes');
+    } else if (keyBytes.length === 4) {
+      // Config Key provided
+      this.#configKey = bytesToHex(keyBytes).toUpperCase();
+      this.#masterKey = new Uint8Array(32).fill(0); // Clear master key
+      this.#pinCodes.clear(); // Cannot generate pins without master key
+      this.#masterCodes.clear();
 
-    this.masterKey = keyBytes;
-    this.saveState('masterKey');
-    this.saveState('pinCodes');
-    this.saveState('masterCodes');
+      // Persist changes
+      this.saveState('masterKey');
+      this.saveState('pinCodes');
+      this.saveState('masterCodes');
+    } else {
+      throw new Error(
+        `Key must be 32 bytes (Master Key) or 4 bytes (Config Key), got ${keyBytes.length} bytes`
+      );
+    }
   }
 
   /**

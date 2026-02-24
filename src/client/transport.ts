@@ -30,4 +30,11 @@ export interface BoksTransport {
    * @param callback Function called when data is received.
    */
   subscribe(callback: (data: Uint8Array) => void): Promise<void>;
+
+  /**
+   * Subscribes to notifications from a specific characteristic.
+   * @param uuid The characteristic UUID to subscribe to.
+   * @param callback Function called when data is received.
+   */
+  subscribeTo(uuid: string, callback: (data: Uint8Array) => void): Promise<void>;
 }
