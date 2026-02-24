@@ -1,6 +1,6 @@
 {
   "name": "@thib3113/boks-sdk",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "Core SDK for Boks Parcel Box communication and PIN generation",
   "type": "module",
   "publishConfig": {
