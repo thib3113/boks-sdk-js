@@ -26,22 +26,22 @@ for (let i = 0; i < 6; i++) {
 // Keys are always uppercase.
 
 export const hexToBytes = (hex: string): Uint8Array => {
+  const len = hex.length;
   // Optimization: fast path for clean hex strings (no spaces)
   // This avoids allocation of a new string via replace() for the common case.
-  if (hex.length % 2 === 0) {
-    const len = hex.length;
-    const bytes = new Uint8Array(len / 2);
+  if ((len & 1) === 0) {
+    const bytes = new Uint8Array(len >>> 1);
     let isClean = true;
 
-    for (let i = 0; i < len; i += 2) {
+    for (let i = 0, j = 0; i < len; i += 2, j++) {
       const high = HEX_DECODE_TABLE[hex.charCodeAt(i)];
       const low = HEX_DECODE_TABLE[hex.charCodeAt(i + 1)];
 
-      if (high === 255 || low === 255 || high === undefined || low === undefined) {
+      if (high === 255 || high === undefined || low === 255 || low === undefined) {
         isClean = false;
         break;
       }
-      bytes[i / 2] = (high << 4) | low;
+      bytes[j] = (high << 4) | low;
     }
 
     if (isClean) return bytes;
@@ -57,10 +57,10 @@ export const hexToBytes = (hex: string): Uint8Array => {
       reason: 'ODD_LENGTH'
     });
   }
-  const len = cleanHex.length;
-  const bytes = new Uint8Array(len / 2);
+  const cleanLen = cleanHex.length;
+  const bytes = new Uint8Array(cleanLen / 2);
 
-  for (let i = 0; i < len; i += 2) {
+  for (let i = 0; i < cleanLen; i += 2) {
     const high = HEX_DECODE_TABLE[cleanHex.charCodeAt(i)];
     const low = HEX_DECODE_TABLE[cleanHex.charCodeAt(i + 1)];
 
