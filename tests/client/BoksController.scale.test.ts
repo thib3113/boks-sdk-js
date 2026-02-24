@@ -3,11 +3,8 @@ import { BoksController } from '@/client/BoksController';
 import { BoksClient } from '@/client/BoksClient';
 import {
   BoksOpcode,
-  NotifyScaleMeasureWeightPacket,
-  ScaleTareEmptyPacket,
-  ScaleTareLoadedPacket
+  NotifyScaleMeasureWeightPacket
 } from '@/protocol';
-import { BoksClientError, BoksClientErrorId } from '@/errors/BoksClientError';
 
 // Mock BoksClient
 vi.mock('@/client/BoksClient');

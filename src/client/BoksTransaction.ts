@@ -66,7 +66,7 @@ export class BoksTransaction<
   /**
    * Returns true if the transaction was completed successfully.
    */
-  public get isSuccess(): this is BoksTransaction<TResponse, TRequest> & { response: TResponse } {
+  get isSuccess(): boolean {
     return this.status === BoksTransactionStatus.Success && this.response !== null;
   }
 

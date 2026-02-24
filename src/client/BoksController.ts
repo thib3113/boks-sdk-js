@@ -175,7 +175,7 @@ export class BoksController {
   ): Promise<T> {
     const tx = await this.#client.execute<T>(packet, { successOpcodes, errorOpcodes });
     if (tx.isSuccess) {
-      return tx.response;
+      return tx.response as T;
     }
     throw (
       tx.error ||
@@ -375,23 +375,27 @@ export class BoksController {
       timeout: timeoutMs
     });
 
-    const result = tx.response;
-
-    if (result.opcode === BoksOpcode.NOTIFY_NFC_TAG_FOUND) {
-      const foundPacket = result as NotifyNfcTagFoundPacket;
-      return {
-        tagId: foundPacket.uid,
-        register: () => this.registerNfcTag(foundPacket.uid)
-      };
-    } else if (result.opcode === BoksOpcode.ERROR_NFC_SCAN_TIMEOUT) {
-      throw new BoksClientError(BoksClientErrorId.TIMEOUT, 'NFC Scan timed out');
-    } else if (result.opcode === BoksOpcode.ERROR_NFC_TAG_ALREADY_EXISTS_SCAN) {
-      throw new BoksClientError(BoksClientErrorId.ALREADY_EXISTS, 'NFC Tag already exists');
+    if (tx.isSuccess) {
+      const result = tx.response as NotifyNfcTagFoundPacket | ErrorNfcScanTimeoutPacket | ErrorNfcTagAlreadyExistsScanPacket;
+      if (result.opcode === BoksOpcode.NOTIFY_NFC_TAG_FOUND) {
+        const foundPacket = result as NotifyNfcTagFoundPacket;
+        return {
+          tagId: foundPacket.uid,
+          register: () => this.registerNfcTag(foundPacket.uid)
+        };
+      } else if (result.opcode === BoksOpcode.ERROR_NFC_SCAN_TIMEOUT) {
+        throw new BoksClientError(BoksClientErrorId.TIMEOUT, 'NFC Scan timed out');
+      } else if (result.opcode === BoksOpcode.ERROR_NFC_TAG_ALREADY_EXISTS_SCAN) {
+        throw new BoksClientError(BoksClientErrorId.ALREADY_EXISTS, 'NFC Tag already exists');
+      }
     }
 
-    throw new BoksClientError(
-      BoksClientErrorId.UNKNOWN_ERROR,
-      `Unexpected packet during scan: ${result.opcode}`
+    throw (
+      tx.error ||
+      new BoksClientError(
+        BoksClientErrorId.UNKNOWN_ERROR,
+        `Unexpected packet during scan: \${(tx.response as any)?.opcode}`
+      )
     );
   }
 
@@ -666,15 +670,12 @@ export class BoksController {
     });
 
     try {
-      await this.#client.execute(new GenerateCodesPacket(seedBytes), {
-        successOpcodes: [BoksOpcode.NOTIFY_CODE_GENERATION_SUCCESS],
-        errorOpcodes: [BoksOpcode.NOTIFY_CODE_GENERATION_ERROR]
-      });
-      return true;
+      return await this.performOperation(
+        new GenerateCodesPacket(seedBytes),
+        BoksOpcode.NOTIFY_CODE_GENERATION_SUCCESS,
+        BoksOpcode.NOTIFY_CODE_GENERATION_ERROR
+      );
     } catch (e) {
-      if (e instanceof BoksClientError && e.message.includes('Received error opcode')) {
-        return false;
-      }
       throw e;
     } finally {
       cleanup();
@@ -715,22 +716,20 @@ export class BoksController {
 
     try {
       // Part A
-      await this.#client.execute(new RegeneratePartAPacket(configKey, partA), {
-        successOpcodes: [BoksOpcode.CODE_OPERATION_SUCCESS], // 0x77
-        errorOpcodes: [BoksOpcode.CODE_OPERATION_ERROR, BoksOpcode.ERROR_UNAUTHORIZED]
-      });
+      const successA = await this.performOperation(
+        new RegeneratePartAPacket(configKey, partA),
+        BoksOpcode.CODE_OPERATION_SUCCESS,
+        BoksOpcode.ERROR_UNAUTHORIZED
+      );
+      if (!successA) return false;
 
       // Part B
-      await this.#client.execute(new RegeneratePartBPacket(configKey, partB), {
-        successOpcodes: [BoksOpcode.NOTIFY_CODE_GENERATION_SUCCESS],
-        errorOpcodes: [BoksOpcode.NOTIFY_CODE_GENERATION_ERROR, BoksOpcode.ERROR_UNAUTHORIZED]
-      });
-
-      return true;
+      return await this.performOperation(
+        new RegeneratePartBPacket(configKey, partB),
+        BoksOpcode.NOTIFY_CODE_GENERATION_SUCCESS,
+        BoksOpcode.ERROR_UNAUTHORIZED
+      );
     } catch (e) {
-      if (e instanceof BoksClientError && e.message.includes('Received error opcode')) {
-        return false;
-      }
       throw e;
     } finally {
       cleanup();

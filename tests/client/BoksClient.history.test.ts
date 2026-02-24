@@ -34,6 +34,7 @@ describe('BoksClient fetchHistory', () => {
         notificationCallback = cb;
         return Promise.resolve();
       }),
+      subscribeTo: vi.fn().mockResolvedValue(undefined),
     };
 
     client = new BoksClient({ transport: mockTransport });

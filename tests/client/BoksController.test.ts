@@ -1,22 +1,10 @@
 import { describe, it, expect, vi, beforeEach, Mock } from 'vitest';
-import { BoksController, BoksHardwareInfo } from '@/client/BoksController';
+import { BoksController } from '@/client/BoksController';
 import { BoksClient } from '@/client/BoksClient';
 import {
   BoksOpcode,
   BoksCodeType,
-  BOKS_UUIDS,
-  CreateMasterCodePacket,
-  CreateSingleUseCodePacket,
-  CreateMultiUseCodePacket,
-  DeleteMasterCodePacket,
-  DeleteSingleUseCodePacket,
-  DeleteMultiUseCodePacket,
-  ReactivateCodePacket,
-  MasterCodeEditPacket,
-  SetConfigurationPacket,
-  SingleToMultiCodePacket,
-  MultiToSingleCodePacket,
-  CountCodesPacket
+  BOKS_UUIDS
 } from '@/protocol';
 import { BoksClientError, BoksClientErrorId } from '@/errors/BoksClientError';
 
@@ -28,9 +16,6 @@ describe('BoksController', () => {
   let mockClientInstance: any;
 
   const validMasterKey = '00112233445566778899AABBCCDDEEFF00112233445566778899AABBCCDDEEFF';
-  const expectedConfigKey = 'DDEEFF'; // Last 6 hex chars of master key (Wait, Boks SDK uses last 8)
-  // Re-check: masterKey.slice(-8) -> 'CCDDEEFF'. Let's use what the SDK expects.
-  const realExpectedConfigKey = 'CCDDEEFF';
 
   beforeEach(() => {
     vi.clearAllMocks();
