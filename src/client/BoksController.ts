@@ -95,6 +95,7 @@ export class BoksController {
   #doorOpen: boolean = false;
   #codeCount: { master: number; other: number } = { master: 0, other: 0 };
   #logCount: number = 0;
+  #lastOpenAttempt: number = 0;
 
   constructor(optionsOrClient?: BoksClientOptions | BoksClient) {
     if (optionsOrClient instanceof BoksClient) {
@@ -431,6 +432,15 @@ export class BoksController {
    * @returns True if the door opened successfully, false if the PIN was invalid.
    */
   async openDoor(pin: string): Promise<boolean> {
+    const now = Date.now();
+    if (now - this.#lastOpenAttempt < 1000) {
+      throw new BoksClientError(
+        BoksClientErrorId.RATE_LIMIT_REACHED,
+        'Please wait 1 second between door opening attempts.'
+      );
+    }
+    this.#lastOpenAttempt = now;
+
     await this.#client.send(new OpenDoorPacket(pin));
     const result = await this.#client.waitForOneOf<ValidOpenCodePacket | InvalidOpenCodePacket>([
       BoksOpcode.VALID_OPEN_CODE,

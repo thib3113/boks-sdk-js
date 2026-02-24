@@ -35,6 +35,7 @@ export default defineConfig({
               text: 'Introduction',
               items: [
                 { text: 'Démarrage', link: '/fr/guide/' },
+                { text: 'Sécurité & Dépannage', link: '/fr/guide/safety' },
                 { text: 'Récupérer ses Clés', link: '/fr/guide/credentials' },
                 { text: 'Glossaire', link: '/fr/guide/glossary' }
               ]
@@ -88,6 +89,7 @@ export default defineConfig({
           text: 'Introduction',
           items: [
             { text: 'Getting Started', link: '/guide/' },
+            { text: 'Safety & Troubleshooting', link: '/guide/safety' },
             { text: 'Retrieving Credentials', link: '/guide/credentials' },
             { text: 'Glossary', link: '/guide/glossary' }
           ]
