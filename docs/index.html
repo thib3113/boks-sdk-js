@@ -85,7 +85,7 @@ If you don't possess the Master Key, you can still perform administrative tasks 
 </code><button type="button">Copy</button></pre>
 
 <h2 id="examples" class="tsd-anchor-link">Examples<a href="#examples" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
-<p>Check the <a href="media/examples">examples/</a> folder for complete scripts demonstrating various use cases:</p>
+<p>Check the <a href="media/examples">wiki/examples/</a> folder for complete scripts demonstrating various use cases:</p>
 <ul>
 <li><strong>Initialization</strong>: How to initialize a brand new Boks device.</li>
 <li><strong>Updates</strong>: How to perform firmware updates (if applicable).</li>
@@ -109,7 +109,7 @@ If you don't possess the Master Key, you can still perform administrative tasks 
 </code><button type="button">Copy</button></pre>
 
 <h3 id="peripheral-mode-nodejs-bleno" class="tsd-anchor-link">Peripheral Mode (Node.js / Bleno)<a href="#peripheral-mode-nodejs-bleno" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h3>
-<p>You can also use the simulator to create a virtual Boks peripheral on Linux/Raspberry Pi that real clients can connect to. See <a href="./docs/SIMULATOR_PERIPHERAL.md">SIMULATOR_PERIPHERAL.md</a> for details.</p>
+<p>You can also use the simulator to create a virtual Boks peripheral on Linux/Raspberry Pi that real clients can connect to. See the <code>BoksHardwareSimulator</code> class documentation for implementation details.</p>
 <h3 id="simulating-events" class="tsd-anchor-link">Simulating Events<a href="#simulating-events" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <p>You can trigger hardware events programmatically to test your application's reaction to real-world scenarios.</p>
 <pre><code class="typescript"><span class="hl-5">// Simulate a user opening the door via the Keypad</span><br/><span class="hl-4">simulator</span><span class="hl-1">.</span><span class="hl-0">triggerDoorOpen</span><span class="hl-1">(</span><span class="hl-4">BoksOpenSource</span><span class="hl-1">.</span><span class="hl-4">Keypad</span><span class="hl-1">, </span><span class="hl-2">&#39;123456&#39;</span><span class="hl-1">);</span><br/><br/><span class="hl-5">// Simulate a physical key opening (no code)</span><br/><span class="hl-4">simulator</span><span class="hl-1">.</span><span class="hl-0">triggerDoorOpen</span><span class="hl-1">(</span><span class="hl-4">BoksOpenSource</span><span class="hl-1">.</span><span class="hl-4">PhysicalKey</span><span class="hl-1">);</span><br/><br/><span class="hl-5">// Verify that the history logs reflect these events</span><br/><span class="hl-6">const</span><span class="hl-1"> </span><span class="hl-7">history</span><span class="hl-1"> = </span><span class="hl-4">simulator</span><span class="hl-1">.</span><span class="hl-0">getState</span><span class="hl-1">().</span><span class="hl-4">logs</span><span class="hl-1">;</span>
