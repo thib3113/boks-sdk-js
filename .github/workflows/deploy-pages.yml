@@ -6,6 +6,10 @@ on:
     paths:
       - 'public/**'
       - 'src/**'
+      - 'wiki/**'
+      - 'examples/**'
+      - 'package.json'
+      - 'typedoc.json'
   workflow_dispatch:
 
 permissions:
