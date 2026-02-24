@@ -1,6 +1,6 @@
 {
   "name": "@thib3113/boks-sdk",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Core SDK for Boks Parcel Box communication and PIN generation",
   "repository": {
     "type": "git",
