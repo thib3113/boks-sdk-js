@@ -8,6 +8,14 @@ import { BoksProtocolError, BoksProtocolErrorId } from '../errors/BoksProtocolEr
 const encoder = new TextEncoder();
 const BOKS_CHAR_MAP = '0123456789AB';
 
+// Optimization: Shared buffers to avoid allocation on every call.
+// This is safe in single-threaded environments (Browser/Node main thread).
+// We rely on the try-finally block to wipe these buffers after use.
+const SHARED_H = new Uint32Array(8);
+const SHARED_BLOCK_BUFFER = new Uint8Array(64);
+const SHARED_BLOCK32 = new Uint32Array(SHARED_BLOCK_BUFFER.buffer);
+const SHARED_V = new Uint32Array(16);
+
 const G = (v: Uint32Array, a: number, b: number, c: number, d: number, x: number, y: number) => {
   v[a] = (v[a] + v[b] + x) >>> 0;
   const tmpD = v[d] ^ v[a];
@@ -77,11 +85,11 @@ export const generateBoksPin = (key: Uint8Array, typePrefix: string, index: numb
     });
   }
 
-  // Local buffers (thread-safe, no shared state)
-  const h = new Uint32Array(8);
-  const blockBuffer = new Uint8Array(64);
-  const block32 = new Uint32Array(blockBuffer.buffer);
-  const v = new Uint32Array(16);
+  // Use shared buffers
+  const h = SHARED_H;
+  const blockBuffer = SHARED_BLOCK_BUFFER;
+  const block32 = SHARED_BLOCK32;
+  const v = SHARED_V;
 
   try {
     // Reset h with IV

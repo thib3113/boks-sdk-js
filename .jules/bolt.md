@@ -9,3 +9,7 @@
 ## 2026-02-22 - Pin Generation String Allocation
 **Learning:** In `generateBoksPin`, constructing the message string via `${typePrefix} ${index}` allocated an intermediate string. Replacing this with direct `encodeInto` writes to the buffer improved performance by ~5.7% (589ms vs 625ms for 100k ops).
 **Action:** Avoid string concatenation for binary payloads; write components directly to the target buffer using `TextEncoder.encodeInto` and manual byte assignment.
+
+## 2025-05-18 - Shared Buffers in PIN Generation
+**Learning:** High-frequency object allocation (TypedArrays) in hot loops (like bulk PIN generation) causes significant GC pressure even if CPU time looks fine.
+**Action:** Use module-level shared buffers for synchronous, single-threaded hot paths to eliminate allocation overhead, ensuring they are wiped in a `finally` block for security.
