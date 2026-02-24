@@ -153,6 +153,35 @@ describe('BoksController', () => {
         const result = await controller.openDoor('000000');
         expect(result).toBe(false);
       });
+
+      it('should throw RATE_LIMIT_REACHED if called too quickly', async () => {
+        mockClientInstance.waitForOneOf.mockResolvedValue({ opcode: BoksOpcode.VALID_OPEN_CODE });
+
+        // First call
+        await controller.openDoor('123456');
+
+        // Second call immediately
+        await expect(controller.openDoor('123456')).rejects.toThrowError(
+          expect.objectContaining({ id: BoksClientErrorId.RATE_LIMIT_REACHED })
+        );
+      });
+
+      it('should allow calls after 1 second delay', async () => {
+        vi.useFakeTimers();
+        mockClientInstance.waitForOneOf.mockResolvedValue({ opcode: BoksOpcode.VALID_OPEN_CODE });
+
+        // First call
+        await controller.openDoor('123456');
+
+        // Advance time by 1001ms
+        vi.advanceTimersByTime(1001);
+
+        // Second call should succeed
+        const result = await controller.openDoor('123456');
+        expect(result).toBe(true);
+
+        vi.useRealTimers();
+      });
     });
 
     describe('getDoorStatus', () => {
