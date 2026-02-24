@@ -35,6 +35,7 @@ Thumbs.db
 coverage/
 
 # Misc
+*.tgz
 .env
 .env.local
 lint_output*.txt
