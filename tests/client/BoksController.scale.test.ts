@@ -28,7 +28,9 @@ describe('Scale Features', () => {
         execute: vi.fn(),
         onPacket: vi.fn().mockReturnValue(() => {}),
       };
-      (BoksClient as unknown as Mock).mockReturnValue(mockClientInstance);
+      (BoksClient as unknown as Mock).mockImplementation(function () {
+        return mockClientInstance;
+      });
       controller = new BoksController(new BoksClient());
     });
 

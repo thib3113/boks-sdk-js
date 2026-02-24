@@ -21,9 +21,6 @@
     "LICENSE"
   ],
   "sideEffects": false,
-  "engines": {
-    "node": "v25.7.0"
-  },
   "packageManager": "pnpm@10.0.0",
   "main": "dist/cjs/boks-sdk.cjs",
   "module": "dist/esm/boks-sdk.js",
