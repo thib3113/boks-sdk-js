@@ -4,7 +4,8 @@ import { BoksClient } from '@/client/BoksClient';
 import {
   BoksOpcode,
   BoksCodeType,
-  BOKS_UUIDS
+  BOKS_UUIDS,
+  CreateSingleUseCodePacket
 } from '@/protocol';
 import { BoksClientError, BoksClientErrorId } from '@/errors/BoksClientError';
 
@@ -63,6 +64,23 @@ describe('BoksController', () => {
       await setupControllerVersion('10/125', '4.3.3');
       expect(mockClientInstance.connect).toHaveBeenCalled();
       expect(controller.hardwareInfo?.hardwareVersion).toBe('4.0');
+    });
+
+    it('should accept 4-byte config key and clear master key', async () => {
+      const configKey = 'AABBCCDD';
+      controller.setCredentials(configKey);
+
+      // Verify that operations requiring config key still work
+      setupSuccess();
+      const result = await controller.createSingleUseCode('123456');
+      expect(result).toBe(true);
+      
+      const [packet] = mockClientInstance.execute.mock.calls[0];
+      expect(packet).toBeInstanceOf(CreateSingleUseCodePacket);
+      expect(packet.configKey).toBe(configKey);
+
+      // Verify master key is null via getter
+      expect(controller.masterKey).toBeNull();
     });
   });
 

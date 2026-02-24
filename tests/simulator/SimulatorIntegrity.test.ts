@@ -122,6 +122,16 @@ describe('Boks Hardware Simulator Integrity', () => {
     simulator.setMasterKey(testMasterKeyBytes);
     expect(simulator.getState().configKey).toBe('BBBBBBBB');
 
+    // Force Config Key (should clear PIN codes)
+    simulator.addPinCode('123456', BoksCodeType.Single);
+    expect(simulator.getState().pinCodes.size).toBeGreaterThan(0);
+
+    simulator.setMasterKey('AABBCCDD');
+    const state = simulator.getState();
+    expect(state.configKey).toBe('AABBCCDD');
+    expect(state.masterKey).toBe('00'.repeat(32)); // Cleared
+    expect(state.pinCodes.size).toBe(0); // Cleared
+
     // FORCE ISOLATION FOR PACKET LOSS TEST
     const isolatedSim = new BoksHardwareSimulator();
     isolatedSim.setProgressDelay(0);

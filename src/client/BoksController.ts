@@ -49,7 +49,7 @@ import {
 } from '@/protocol';
 import { BoksClientError, BoksClientErrorId } from '@/errors/BoksClientError';
 import { hexToBytes, bytesToHex } from '@/utils/converters';
-import { validateMasterCodeIndex, validateSeed } from '@/utils/validation';
+import { validateMasterCodeIndex, validateSeed, validateCredentialsKey } from '@/utils/validation';
 
 export interface BoksHardwareInfo {
   firmwareRevision: string; // Internal FW revision (e.g. "10/125")
@@ -145,23 +145,29 @@ export class BoksController {
   }
 
   /**
-   * Sets the Master Key and derives the Config Key.
-   * @param masterKey The 32-byte Master Key (as hex string or Uint8Array).
+   * Sets the Master Key and derives the Config Key, or sets Config Key directly.
+   * @param key The 32-byte Master Key or 4-byte Config Key (as hex string or Uint8Array).
    */
-  setCredentials(masterKey: string | Uint8Array): void {
-    validateSeed(masterKey);
+  setCredentials(key: string | Uint8Array): void {
+    validateCredentialsKey(key);
 
     let normalizedHex: string;
-    if (typeof masterKey === 'string') {
-      normalizedHex = masterKey.replace(/[^0-9A-Fa-f]/g, '').toUpperCase();
+    if (typeof key === 'string') {
+      normalizedHex = key.replace(/[^0-9A-Fa-f]/g, '').toUpperCase();
     } else {
-      normalizedHex = bytesToHex(masterKey);
+      normalizedHex = bytesToHex(key);
     }
 
-    this.#masterKey = normalizedHex;
-
-    // Derive Config Key: Last 8 hex chars of the master key.
-    this.#configKey = normalizedHex.slice(-8);
+    if (normalizedHex.length === 64) {
+      // Master Key (32 bytes = 64 hex chars)
+      this.#masterKey = normalizedHex;
+      // Derive Config Key: Last 8 hex chars of the master key.
+      this.#configKey = normalizedHex.slice(-8);
+    } else {
+      // Config Key (4 bytes = 8 hex chars)
+      this.#masterKey = null;
+      this.#configKey = normalizedHex;
+    }
   }
 
   /**
