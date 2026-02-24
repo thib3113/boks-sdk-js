@@ -9,12 +9,8 @@ import {
   ErrorNfcTagAlreadyExistsScanPacket,
   NfcRegisterPacket,
   UnregisterNfcTagPacket,
-  NotifyNfcTagRegisteredPacket,
-  NotifyNfcTagRegisteredErrorAlreadyExistsPacket,
   NotifyNfcTagUnregisteredPacket,
   OpenDoorPacket,
-  ValidOpenCodePacket,
-  InvalidOpenCodePacket,
   AskDoorStatusPacket,
   AnswerDoorStatusPacket,
   NotifyDoorStatusPacket,
@@ -30,8 +26,6 @@ import {
   DeleteMasterCodePacket,
   DeleteSingleUseCodePacket,
   DeleteMultiUseCodePacket,
-  OperationSuccessPacket,
-  OperationErrorPacket,
   RegeneratePartAPacket,
   RegeneratePartBPacket,
   NotifyCodeGenerationProgressPacket,
@@ -40,15 +34,12 @@ import {
   SetConfigurationPacket,
   MultiToSingleCodePacket,
   SingleToMultiCodePacket,
-  NotifySetConfigurationSuccessPacket,
   BoksCodeType,
   CountCodesPacket,
   NotifyCodesCountPacket,
   BoksBatteryStats,
   // Scale
   ScaleBondPacket,
-  NotifyScaleBondingSuccessPacket,
-  NotifyScaleBondingErrorPacket,
   ScaleMeasureWeightPacket,
   NotifyScaleMeasureWeightPacket,
   ScaleTareEmptyPacket,
@@ -175,6 +166,19 @@ export class BoksController {
 
     // Derive Config Key: Last 8 hex chars of the master key.
     this.#configKey = normalizedHex.slice(-8);
+  }
+
+  /**
+   * Helper to perform a standard operation: send packet -> wait for success/error.
+   */
+  private async performOperation(
+    packet: BoksPacket,
+    successOpcode: BoksOpcode = BoksOpcode.CODE_OPERATION_SUCCESS,
+    errorOpcode: BoksOpcode = BoksOpcode.CODE_OPERATION_ERROR
+  ): Promise<boolean> {
+    await this.#client.send(packet);
+    const result = await this.#client.waitForOneOf<BoksPacket>([successOpcode, errorOpcode]);
+    return result.opcode === successOpcode;
   }
 
   /**
@@ -389,16 +393,11 @@ export class BoksController {
       featureName: 'NFC Register'
     });
 
-    await this.#client.send(new NfcRegisterPacket(configKey, tagId));
-
-    const result = await this.#client.waitForOneOf<
-      NotifyNfcTagRegisteredPacket | NotifyNfcTagRegisteredErrorAlreadyExistsPacket
-    >([
-      BoksOpcode.NOTIFY_NFC_TAG_REGISTERED, // 0xC8
-      BoksOpcode.NOTIFY_NFC_TAG_REGISTERED_ERROR_ALREADY_EXISTS // 0xC9
-    ]);
-
-    return result.opcode === BoksOpcode.NOTIFY_NFC_TAG_REGISTERED;
+    return this.performOperation(
+      new NfcRegisterPacket(configKey, tagId),
+      BoksOpcode.NOTIFY_NFC_TAG_REGISTERED,
+      BoksOpcode.NOTIFY_NFC_TAG_REGISTERED_ERROR_ALREADY_EXISTS
+    );
   }
 
   /**
@@ -441,12 +440,11 @@ export class BoksController {
     }
     this.#lastOpenAttempt = now;
 
-    await this.#client.send(new OpenDoorPacket(pin));
-    const result = await this.#client.waitForOneOf<ValidOpenCodePacket | InvalidOpenCodePacket>([
+    return this.performOperation(
+      new OpenDoorPacket(pin),
       BoksOpcode.VALID_OPEN_CODE,
       BoksOpcode.INVALID_OPEN_CODE
-    ]);
-    return result.opcode === BoksOpcode.VALID_OPEN_CODE;
+    );
   }
 
   /**
@@ -532,12 +530,7 @@ export class BoksController {
   async createMasterCode(index: number, pin: string): Promise<boolean> {
     const configKey = this.getConfigKeyOrThrow();
     validateMasterCodeIndex(index);
-    await this.#client.send(new CreateMasterCodePacket(configKey, index, pin));
-    const result = await this.#client.waitForOneOf<OperationSuccessPacket | OperationErrorPacket>([
-      BoksOpcode.CODE_OPERATION_SUCCESS,
-      BoksOpcode.CODE_OPERATION_ERROR
-    ]);
-    return result.opcode === BoksOpcode.CODE_OPERATION_SUCCESS;
+    return this.performOperation(new CreateMasterCodePacket(configKey, index, pin));
   }
 
   /**
@@ -545,12 +538,7 @@ export class BoksController {
    */
   async createSingleUseCode(pin: string): Promise<boolean> {
     const configKey = this.getConfigKeyOrThrow();
-    await this.#client.send(new CreateSingleUseCodePacket(configKey, pin));
-    const result = await this.#client.waitForOneOf<OperationSuccessPacket | OperationErrorPacket>([
-      BoksOpcode.CODE_OPERATION_SUCCESS,
-      BoksOpcode.CODE_OPERATION_ERROR
-    ]);
-    return result.opcode === BoksOpcode.CODE_OPERATION_SUCCESS;
+    return this.performOperation(new CreateSingleUseCodePacket(configKey, pin));
   }
 
   /**
@@ -558,12 +546,7 @@ export class BoksController {
    */
   async createMultiUseCode(pin: string): Promise<boolean> {
     const configKey = this.getConfigKeyOrThrow();
-    await this.#client.send(new CreateMultiUseCodePacket(configKey, pin));
-    const result = await this.#client.waitForOneOf<OperationSuccessPacket | OperationErrorPacket>([
-      BoksOpcode.CODE_OPERATION_SUCCESS,
-      BoksOpcode.CODE_OPERATION_ERROR
-    ]);
-    return result.opcode === BoksOpcode.CODE_OPERATION_SUCCESS;
+    return this.performOperation(new CreateMultiUseCodePacket(configKey, pin));
   }
 
   /**
@@ -572,12 +555,7 @@ export class BoksController {
   async deleteMasterCode(index: number): Promise<boolean> {
     const configKey = this.getConfigKeyOrThrow();
     validateMasterCodeIndex(index);
-    await this.#client.send(new DeleteMasterCodePacket(configKey, index));
-    const result = await this.#client.waitForOneOf<OperationSuccessPacket | OperationErrorPacket>([
-      BoksOpcode.CODE_OPERATION_SUCCESS,
-      BoksOpcode.CODE_OPERATION_ERROR
-    ]);
-    return result.opcode === BoksOpcode.CODE_OPERATION_SUCCESS;
+    return this.performOperation(new DeleteMasterCodePacket(configKey, index));
   }
 
   /**
@@ -585,12 +563,7 @@ export class BoksController {
    */
   async deleteSingleUseCode(pin: string): Promise<boolean> {
     const configKey = this.getConfigKeyOrThrow();
-    await this.#client.send(new DeleteSingleUseCodePacket(configKey, pin));
-    const result = await this.#client.waitForOneOf<OperationSuccessPacket | OperationErrorPacket>([
-      BoksOpcode.CODE_OPERATION_SUCCESS,
-      BoksOpcode.CODE_OPERATION_ERROR
-    ]);
-    return result.opcode === BoksOpcode.CODE_OPERATION_SUCCESS;
+    return this.performOperation(new DeleteSingleUseCodePacket(configKey, pin));
   }
 
   /**
@@ -598,12 +571,7 @@ export class BoksController {
    */
   async deleteMultiUseCode(pin: string): Promise<boolean> {
     const configKey = this.getConfigKeyOrThrow();
-    await this.#client.send(new DeleteMultiUseCodePacket(configKey, pin));
-    const result = await this.#client.waitForOneOf<OperationSuccessPacket | OperationErrorPacket>([
-      BoksOpcode.CODE_OPERATION_SUCCESS,
-      BoksOpcode.CODE_OPERATION_ERROR
-    ]);
-    return result.opcode === BoksOpcode.CODE_OPERATION_SUCCESS;
+    return this.performOperation(new DeleteMultiUseCodePacket(configKey, pin));
   }
 
   /**
@@ -612,12 +580,7 @@ export class BoksController {
    */
   async reactivateCode(pin: string): Promise<boolean> {
     const configKey = this.getConfigKeyOrThrow();
-    await this.#client.send(new ReactivateCodePacket(configKey, pin));
-    const result = await this.#client.waitForOneOf<OperationSuccessPacket | OperationErrorPacket>([
-      BoksOpcode.CODE_OPERATION_SUCCESS,
-      BoksOpcode.CODE_OPERATION_ERROR
-    ]);
-    return result.opcode === BoksOpcode.CODE_OPERATION_SUCCESS;
+    return this.performOperation(new ReactivateCodePacket(configKey, pin));
   }
 
   /**
@@ -628,12 +591,7 @@ export class BoksController {
   async editMasterCode(index: number, newPin: string): Promise<boolean> {
     const configKey = this.getConfigKeyOrThrow();
     validateMasterCodeIndex(index);
-    await this.#client.send(new MasterCodeEditPacket(configKey, index, newPin));
-    const result = await this.#client.waitForOneOf<OperationSuccessPacket | OperationErrorPacket>([
-      BoksOpcode.CODE_OPERATION_SUCCESS,
-      BoksOpcode.CODE_OPERATION_ERROR
-    ]);
-    return result.opcode === BoksOpcode.CODE_OPERATION_SUCCESS;
+    return this.performOperation(new MasterCodeEditPacket(configKey, index, newPin));
   }
 
   /**
@@ -642,11 +600,11 @@ export class BoksController {
    */
   async setConfiguration(params: { type: number; value: boolean }): Promise<boolean> {
     const configKey = this.getConfigKeyOrThrow();
-    await this.#client.send(new SetConfigurationPacket(configKey, params.type, params.value));
-    const result = await this.#client.waitForOneOf<
-      NotifySetConfigurationSuccessPacket | OperationErrorPacket
-    >([BoksOpcode.NOTIFY_SET_CONFIGURATION_SUCCESS, BoksOpcode.CODE_OPERATION_ERROR]);
-    return result.opcode === BoksOpcode.NOTIFY_SET_CONFIGURATION_SUCCESS;
+    return this.performOperation(
+      new SetConfigurationPacket(configKey, params.type, params.value),
+      BoksOpcode.NOTIFY_SET_CONFIGURATION_SUCCESS,
+      BoksOpcode.CODE_OPERATION_ERROR
+    );
   }
 
   /**
@@ -657,19 +615,12 @@ export class BoksController {
   async convertCodeType(pin: string, targetType: BoksCodeType): Promise<boolean> {
     const configKey = this.getConfigKeyOrThrow();
 
-    if (targetType === BoksCodeType.Multi) {
-      // Convert Single to Multi
-      await this.#client.send(new SingleToMultiCodePacket(configKey, pin));
-    } else {
-      // Convert Multi to Single
-      await this.#client.send(new MultiToSingleCodePacket(configKey, pin));
-    }
+    const packet =
+      targetType === BoksCodeType.Multi
+        ? new SingleToMultiCodePacket(configKey, pin)
+        : new MultiToSingleCodePacket(configKey, pin);
 
-    const result = await this.#client.waitForOneOf<OperationSuccessPacket | OperationErrorPacket>([
-      BoksOpcode.CODE_OPERATION_SUCCESS,
-      BoksOpcode.CODE_OPERATION_ERROR
-    ]);
-    return result.opcode === BoksOpcode.CODE_OPERATION_SUCCESS;
+    return this.performOperation(packet);
   }
 
   /**
@@ -779,11 +730,11 @@ export class BoksController {
    * @experimental
    */
   async bondScale(): Promise<boolean> {
-    await this.#client.send(new ScaleBondPacket());
-    const result = await this.#client.waitForOneOf<
-      NotifyScaleBondingSuccessPacket | NotifyScaleBondingErrorPacket
-    >([BoksOpcode.NOTIFY_SCALE_BONDING_SUCCESS, BoksOpcode.NOTIFY_SCALE_BONDING_ERROR]);
-    return result.opcode === BoksOpcode.NOTIFY_SCALE_BONDING_SUCCESS;
+    return this.performOperation(
+      new ScaleBondPacket(),
+      BoksOpcode.NOTIFY_SCALE_BONDING_SUCCESS,
+      BoksOpcode.NOTIFY_SCALE_BONDING_ERROR
+    );
   }
 
   /**
