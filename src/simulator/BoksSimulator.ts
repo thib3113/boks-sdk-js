@@ -158,7 +158,6 @@ export class BoksHardwareSimulator {
   #progressDelayMs: number = 600;
   #opcodeOverrides: Map<number, Uint8Array | Error> = new Map();
   #subscribers: ((data: Uint8Array) => void)[] = [];
-  #batterySubscribers: ((data: Uint8Array) => void)[] = [];
   #doorAutoCloseTimeout: NodeJS.Timeout | null = null;
   #storage?: SimulatorStorage;
   readonly #logger?: BoksSimulatorLogger;
@@ -502,14 +501,6 @@ export class BoksHardwareSimulator {
    */
   public setBatteryLevel(level: number): void {
     this.#batteryLevel = Math.max(0, Math.min(100, level));
-    const data = new Uint8Array([this.#batteryLevel]);
-    this.#batterySubscribers.forEach((cb) => cb(data));
-  }
-
-  public subscribeToBattery(callback: (data: Uint8Array) => void): void {
-    this.#batterySubscribers.push(callback);
-    // Immediately notify current level
-    callback(new Uint8Array([this.#batteryLevel]));
   }
 
   /**
@@ -546,10 +537,10 @@ export class BoksHardwareSimulator {
   }
 
   /**
-   * Sets the Master Key (and derives the internal Config Key).
+   * Sets the Master Key or Config Key.
    * This is the recommended way to initialize the simulator credentials.
    *
-   * @param masterKey The 32-byte Master Key (as hex string or Uint8Array).
+   * @param key The 32-byte Master Key or 4-byte Config Key (as hex string or Uint8Array).
    *
    * @security This method allows setting the root credential without any protection.
    */

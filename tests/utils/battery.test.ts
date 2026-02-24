@@ -10,7 +10,6 @@ describe('Battery Utilities', () => {
     write: vi.fn(),
     read: vi.fn(),
     subscribe: vi.fn(),
-    subscribeTo: vi.fn(),
   };
 
   describe('fetchBatteryLevel', () => {

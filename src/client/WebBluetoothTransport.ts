@@ -138,49 +138,4 @@ export class WebBluetoothTransport implements BoksTransport {
       );
     }
   }
-
-  async subscribeTo(uuid: string, callback: (data: Uint8Array) => void): Promise<void> {
-    if (!this.server?.connected) {
-      throw new BoksClientError(
-        BoksClientErrorId.NOT_CONNECTED,
-        'Not connected (GATT server missing).'
-      );
-    }
-
-    try {
-      // Find characteristic
-      const services = await this.server.getPrimaryServices();
-      let char: BluetoothRemoteGATTCharacteristic | undefined;
-      for (const service of services) {
-        try {
-          char = await service.getCharacteristic(uuid);
-          if (char) break;
-        } catch {
-          /* ignore */
-        }
-      }
-
-      if (!char) {
-        throw new BoksClientError(
-          BoksClientErrorId.SUBSCRIBE_FAILED,
-          `Characteristic ${uuid} not found`
-        );
-      }
-
-      await char.startNotifications();
-      char.addEventListener('characteristicvaluechanged', (event: Event) => {
-        const c = event.target as BluetoothRemoteGATTCharacteristic;
-        const value = c.value;
-        if (value) {
-          callback(new Uint8Array(value.buffer));
-        }
-      });
-    } catch (error) {
-      throw new BoksClientError(
-        BoksClientErrorId.SUBSCRIBE_FAILED,
-        `Failed to subscribe to ${uuid}`,
-        { error }
-      );
-    }
-  }
 }

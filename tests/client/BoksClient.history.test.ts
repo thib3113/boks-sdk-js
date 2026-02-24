@@ -34,7 +34,6 @@ describe('BoksClient fetchHistory', () => {
         notificationCallback = cb;
         return Promise.resolve();
       }),
-      subscribeTo: vi.fn().mockResolvedValue(undefined),
     };
 
     client = new BoksClient({ transport: mockTransport });
@@ -99,8 +98,8 @@ describe('BoksClient fetchHistory', () => {
     const packet1 = createPacketBuffer(BoksOpcode.LOG_DOOR_OPEN, agePayload1);
     notificationCallback!(packet1);
 
-    // Advance time past timeout (fetchHistory multiplies timeout by 10)
-    await vi.advanceTimersByTimeAsync(1100);
+    // Advance time past timeout
+    await vi.advanceTimersByTimeAsync(200);
 
     // Now wait for the assertion to resolve
     await assertion;

@@ -10,7 +10,6 @@ import {
 } from '@/protocol';
 import { BoksClientError, BoksClientErrorId } from '@/errors/BoksClientError';
 import { fetchBatteryLevel, fetchBatteryStats } from '@/utils/battery';
-import { BoksTransaction } from './BoksTransaction';
 
 /**
  * Mapping of log events to their respective context data types.
@@ -42,14 +41,6 @@ export interface BoksClientOptions {
   device?: BluetoothDevice;
 }
 
-interface TransactionContext {
-  transaction: BoksTransaction<BoksPacket, BoksPacket>;
-  successOpcodes: number[];
-  errorOpcodes: number[];
-  resolve: (transaction: BoksTransaction<BoksPacket, BoksPacket>) => void;
-  reject: (error: Error) => void;
-}
-
 /**
  * High-level client for interacting with a Boks device.
  * Focuses on protocol orchestration and transport abstraction.
@@ -57,9 +48,12 @@ interface TransactionContext {
 export class BoksClient {
   private readonly transport: BoksTransport;
   private readonly logger?: BoksLogger;
+  private readonly responseHandlers: Array<{
+    opcodes: number[];
+    resolve: (packet: BoksPacket) => void;
+  }> = [];
   private listeners: Array<(packet: BoksPacket) => void> = [];
   private commandQueue: Promise<void> = Promise.resolve();
-  private currentTransactionContext: TransactionContext | null = null;
 
   constructor(options?: BoksClientOptions) {
     if (options?.transport) {
@@ -133,6 +127,25 @@ export class BoksClient {
   }
 
   /**
+   * Sends a packet to the Boks device using an internal queue to ensure sequential delivery.
+   * @param packet The packet to send.
+   */
+  async send(packet: BoksPacket): Promise<void> {
+    const nextTask = this.commandQueue.then(async () => {
+      const payload = packet.encode();
+      this.log('debug', 'send', { opcode: packet.opcode, length: payload.length });
+      await this.transport.write(payload);
+    });
+
+    // We catch errors for the queue's sake to ensure next commands can still run
+    this.commandQueue = nextTask.catch((err) => {
+      this.log('error', 'error', { opcode: packet.opcode, error: err });
+    });
+
+    return nextTask;
+  }
+
+  /**
    * Subscribes to all incoming packets.
    * @param callback Function called for every parsed packet received.
    * @returns A function to unsubscribe.
@@ -145,96 +158,43 @@ export class BoksClient {
   }
 
   /**
-   * Executes a transaction with the Boks device.
-   * Enforces that only one transaction runs at a time.
-   *
-   * @param request The request packet to send.
-   * @param options Configuration for the transaction (success opcodes, timeout, etc).
-   * @returns A promise resolving to the completed transaction.
-   */
-  async execute<TResponse extends BoksPacket = BoksPacket>(
-    request: BoksPacket,
-    options: {
-      successOpcodes: number[];
-      errorOpcodes?: number[];
-      timeout?: number;
-    }
-  ): Promise<BoksTransaction<TResponse, BoksPacket>> {
-    const nextTask = this.commandQueue.then(async () => {
-      const transaction = new BoksTransaction<TResponse, BoksPacket>(request);
-
-      try {
-        const payload = request.encode();
-        this.log('debug', 'send', { opcode: request.opcode, length: payload.length });
-
-        // Setup the transaction context BEFORE sending to ensure we don't miss immediate responses
-        const promise = new Promise<BoksTransaction<TResponse, BoksPacket>>((resolve, reject) => {
-          const timeoutMs = options.timeout ?? 5000;
-          const timer = setTimeout(() => {
-            transaction.timeout();
-            this.currentTransactionContext = null;
-            reject(
-              new BoksClientError(
-                BoksClientErrorId.TIMEOUT,
-                `Transaction timed out after ${timeoutMs}ms (Opcode: 0x${request.opcode.toString(16)})`
-              )
-            );
-          }, timeoutMs);
-
-          this.currentTransactionContext = {
-            transaction: transaction as BoksTransaction<BoksPacket, BoksPacket>,
-            successOpcodes: options.successOpcodes,
-            errorOpcodes: options.errorOpcodes || [],
-            resolve: (tx) => {
-              clearTimeout(timer);
-              resolve(tx as BoksTransaction<TResponse, BoksPacket>);
-            },
-            reject: (err) => {
-              clearTimeout(timer);
-              reject(err);
-            }
-          };
-        });
-
-        // Send the packet
-        await this.transport.write(payload);
-
-        // Wait for completion
-        return await promise;
-      } catch (err) {
-        transaction.fail(err as Error);
-        this.currentTransactionContext = null;
-        throw err;
-      }
-    });
-
-    // Ensure the queue continues even if this task fails
-    this.commandQueue = nextTask.catch((err) => {
-      this.log('error', 'error', { opcode: request.opcode, error: err });
-    }) as Promise<void>;
-
-    return nextTask as Promise<BoksTransaction<TResponse, BoksPacket>>;
-  }
-
-  /**
-   * Fetches the full history from the Boks device using the transaction model.
+   * Fetches the full history from the Boks device.
+   * Accumulates all history events until the end of history packet is received.
    * @param timeoutMs Timeout between two history packets.
    * @returns Array of history events.
    */
   async fetchHistory(timeoutMs: number = 2000): Promise<BoksHistoryEvent[]> {
-    const transaction = await this.execute(new RequestLogsPacket(), {
-      successOpcodes: [BoksOpcode.LOG_END_HISTORY],
-      timeout: timeoutMs * 10 // Give enough time for the whole transfer, or handle per-packet timeout?
-      // With the current execute model, timeout is for the whole transaction.
-      // If history is long, 20s might not be enough.
-      // However, the original implementation had a sliding timeout.
-      // For now, let's set a generous timeout or rely on the sliding logic if we implement it in execute.
-      // Since execute doesn't support sliding timeout natively yet, we'll set a high fixed timeout.
-    });
+    const events: BoksHistoryEvent[] = [];
 
-    return transaction.intermediates.filter(
-      (p): p is BoksHistoryEvent => p instanceof BoksHistoryEvent
-    );
+    return new Promise((resolve, reject) => {
+      let timer: ReturnType<typeof setTimeout> | undefined;
+
+      const resetTimer = () => {
+        if (timer) clearTimeout(timer);
+        timer = setTimeout(() => {
+          cleanup();
+          reject(new BoksClientError(BoksClientErrorId.TIMEOUT, 'Timeout during history transfer'));
+        }, timeoutMs);
+      };
+
+      const cleanup = this.onPacket((packet) => {
+        if (packet instanceof BoksHistoryEvent) {
+          events.push(packet);
+          resetTimer();
+        } else if (packet.opcode === BoksOpcode.LOG_END_HISTORY) {
+          if (timer) clearTimeout(timer);
+          cleanup();
+          resolve(events);
+        }
+      });
+
+      resetTimer();
+      this.send(new RequestLogsPacket()).catch((err) => {
+        if (timer) clearTimeout(timer);
+        cleanup();
+        reject(err);
+      });
+    });
   }
 
   /**
@@ -247,7 +207,7 @@ export class BoksClient {
 
       this.log('debug', 'receive', { opcode: packet.opcode });
 
-      // 1. Notify generic listeners
+      // Notify generic listeners
       this.listeners.forEach((listener) => {
         try {
           listener(packet);
@@ -256,29 +216,56 @@ export class BoksClient {
         }
       });
 
-      // 2. Handle active transaction
-      if (this.currentTransactionContext) {
-        const ctx = this.currentTransactionContext;
-
-        if (ctx.successOpcodes.includes(packet.opcode)) {
-          ctx.transaction.complete(packet);
-          this.currentTransactionContext = null;
-          ctx.resolve(ctx.transaction);
-        } else if (ctx.errorOpcodes.includes(packet.opcode)) {
-          const error = new BoksClientError(
-            BoksClientErrorId.UNKNOWN_ERROR,
-            `Received error opcode: 0x${packet.opcode.toString(16)}`
-          );
-          ctx.transaction.fail(error);
-          ctx.transaction.response = packet; // The error packet is still the response
-          this.currentTransactionContext = null;
-          ctx.resolve(ctx.transaction); // RESOLVE instead of REJECT
-        } else {
-          ctx.transaction.addIntermediate(packet);
-        }
+      // Check if anyone is waiting for this specific response
+      const handlerIndex = this.responseHandlers.findIndex((h) =>
+        h.opcodes.includes(packet.opcode)
+      );
+      if (handlerIndex !== -1) {
+        const handler = this.responseHandlers[handlerIndex];
+        this.responseHandlers.splice(handlerIndex, 1);
+        handler.resolve(packet);
       }
     } catch (error) {
       this.log('error', 'error', { error });
     }
+  }
+
+  /**
+   * Waits for a specific packet opcode to be received.
+   * @param opcode The opcode to wait for.
+   * @param timeoutMs Timeout in milliseconds.
+   */
+  waitForPacket<T extends BoksPacket>(opcode: BoksOpcode, timeoutMs: number = 5000): Promise<T> {
+    return this.waitForOneOf<T>([opcode], timeoutMs);
+  }
+
+  /**
+   * Waits for one of the specified packet opcodes to be received.
+   * @param opcodes The list of opcodes to wait for.
+   * @param timeoutMs Timeout in milliseconds.
+   */
+  waitForOneOf<T extends BoksPacket>(opcodes: number[], timeoutMs: number = 5000): Promise<T> {
+    return new Promise((resolve, reject) => {
+      const timer = setTimeout(() => {
+        const idx = this.responseHandlers.findIndex(
+          (h) => h.opcodes.length === opcodes.length && h.opcodes.every((o, i) => o === opcodes[i])
+        );
+        if (idx !== -1) this.responseHandlers.splice(idx, 1);
+        reject(
+          new BoksClientError(
+            BoksClientErrorId.TIMEOUT,
+            `Timeout waiting for opcodes ${opcodes.map((o) => '0x' + o.toString(16)).join(', ')}`
+          )
+        );
+      }, timeoutMs);
+
+      this.responseHandlers.push({
+        opcodes,
+        resolve: (packet) => {
+          clearTimeout(timer);
+          resolve(packet as T);
+        }
+      });
+    });
   }
 }

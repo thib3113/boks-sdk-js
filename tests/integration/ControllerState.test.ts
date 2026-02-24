@@ -51,7 +51,7 @@ describe('BoksController Internal State', () => {
     
     // Default: 5 master, 3300 others (approx due to collisions)
     expect(controller.codeCount.master).toBe(5);
-    expect(controller.codeCount.single).toBeGreaterThan(3200);
+    expect(controller.codeCount.other).toBeGreaterThan(3200);
   });
 
   it('should update log count when NotifyLogsCountPacket (0x79) is received', async () => {
