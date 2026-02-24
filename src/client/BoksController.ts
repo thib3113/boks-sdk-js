@@ -168,9 +168,6 @@ export class BoksController {
   }
 
   /**
-   * Returns the Config Key or throws if not set.
-   */
-  /**
    * Helper to perform a standard operation: send packet -> wait for success/error.
    */
   private async performOperation(
@@ -183,6 +180,9 @@ export class BoksController {
     return result.opcode === successOpcode;
   }
 
+  /**
+   * Returns the Config Key or throws if not set.
+   */
   private getConfigKeyOrThrow(): string {
     if (!this.#configKey) {
       throw new BoksClientError(
