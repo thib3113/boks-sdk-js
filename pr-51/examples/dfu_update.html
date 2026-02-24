@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boks Firmware Update</title>
+    <!-- Boks SDK (Local Build) -->
+    <script src="../dist/boks-sdk.js"></script>
+    <!-- Web Bluetooth DFU (via unpkg) -->
+    <script src="https://unpkg.com/@thib3113/web-bluetooth-dfu@0.0.12/dist/index.js"></script>
+    <style>
+        body { font-family: sans-serif; max-width: 800px; margin: 2rem auto; padding: 0 1rem; }
+        .card { border: 1px solid #ccc; padding: 1rem; margin-bottom: 1rem; border-radius: 8px; }
+        button { padding: 0.5rem 1rem; cursor: pointer; }
+        #log { background: #f0f0f0; padding: 1rem; height: 300px; overflow-y: auto; font-family: monospace; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <h1>Boks Firmware Update</h1>
+
+    <div class="card">
+        <h3>1. Select Firmware</h3>
+        <input type="file" id="firmwareFile" accept=".zip">
+    </div>
+
+    <div class="card">
+        <h3>2. Connect Device</h3>
+        <button id="scanBtn">Scan & Connect</button>
+        <div id="deviceInfo" class="hidden">
+            <p>Connected to: <strong id="deviceName"></strong></p>
+            <p>Status: <span id="deviceStatus">Unknown</span></p>
+            <div id="normalModeControls" class="hidden">
+                <p>Battery: <span id="batteryLevel">-</span>%</p>
+                <button id="switchToDfuBtn">Switch to DFU Mode</button>
+            </div>
+            <div id="dfuModeControls" class="hidden">
+                <p>DFU Service Detected!</p>
+                <button id="flashBtn" disabled>Start Flash</button>
+                <progress id="progressBar" value="0" max="100" style="width: 100%"></progress>
+                <span id="progressText">0%</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>Logs</h3>
+        <div id="log"></div>
+    </div>
+
+    <script>
+        const logEl = document.getElementById('log');
+        const scanBtn = document.getElementById('scanBtn');
+        const deviceInfo = document.getElementById('deviceInfo');
+        const deviceNameEl = document.getElementById('deviceName');
+        const deviceStatusEl = document.getElementById('deviceStatus');
+        const normalModeControls = document.getElementById('normalModeControls');
+        const dfuModeControls = document.getElementById('dfuModeControls');
+        const switchToDfuBtn = document.getElementById('switchToDfuBtn');
+        const flashBtn = document.getElementById('flashBtn');
+        const firmwareFile = document.getElementById('firmwareFile');
+        const progressBar = document.getElementById('progressBar');
+        const progressText = document.getElementById('progressText');
+        const batteryLevelEl = document.getElementById('batteryLevel');
+
+        let selectedDevice = null;
+        let boksClient = null;
+
+        // Use constants from the SDK
+        const { BOKS_SERVICE_UUID, DFU_SERVICE_UUID, BOKS_UUIDS } = BoksSDK;
+
+        function log(msg, type = 'info') {
+            const div = document.createElement('div');
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+            div.style.color = type === 'error' ? 'red' : type === 'success' ? 'green' : 'black';
+            logEl.appendChild(div);
+            logEl.scrollTop = logEl.scrollHeight;
+            console.log(msg);
+        }
+
+        firmwareFile.addEventListener('change', () => {
+            if (firmwareFile.files.length > 0) {
+                flashBtn.disabled = false;
+                log('Firmware selected: ' + firmwareFile.files[0].name);
+            }
+        });
+
+        scanBtn.addEventListener('click', async () => {
+            try {
+                log('Scanning...');
+                selectedDevice = await navigator.bluetooth.requestDevice({
+                    filters: [
+                        { services: [BOKS_SERVICE_UUID] },
+                        { services: [DFU_SERVICE_UUID] }
+                    ],
+                    optionalServices: [
+                        BOKS_SERVICE_UUID,
+                        DFU_SERVICE_UUID,
+                        0x180F, // Battery
+                        0x180A  // Device Info
+                    ]
+                });
+
+                log(`Device selected: ${selectedDevice.name}`);
+                deviceNameEl.textContent = selectedDevice.name;
+                deviceInfo.classList.remove('hidden');
+
+                handleConnection();
+            } catch (err) {
+                log('Scan failed: ' + err.message, 'error');
+            }
+        });
+
+        async function handleConnection() {
+            if (!selectedDevice) return;
+
+            const isDfu = selectedDevice.name && selectedDevice.name.includes('DfuTarg');
+            // Alternatively check services if connected, but name is a good initial hint for DfuTarg
+
+            if (isDfu) {
+                log('Device is in DFU Bootloader mode.');
+                deviceStatusEl.textContent = "DFU Mode";
+                normalModeControls.classList.add('hidden');
+                dfuModeControls.classList.remove('hidden');
+            } else {
+                log('Device is in Normal mode. Connecting Boks Client...');
+                deviceStatusEl.textContent = "Normal Mode";
+                normalModeControls.classList.remove('hidden');
+                dfuModeControls.classList.add('hidden');
+
+                // Initialize Boks Client with the selected device
+                try {
+                    boksClient = new BoksSDK.BoksClient({
+                        device: selectedDevice,
+                        logger: (level, event, context) => {
+                            if (level === 'error') log(`${event}: ${JSON.stringify(context)}`, 'error');
+                        }
+                    });
+
+                    await boksClient.connect();
+                    log('Boks Client Connected!', 'success');
+
+                    // Read Battery
+                    try {
+                        const battery = await boksClient.getBatteryLevel();
+                        batteryLevelEl.textContent = battery !== undefined ? battery : '?';
+                    } catch (e) {
+                        log('Could not read battery: ' + e.message, 'warn');
+                    }
+
+                } catch (err) {
+                    log('Connection failed: ' + err.message, 'error');
+                }
+            }
+        }
+
+        switchToDfuBtn.addEventListener('click', async () => {
+            if (!boksClient) return;
+            log('Switching to DFU mode...');
+            try {
+                // To switch to DFU, we need to write 0x01 to the DFU Control Point
+                // Since BoksClient handles the connection, we can try to access the transport directly if exposed,
+                // or just use the device object since we have it.
+                // However, if BoksClient is connected, the GATT server is busy.
+                // We can use the device object's gatt directly.
+
+                const server = await selectedDevice.gatt.connect(); // Ensure connected
+                const service = await server.getPrimaryService(DFU_SERVICE_UUID);
+                const char = await service.getCharacteristic(BOKS_UUIDS.DFU_CONTROL_POINT);
+
+                log('Writing 0x01 to DFU Control Point...');
+                await char.writeValue(new Uint8Array([0x01]));
+                log('Command sent. Device should reboot into DFU mode.', 'success');
+
+                // Disconnect client
+                await boksClient.disconnect();
+
+                // UI update (user might need to rescan if address changes, but often it just re-advertises)
+                // For "Buttonless DFU", it might disconnect and re-advertise as DfuTarg.
+                log('Please wait for device to reboot, then Scan again if it doesn\'t auto-reconnect (usually address + 1).');
+                deviceStatusEl.textContent = "Switching...";
+
+            } catch (err) {
+                log('Failed to switch to DFU: ' + err.message, 'error');
+            }
+        });
+
+        flashBtn.addEventListener('click', async () => {
+            if (!selectedDevice || !firmwareFile.files.length) {
+                log('Select device and firmware first.', 'error');
+                return;
+            }
+
+            const file = firmwareFile.files[0];
+            log(`Starting update with ${file.name}...`);
+
+            try {
+                // Using SecureDfu from web-bluetooth-dfu
+                // Note: The library exposes 'SecureDfu' usually.
+                // Depending on the bundle, it might be window.SecureDfu or similar.
+                // Let's assume standard usage from the provided unpkg.
+
+                if (typeof SecureDfu === 'undefined') {
+                    // Check if it's under a namespace or default export
+                    log('SecureDfu library not loaded properly.', 'error');
+                    return;
+                }
+
+                const content = await file.arrayBuffer();
+                const dfu = new SecureDfu(content, selectedDevice); // Constructor might vary based on lib version
+
+                dfu.addEventListener('progress', (event) => {
+                    const { current, total } = event;
+                    const percent = Math.round((current / total) * 100);
+                    progressBar.value = percent;
+                    progressText.textContent = `${percent}%`;
+                    log(`Progress: ${percent}%`);
+                });
+
+                dfu.addEventListener('log', (event) => {
+                   // log(`DFU: ${event.message}`);
+                });
+
+                await dfu.update();
+                log('Firmware Update Complete!', 'success');
+
+            } catch (err) {
+                log('Update failed: ' + err.message, 'error');
+                console.error(err);
+            }
+        });
+    </script>
+</body>
+</html>
