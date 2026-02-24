@@ -546,10 +546,10 @@ export class BoksHardwareSimulator {
   }
 
   /**
-   * Sets the Master Key or Config Key.
+   * Sets the Master Key (and derives the internal Config Key).
    * This is the recommended way to initialize the simulator credentials.
    *
-   * @param key The 32-byte Master Key or 4-byte Config Key (as hex string or Uint8Array).
+   * @param masterKey The 32-byte Master Key (as hex string or Uint8Array).
    *
    * @security This method allows setting the root credential without any protection.
    */

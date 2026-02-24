@@ -4,7 +4,8 @@ import { BoksClient } from '@/client/BoksClient';
 import {
   BoksOpcode,
   BoksCodeType,
-  BOKS_UUIDS
+  BOKS_UUIDS,
+  CreateSingleUseCodePacket
 } from '@/protocol';
 import { BoksClientError, BoksClientErrorId } from '@/errors/BoksClientError';
 
@@ -70,11 +71,11 @@ describe('BoksController', () => {
       controller.setCredentials(configKey);
 
       // Verify that operations requiring config key still work
-      mockClientInstance.waitForOneOf.mockResolvedValue({ opcode: BoksOpcode.CODE_OPERATION_SUCCESS });
+      setupSuccess();
       const result = await controller.createSingleUseCode('123456');
       expect(result).toBe(true);
-      const packet = mockClientInstance.send.mock.calls[0][0];
-      expect(packet).toBeInstanceOf(CreateSingleUseCodePacket);
+      
+      const [packet] = mockClientInstance.execute.mock.calls[0];
       expect(packet.configKey).toBe(configKey);
 
       // Verify master key is null via getter
