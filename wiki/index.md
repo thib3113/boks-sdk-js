@@ -11,7 +11,7 @@ hero:
       link: /guide/
     - theme: alt
       text: View on GitHub
-      link: https://github.com/thib3113/boks-sdk
+      link: https://github.com/thib3113/boks-sdk-js
 
 features:
   - title: Reverse Engineered
