@@ -158,6 +158,7 @@ export class BoksHardwareSimulator {
   #progressDelayMs: number = 600;
   #opcodeOverrides: Map<number, Uint8Array | Error> = new Map();
   #subscribers: ((data: Uint8Array) => void)[] = [];
+  #batterySubscribers: ((data: Uint8Array) => void)[] = [];
   #doorAutoCloseTimeout: NodeJS.Timeout | null = null;
   #storage?: SimulatorStorage;
   readonly #logger?: BoksSimulatorLogger;
@@ -501,6 +502,14 @@ export class BoksHardwareSimulator {
    */
   public setBatteryLevel(level: number): void {
     this.#batteryLevel = Math.max(0, Math.min(100, level));
+    const data = new Uint8Array([this.#batteryLevel]);
+    this.#batterySubscribers.forEach((cb) => cb(data));
+  }
+
+  public subscribeToBattery(callback: (data: Uint8Array) => void): void {
+    this.#batterySubscribers.push(callback);
+    // Immediately notify current level
+    callback(new Uint8Array([this.#batteryLevel]));
   }
 
   /**
