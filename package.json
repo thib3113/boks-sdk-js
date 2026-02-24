@@ -72,7 +72,7 @@
     "@types/node": "22.19.11",
     "@types/web-bluetooth": "0.0.21",
     "esbuild": "0.25.12",
-    "eslint": "9.39.2",
+    "eslint": "9.39.3",
     "eslint-config-prettier": "10.1.8",
     "eslint-plugin-prettier": "5.5.5",
     "fast-check": "4.5.3",
