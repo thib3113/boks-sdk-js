@@ -51,7 +51,7 @@
   "jsdelivr": "dist/boks-sdk.js",
   "scripts": {
     "build": "node build.js",
-    "docs": "pnpm run docs:build && mkdir -p public/examples && cp -r examples/* public/examples/ && typedoc",
+    "docs": "pnpm run docs:build && typedoc",
     "test": "vitest run",
     "lint": "eslint src",
     "type-check": "tsc --noEmit",

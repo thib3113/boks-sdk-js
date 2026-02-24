@@ -4,6 +4,6 @@
   "out": "public/docs",
   "name": "Boks SDK Documentation",
   "includeVersion": true,
-  "exclude": ["**/*.test.ts"],
+  "exclude": ["**/*.test.ts", "examples/**", "wiki/**"],
   "cleanOutputDir": true
 }

@@ -194,7 +194,7 @@ await controller.initialize(seedBytes);
 
 ## Examples
 
-Check the [examples/](./examples/) folder for complete scripts demonstrating various use cases:
+Check the [wiki/examples/](./wiki/examples/) folder for complete scripts demonstrating various use cases:
 
 - **Initialization**: How to initialize a brand new Boks device.
 - **Updates**: How to perform firmware updates (if applicable).
@@ -249,7 +249,7 @@ const simulator = new BoksHardwareSimulator(storage);
 
 ### Peripheral Mode (Node.js / Bleno)
 
-You can also use the simulator to create a virtual Boks peripheral on Linux/Raspberry Pi that real clients can connect to. See [SIMULATOR_PERIPHERAL.md](./docs/SIMULATOR_PERIPHERAL.md) for details.
+You can also use the simulator to create a virtual Boks peripheral on Linux/Raspberry Pi that real clients can connect to. See the `BoksHardwareSimulator` class documentation for implementation details.
 
 ### Simulating Events
 
