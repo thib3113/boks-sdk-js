@@ -102,7 +102,7 @@ export class BoksController {
     } else {
       this.#client = new BoksClient(optionsOrClient);
     }
-    this.#client.onPacket(this.handleInternalPacket.bind(this));
+    this.#client.onPacket(this.#handleInternalPacket.bind(this));
   }
 
   get doorOpen(): boolean {
@@ -117,24 +117,34 @@ export class BoksController {
     return this.#logCount;
   }
 
-  private handleInternalPacket(packet: BoksPacket): void {
+  #handleInternalPacket(packet: BoksPacket): void {
     switch (packet.opcode) {
       case BoksOpcode.ANSWER_DOOR_STATUS:
       case BoksOpcode.NOTIFY_DOOR_STATUS:
-        this.#doorOpen = (packet as AnswerDoorStatusPacket | NotifyDoorStatusPacket).isOpen;
+        this.#handleDoorStatus(packet as AnswerDoorStatusPacket | NotifyDoorStatusPacket);
         break;
-      case BoksOpcode.NOTIFY_CODES_COUNT: {
-        const countPacket = packet as NotifyCodesCountPacket;
-        this.#codeCount = {
-          master: countPacket.masterCount,
-          other: countPacket.otherCount
-        };
+      case BoksOpcode.NOTIFY_CODES_COUNT:
+        this.#handleCodesCount(packet as NotifyCodesCountPacket);
         break;
-      }
       case BoksOpcode.NOTIFY_LOGS_COUNT:
-        this.#logCount = (packet as NotifyLogsCountPacket).count;
+        this.#handleLogsCount(packet as NotifyLogsCountPacket);
         break;
     }
+  }
+
+  #handleDoorStatus(packet: AnswerDoorStatusPacket | NotifyDoorStatusPacket): void {
+    this.#doorOpen = packet.isOpen;
+  }
+
+  #handleCodesCount(packet: NotifyCodesCountPacket): void {
+    this.#codeCount = {
+      master: packet.masterCount,
+      other: packet.otherCount
+    };
+  }
+
+  #handleLogsCount(packet: NotifyLogsCountPacket): void {
+    this.#logCount = packet.count;
   }
 
   /**

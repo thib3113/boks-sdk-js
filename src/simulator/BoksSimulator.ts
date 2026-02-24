@@ -663,9 +663,7 @@ export class BoksHardwareSimulator {
    * Handles an incoming packet from the transport.
    */
   public async handlePacket(data: Uint8Array): Promise<void> {
-    const prob = this.#packetLossProbability;
-    if (prob >= 1) return;
-    if (prob > 0 && Math.random() < prob) return;
+    if (this.shouldDropPacket()) return;
     if (data.length < 3) return;
 
     const opcode = data[0];
@@ -700,9 +698,7 @@ export class BoksHardwareSimulator {
       const send = async () => {
         const delay = this.#responseDelayMs > 0 ? this.#responseDelayMs : 0;
         await new Promise((resolve) => setTimeout(resolve, delay));
-        const currentProb = this.#packetLossProbability;
-        if (currentProb >= 1) return;
-        if (currentProb > 0 && Math.random() < currentProb) return;
+        if (this.shouldDropPacket()) return;
         this.emit(response!);
       };
       send();
@@ -721,10 +717,15 @@ export class BoksHardwareSimulator {
     this.#subscribers = [];
   }
 
-  private emit(data: Uint8Array): void {
+  private shouldDropPacket(): boolean {
     const prob = this.#packetLossProbability;
-    if (prob >= 1) return;
-    if (prob > 0 && Math.random() < prob) return;
+    if (prob >= 1) return true;
+    if (prob > 0 && Math.random() < prob) return true;
+    return false;
+  }
+
+  private emit(data: Uint8Array): void {
+    if (this.shouldDropPacket()) return;
     this.log('debug', 'send', { opcode: data[0], length: data.length });
     this.#subscribers.forEach((cb) => cb(data));
   }
