@@ -7,8 +7,8 @@ import { OpenDoorPacket } from '../../src/protocol/downlink/OpenDoorPacket';
 describe('Boks Hardware Simulator Integrity', () => {
   let simulator: BoksHardwareSimulator;
   let transport: SimulatorTransport;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let responseCallback: Mock<any, any>;
+  // Use generic Mock type without arguments to satisfy vitest typings
+  let responseCallback: Mock;
 
   beforeEach(() => {
     simulator = new BoksHardwareSimulator();
@@ -35,7 +35,9 @@ describe('Boks Hardware Simulator Integrity', () => {
     // We expect 2 packets: VALID_OPEN_CODE (0x81) and NOTIFY_DOOR_STATUS (0x84)
     await vi.waitFor(() => expect(responseCallback).toHaveBeenCalledTimes(2));
     
-    const opcodes = responseCallback.mock.calls.map((c) => c[0][0]);
+    // Explicitly type the arguments to fix implicit 'any' error
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const opcodes = responseCallback.mock.calls.map((c: any[]) => c[0][0]);
     expect(opcodes).toContain(BoksOpcode.VALID_OPEN_CODE);
     expect(opcodes).toContain(BoksOpcode.NOTIFY_DOOR_STATUS);
     expect(simulator.getState().isOpen).toBe(true);
