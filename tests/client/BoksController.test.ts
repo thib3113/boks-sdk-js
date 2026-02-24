@@ -76,6 +76,7 @@ describe('BoksController', () => {
       expect(result).toBe(true);
       
       const [packet] = mockClientInstance.execute.mock.calls[0];
+      expect(packet).toBeInstanceOf(CreateSingleUseCodePacket);
       expect(packet.configKey).toBe(configKey);
 
       // Verify master key is null via getter
