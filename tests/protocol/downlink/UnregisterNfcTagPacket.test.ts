@@ -1,6 +1,6 @@
+import { BoksProtocolError } from '@/errors/BoksProtocolError';
 import { describe, it, expect } from 'vitest';
 import { UnregisterNfcTagPacket } from '@/protocol/downlink/UnregisterNfcTagPacket';
-import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';
 import { BoksOpcode } from '@/protocol/constants';
 import { bytesToHex, stringToBytes } from '@/utils/converters';
 

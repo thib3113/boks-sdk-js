@@ -421,7 +421,10 @@ export class BoksHardwareSimulator {
   public setDoorStatus(open: boolean): void {
     this.#isOpen = open;
     this.emit(
-      this.createResponse(BoksOpcode.NOTIFY_DOOR_STATUS, new Uint8Array([open ? 0x00 : 0x01, open ? 0x01 : 0x00]))
+      this.createResponse(
+        BoksOpcode.NOTIFY_DOOR_STATUS,
+        new Uint8Array([open ? 0x00 : 0x01, open ? 0x01 : 0x00])
+      )
     );
     if (open) {
       this.scheduleAutoClose();

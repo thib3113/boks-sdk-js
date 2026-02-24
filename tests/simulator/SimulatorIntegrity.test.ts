@@ -1,4 +1,4 @@
-import { describe, test, expect, beforeEach, vi } from 'vitest';
+import { describe, test, expect, beforeEach, afterEach, vi, Mock } from 'vitest';
 import { BoksHardwareSimulator, SimulatorTransport, SimulatorStorage } from '../../src/simulator';
 import { BoksOpcode, BoksCodeType, BoksOpenSource } from '../../src/protocol/constants';
 import { DeleteSingleUseCodePacket } from '../../src/protocol/downlink/DeleteSingleUseCodePacket';
@@ -8,7 +8,7 @@ describe('Boks Hardware Simulator Integrity', () => {
   let simulator: BoksHardwareSimulator;
   let transport: SimulatorTransport;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let responseCallback: any;
+  let responseCallback: Mock<any, any>;
 
   beforeEach(() => {
     simulator = new BoksHardwareSimulator();
@@ -35,7 +35,7 @@ describe('Boks Hardware Simulator Integrity', () => {
     // We expect 2 packets: VALID_OPEN_CODE (0x81) and NOTIFY_DOOR_STATUS (0x84)
     await vi.waitFor(() => expect(responseCallback).toHaveBeenCalledTimes(2));
     
-    const opcodes = responseCallback.mock.calls.map(c => c[0][0]);
+    const opcodes = responseCallback.mock.calls.map((c) => c[0][0]);
     expect(opcodes).toContain(BoksOpcode.VALID_OPEN_CODE);
     expect(opcodes).toContain(BoksOpcode.NOTIFY_DOOR_STATUS);
     expect(simulator.getState().isOpen).toBe(true);

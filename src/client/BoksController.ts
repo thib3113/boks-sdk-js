@@ -123,13 +123,14 @@ export class BoksController {
       case BoksOpcode.NOTIFY_DOOR_STATUS:
         this.#doorOpen = (packet as AnswerDoorStatusPacket | NotifyDoorStatusPacket).isOpen;
         break;
-      case BoksOpcode.NOTIFY_CODES_COUNT:
+      case BoksOpcode.NOTIFY_CODES_COUNT: {
         const countPacket = packet as NotifyCodesCountPacket;
         this.#codeCount = {
           master: countPacket.masterCount,
           other: countPacket.otherCount
         };
         break;
+      }
       case BoksOpcode.NOTIFY_LOGS_COUNT:
         this.#logCount = (packet as NotifyLogsCountPacket).count;
         break;
@@ -434,10 +435,9 @@ export class BoksController {
    */
   async getDoorStatus(): Promise<boolean> {
     await this.#client.send(new AskDoorStatusPacket());
-    const packet = await this.#client.waitForOneOf<AnswerDoorStatusPacket | NotifyDoorStatusPacket>([
-      BoksOpcode.ANSWER_DOOR_STATUS,
-      BoksOpcode.NOTIFY_DOOR_STATUS
-    ]);
+    const packet = await this.#client.waitForOneOf<AnswerDoorStatusPacket | NotifyDoorStatusPacket>(
+      [BoksOpcode.ANSWER_DOOR_STATUS, BoksOpcode.NOTIFY_DOOR_STATUS]
+    );
     return packet.isOpen;
   }
 
