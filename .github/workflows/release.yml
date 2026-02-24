@@ -8,6 +8,8 @@ on:
 permissions:
   contents: read
   id-token: write
+  checks: write
+  attestations: write
 
 jobs:
   publish:
@@ -15,17 +17,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10
-
-      - name: Set up Node.js
+      - name: Install Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
           registry-url: 'https://registry.npmjs.org'
-          cache: 'pnpm'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -36,5 +37,10 @@ jobs:
       - name: Build
         run: pnpm build
 
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@v1
+        with:
+          subject-path: 'dist/*'
+
       - name: Publish to NPM
-        run: pnpm publish --no-git-checks --provenance --access public
+        run: npm publish --provenance --access public
