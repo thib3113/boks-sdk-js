@@ -53,7 +53,7 @@ export class WebBluetoothTransport implements BoksTransport {
       throw new BoksClientError(
         BoksClientErrorId.CONNECTION_FAILED,
         'Failed to connect to Boks device',
-        error
+        { error }
       );
     }
   }
@@ -64,7 +64,9 @@ export class WebBluetoothTransport implements BoksTransport {
         this.server.disconnect();
       }
     } catch (error) {
-      throw new BoksClientError(BoksClientErrorId.DISCONNECT_FAILED, 'Failed to disconnect', error);
+      throw new BoksClientError(BoksClientErrorId.DISCONNECT_FAILED, 'Failed to disconnect', {
+        error
+      });
     }
   }
 
@@ -81,7 +83,7 @@ export class WebBluetoothTransport implements BoksTransport {
       throw new BoksClientError(
         BoksClientErrorId.WRITE_FAILED,
         'Failed to write to Boks device',
-        error
+        { error }
       );
     }
   }
@@ -108,7 +110,7 @@ export class WebBluetoothTransport implements BoksTransport {
       throw new BoksClientError(
         BoksClientErrorId.PARSE_ERROR,
         `Failed to read characteristic ${uuid}`,
-        error
+        { error }
       );
     }
   }
@@ -134,7 +136,7 @@ export class WebBluetoothTransport implements BoksTransport {
       throw new BoksClientError(
         BoksClientErrorId.SUBSCRIBE_FAILED,
         'Failed to subscribe to notifications',
-        error
+        { error }
       );
     }
   }

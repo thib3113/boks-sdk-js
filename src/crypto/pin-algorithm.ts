@@ -5,14 +5,6 @@
 import { PIN_ALGO_CONFIG } from '../protocol/constants';
 import { BoksProtocolError, BoksProtocolErrorId } from '../errors/BoksProtocolError';
 
-// Shared buffers to avoid allocation on every call
-// Note: This makes the function non-reentrant. It is safe in single-threaded JS/Node environments
-// as long as generateBoksPin is not called recursively or concurrently (e.g. while yielding).
-// Since generateBoksPin is synchronous, this is safe.
-const h = new Uint32Array(8);
-const blockBuffer = new Uint8Array(64);
-const block32 = new Uint32Array(blockBuffer.buffer);
-const v = new Uint32Array(16);
 const encoder = new TextEncoder();
 const BOKS_CHAR_MAP = '0123456789AB';
 
@@ -85,57 +77,71 @@ export const generateBoksPin = (key: Uint8Array, typePrefix: string, index: numb
     });
   }
 
-  // Reset h with IV
-  h.set(PIN_ALGO_CONFIG.IV);
-  h[0] ^= PIN_ALGO_CONFIG.CONST_1;
+  // Local buffers (thread-safe, no shared state)
+  const h = new Uint32Array(8);
+  const blockBuffer = new Uint8Array(64);
+  const block32 = new Uint32Array(blockBuffer.buffer);
+  const v = new Uint32Array(16);
 
-  // Block 1: The Key (padded to 64 bytes)
-  // We must clear blockBuffer first because we reuse it
-  blockBuffer.fill(0);
-  blockBuffer.set(key); // Assumes key.length <= 64
-  compress(h, block32, 64, 0, v);
+  try {
+    // Reset h with IV
+    h.set(PIN_ALGO_CONFIG.IV);
+    h[0] ^= PIN_ALGO_CONFIG.CONST_1;
 
-  // Block 2: The Message (prefix + " " + index)
-  // Optimization: Write parts directly to buffer to avoid string concatenation `${typePrefix} ${index}`
-  // which allocates a new string.
+    // Block 1: The Key (padded to 64 bytes)
+    // We must clear blockBuffer first because we reuse it
+    blockBuffer.fill(0);
+    blockBuffer.set(key); // Assumes key.length <= 64
+    compress(h, block32, 64, 0, v);
 
-  // Clear buffer for next block
-  blockBuffer.fill(0);
+    // Block 2: The Message (prefix + " " + index)
+    // Optimization: Write parts directly to buffer to avoid string concatenation `${typePrefix} ${index}`
+    // which allocates a new string.
 
-  let offset = 0;
+    // Clear buffer for next block
+    blockBuffer.fill(0);
 
-  // Write typePrefix
-  const r1 = encoder.encodeInto(typePrefix, blockBuffer);
-  offset += r1.written!;
+    let offset = 0;
 
-  // Write space ' '
-  blockBuffer[offset++] = 32;
+    // Write typePrefix
+    const r1 = encoder.encodeInto(typePrefix, blockBuffer);
+    offset += r1.written!;
 
-  // Write index
-  const idxStr = index.toString();
-  // Use subarray to write at offset without copying buffer
-  const r2 = encoder.encodeInto(idxStr, blockBuffer.subarray(offset));
-  offset += r2.written!;
+    // Write space ' '
+    blockBuffer[offset++] = 32;
 
-  compress(h, block32, 64 + offset, PIN_ALGO_CONFIG.MAX_32, v);
+    // Write index
+    const idxStr = index.toString();
+    // Use subarray to write at offset without copying buffer
+    const r2 = encoder.encodeInto(idxStr, blockBuffer.subarray(offset));
+    offset += r2.written!;
 
-  // Result: First 6 bytes of the hash, mapped to Boks Chars
-  // Need to extract 6 bytes from h (which is 8x32bit words)
-  // The Python ref uses struct.pack('<I', x) for each word then takes [:6]
+    compress(h, block32, 64 + offset, PIN_ALGO_CONFIG.MAX_32, v);
 
-  let pin = '';
-  // Optimization: Unrolled loop to avoid temporary array allocation
-  // Word 0 (bytes 0, 1, 2, 3)
-  const w0 = h[0];
-  pin += BOKS_CHAR_MAP[(w0 & 255) % 12];
-  pin += BOKS_CHAR_MAP[((w0 >>> 8) & 255) % 12];
-  pin += BOKS_CHAR_MAP[((w0 >>> 16) & 255) % 12];
-  pin += BOKS_CHAR_MAP[((w0 >>> 24) & 255) % 12];
+    // Result: First 6 bytes of the hash, mapped to Boks Chars
+    // Need to extract 6 bytes from h (which is 8x32bit words)
+    // The Python ref uses struct.pack('<I', x) for each word then takes [:6]
 
-  // Word 1 (bytes 4, 5)
-  const w1 = h[1];
-  pin += BOKS_CHAR_MAP[(w1 & 255) % 12];
-  pin += BOKS_CHAR_MAP[((w1 >>> 8) & 255) % 12];
+    let pin = '';
+    // Optimization: Unrolled loop to avoid temporary array allocation
+    // Word 0 (bytes 0, 1, 2, 3)
+    const w0 = h[0];
+    pin += BOKS_CHAR_MAP[(w0 & 255) % 12];
+    pin += BOKS_CHAR_MAP[((w0 >>> 8) & 255) % 12];
+    pin += BOKS_CHAR_MAP[((w0 >>> 16) & 255) % 12];
+    pin += BOKS_CHAR_MAP[((w0 >>> 24) & 255) % 12];
 
-  return pin;
+    // Word 1 (bytes 4, 5)
+    const w1 = h[1];
+    pin += BOKS_CHAR_MAP[(w1 & 255) % 12];
+    pin += BOKS_CHAR_MAP[((w1 >>> 8) & 255) % 12];
+
+    return pin;
+  } finally {
+    // Security: Wipe the buffer containing the key/intermediate state
+    blockBuffer.fill(0);
+    h.fill(0);
+    v.fill(0);
+    block32.fill(0);
+  }
 };

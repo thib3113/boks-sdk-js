@@ -92,6 +92,7 @@ import { NfcOpeningHistoryPacket } from './uplink/history/NfcOpeningHistoryPacke
 import { NfcRegisteringHistoryPacket } from './uplink/history/NfcRegisteringHistoryPacket';
 
 import { hexToBytes, calculateChecksum } from '@/utils/converters';
+import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';
 
 /**
  * List of all supported packet classes.
