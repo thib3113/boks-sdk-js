@@ -6,8 +6,7 @@ import {
   BoksPacket,
   BoksPacketFactory,
   RequestLogsPacket,
-  BoksBatteryStats,
-  BOKS_UUIDS
+  BoksBatteryStats
 } from '@/protocol';
 import { BoksClientError, BoksClientErrorId } from '@/errors/BoksClientError';
 import { fetchBatteryLevel, fetchBatteryStats } from '@/utils/battery';
@@ -44,10 +43,10 @@ export interface BoksClientOptions {
 }
 
 interface TransactionContext {
-  transaction: BoksTransaction;
+  transaction: BoksTransaction<BoksPacket, BoksPacket>;
   successOpcodes: number[];
   errorOpcodes: number[];
-  resolve: (transaction: BoksTransaction) => void;
+  resolve: (transaction: BoksTransaction<BoksPacket, BoksPacket>) => void;
   reject: (error: Error) => void;
 }
 
@@ -134,18 +133,6 @@ export class BoksClient {
   }
 
   /**
-   * Subscribes to battery level notifications.
-   * @param callback Function called with the new battery level (0-100).
-   */
-  async monitorBatteryLevel(callback: (level: number) => void): Promise<void> {
-    await this.transport.subscribeTo(BOKS_UUIDS.BATTERY_LEVEL, (data) => {
-      if (data.length > 0) {
-        callback(data[0]);
-      }
-    });
-  }
-
-  /**
    * Subscribes to all incoming packets.
    * @param callback Function called for every parsed packet received.
    * @returns A function to unsubscribe.
@@ -172,16 +159,16 @@ export class BoksClient {
       errorOpcodes?: number[];
       timeout?: number;
     }
-  ): Promise<BoksTransaction<BoksPacket, TResponse>> {
+  ): Promise<BoksTransaction<TResponse, BoksPacket>> {
     const nextTask = this.commandQueue.then(async () => {
-      const transaction = new BoksTransaction<BoksPacket, TResponse>(request);
+      const transaction = new BoksTransaction<TResponse, BoksPacket>(request);
 
       try {
         const payload = request.encode();
         this.log('debug', 'send', { opcode: request.opcode, length: payload.length });
 
         // Setup the transaction context BEFORE sending to ensure we don't miss immediate responses
-        const promise = new Promise<BoksTransaction>((resolve, reject) => {
+        const promise = new Promise<BoksTransaction<TResponse, BoksPacket>>((resolve, reject) => {
           const timeoutMs = options.timeout ?? 5000;
           const timer = setTimeout(() => {
             transaction.timeout();
@@ -195,12 +182,12 @@ export class BoksClient {
           }, timeoutMs);
 
           this.currentTransactionContext = {
-            transaction,
+            transaction: transaction as BoksTransaction<BoksPacket, BoksPacket>,
             successOpcodes: options.successOpcodes,
             errorOpcodes: options.errorOpcodes || [],
             resolve: (tx) => {
               clearTimeout(timer);
-              resolve(tx);
+              resolve(tx as BoksTransaction<TResponse, BoksPacket>);
             },
             reject: (err) => {
               clearTimeout(timer);
@@ -213,7 +200,7 @@ export class BoksClient {
         await this.transport.write(payload);
 
         // Wait for completion
-        return (await promise) as BoksTransaction<BoksPacket, TResponse>;
+        return await promise;
       } catch (err) {
         transaction.fail(err as Error);
         this.currentTransactionContext = null;
@@ -226,7 +213,7 @@ export class BoksClient {
       this.log('error', 'error', { opcode: request.opcode, error: err });
     }) as Promise<void>;
 
-    return nextTask as Promise<BoksTransaction<BoksPacket, TResponse>>;
+    return nextTask as Promise<BoksTransaction<TResponse, BoksPacket>>;
   }
 
   /**
@@ -278,17 +265,15 @@ export class BoksClient {
           this.currentTransactionContext = null;
           ctx.resolve(ctx.transaction);
         } else if (ctx.errorOpcodes.includes(packet.opcode)) {
-          // Add to intermediates so it's visible in transaction logs
-          ctx.transaction.addIntermediate(packet);
           const error = new BoksClientError(
             BoksClientErrorId.UNKNOWN_ERROR,
             `Received error opcode: 0x${packet.opcode.toString(16)}`
           );
           ctx.transaction.fail(error);
+          ctx.transaction.response = packet; // The error packet is still the response
           this.currentTransactionContext = null;
-          ctx.reject(error);
+          ctx.resolve(ctx.transaction); // RESOLVE instead of REJECT
         } else {
-          // If it's not a success or error opcode, it's treated as an intermediate packet
           ctx.transaction.addIntermediate(packet);
         }
       }

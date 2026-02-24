@@ -13,8 +13,8 @@ export enum BoksTransactionStatus {
  * and the final response or error.
  */
 export class BoksTransaction<
-  TRequest extends BoksPacket = BoksPacket,
-  TResponse extends BoksPacket = BoksPacket
+  TResponse extends BoksPacket = BoksPacket,
+  TRequest extends BoksPacket = BoksPacket
 > {
   public readonly request: TRequest;
   public response: TResponse | null = null;
@@ -64,6 +64,13 @@ export class BoksTransaction<
   }
 
   /**
+   * Returns true if the transaction was completed successfully.
+   */
+  public get isSuccess(): this is BoksTransaction<TResponse, TRequest> & { response: TResponse } {
+    return this.status === BoksTransactionStatus.Success && this.response !== null;
+  }
+
+  /**
    * Returns the duration of the transaction in milliseconds.
    * If the transaction is still pending, returns the time elapsed since start.
    */
@@ -78,7 +85,7 @@ export class BoksTransaction<
    * (response is included only if present)
    */
   get allPackets(): BoksPacket[] {
-    const packets = [this.request, ...this.intermediates];
+    const packets: BoksPacket[] = [this.request, ...this.intermediates];
     if (this.response) {
       packets.push(this.response);
     }
