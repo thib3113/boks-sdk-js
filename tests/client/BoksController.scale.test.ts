@@ -7,6 +7,7 @@ import {
   ScaleTareEmptyPacket,
   ScaleTareLoadedPacket
 } from '@/protocol';
+import { BoksClientError, BoksClientErrorId } from '@/errors/BoksClientError';
 
 // Mock BoksClient
 vi.mock('@/client/BoksClient');
@@ -45,18 +46,14 @@ describe('Scale Features', () => {
   describe('BoksController Scale Methods', () => {
     let controller: BoksController;
     let mockClientInstance: {
-        send: Mock;
-        waitForOneOf: Mock;
-        waitForPacket: Mock;
+        execute: Mock;
         onPacket: Mock;
     };
 
     beforeEach(() => {
       vi.clearAllMocks();
       mockClientInstance = {
-        send: vi.fn().mockResolvedValue(undefined),
-        waitForOneOf: vi.fn(),
-        waitForPacket: vi.fn(),
+        execute: vi.fn(),
         onPacket: vi.fn().mockReturnValue(() => {}),
       };
       (BoksClient as unknown as Mock).mockReturnValue(mockClientInstance);
@@ -64,60 +61,60 @@ describe('Scale Features', () => {
     });
 
     it('bondScale should return true on success', async () => {
-        mockClientInstance.waitForOneOf.mockResolvedValue({ opcode: BoksOpcode.NOTIFY_SCALE_BONDING_SUCCESS });
+        mockClientInstance.execute.mockResolvedValue({ response: { opcode: BoksOpcode.NOTIFY_SCALE_BONDING_SUCCESS } });
         const result = await controller.bondScale();
-        expect(mockClientInstance.send).toHaveBeenCalled();
+        expect(mockClientInstance.execute).toHaveBeenCalled();
         expect(result).toBe(true);
     });
 
     it('bondScale should return false on error', async () => {
-        mockClientInstance.waitForOneOf.mockResolvedValue({ opcode: BoksOpcode.NOTIFY_SCALE_BONDING_ERROR });
+        mockClientInstance.execute.mockRejectedValue(new BoksClientError(BoksClientErrorId.UNKNOWN_ERROR, 'Received error opcode'));
         const result = await controller.bondScale();
         expect(result).toBe(false);
     });
 
     it('getScaleWeight should return weight', async () => {
-        mockClientInstance.waitForPacket.mockResolvedValue({ weight: 1234 });
+        mockClientInstance.execute.mockResolvedValue({ response: { weight: 1234 } });
         const result = await controller.getScaleWeight();
-        expect(mockClientInstance.send).toHaveBeenCalled();
+        expect(mockClientInstance.execute).toHaveBeenCalled();
         expect(result).toBe(1234);
     });
 
     it('getScaleWeight should handle negative weight response', async () => {
-        mockClientInstance.waitForPacket.mockResolvedValue({ weight: -500 });
+        mockClientInstance.execute.mockResolvedValue({ response: { weight: -500 } });
         const result = await controller.getScaleWeight();
         expect(result).toBe(-500);
     });
 
     it('tareScale(true) should send ScaleTareEmptyPacket', async () => {
-        mockClientInstance.waitForPacket.mockResolvedValue({ opcode: BoksOpcode.NOTIFY_SCALE_TARE_EMPTY_OK });
+        mockClientInstance.execute.mockResolvedValue({ response: { opcode: BoksOpcode.NOTIFY_SCALE_TARE_EMPTY_OK } });
         const result = await controller.tareScale(true);
 
-        expect(mockClientInstance.send).toHaveBeenCalled();
-        const packet = mockClientInstance.send.mock.calls[0][0];
+        expect(mockClientInstance.execute).toHaveBeenCalled();
+        const packet = mockClientInstance.execute.mock.calls[0][0];
         expect(packet).toBeInstanceOf(ScaleTareEmptyPacket);
         expect(result).toBe(true);
     });
 
     it('tareScale(false) should send ScaleTareLoadedPacket', async () => {
-        mockClientInstance.waitForPacket.mockResolvedValue({ opcode: BoksOpcode.NOTIFY_SCALE_TARE_LOADED_OK });
+        mockClientInstance.execute.mockResolvedValue({ response: { opcode: BoksOpcode.NOTIFY_SCALE_TARE_LOADED_OK } });
         const result = await controller.tareScale(false);
 
-        expect(mockClientInstance.send).toHaveBeenCalled();
-        const packet = mockClientInstance.send.mock.calls[0][0];
+        expect(mockClientInstance.execute).toHaveBeenCalled();
+        const packet = mockClientInstance.execute.mock.calls[0][0];
         expect(packet).toBeInstanceOf(ScaleTareLoadedPacket);
         expect(result).toBe(true);
     });
 
     it('forgetScale should return true', async () => {
-        mockClientInstance.waitForPacket.mockResolvedValue({ opcode: BoksOpcode.NOTIFY_SCALE_BONDING_FORGET_SUCCESS });
+        mockClientInstance.execute.mockResolvedValue({ response: { opcode: BoksOpcode.NOTIFY_SCALE_BONDING_FORGET_SUCCESS } });
         const result = await controller.forgetScale();
         expect(result).toBe(true);
     });
 
     it('getScaleRawSensors should return data', async () => {
         const data = new Uint8Array([1, 2, 3]);
-        mockClientInstance.waitForPacket.mockResolvedValue({ data });
+        mockClientInstance.execute.mockResolvedValue({ response: { data } });
         const result = await controller.getScaleRawSensors();
         expect(result).toEqual(data);
     });

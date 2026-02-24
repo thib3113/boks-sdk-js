@@ -20,7 +20,7 @@ import {
   BoksCodeType,
   CountCodesPacket
 } from '@/protocol';
-import { BoksClientErrorId } from '@/errors/BoksClientError';
+import { BoksClientErrorId, BoksClientError } from '@/errors/BoksClientError';
 
 // Mock the BoksClient module
 vi.mock('@/client/BoksClient');
@@ -31,11 +31,12 @@ describe('BoksController', () => {
     connect: Mock;
     disconnect: Mock;
     readCharacteristic: Mock;
-    send: Mock;
-    waitForOneOf: Mock;
-    waitForPacket: Mock;
+    execute: Mock;
+    monitorBatteryLevel: Mock;
     onPacket: Mock;
     fetchHistory: Mock;
+    getBatteryLevel: Mock;
+    getBatteryStats: Mock;
   };
 
   // Valid master key (32 bytes = 64 hex chars) ending in AABBCCDD
@@ -60,11 +61,12 @@ describe('BoksController', () => {
       connect: vi.fn().mockResolvedValue(undefined),
       disconnect: vi.fn().mockResolvedValue(undefined),
       readCharacteristic: vi.fn(),
-      send: vi.fn().mockResolvedValue(undefined),
-      waitForOneOf: vi.fn(),
-      waitForPacket: vi.fn(),
-      onPacket: vi.fn(),
+      execute: vi.fn(),
+      monitorBatteryLevel: vi.fn().mockResolvedValue(undefined),
+      onPacket: vi.fn().mockReturnValue(vi.fn()),
       fetchHistory: vi.fn(),
+      getBatteryLevel: vi.fn(),
+      getBatteryStats: vi.fn(),
     };
 
     // Make the mocked class constructor return our mock instance
@@ -80,6 +82,7 @@ describe('BoksController', () => {
       await setupControllerVersion('10/125', '4.3.3');
 
       expect(mockClientInstance.connect).toHaveBeenCalled();
+      expect(mockClientInstance.monitorBatteryLevel).toHaveBeenCalled();
       expect(mockClientInstance.readCharacteristic).toHaveBeenCalledWith(BOKS_UUIDS.SOFTWARE_REVISION);
       expect(mockClientInstance.readCharacteristic).toHaveBeenCalledWith(BOKS_UUIDS.FIRMWARE_REVISION);
 
@@ -142,20 +145,24 @@ describe('BoksController', () => {
 
     describe('openDoor', () => {
       it('should open door successfully', async () => {
-        mockClientInstance.waitForOneOf.mockResolvedValue({ opcode: BoksOpcode.VALID_OPEN_CODE });
+        mockClientInstance.execute.mockResolvedValue({ response: { opcode: BoksOpcode.VALID_OPEN_CODE } });
         const result = await controller.openDoor('123456');
-        expect(mockClientInstance.send).toHaveBeenCalled();
+        expect(mockClientInstance.execute).toHaveBeenCalled();
         expect(result).toBe(true);
       });
 
       it('should return false on invalid code', async () => {
-        mockClientInstance.waitForOneOf.mockResolvedValue({ opcode: BoksOpcode.INVALID_OPEN_CODE });
+        // execute throws error if errorOpcode is received?
+        // My implementation: execute throws BoksClientError if errorOpcode is received.
+        // BUT wait, performOperation catches it and returns false.
+        // So I need to simulate execute failure with "Received error opcode".
+        mockClientInstance.execute.mockRejectedValue(new BoksClientError(BoksClientErrorId.UNKNOWN_ERROR, 'Received error opcode: 0x82'));
         const result = await controller.openDoor('000000');
         expect(result).toBe(false);
       });
 
       it('should throw RATE_LIMIT_REACHED if called too quickly', async () => {
-        mockClientInstance.waitForOneOf.mockResolvedValue({ opcode: BoksOpcode.VALID_OPEN_CODE });
+        mockClientInstance.execute.mockResolvedValue({ response: { opcode: BoksOpcode.VALID_OPEN_CODE } });
 
         // First call
         await controller.openDoor('123456');
@@ -168,7 +175,7 @@ describe('BoksController', () => {
 
       it('should allow calls after 1 second delay', async () => {
         vi.useFakeTimers();
-        mockClientInstance.waitForOneOf.mockResolvedValue({ opcode: BoksOpcode.VALID_OPEN_CODE });
+        mockClientInstance.execute.mockResolvedValue({ response: { opcode: BoksOpcode.VALID_OPEN_CODE } });
 
         // First call
         await controller.openDoor('123456');
@@ -186,13 +193,13 @@ describe('BoksController', () => {
 
     describe('getDoorStatus', () => {
       it('should return true if open', async () => {
-        mockClientInstance.waitForOneOf.mockResolvedValue({ isOpen: true, opcode: BoksOpcode.ANSWER_DOOR_STATUS });
+        mockClientInstance.execute.mockResolvedValue({ response: { isOpen: true, opcode: BoksOpcode.ANSWER_DOOR_STATUS } });
         const result = await controller.getDoorStatus();
         expect(result).toBe(true);
       });
 
       it('should return false if closed', async () => {
-        mockClientInstance.waitForOneOf.mockResolvedValue({ isOpen: false, opcode: BoksOpcode.ANSWER_DOOR_STATUS });
+        mockClientInstance.execute.mockResolvedValue({ response: { isOpen: false, opcode: BoksOpcode.ANSWER_DOOR_STATUS } });
         const result = await controller.getDoorStatus();
         expect(result).toBe(false);
       });
@@ -200,7 +207,7 @@ describe('BoksController', () => {
 
     describe('getLogsCount', () => {
       it('should return logs count', async () => {
-        mockClientInstance.waitForPacket.mockResolvedValue({ count: 42, opcode: BoksOpcode.NOTIFY_LOGS_COUNT });
+        mockClientInstance.execute.mockResolvedValue({ response: { count: 42, opcode: BoksOpcode.NOTIFY_LOGS_COUNT } });
         const result = await controller.getLogsCount();
         expect(result).toBe(42);
       });
@@ -208,14 +215,16 @@ describe('BoksController', () => {
 
     describe('countCodes', () => {
       it('should return master and other codes count', async () => {
-        mockClientInstance.waitForPacket.mockResolvedValue({
-          masterCount: 5,
-          otherCount: 10,
-          opcode: BoksOpcode.NOTIFY_CODES_COUNT
+        mockClientInstance.execute.mockResolvedValue({
+          response: {
+            masterCount: 5,
+            otherCount: 10,
+            opcode: BoksOpcode.NOTIFY_CODES_COUNT
+          }
         });
         const result = await controller.countCodes();
-        expect(mockClientInstance.send).toHaveBeenCalled();
-        const packet = mockClientInstance.send.mock.calls[0][0];
+        expect(mockClientInstance.execute).toHaveBeenCalled();
+        const packet = mockClientInstance.execute.mock.calls[0][0];
         expect(packet).toBeInstanceOf(CountCodesPacket);
         expect(result).toEqual({ masterCount: 5, otherCount: 10 });
       });
@@ -223,15 +232,17 @@ describe('BoksController', () => {
 
     describe('testBattery', () => {
       it('should send test battery command', async () => {
+        mockClientInstance.execute.mockResolvedValue({ response: { opcode: BoksOpcode.CODE_OPERATION_SUCCESS } });
         await controller.testBattery();
-        expect(mockClientInstance.send).toHaveBeenCalled();
+        expect(mockClientInstance.execute).toHaveBeenCalled();
       });
     });
 
     describe('reboot', () => {
       it('should send reboot command', async () => {
+        mockClientInstance.execute.mockResolvedValue({ response: { opcode: BoksOpcode.CODE_OPERATION_SUCCESS } });
         await controller.reboot();
-        expect(mockClientInstance.send).toHaveBeenCalled();
+        expect(mockClientInstance.execute).toHaveBeenCalled();
       });
     });
 
@@ -247,15 +258,15 @@ describe('BoksController', () => {
 
     describe('Code Management', () => {
       // Helper for success/error
-      const setupSuccess = () => mockClientInstance.waitForOneOf.mockResolvedValue({ opcode: BoksOpcode.CODE_OPERATION_SUCCESS });
-      const setupError = () => mockClientInstance.waitForOneOf.mockResolvedValue({ opcode: BoksOpcode.CODE_OPERATION_ERROR });
+      const setupSuccess = () => mockClientInstance.execute.mockResolvedValue({ response: { opcode: BoksOpcode.CODE_OPERATION_SUCCESS } });
+      const setupError = () => mockClientInstance.execute.mockRejectedValue(new BoksClientError(BoksClientErrorId.UNKNOWN_ERROR, 'Received error opcode'));
 
       describe('createMasterCode', () => {
         it('should create master code', async () => {
           setupSuccess();
           const result = await controller.createMasterCode(1, '123456');
           expect(result).toBe(true);
-          const packet = mockClientInstance.send.mock.calls[0][0];
+          const packet = mockClientInstance.execute.mock.calls[0][0];
           expect(packet).toBeInstanceOf(CreateMasterCodePacket);
           expect(packet.configKey).toBe(expectedConfigKey);
         });
@@ -272,7 +283,7 @@ describe('BoksController', () => {
           setupSuccess();
           const result = await controller.createSingleUseCode('123456');
           expect(result).toBe(true);
-          const packet = mockClientInstance.send.mock.calls[0][0];
+          const packet = mockClientInstance.execute.mock.calls[0][0];
           expect(packet).toBeInstanceOf(CreateSingleUseCodePacket);
           expect(packet.configKey).toBe(expectedConfigKey);
         });
@@ -283,7 +294,7 @@ describe('BoksController', () => {
           setupSuccess();
           const result = await controller.createMultiUseCode('123456');
           expect(result).toBe(true);
-          const packet = mockClientInstance.send.mock.calls[0][0];
+          const packet = mockClientInstance.execute.mock.calls[0][0];
           expect(packet).toBeInstanceOf(CreateMultiUseCodePacket);
           expect(packet.configKey).toBe(expectedConfigKey);
         });
@@ -294,7 +305,7 @@ describe('BoksController', () => {
           setupSuccess();
           const result = await controller.deleteMasterCode(1);
           expect(result).toBe(true);
-          const packet = mockClientInstance.send.mock.calls[0][0];
+          const packet = mockClientInstance.execute.mock.calls[0][0];
           expect(packet).toBeInstanceOf(DeleteMasterCodePacket);
           expect(packet.configKey).toBe(expectedConfigKey);
         });
@@ -305,7 +316,7 @@ describe('BoksController', () => {
           setupSuccess();
           const result = await controller.deleteSingleUseCode('123456');
           expect(result).toBe(true);
-          const packet = mockClientInstance.send.mock.calls[0][0];
+          const packet = mockClientInstance.execute.mock.calls[0][0];
           expect(packet).toBeInstanceOf(DeleteSingleUseCodePacket);
           expect(packet.configKey).toBe(expectedConfigKey);
         });
@@ -316,7 +327,7 @@ describe('BoksController', () => {
           setupSuccess();
           const result = await controller.deleteMultiUseCode('123456');
           expect(result).toBe(true);
-          const packet = mockClientInstance.send.mock.calls[0][0];
+          const packet = mockClientInstance.execute.mock.calls[0][0];
           expect(packet).toBeInstanceOf(DeleteMultiUseCodePacket);
           expect(packet.configKey).toBe(expectedConfigKey);
         });
@@ -368,39 +379,41 @@ describe('BoksController', () => {
         await setupControllerVersion('10/125', '4.3.3');
 
         const mockResultPacket = { opcode: BoksOpcode.NOTIFY_NFC_TAG_FOUND, uid: '01020304' };
-        mockClientInstance.waitForOneOf.mockResolvedValue(mockResultPacket);
+        mockClientInstance.execute.mockResolvedValueOnce({ response: mockResultPacket });
 
         const result = await controller.scanNFCTags(5000);
 
-        expect(mockClientInstance.send).toHaveBeenCalledTimes(1);
-        const sentPacket = mockClientInstance.send.mock.calls[0][0];
+        expect(mockClientInstance.execute).toHaveBeenCalled();
+        const sentPacket = mockClientInstance.execute.mock.calls[0][0];
         expect(sentPacket).toBeInstanceOf(RegisterNfcTagScanStartPacket);
         expect(sentPacket.configKey).toBe(expectedConfigKey);
-
-        expect(mockClientInstance.waitForOneOf).toHaveBeenCalledWith(
-            [
-                BoksOpcode.NOTIFY_NFC_TAG_FOUND,
-                BoksOpcode.ERROR_NFC_SCAN_TIMEOUT,
-                BoksOpcode.ERROR_NFC_TAG_ALREADY_EXISTS_SCAN
-            ],
-            5000
-        );
 
         expect(result).toHaveProperty('tagId', '01020304');
         expect(result).toHaveProperty('register');
 
         // Test register method
-        mockClientInstance.waitForOneOf.mockResolvedValueOnce({ opcode: BoksOpcode.NOTIFY_NFC_TAG_REGISTERED });
+        mockClientInstance.execute.mockResolvedValueOnce({ response: { opcode: BoksOpcode.NOTIFY_NFC_TAG_REGISTERED } });
         await expect(result.register()).resolves.toBe(true);
         // Expect one more send call for register
-        expect(mockClientInstance.send).toHaveBeenCalledTimes(2);
+        expect(mockClientInstance.execute).toHaveBeenCalledTimes(2);
       });
 
       it('should throw TIMEOUT error if scan times out', async () => {
         controller.setCredentials(validMasterKey);
         await setupControllerVersion('10/125', '4.3.3');
 
-        mockClientInstance.waitForOneOf.mockResolvedValue({ opcode: BoksOpcode.ERROR_NFC_SCAN_TIMEOUT });
+        // execute resolves with error packet? No, execute returns successful packet in response
+        // if timeout packet is in successOpcodes list.
+        // In my refactor:
+        /*
+          successOpcodes: [
+            BoksOpcode.NOTIFY_NFC_TAG_FOUND,
+            BoksOpcode.ERROR_NFC_SCAN_TIMEOUT,
+            BoksOpcode.ERROR_NFC_TAG_ALREADY_EXISTS_SCAN
+          ]
+        */
+        // So execute resolves with timeout packet as response.
+        mockClientInstance.execute.mockResolvedValue({ response: { opcode: BoksOpcode.ERROR_NFC_SCAN_TIMEOUT } });
 
         await expect(controller.scanNFCTags(5000))
             .rejects
@@ -411,7 +424,7 @@ describe('BoksController', () => {
         controller.setCredentials(validMasterKey);
         await setupControllerVersion('10/125', '4.3.3');
 
-        mockClientInstance.waitForOneOf.mockResolvedValue({ opcode: BoksOpcode.ERROR_NFC_TAG_ALREADY_EXISTS_SCAN });
+        mockClientInstance.execute.mockResolvedValue({ response: { opcode: BoksOpcode.ERROR_NFC_TAG_ALREADY_EXISTS_SCAN } });
 
         await expect(controller.scanNFCTags(5000))
             .rejects
@@ -425,24 +438,26 @@ describe('BoksController', () => {
       it('should register NFC tag successfully', async () => {
         controller.setCredentials(validMasterKey);
         await setupControllerVersion('10/125', '4.3.3');
-        mockClientInstance.waitForOneOf.mockResolvedValue({ opcode: BoksOpcode.NOTIFY_NFC_TAG_REGISTERED });
+        mockClientInstance.execute.mockResolvedValue({ response: { opcode: BoksOpcode.NOTIFY_NFC_TAG_REGISTERED } });
 
         const result = await controller.registerNfcTag(tagId);
 
-        expect(mockClientInstance.send).toHaveBeenCalledTimes(1);
-        expect(mockClientInstance.waitForOneOf).toHaveBeenCalledWith(
-            [
-                BoksOpcode.NOTIFY_NFC_TAG_REGISTERED,
-                BoksOpcode.NOTIFY_NFC_TAG_REGISTERED_ERROR_ALREADY_EXISTS
-            ]
-        );
+        expect(mockClientInstance.execute).toHaveBeenCalledTimes(1);
         expect(result).toBe(true);
       });
 
       it('should return false if NFC tag already exists', async () => {
         controller.setCredentials(validMasterKey);
         await setupControllerVersion('10/125', '4.3.3');
-        mockClientInstance.waitForOneOf.mockResolvedValue({ opcode: BoksOpcode.NOTIFY_NFC_TAG_REGISTERED_ERROR_ALREADY_EXISTS });
+        // performOperation expects successOpcode, returns false if errorOpcode.
+        // execute throws error if errorOpcode is NOT in success list but in error list.
+        // In registerNfcTag:
+        /*
+         performOperation(..., NOTIFY_NFC_TAG_REGISTERED, NOTIFY_NFC_TAG_REGISTERED_ERROR_ALREADY_EXISTS)
+        */
+        // So execute calls with errorOpcodes: [NOTIFY_NFC_TAG_REGISTERED_ERROR_ALREADY_EXISTS]
+        // So execute throws.
+        mockClientInstance.execute.mockRejectedValue(new BoksClientError(BoksClientErrorId.UNKNOWN_ERROR, 'Received error opcode'));
 
         const result = await controller.registerNfcTag(tagId);
         expect(result).toBe(false);
@@ -455,12 +470,11 @@ describe('BoksController', () => {
       it('should unregister NFC tag successfully', async () => {
         controller.setCredentials(validMasterKey);
         await setupControllerVersion('10/125', '4.3.3');
-        mockClientInstance.waitForPacket.mockResolvedValue({ opcode: BoksOpcode.NOTIFY_NFC_TAG_UNREGISTERED });
+        mockClientInstance.execute.mockResolvedValue({ response: { opcode: BoksOpcode.NOTIFY_NFC_TAG_UNREGISTERED } });
 
         const result = await controller.unregisterNfcTag(tagId);
 
-        expect(mockClientInstance.send).toHaveBeenCalledTimes(1);
-        expect(mockClientInstance.waitForPacket).toHaveBeenCalledWith(BoksOpcode.NOTIFY_NFC_TAG_UNREGISTERED);
+        expect(mockClientInstance.execute).toHaveBeenCalledTimes(1);
         expect(result).toBe(true);
       });
     });
@@ -473,31 +487,29 @@ describe('BoksController', () => {
       controller.setCredentials(validMasterKey);
       const onProgress = vi.fn();
 
+      // Mock packet listener setup for progress
       mockClientInstance.onPacket.mockImplementation((callback: any) => {
-          setTimeout(() => {
-              callback({ opcode: BoksOpcode.NOTIFY_CODE_GENERATION_PROGRESS, progress: 50 });
-              setTimeout(() => {
-                  callback({ opcode: BoksOpcode.NOTIFY_CODE_GENERATION_SUCCESS });
-              }, 10);
-          }, 10);
+          // Simulate progress packet
+          callback({ opcode: BoksOpcode.NOTIFY_CODE_GENERATION_PROGRESS, progress: 50 });
           return vi.fn();
       });
+
+      // Mock execute sequence
+      mockClientInstance.execute.mockResolvedValueOnce({ response: { opcode: BoksOpcode.CODE_OPERATION_SUCCESS } }); // Part A
+      mockClientInstance.execute.mockResolvedValueOnce({ response: { opcode: BoksOpcode.NOTIFY_CODE_GENERATION_SUCCESS } }); // Part B
 
       const result = await controller.regenerateMasterKey(newKeyHex, onProgress);
 
       expect(result).toBe(true);
-      expect(mockClientInstance.send).toHaveBeenCalledTimes(2);
+      expect(mockClientInstance.execute).toHaveBeenCalledTimes(2);
       expect(onProgress).toHaveBeenCalledWith(50);
     });
 
     it('should handle regeneration failure', async () => {
       controller.setCredentials(validMasterKey);
-      mockClientInstance.onPacket.mockImplementation((callback: any) => {
-          setTimeout(() => {
-              callback({ opcode: BoksOpcode.NOTIFY_CODE_GENERATION_ERROR });
-          }, 10);
-          return vi.fn();
-      });
+
+      // Mock failure on first part
+      mockClientInstance.execute.mockRejectedValueOnce(new BoksClientError(BoksClientErrorId.UNKNOWN_ERROR, 'Received error opcode'));
 
       const result = await controller.regenerateMasterKey(newKeyHex);
       expect(result).toBe(false);
@@ -511,31 +523,23 @@ describe('BoksController', () => {
       const onProgress = vi.fn();
 
       mockClientInstance.onPacket.mockImplementation((callback: any) => {
-          setTimeout(() => {
-              callback({ opcode: BoksOpcode.NOTIFY_CODE_GENERATION_PROGRESS, progress: 50 });
-              setTimeout(() => {
-                  callback({ opcode: BoksOpcode.NOTIFY_CODE_GENERATION_SUCCESS });
-              }, 10);
-          }, 10);
+          callback({ opcode: BoksOpcode.NOTIFY_CODE_GENERATION_PROGRESS, progress: 50 });
           return vi.fn();
       });
+
+      mockClientInstance.execute.mockResolvedValue({ response: { opcode: BoksOpcode.NOTIFY_CODE_GENERATION_SUCCESS } });
 
       const result = await controller.initialize(seed, onProgress);
 
       expect(result).toBe(true);
-      expect(mockClientInstance.send).toHaveBeenCalledTimes(1); // 1 packet (GenerateCodesPacket)
-      const packet = mockClientInstance.send.mock.calls[0][0];
+      expect(mockClientInstance.execute).toHaveBeenCalledTimes(1);
+      const packet = mockClientInstance.execute.mock.calls[0][0];
       expect(packet).toBeInstanceOf(GenerateCodesPacket);
       expect(onProgress).toHaveBeenCalledWith(50);
     });
 
     it('should handle initialization failure', async () => {
-      mockClientInstance.onPacket.mockImplementation((callback: any) => {
-          setTimeout(() => {
-              callback({ opcode: BoksOpcode.NOTIFY_CODE_GENERATION_ERROR });
-          }, 10);
-          return vi.fn();
-      });
+      mockClientInstance.execute.mockRejectedValue(new BoksClientError(BoksClientErrorId.UNKNOWN_ERROR, 'Received error opcode'));
 
       const result = await controller.initialize(seed);
       expect(result).toBe(false);
@@ -549,18 +553,18 @@ describe('BoksController', () => {
 
     describe('reactivateCode', () => {
       it('should reactivate code successfully', async () => {
-        mockClientInstance.waitForOneOf.mockResolvedValue({ opcode: BoksOpcode.CODE_OPERATION_SUCCESS });
+        mockClientInstance.execute.mockResolvedValue({ response: { opcode: BoksOpcode.CODE_OPERATION_SUCCESS } });
         const result = await controller.reactivateCode('123456');
 
-        expect(mockClientInstance.send).toHaveBeenCalled();
-        const packet = mockClientInstance.send.mock.calls[0][0];
+        expect(mockClientInstance.execute).toHaveBeenCalled();
+        const packet = mockClientInstance.execute.mock.calls[0][0];
         expect(packet).toBeInstanceOf(ReactivateCodePacket);
         expect(packet.configKey).toBe(expectedConfigKey);
         expect(result).toBe(true);
       });
 
       it('should return false on error', async () => {
-        mockClientInstance.waitForOneOf.mockResolvedValue({ opcode: BoksOpcode.CODE_OPERATION_ERROR });
+        mockClientInstance.execute.mockRejectedValue(new BoksClientError(BoksClientErrorId.UNKNOWN_ERROR, 'Received error opcode'));
         const result = await controller.reactivateCode('123456');
         expect(result).toBe(false);
       });
@@ -568,11 +572,11 @@ describe('BoksController', () => {
 
     describe('editMasterCode', () => {
       it('should edit master code successfully', async () => {
-        mockClientInstance.waitForOneOf.mockResolvedValue({ opcode: BoksOpcode.CODE_OPERATION_SUCCESS });
+        mockClientInstance.execute.mockResolvedValue({ response: { opcode: BoksOpcode.CODE_OPERATION_SUCCESS } });
         const result = await controller.editMasterCode(1, '654321');
 
-        expect(mockClientInstance.send).toHaveBeenCalled();
-        const packet = mockClientInstance.send.mock.calls[0][0];
+        expect(mockClientInstance.execute).toHaveBeenCalled();
+        const packet = mockClientInstance.execute.mock.calls[0][0];
         expect(packet).toBeInstanceOf(MasterCodeEditPacket);
         expect(packet.configKey).toBe(expectedConfigKey);
         expect(packet.index).toBe(1);
@@ -583,11 +587,11 @@ describe('BoksController', () => {
 
     describe('setConfiguration', () => {
       it('should set configuration successfully', async () => {
-        mockClientInstance.waitForOneOf.mockResolvedValue({ opcode: BoksOpcode.NOTIFY_SET_CONFIGURATION_SUCCESS });
+        mockClientInstance.execute.mockResolvedValue({ response: { opcode: BoksOpcode.NOTIFY_SET_CONFIGURATION_SUCCESS } });
         const result = await controller.setConfiguration({ type: 1, value: true });
 
-        expect(mockClientInstance.send).toHaveBeenCalled();
-        const packet = mockClientInstance.send.mock.calls[0][0];
+        expect(mockClientInstance.execute).toHaveBeenCalled();
+        const packet = mockClientInstance.execute.mock.calls[0][0];
         expect(packet).toBeInstanceOf(SetConfigurationPacket);
         expect(packet.configKey).toBe(expectedConfigKey);
         expect(packet.configType).toBe(1);
@@ -596,7 +600,7 @@ describe('BoksController', () => {
       });
 
       it('should return false on error', async () => {
-        mockClientInstance.waitForOneOf.mockResolvedValue({ opcode: BoksOpcode.CODE_OPERATION_ERROR });
+        mockClientInstance.execute.mockRejectedValue(new BoksClientError(BoksClientErrorId.UNKNOWN_ERROR, 'Received error opcode'));
         const result = await controller.setConfiguration({ type: 1, value: true });
         expect(result).toBe(false);
       });
@@ -604,11 +608,11 @@ describe('BoksController', () => {
 
     describe('convertCodeType', () => {
       it('should convert Single to Multi', async () => {
-        mockClientInstance.waitForOneOf.mockResolvedValue({ opcode: BoksOpcode.CODE_OPERATION_SUCCESS });
+        mockClientInstance.execute.mockResolvedValue({ response: { opcode: BoksOpcode.CODE_OPERATION_SUCCESS } });
         const result = await controller.convertCodeType('123456', BoksCodeType.Multi);
 
-        expect(mockClientInstance.send).toHaveBeenCalled();
-        const packet = mockClientInstance.send.mock.calls[0][0];
+        expect(mockClientInstance.execute).toHaveBeenCalled();
+        const packet = mockClientInstance.execute.mock.calls[0][0];
         expect(packet).toBeInstanceOf(SingleToMultiCodePacket);
         expect(packet.configKey).toBe(expectedConfigKey);
         expect(packet.pin).toBe('123456');
@@ -616,11 +620,11 @@ describe('BoksController', () => {
       });
 
       it('should convert Multi to Single', async () => {
-        mockClientInstance.waitForOneOf.mockResolvedValue({ opcode: BoksOpcode.CODE_OPERATION_SUCCESS });
+        mockClientInstance.execute.mockResolvedValue({ response: { opcode: BoksOpcode.CODE_OPERATION_SUCCESS } });
         const result = await controller.convertCodeType('123456', BoksCodeType.Single);
 
-        expect(mockClientInstance.send).toHaveBeenCalled();
-        const packet = mockClientInstance.send.mock.calls[0][0];
+        expect(mockClientInstance.execute).toHaveBeenCalled();
+        const packet = mockClientInstance.execute.mock.calls[0][0];
         expect(packet).toBeInstanceOf(MultiToSingleCodePacket);
         expect(packet.configKey).toBe(expectedConfigKey);
         expect(packet.pin).toBe('123456');

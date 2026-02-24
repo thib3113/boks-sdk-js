@@ -9,7 +9,6 @@ import {
   ErrorNfcTagAlreadyExistsScanPacket,
   NfcRegisterPacket,
   UnregisterNfcTagPacket,
-  NotifyNfcTagUnregisteredPacket,
   OpenDoorPacket,
   AskDoorStatusPacket,
   AnswerDoorStatusPacket,
@@ -43,11 +42,8 @@ import {
   ScaleMeasureWeightPacket,
   NotifyScaleMeasureWeightPacket,
   ScaleTareEmptyPacket,
-  NotifyScaleTareEmptyOkPacket,
   ScaleTareLoadedPacket,
-  NotifyScaleTareLoadedOkPacket,
   ScaleForgetPacket,
-  NotifyScaleBondingForgetSuccessPacket,
   ScaleGetRawSensorsPacket,
   NotifyScaleRawSensorsPacket
 } from '@/protocol';
@@ -87,6 +83,7 @@ export class BoksController {
   #codeCount: { master: number; other: number } = { master: 0, other: 0 };
   #logCount: number = 0;
   #lastOpenAttempt: number = 0;
+  #batteryLevel: number = 0;
 
   constructor(optionsOrClient?: BoksClientOptions | BoksClient) {
     if (optionsOrClient instanceof BoksClient) {
@@ -176,9 +173,18 @@ export class BoksController {
     successOpcode: BoksOpcode = BoksOpcode.CODE_OPERATION_SUCCESS,
     errorOpcode: BoksOpcode = BoksOpcode.CODE_OPERATION_ERROR
   ): Promise<boolean> {
-    await this.#client.send(packet);
-    const result = await this.#client.waitForOneOf<BoksPacket>([successOpcode, errorOpcode]);
-    return result.opcode === successOpcode;
+    try {
+      await this.#client.execute(packet, {
+        successOpcodes: [successOpcode],
+        errorOpcodes: [errorOpcode]
+      });
+      return true;
+    } catch (e) {
+      if (e instanceof BoksClientError && e.message.includes('Received error opcode')) {
+        return false;
+      }
+      throw e;
+    }
   }
 
   /**
@@ -199,6 +205,12 @@ export class BoksController {
    */
   async connect(): Promise<void> {
     await this.#client.connect();
+
+    // Auto-subscribe to Battery Service
+    await this.#client.monitorBatteryLevel((level) => {
+      this.#batteryLevel = level;
+    });
+
     await this.refreshVersions();
   }
 
@@ -344,20 +356,18 @@ export class BoksController {
     });
 
     // Start scan
-    // 0x17: RegisterNfcTagScanStartPacket
-    await this.#client.send(new RegisterNfcTagScanStartPacket(configKey));
-
-    // Wait for one of the possible outcomes
-    const result = await this.#client.waitForOneOf<
+    const tx = await this.#client.execute<
       NotifyNfcTagFoundPacket | ErrorNfcScanTimeoutPacket | ErrorNfcTagAlreadyExistsScanPacket
-    >(
-      [
+    >(new RegisterNfcTagScanStartPacket(configKey), {
+      successOpcodes: [
         BoksOpcode.NOTIFY_NFC_TAG_FOUND, // 0xC5
         BoksOpcode.ERROR_NFC_SCAN_TIMEOUT, // 0xC7
         BoksOpcode.ERROR_NFC_TAG_ALREADY_EXISTS_SCAN // 0xC6
       ],
-      timeoutMs
-    );
+      timeout: timeoutMs
+    });
+
+    const result = tx.response!;
 
     if (result.opcode === BoksOpcode.NOTIFY_NFC_TAG_FOUND) {
       const foundPacket = result as NotifyNfcTagFoundPacket;
@@ -416,11 +426,9 @@ export class BoksController {
       featureName: 'NFC Unregister'
     });
 
-    await this.#client.send(new UnregisterNfcTagPacket(configKey, tagId));
-
-    await this.#client.waitForPacket<NotifyNfcTagUnregisteredPacket>(
-      BoksOpcode.NOTIFY_NFC_TAG_UNREGISTERED // 0xCA
-    );
+    await this.#client.execute(new UnregisterNfcTagPacket(configKey, tagId), {
+      successOpcodes: [BoksOpcode.NOTIFY_NFC_TAG_UNREGISTERED]
+    });
 
     return true;
   }
@@ -452,11 +460,13 @@ export class BoksController {
    * @returns True if the door is open, false if closed.
    */
   async getDoorStatus(): Promise<boolean> {
-    await this.#client.send(new AskDoorStatusPacket());
-    const packet = await this.#client.waitForOneOf<AnswerDoorStatusPacket | NotifyDoorStatusPacket>(
-      [BoksOpcode.ANSWER_DOOR_STATUS, BoksOpcode.NOTIFY_DOOR_STATUS]
+    const tx = await this.#client.execute<AnswerDoorStatusPacket | NotifyDoorStatusPacket>(
+      new AskDoorStatusPacket(),
+      {
+        successOpcodes: [BoksOpcode.ANSWER_DOOR_STATUS, BoksOpcode.NOTIFY_DOOR_STATUS]
+      }
     );
-    return packet.isOpen;
+    return tx.response!.isOpen;
   }
 
   /**
@@ -464,11 +474,10 @@ export class BoksController {
    * @returns The number of logs.
    */
   async getLogsCount(): Promise<number> {
-    await this.#client.send(new GetLogsCountPacket());
-    const packet = await this.#client.waitForPacket<NotifyLogsCountPacket>(
-      BoksOpcode.NOTIFY_LOGS_COUNT
-    );
-    return packet.count;
+    const tx = await this.#client.execute<NotifyLogsCountPacket>(new GetLogsCountPacket(), {
+      successOpcodes: [BoksOpcode.NOTIFY_LOGS_COUNT]
+    });
+    return tx.response!.count;
   }
 
   /**
@@ -476,13 +485,12 @@ export class BoksController {
    * @returns An object containing the count of master codes and other codes.
    */
   async countCodes(): Promise<{ masterCount: number; otherCount: number }> {
-    await this.#client.send(new CountCodesPacket());
-    const packet = await this.#client.waitForPacket<NotifyCodesCountPacket>(
-      BoksOpcode.NOTIFY_CODES_COUNT
-    );
+    const tx = await this.#client.execute<NotifyCodesCountPacket>(new CountCodesPacket(), {
+      successOpcodes: [BoksOpcode.NOTIFY_CODES_COUNT]
+    });
     return {
-      masterCount: packet.masterCount,
-      otherCount: packet.otherCount
+      masterCount: tx.response!.masterCount,
+      otherCount: tx.response!.otherCount
     };
   }
 
@@ -490,7 +498,9 @@ export class BoksController {
    * Triggers a battery test on the device.
    */
   async testBattery(): Promise<void> {
-    await this.#client.send(new TestBatteryPacket());
+    await this.#client.execute(new TestBatteryPacket(), {
+      successOpcodes: [BoksOpcode.CODE_OPERATION_SUCCESS]
+    });
   }
 
   /**
@@ -498,6 +508,7 @@ export class BoksController {
    * @returns Battery level (0-100) or undefined if unreliable.
    */
   async getBatteryLevel(): Promise<number | undefined> {
+    if (this.#batteryLevel > 0) return this.#batteryLevel;
     return this.#client.getBatteryLevel();
   }
 
@@ -513,7 +524,11 @@ export class BoksController {
    * Reboots the Boks device.
    */
   async reboot(): Promise<void> {
-    await this.#client.send(new RebootPacket());
+    // Reboot doesn't always send a response or might disconnect immediately.
+    // Assuming standard success/error if connected.
+    await this.#client.execute(new RebootPacket(), {
+      successOpcodes: [BoksOpcode.CODE_OPERATION_SUCCESS]
+    });
   }
 
   /**
@@ -641,33 +656,29 @@ export class BoksController {
       typeof seed === 'string' ? hexToBytes(seed.replace(/[^0-9A-Fa-f]/g, '')) : seed;
 
     // Setup listener
-    return new Promise((resolve, reject) => {
-      // eslint-disable-next-line prefer-const
-      let cleanup: () => void;
-
-      const handler = (packet: import('@/protocol').BoksPacket) => {
-        if (packet.opcode === BoksOpcode.NOTIFY_CODE_GENERATION_PROGRESS) {
-          const progressPacket = packet as NotifyCodeGenerationProgressPacket;
-          if (onProgress) {
-            onProgress(progressPacket.progress);
-          }
-        } else if (packet.opcode === BoksOpcode.NOTIFY_CODE_GENERATION_SUCCESS) {
-          if (cleanup) cleanup();
-          resolve(true);
-        } else if (packet.opcode === BoksOpcode.NOTIFY_CODE_GENERATION_ERROR) {
-          if (cleanup) cleanup();
-          resolve(false);
+    const cleanup = this.#client.onPacket((packet) => {
+      if (packet.opcode === BoksOpcode.NOTIFY_CODE_GENERATION_PROGRESS) {
+        const progressPacket = packet as NotifyCodeGenerationProgressPacket;
+        if (onProgress) {
+          onProgress(progressPacket.progress);
         }
-      };
-
-      cleanup = this.#client.onPacket(handler);
-
-      // Send command
-      this.#client.send(new GenerateCodesPacket(seedBytes)).catch((err) => {
-        if (cleanup) cleanup();
-        reject(err);
-      });
+      }
     });
+
+    try {
+      await this.#client.execute(new GenerateCodesPacket(seedBytes), {
+        successOpcodes: [BoksOpcode.NOTIFY_CODE_GENERATION_SUCCESS],
+        errorOpcodes: [BoksOpcode.NOTIFY_CODE_GENERATION_ERROR]
+      });
+      return true;
+    } catch (e) {
+      if (e instanceof BoksClientError && e.message.includes('Received error opcode')) {
+        return false;
+      }
+      throw e;
+    } finally {
+      cleanup();
+    }
   }
 
   /**
@@ -693,36 +704,37 @@ export class BoksController {
     const partB = keyBytes.slice(16, 32);
 
     // Setup listener
-    return new Promise((resolve, reject) => {
-      // eslint-disable-next-line prefer-const
-      let cleanup: () => void;
-
-      const handler = (packet: import('@/protocol').BoksPacket) => {
-        if (packet.opcode === BoksOpcode.NOTIFY_CODE_GENERATION_PROGRESS) {
-          const progressPacket = packet as NotifyCodeGenerationProgressPacket;
-          if (onProgress) {
-            onProgress(progressPacket.progress);
-          }
-        } else if (packet.opcode === BoksOpcode.NOTIFY_CODE_GENERATION_SUCCESS) {
-          if (cleanup) cleanup();
-          resolve(true);
-        } else if (packet.opcode === BoksOpcode.NOTIFY_CODE_GENERATION_ERROR) {
-          if (cleanup) cleanup();
-          resolve(false);
+    const cleanup = this.#client.onPacket((packet) => {
+      if (packet.opcode === BoksOpcode.NOTIFY_CODE_GENERATION_PROGRESS) {
+        const progressPacket = packet as NotifyCodeGenerationProgressPacket;
+        if (onProgress) {
+          onProgress(progressPacket.progress);
         }
-      };
-
-      cleanup = this.#client.onPacket(handler);
-
-      // Send commands
-      this.#client
-        .send(new RegeneratePartAPacket(configKey, partA))
-        .then(() => this.#client.send(new RegeneratePartBPacket(configKey, partB)))
-        .catch((err) => {
-          if (cleanup) cleanup();
-          reject(err);
-        });
+      }
     });
+
+    try {
+      // Part A
+      await this.#client.execute(new RegeneratePartAPacket(configKey, partA), {
+        successOpcodes: [BoksOpcode.CODE_OPERATION_SUCCESS], // 0x77
+        errorOpcodes: [BoksOpcode.CODE_OPERATION_ERROR, BoksOpcode.ERROR_UNAUTHORIZED]
+      });
+
+      // Part B
+      await this.#client.execute(new RegeneratePartBPacket(configKey, partB), {
+        successOpcodes: [BoksOpcode.NOTIFY_CODE_GENERATION_SUCCESS],
+        errorOpcodes: [BoksOpcode.NOTIFY_CODE_GENERATION_ERROR, BoksOpcode.ERROR_UNAUTHORIZED]
+      });
+
+      return true;
+    } catch (e) {
+      if (e instanceof BoksClientError && e.message.includes('Received error opcode')) {
+        return false;
+      }
+      throw e;
+    } finally {
+      cleanup();
+    }
   }
 
   /**
@@ -742,11 +754,13 @@ export class BoksController {
    * @experimental
    */
   async getScaleWeight(): Promise<number> {
-    await this.#client.send(new ScaleMeasureWeightPacket());
-    const result = await this.#client.waitForPacket<NotifyScaleMeasureWeightPacket>(
-      BoksOpcode.NOTIFY_SCALE_MEASURE_WEIGHT
+    const tx = await this.#client.execute<NotifyScaleMeasureWeightPacket>(
+      new ScaleMeasureWeightPacket(),
+      {
+        successOpcodes: [BoksOpcode.NOTIFY_SCALE_MEASURE_WEIGHT]
+      }
     );
-    return result.weight;
+    return tx.response!.weight;
   }
 
   /**
@@ -756,15 +770,13 @@ export class BoksController {
    */
   async tareScale(empty: boolean): Promise<boolean> {
     if (empty) {
-      await this.#client.send(new ScaleTareEmptyPacket());
-      await this.#client.waitForPacket<NotifyScaleTareEmptyOkPacket>(
-        BoksOpcode.NOTIFY_SCALE_TARE_EMPTY_OK
-      );
+      await this.#client.execute(new ScaleTareEmptyPacket(), {
+        successOpcodes: [BoksOpcode.NOTIFY_SCALE_TARE_EMPTY_OK]
+      });
     } else {
-      await this.#client.send(new ScaleTareLoadedPacket());
-      await this.#client.waitForPacket<NotifyScaleTareLoadedOkPacket>(
-        BoksOpcode.NOTIFY_SCALE_TARE_LOADED_OK
-      );
+      await this.#client.execute(new ScaleTareLoadedPacket(), {
+        successOpcodes: [BoksOpcode.NOTIFY_SCALE_TARE_LOADED_OK]
+      });
     }
     return true;
   }
@@ -774,10 +786,9 @@ export class BoksController {
    * @experimental
    */
   async forgetScale(): Promise<boolean> {
-    await this.#client.send(new ScaleForgetPacket());
-    await this.#client.waitForPacket<NotifyScaleBondingForgetSuccessPacket>(
-      BoksOpcode.NOTIFY_SCALE_BONDING_FORGET_SUCCESS
-    );
+    await this.#client.execute(new ScaleForgetPacket(), {
+      successOpcodes: [BoksOpcode.NOTIFY_SCALE_BONDING_FORGET_SUCCESS]
+    });
     return true;
   }
 
@@ -786,10 +797,12 @@ export class BoksController {
    * @experimental
    */
   async getScaleRawSensors(): Promise<Uint8Array> {
-    await this.#client.send(new ScaleGetRawSensorsPacket());
-    const result = await this.#client.waitForPacket<NotifyScaleRawSensorsPacket>(
-      BoksOpcode.NOTIFY_SCALE_RAW_SENSORS
+    const tx = await this.#client.execute<NotifyScaleRawSensorsPacket>(
+      new ScaleGetRawSensorsPacket(),
+      {
+        successOpcodes: [BoksOpcode.NOTIFY_SCALE_RAW_SENSORS]
+      }
     );
-    return result.data;
+    return tx.response!.data;
   }
 }
