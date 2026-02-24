@@ -5,13 +5,16 @@ import { WebBluetoothTransport } from '@/client/WebBluetoothTransport';
 // Mock WebBluetoothTransport
 vi.mock('@/client/WebBluetoothTransport', () => {
   return {
-    WebBluetoothTransport: vi.fn().mockImplementation(() => ({
-      connect: vi.fn(),
-      disconnect: vi.fn(),
-      write: vi.fn(),
-      read: vi.fn(),
-      subscribe: vi.fn(),
-    })),
+    WebBluetoothTransport: vi.fn(function () {
+      return {
+        connect: vi.fn(),
+        disconnect: vi.fn(),
+        write: vi.fn(),
+        read: vi.fn(),
+        subscribe: vi.fn(),
+        subscribeTo: vi.fn()
+      };
+    })
   };
 });
 

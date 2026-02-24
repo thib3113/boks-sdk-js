@@ -31,7 +31,9 @@ describe('BoksController', () => {
       fetchHistory: vi.fn().mockResolvedValue([])
     };
 
-    (BoksClient as unknown as Mock).mockReturnValue(mockClientInstance);
+    (BoksClient as unknown as Mock).mockImplementation(function () {
+      return mockClientInstance;
+    });
     controller = new BoksController(new BoksClient());
   });
 
