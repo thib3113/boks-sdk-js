@@ -28,6 +28,9 @@ jobs:
         with:
           version: 10
 
+      - name: Update npm
+        run: npm i -g npm@latest
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
@@ -40,7 +43,10 @@ jobs:
       - name: Attest build provenance
         uses: actions/attest-build-provenance@v1
         with:
-          subject-path: 'dist/*'
+          subject-path: |
+            dist/boks-sdk.js
+            dist/boks-core.js
+            dist/simulator.js
 
       - name: Publish to NPM
         run: npm publish --provenance --access public

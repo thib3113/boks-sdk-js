@@ -5,13 +5,24 @@ import { promisify } from 'util';
 
 const execAsync = promisify(exec);
 
+const pkg = JSON.parse(await fs.readFile('./package.json', 'utf-8'));
+
 async function build() {
-    console.log('🚀 Starting Universal Build for @thib3113/boks-sdk...');
+    console.log(`🚀 Starting Universal Build for ${pkg.name} v${pkg.version}...`);
 
     await fs.rm('dist', { recursive: true, force: true });
     await fs.mkdir('dist', { recursive: true });
     await fs.mkdir('dist/esm', { recursive: true });
     await fs.mkdir('dist/cjs', { recursive: true });
+
+    const banner = `/**
+ * ${pkg.name} v${pkg.version}
+ * Unofficial Boks SDK
+ * 
+ * GitHub: https://github.com/thib3113/boks-sdk-js
+ * Build Run: https://github.com/thib3113/boks-sdk-js/actions/runs/\${process.env.GITHUB_RUN_ID || 'local'}
+ * Attestation: This build is cryptographically attested on GitHub.
+ */`;
 
     // 1. Browser Bundles (IIFE)
     console.log('📦 Building Browser Bundles (IIFE)...');
@@ -29,6 +40,7 @@ async function build() {
         format: 'iife',
         globalName: 'BoksSDK',
         platform: 'browser',
+        banner: { js: banner },
     });
 
     // 2. ESM Bundles
