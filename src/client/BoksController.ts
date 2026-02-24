@@ -9,12 +9,8 @@ import {
   ErrorNfcTagAlreadyExistsScanPacket,
   NfcRegisterPacket,
   UnregisterNfcTagPacket,
-  NotifyNfcTagRegisteredPacket,
-  NotifyNfcTagRegisteredErrorAlreadyExistsPacket,
   NotifyNfcTagUnregisteredPacket,
   OpenDoorPacket,
-  ValidOpenCodePacket,
-  InvalidOpenCodePacket,
   AskDoorStatusPacket,
   AnswerDoorStatusPacket,
   NotifyDoorStatusPacket,
@@ -30,8 +26,6 @@ import {
   DeleteMasterCodePacket,
   DeleteSingleUseCodePacket,
   DeleteMultiUseCodePacket,
-  OperationSuccessPacket,
-  OperationErrorPacket,
   RegeneratePartAPacket,
   RegeneratePartBPacket,
   NotifyCodeGenerationProgressPacket,
@@ -40,15 +34,12 @@ import {
   SetConfigurationPacket,
   MultiToSingleCodePacket,
   SingleToMultiCodePacket,
-  NotifySetConfigurationSuccessPacket,
   BoksCodeType,
   CountCodesPacket,
   NotifyCodesCountPacket,
   BoksBatteryStats,
   // Scale
   ScaleBondPacket,
-  NotifyScaleBondingSuccessPacket,
-  NotifyScaleBondingErrorPacket,
   ScaleMeasureWeightPacket,
   NotifyScaleMeasureWeightPacket,
   ScaleTareEmptyPacket,
@@ -614,9 +605,10 @@ export class BoksController {
   async convertCodeType(pin: string, targetType: BoksCodeType): Promise<boolean> {
     const configKey = this.getConfigKeyOrThrow();
 
-    const packet = targetType === BoksCodeType.Multi
-      ? new SingleToMultiCodePacket(configKey, pin)
-      : new MultiToSingleCodePacket(configKey, pin);
+    const packet =
+      targetType === BoksCodeType.Multi
+        ? new SingleToMultiCodePacket(configKey, pin)
+        : new MultiToSingleCodePacket(configKey, pin);
 
     return this.performOperation(packet);
   }
