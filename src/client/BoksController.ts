@@ -376,7 +376,10 @@ export class BoksController {
     });
 
     if (tx.isSuccess) {
-      const result = tx.response as NotifyNfcTagFoundPacket | ErrorNfcScanTimeoutPacket | ErrorNfcTagAlreadyExistsScanPacket;
+      const result = tx.response as
+        | NotifyNfcTagFoundPacket
+        | ErrorNfcScanTimeoutPacket
+        | ErrorNfcTagAlreadyExistsScanPacket;
       if (result.opcode === BoksOpcode.NOTIFY_NFC_TAG_FOUND) {
         const foundPacket = result as NotifyNfcTagFoundPacket;
         return {
@@ -675,8 +678,6 @@ export class BoksController {
         BoksOpcode.NOTIFY_CODE_GENERATION_SUCCESS,
         BoksOpcode.NOTIFY_CODE_GENERATION_ERROR
       );
-    } catch (e) {
-      throw e;
     } finally {
       cleanup();
     }
@@ -729,8 +730,6 @@ export class BoksController {
         BoksOpcode.NOTIFY_CODE_GENERATION_SUCCESS,
         BoksOpcode.ERROR_UNAUTHORIZED
       );
-    } catch (e) {
-      throw e;
     } finally {
       cleanup();
     }
