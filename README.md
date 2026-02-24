@@ -1,6 +1,24 @@
 # Boks SDK JS (Unofficial)
 
-A community-driven, unofficial JavaScript/TypeScript SDK for communicating with Boks Parcel Boxes. This library provides a high-level controller for managing connections, commands, and security, as well as low-level primitives for custom implementations.
+[![NPM Version](https://img.shields.io/npm/v/@thib3113/boks-sdk?style=flat-square)](https://www.npmjs.com/package/@thib3113/boks-sdk)
+[![NPM Downloads](https://img.shields.io/npm/dm/@thib3113/boks-sdk?style=flat-square)](https://www.npmjs.com/package/@thib3113/boks-sdk)
+[![Bundlephobia](https://img.shields.io/bundlephobia/minzip/@thib3113/boks-sdk?style=flat-square)](https://bundlephobia.com/package/@thib3113/boks-sdk)
+[![TypeScript](https://img.shields.io/badge/Typed-TypeScript-blue?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/thib3113/boks-sdk-js/ci.yml?style=flat-square)](https://github.com/thib3113/boks-sdk-js/actions)
+[![License](https://img.shields.io/github/license/thib3113/boks-sdk-js?style=flat-square)](./LICENSE)
+[![Documentation](https://img.shields.io/badge/docs-technical_manual-blue?style=flat-square)](https://thib3113.github.io/boks-sdk-js/)
+
+A community-driven, high-fidelity JavaScript/TypeScript SDK for communicating with Boks Parcel Boxes.
+
+## ✨ Key Features
+
+- 💎 **Fully Typed**: Written in TypeScript with 100% type coverage for protocol and client.
+- 📦 **Zero Dependencies**: Core logic is lightweight and has no external dependencies.
+- 🧪 **High-Fidelity Simulator**: Develop and test without physical hardware.
+- 🧩 **Modular Architecture**: Separate `core` and `client` entry points for optimized bundle size.
+- 🌐 **Platform Agnostic**: Works in Browser (WebBluetooth), Node.js, and Mobile (Capacitor/Cordova).
+
+👉 **[Read the Full Technical Manual (English & Français)](https://thib3113.github.io/boks-sdk-js/)**
 
 > ⚠️ **Disclaimer:** This project is **not** affiliated with, endorsed by, or associated with the manufacturer of the Boks device. It is an independent open-source effort for interoperability. See [LEGALS.md](./LEGALS.md) for full details.
 
@@ -67,6 +85,8 @@ console.log(`Door is ${isOpen ? 'Open' : 'Closed'}`);
 ```
 
 ### 4. Advanced Administrative Tasks
+
+Administrative tasks like NFC management or history retrieval require the **Configuration Key** or the **Master Key**. See the [Retrieving Credentials](https://thib3113.github.io/boks-sdk-js/guide/credentials) guide for more details.
 
 ```typescript
 // Scan for NFC tags (requires HW >= 4.0)
@@ -182,7 +202,7 @@ Check the [examples/](./examples/) folder for complete scripts demonstrating var
 
 ## Hardware Simulator
 
-The SDK includes a high-fidelity hardware simulator, `BoksHardwareSimulator`, designed for integration testing without a physical device. It accurately mimics the protocol state machine, including history logging, error conditions, and even specific firmware bugs.
+The SDK includes a high-fidelity hardware simulator, `BoksHardwareSimulator`, designed for integration testing without a physical device. It accurately mimics the protocol state machine, including history logging, error conditions, and even specific [Hardware Quirks](https://thib3113.github.io/boks-sdk-js/guide/quirks) like the "Stuck Motor" behavior.
 
 ### Installation
 
