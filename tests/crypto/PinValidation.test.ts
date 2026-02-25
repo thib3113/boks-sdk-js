@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { generateBoksPin } from '../../src/crypto/pin-algorithm';
-import { BoksProtocolError, BoksProtocolErrorId } from '../../src/errors/BoksProtocolError';
+import { BoksProtocolError } from '../../src/errors/BoksProtocolError';
 
 describe('Boks Pin Algorithm Security Validation', () => {
   const masterKey = new Uint8Array(32).fill(0xAA);
