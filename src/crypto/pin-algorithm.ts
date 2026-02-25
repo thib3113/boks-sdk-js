@@ -113,13 +113,40 @@ export const generateBoksPin = (key: Uint8Array, typePrefix: string, index: numb
 
     // Write typePrefix
     const r1 = encoder.encodeInto(typePrefix, blockBuffer);
+    if (r1.read !== typePrefix.length) {
+      throw new BoksProtocolError(
+        BoksProtocolErrorId.INVALID_VALUE,
+        `Prefix too long: ${typePrefix.length} chars`,
+        {
+          received: typePrefix.length,
+          limit: blockBuffer.length,
+          reason: 'PREFIX_TOO_LONG'
+        }
+      );
+    }
     offset += r1.written!;
+
+    // Prepare index string
+    const idxStr = index.toString();
+
+    // Check if we have space for space + index
+    // offset + 1 (space) + idxStr.length
+    if (offset + 1 + idxStr.length > blockBuffer.length) {
+      throw new BoksProtocolError(
+        BoksProtocolErrorId.INVALID_VALUE,
+        `Message too long: ${offset + 1 + idxStr.length} bytes`,
+        {
+          received: offset + 1 + idxStr.length,
+          limit: blockBuffer.length,
+          reason: 'MESSAGE_TOO_LONG'
+        }
+      );
+    }
 
     // Write space ' '
     blockBuffer[offset++] = 32;
 
     // Write index
-    const idxStr = index.toString();
     // Use subarray to write at offset without copying buffer
     const r2 = encoder.encodeInto(idxStr, blockBuffer.subarray(offset));
     offset += r2.written!;
