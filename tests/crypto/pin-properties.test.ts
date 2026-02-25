@@ -9,7 +9,7 @@ describe('PIN Algorithm - Property Based Testing', () => {
     fc.assert(
       fc.property(
         fc.uint8Array({ minLength: 32, maxLength: 32 }), // Clé de 32 octets
-        fc.string(),                                     // Préfixe quelconque
+        fc.constantFrom('single-use', 'multi-use', 'master'), // Préfixe valide uniquement
         fc.nat(),                                        // Index positif
         (key, prefix, index) => {
           const pin = generateBoksPin(key, prefix, index);
@@ -26,7 +26,7 @@ describe('PIN Algorithm - Property Based Testing', () => {
     fc.assert(
       fc.property(
         fc.uint8Array({ minLength: 32, maxLength: 32 }),
-        fc.string(),
+        fc.constantFrom('single-use', 'multi-use', 'master'),
         fc.nat(),
         (key, prefix, index) => {
           const pin = generateBoksPin(key, prefix, index);
@@ -42,7 +42,7 @@ describe('PIN Algorithm - Property Based Testing', () => {
     fc.assert(
       fc.property(
         fc.uint8Array({ minLength: 32, maxLength: 32 }),
-        fc.string(),
+        fc.constantFrom('single-use', 'multi-use', 'master'),
         fc.nat(),
         (key, prefix, index) => {
           const pin1 = generateBoksPin(key, prefix, index);
@@ -59,7 +59,7 @@ describe('PIN Algorithm - Property Based Testing', () => {
     fc.assert(
       fc.property(
         fc.uint8Array({ minLength: 32, maxLength: 32 }),
-        fc.string(),
+        fc.constantFrom('single-use', 'multi-use', 'master'),
         fc.nat(),
         (key, prefix, index) => {
           const originalKey = new Uint8Array(key);
@@ -80,17 +80,20 @@ describe('PIN Algorithm - Property Based Testing', () => {
     const key2 = new Uint8Array(32).fill(0x22);
     
     // Calcul de référence
-    const ref1 = generateBoksPin(key1, 'test', 1);
-    const ref2 = generateBoksPin(key2, 'test', 2);
+    const ref1 = generateBoksPin(key1, 'single-use', 1);
+    const ref2 = generateBoksPin(key2, 'single-use', 2);
 
     // On alterne les appels massivement
     for (let i = 0; i < 1000; i++) {
-        generateBoksPin(key1, 'junk', i); // Appel polluant
-        const check2 = generateBoksPin(key2, 'test', 2);
+        // Use try-catch for junk calls as they are expected to fail now
+        try { generateBoksPin(key1, 'junk', i); } catch {}
+
+        const check2 = generateBoksPin(key2, 'single-use', 2);
         expect(check2).toBe(ref2);
 
-        generateBoksPin(key2, 'junk', i); // Appel polluant
-        const check1 = generateBoksPin(key1, 'test', 1);
+        try { generateBoksPin(key2, 'junk', i); } catch {}
+
+        const check1 = generateBoksPin(key1, 'single-use', 1);
         expect(check1).toBe(ref1);
     }
   });
@@ -100,7 +103,7 @@ describe('PIN Algorithm - Property Based Testing', () => {
     fc.assert(
       fc.property(
         fc.uint8Array({ minLength: 32, maxLength: 32 }),
-        fc.string(),
+        fc.constantFrom('single-use', 'multi-use', 'master'),
         fc.nat(),
         fc.integer({ min: 0, max: 31 }), // Octet à modifier
         (key, prefix, index, byteToFlip) => {
