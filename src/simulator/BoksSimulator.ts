@@ -6,10 +6,7 @@ import {
   stringToBytes,
   hexToBytes
 } from '../utils/converters';
-import {
-  precomputeBoksKeyContext,
-  generateBoksPinFromContext
-} from '../crypto/pin-algorithm';
+import { precomputeBoksKeyContext, generateBoksPinFromContext } from '../crypto/pin-algorithm';
 
 /**
  * Represents a GATT Characteristic structure for simulation.
