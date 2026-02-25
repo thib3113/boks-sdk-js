@@ -8,6 +8,11 @@ import { BoksProtocolError, BoksProtocolErrorId } from '../errors/BoksProtocolEr
 const encoder = new TextEncoder();
 const BOKS_CHAR_MAP = '0123456789AB';
 
+// Whitelist of allowed prefixes for PIN generation to prevent misuse and buffer overflows.
+// These are the only prefixes defined in the Boks protocol.
+const ALLOWED_PREFIXES = ['single-use', 'multi-use', 'master'] as const;
+type AllowedPrefix = (typeof ALLOWED_PREFIXES)[number];
+
 // Optimization: Shared buffers to avoid allocation on every call.
 // This is safe in single-threaded environments (Browser/Node main thread).
 // We rely on the try-finally block to wipe these buffers after use.
@@ -85,6 +90,18 @@ export const generateBoksPin = (key: Uint8Array, typePrefix: string, index: numb
     });
   }
 
+  if (!ALLOWED_PREFIXES.includes(typePrefix as AllowedPrefix)) {
+    throw new BoksProtocolError(
+      BoksProtocolErrorId.INVALID_VALUE,
+      `Invalid PIN type prefix: "${typePrefix}". Allowed: ${ALLOWED_PREFIXES.join(', ')}`,
+      {
+        received: typePrefix,
+        allowed: ALLOWED_PREFIXES,
+        reason: 'INVALID_PREFIX'
+      }
+    );
+  }
+
   // Use shared buffers
   const h = SHARED_H;
   const blockBuffer = SHARED_BLOCK_BUFFER;
@@ -112,41 +129,29 @@ export const generateBoksPin = (key: Uint8Array, typePrefix: string, index: numb
     let offset = 0;
 
     // Write typePrefix
+    // Since we validated against ALLOWED_PREFIXES, we know it fits (max 10 chars)
     const r1 = encoder.encodeInto(typePrefix, blockBuffer);
-    if (r1.read !== typePrefix.length) {
-      throw new BoksProtocolError(
-        BoksProtocolErrorId.INVALID_VALUE,
-        `Prefix too long: ${typePrefix.length} chars`,
-        {
-          received: typePrefix.length,
-          limit: blockBuffer.length,
-          reason: 'PREFIX_TOO_LONG'
-        }
-      );
-    }
     offset += r1.written!;
 
-    // Prepare index string
+    // Write space ' '
+    blockBuffer[offset++] = 32;
+
+    // Write index
     const idxStr = index.toString();
 
-    // Check if we have space for space + index
-    // offset + 1 (space) + idxStr.length
-    if (offset + 1 + idxStr.length > blockBuffer.length) {
+    // Safety check: ensure we don't overflow the buffer (though unlikely with standard indices)
+    if (offset + idxStr.length > blockBuffer.length) {
       throw new BoksProtocolError(
         BoksProtocolErrorId.INVALID_VALUE,
-        `Message too long: ${offset + 1 + idxStr.length} bytes`,
+        `Message too long: ${offset + idxStr.length} bytes`,
         {
-          received: offset + 1 + idxStr.length,
+          received: offset + idxStr.length,
           limit: blockBuffer.length,
           reason: 'MESSAGE_TOO_LONG'
         }
       );
     }
 
-    // Write space ' '
-    blockBuffer[offset++] = 32;
-
-    // Write index
     // Use subarray to write at offset without copying buffer
     const r2 = encoder.encodeInto(idxStr, blockBuffer.subarray(offset));
     offset += r2.written!;
