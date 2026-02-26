@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest';
 import { generateBoksPin } from '@/crypto/pin-algorithm';
-import { BoksProtocolErrorId } from '@/errors/BoksProtocolError';
 
 describe('PIN Algorithm - Stress & Fuzzing', () => {
   const VALID_KEY = new Uint8Array(32).fill(0xAA);
