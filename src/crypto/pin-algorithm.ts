@@ -152,11 +152,15 @@ const processMessageBlock = (h: Uint32Array, typePrefix: string, index: number):
 export const precomputeBoksKeyContext = (key: Uint8Array): Uint32Array => {
   // Input Validation
   if (key.length !== 32) {
-    throw new BoksProtocolError(BoksProtocolErrorId.INVALID_VALUE, undefined, {
-      received: key.length,
-      expected: 32,
-      field: 'key'
-    });
+    throw new BoksProtocolError(
+      BoksProtocolErrorId.INVALID_VALUE,
+      `Invalid key length: expected 32 bytes, got ${key.length}`,
+      {
+        received: key.length,
+        expected: 32,
+        field: 'key'
+      }
+    );
   }
 
   const h = SHARED_H;
@@ -197,17 +201,25 @@ export const generateBoksPinFromContext = (
 ): string => {
   // Input Validation
   if (keyContext.length !== 8) {
-    throw new BoksProtocolError(BoksProtocolErrorId.INVALID_VALUE, undefined, {
-      received: keyContext.length,
-      expected: 8,
-      field: 'keyContext'
-    });
+    throw new BoksProtocolError(
+      BoksProtocolErrorId.INVALID_VALUE,
+      `Invalid key context length: expected 8 words, got ${keyContext.length}`,
+      {
+        received: keyContext.length,
+        expected: 8,
+        field: 'keyContext'
+      }
+    );
   }
   if (index < 0 || !Number.isInteger(index)) {
-    throw new BoksProtocolError(BoksProtocolErrorId.INVALID_VALUE, undefined, {
-      received: index,
-      field: 'index'
-    });
+    throw new BoksProtocolError(
+      BoksProtocolErrorId.INVALID_VALUE,
+      `Invalid index: must be a non-negative integer, got ${index}`,
+      {
+        received: index,
+        field: 'index'
+      }
+    );
   }
   if (!ALLOWED_PREFIXES.includes(typePrefix as AllowedPrefix)) {
     throw new BoksProtocolError(
@@ -242,17 +254,25 @@ export const generateBoksPinFromContext = (
 export const generateBoksPin = (key: Uint8Array, typePrefix: string, index: number): string => {
   // Input Validation
   if (key.length !== 32) {
-    throw new BoksProtocolError(BoksProtocolErrorId.INVALID_VALUE, undefined, {
-      received: key.length,
-      expected: 32,
-      field: 'key'
-    });
+    throw new BoksProtocolError(
+      BoksProtocolErrorId.INVALID_VALUE,
+      `Invalid key length: expected 32 bytes, got ${key.length}`,
+      {
+        received: key.length,
+        expected: 32,
+        field: 'key'
+      }
+    );
   }
   if (index < 0 || !Number.isInteger(index)) {
-    throw new BoksProtocolError(BoksProtocolErrorId.INVALID_VALUE, undefined, {
-      received: index,
-      field: 'index'
-    });
+    throw new BoksProtocolError(
+      BoksProtocolErrorId.INVALID_VALUE,
+      `Invalid index: must be a non-negative integer, got ${index}`,
+      {
+        received: index,
+        field: 'index'
+      }
+    );
   }
 
   if (!ALLOWED_PREFIXES.includes(typePrefix as AllowedPrefix)) {
