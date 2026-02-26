@@ -15,11 +15,13 @@ type AllowedPrefix = (typeof ALLOWED_PREFIXES)[number];
 
 // Optimization: Precomputed UTF-8 bytes for allowed prefixes
 // This avoids calling TextEncoder.encodeInto repeatedly for the static parts of the message.
-const PREFIX_BYTES: Record<AllowedPrefix, Uint8Array> = {
-  'single-use': new Uint8Array([115, 105, 110, 103, 108, 101, 45, 117, 115, 101]),
-  'multi-use': new Uint8Array([109, 117, 108, 116, 105, 45, 117, 115, 101]),
-  master: new Uint8Array([109, 97, 115, 116, 101, 114])
-};
+const PREFIX_BYTES = ALLOWED_PREFIXES.reduce(
+  (acc, prefix) => {
+    acc[prefix] = encoder.encode(prefix);
+    return acc;
+  },
+  {} as Record<AllowedPrefix, Uint8Array>
+);
 
 // Optimization: Shared buffers to avoid allocation on every call.
 // This is safe in single-threaded environments (Browser/Node main thread).
