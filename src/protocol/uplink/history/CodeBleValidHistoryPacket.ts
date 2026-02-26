@@ -41,4 +41,11 @@ export class CodeBleValidHistoryPacket extends BoksHistoryEvent {
     }
     return new CodeBleValidHistoryPacket(age, code, connectedMac, payload);
   }
+
+  toJSON() {
+    return {
+      ...this,
+      code: '******'
+    };
+  }
 }

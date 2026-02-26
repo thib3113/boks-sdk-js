@@ -30,4 +30,11 @@ export class CodeKeyInvalidHistoryPacket extends BoksHistoryEvent {
     }
     return new CodeKeyInvalidHistoryPacket(age, code, payload);
   }
+
+  toJSON() {
+    return {
+      ...this,
+      code: '******'
+    };
+  }
 }

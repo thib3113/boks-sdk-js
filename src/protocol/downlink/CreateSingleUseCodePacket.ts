@@ -37,4 +37,11 @@ export class CreateSingleUseCodePacket extends AuthPacket {
 
     return payload;
   }
+
+  toJSON() {
+    return {
+      ...super.toJSON(),
+      pin: '******'
+    };
+  }
 }

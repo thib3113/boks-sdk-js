@@ -39,4 +39,11 @@ export class RegeneratePartBPacket extends AuthPacket {
     payload.set(this.part, 8);
     return payload;
   }
+
+  toJSON() {
+    return {
+      ...super.toJSON(),
+      part: '[REDACTED]'
+    };
+  }
 }

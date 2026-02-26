@@ -25,4 +25,11 @@ export class OpenDoorPacket extends BoksPacket {
   toPayload() {
     return stringToBytes(this.pin);
   }
+
+  toJSON() {
+    return {
+      ...this,
+      pin: '******'
+    };
+  }
 }
