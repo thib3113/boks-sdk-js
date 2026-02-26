@@ -13,3 +13,7 @@
 ## 2025-05-18 - Shared Buffers in PIN Generation
 **Learning:** High-frequency object allocation (TypedArrays) in hot loops (like bulk PIN generation) causes significant GC pressure even if CPU time looks fine.
 **Action:** Use module-level shared buffers for synchronous, single-threaded hot paths to eliminate allocation overhead, ensuring they are wiped in a `finally` block for security.
+
+## 2026-06-18 - Redundant Hashing in Bulk Operations
+**Learning:** The Simulator initializes by generating 3305 PINs from the same Master Key. Recalculating the BLAKE2s state for the constant Key Block (64 bytes) 3305 times accounted for ~65% of the total execution time.
+**Action:** Identify invariant inputs in cryptographic loops and expose an API to precompute and reuse intermediate hash states (context).

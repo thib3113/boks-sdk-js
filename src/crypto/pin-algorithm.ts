@@ -74,20 +74,205 @@ const compress = (
   return h;
 };
 
+/**
+ * Shared internal logic for processing the message block and extracting PIN.
+ * Assumes h contains the state after the Key block processing.
+ *
+ * @internal
+ */
+const processMessageBlock = (h: Uint32Array, typePrefix: string, index: number): string => {
+  const blockBuffer = SHARED_BLOCK_BUFFER;
+  const block32 = SHARED_BLOCK32;
+  const v = SHARED_V;
+
+  // Block 2: The Message (prefix + " " + index)
+  // Optimization: Write parts directly to buffer to avoid string concatenation `${typePrefix} ${index}`
+  // which allocates a new string.
+
+  // Clear buffer for next block
+  blockBuffer.fill(0);
+
+  let offset = 0;
+
+  // Write typePrefix
+  // Since we validated against ALLOWED_PREFIXES, we know it fits (max 10 chars)
+  const r1 = encoder.encodeInto(typePrefix, blockBuffer);
+  offset += r1.written!;
+
+  // Write space ' '
+  blockBuffer[offset++] = 32;
+
+  // Write index
+  const idxStr = index.toString();
+
+  // Safety check: ensure we don't overflow the buffer (though unlikely with standard indices)
+  if (offset + idxStr.length > blockBuffer.length) {
+    throw new BoksProtocolError(
+      BoksProtocolErrorId.INVALID_VALUE,
+      `Message too long: ${offset + idxStr.length} bytes`,
+      {
+        received: offset + idxStr.length,
+        limit: blockBuffer.length,
+        reason: 'MESSAGE_TOO_LONG'
+      }
+    );
+  }
+
+  // Use subarray to write at offset without copying buffer
+  const r2 = encoder.encodeInto(idxStr, blockBuffer.subarray(offset));
+  offset += r2.written!;
+
+  compress(h, block32, 64 + offset, PIN_ALGO_CONFIG.MAX_32, v);
+
+  // Result: First 6 bytes of the hash, mapped to Boks Chars
+  // Need to extract 6 bytes from h (which is 8x32bit words)
+  // The Python ref uses struct.pack('<I', x) for each word then takes [:6]
+
+  let pin = '';
+  // Optimization: Unrolled loop to avoid temporary array allocation
+  // Word 0 (bytes 0, 1, 2, 3)
+  const w0 = h[0];
+  pin += BOKS_CHAR_MAP[(w0 & 255) % 12];
+  pin += BOKS_CHAR_MAP[((w0 >>> 8) & 255) % 12];
+  pin += BOKS_CHAR_MAP[((w0 >>> 16) & 255) % 12];
+  pin += BOKS_CHAR_MAP[((w0 >>> 24) & 255) % 12];
+
+  // Word 1 (bytes 4, 5)
+  const w1 = h[1];
+  pin += BOKS_CHAR_MAP[(w1 & 255) % 12];
+  pin += BOKS_CHAR_MAP[((w1 >>> 8) & 255) % 12];
+
+  return pin;
+};
+
+/**
+ * Precomputes the intermediate hash state after processing the key block.
+ * This state can be reused to generate multiple PINs with the same key.
+ */
+export const precomputeBoksKeyContext = (key: Uint8Array): Uint32Array => {
+  // Input Validation
+  if (key.length !== 32) {
+    throw new BoksProtocolError(
+      BoksProtocolErrorId.INVALID_VALUE,
+      `Invalid key length: expected 32 bytes, got ${key.length}`,
+      {
+        received: key.length,
+        expected: 32,
+        field: 'key'
+      }
+    );
+  }
+
+  const h = SHARED_H;
+  const blockBuffer = SHARED_BLOCK_BUFFER;
+  const block32 = SHARED_BLOCK32;
+  const v = SHARED_V;
+
+  try {
+    // Reset h with IV
+    h.set(PIN_ALGO_CONFIG.IV);
+    h[0] ^= PIN_ALGO_CONFIG.CONST_1;
+
+    // Block 1: The Key (padded to 64 bytes)
+    // We must clear blockBuffer first because we reuse it
+    blockBuffer.fill(0);
+    blockBuffer.set(key); // Assumes key.length <= 64
+    compress(h, block32, 64, 0, v);
+
+    // Return a copy of h
+    return new Uint32Array(h);
+  } finally {
+    // Security: Wipe the buffer containing the key/intermediate state
+    blockBuffer.fill(0);
+    h.fill(0);
+    v.fill(0);
+    block32.fill(0);
+  }
+};
+
+/**
+ * Generates a Boks PIN using a precomputed key context.
+ * This skips the key block processing and is significantly faster for bulk generation.
+ */
+export const generateBoksPinFromContext = (
+  keyContext: Uint32Array,
+  typePrefix: string,
+  index: number
+): string => {
+  // Input Validation
+  if (keyContext.length !== 8) {
+    throw new BoksProtocolError(
+      BoksProtocolErrorId.INVALID_VALUE,
+      `Invalid key context length: expected 8 words, got ${keyContext.length}`,
+      {
+        received: keyContext.length,
+        expected: 8,
+        field: 'keyContext'
+      }
+    );
+  }
+  if (index < 0 || !Number.isInteger(index)) {
+    throw new BoksProtocolError(
+      BoksProtocolErrorId.INVALID_VALUE,
+      `Invalid index: must be a non-negative integer, got ${index}`,
+      {
+        received: index,
+        field: 'index'
+      }
+    );
+  }
+  if (!ALLOWED_PREFIXES.includes(typePrefix as AllowedPrefix)) {
+    throw new BoksProtocolError(
+      BoksProtocolErrorId.INVALID_VALUE,
+      `Invalid PIN type prefix: "${typePrefix}". Allowed: ${ALLOWED_PREFIXES.join(', ')}`,
+      {
+        received: typePrefix,
+        allowed: ALLOWED_PREFIXES,
+        reason: 'INVALID_PREFIX'
+      }
+    );
+  }
+
+  const h = SHARED_H;
+  const blockBuffer = SHARED_BLOCK_BUFFER;
+  const block32 = SHARED_BLOCK32;
+  const v = SHARED_V;
+
+  try {
+    // Restore h from context
+    h.set(keyContext);
+    return processMessageBlock(h, typePrefix, index);
+  } finally {
+    // Security: Wipe the buffer containing the key/intermediate state
+    blockBuffer.fill(0);
+    h.fill(0);
+    v.fill(0);
+    block32.fill(0);
+  }
+};
+
 export const generateBoksPin = (key: Uint8Array, typePrefix: string, index: number): string => {
   // Input Validation
   if (key.length !== 32) {
-    throw new BoksProtocolError(BoksProtocolErrorId.INVALID_VALUE, undefined, {
-      received: key.length,
-      expected: 32,
-      field: 'key'
-    });
+    throw new BoksProtocolError(
+      BoksProtocolErrorId.INVALID_VALUE,
+      `Invalid key length: expected 32 bytes, got ${key.length}`,
+      {
+        received: key.length,
+        expected: 32,
+        field: 'key'
+      }
+    );
   }
   if (index < 0 || !Number.isInteger(index)) {
-    throw new BoksProtocolError(BoksProtocolErrorId.INVALID_VALUE, undefined, {
-      received: index,
-      field: 'index'
-    });
+    throw new BoksProtocolError(
+      BoksProtocolErrorId.INVALID_VALUE,
+      `Invalid index: must be a non-negative integer, got ${index}`,
+      {
+        received: index,
+        field: 'index'
+      }
+    );
   }
 
   if (!ALLOWED_PREFIXES.includes(typePrefix as AllowedPrefix)) {
@@ -119,64 +304,7 @@ export const generateBoksPin = (key: Uint8Array, typePrefix: string, index: numb
     blockBuffer.set(key); // Assumes key.length <= 64
     compress(h, block32, 64, 0, v);
 
-    // Block 2: The Message (prefix + " " + index)
-    // Optimization: Write parts directly to buffer to avoid string concatenation `${typePrefix} ${index}`
-    // which allocates a new string.
-
-    // Clear buffer for next block
-    blockBuffer.fill(0);
-
-    let offset = 0;
-
-    // Write typePrefix
-    // Since we validated against ALLOWED_PREFIXES, we know it fits (max 10 chars)
-    const r1 = encoder.encodeInto(typePrefix, blockBuffer);
-    offset += r1.written!;
-
-    // Write space ' '
-    blockBuffer[offset++] = 32;
-
-    // Write index
-    const idxStr = index.toString();
-
-    // Safety check: ensure we don't overflow the buffer (though unlikely with standard indices)
-    if (offset + idxStr.length > blockBuffer.length) {
-      throw new BoksProtocolError(
-        BoksProtocolErrorId.INVALID_VALUE,
-        `Message too long: ${offset + idxStr.length} bytes`,
-        {
-          received: offset + idxStr.length,
-          limit: blockBuffer.length,
-          reason: 'MESSAGE_TOO_LONG'
-        }
-      );
-    }
-
-    // Use subarray to write at offset without copying buffer
-    const r2 = encoder.encodeInto(idxStr, blockBuffer.subarray(offset));
-    offset += r2.written!;
-
-    compress(h, block32, 64 + offset, PIN_ALGO_CONFIG.MAX_32, v);
-
-    // Result: First 6 bytes of the hash, mapped to Boks Chars
-    // Need to extract 6 bytes from h (which is 8x32bit words)
-    // The Python ref uses struct.pack('<I', x) for each word then takes [:6]
-
-    let pin = '';
-    // Optimization: Unrolled loop to avoid temporary array allocation
-    // Word 0 (bytes 0, 1, 2, 3)
-    const w0 = h[0];
-    pin += BOKS_CHAR_MAP[(w0 & 255) % 12];
-    pin += BOKS_CHAR_MAP[((w0 >>> 8) & 255) % 12];
-    pin += BOKS_CHAR_MAP[((w0 >>> 16) & 255) % 12];
-    pin += BOKS_CHAR_MAP[((w0 >>> 24) & 255) % 12];
-
-    // Word 1 (bytes 4, 5)
-    const w1 = h[1];
-    pin += BOKS_CHAR_MAP[(w1 & 255) % 12];
-    pin += BOKS_CHAR_MAP[((w1 >>> 8) & 255) % 12];
-
-    return pin;
+    return processMessageBlock(h, typePrefix, index);
   } finally {
     // Security: Wipe the buffer containing the key/intermediate state
     blockBuffer.fill(0);
