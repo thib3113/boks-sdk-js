@@ -13,6 +13,16 @@ const BOKS_CHAR_MAP = '0123456789AB';
 const ALLOWED_PREFIXES = ['single-use', 'multi-use', 'master'] as const;
 type AllowedPrefix = (typeof ALLOWED_PREFIXES)[number];
 
+// Optimization: Precomputed UTF-8 bytes for allowed prefixes
+// This avoids calling TextEncoder.encodeInto repeatedly for the static parts of the message.
+const PREFIX_BYTES = ALLOWED_PREFIXES.reduce(
+  (acc, prefix) => {
+    acc[prefix] = encoder.encode(prefix);
+    return acc;
+  },
+  {} as Record<AllowedPrefix, Uint8Array>
+);
+
 // Optimization: Shared buffers to avoid allocation on every call.
 // This is safe in single-threaded environments (Browser/Node main thread).
 // We rely on the try-finally block to wipe these buffers after use.
@@ -94,10 +104,11 @@ const processMessageBlock = (h: Uint32Array, typePrefix: string, index: number):
 
   let offset = 0;
 
-  // Write typePrefix
-  // Since we validated against ALLOWED_PREFIXES, we know it fits (max 10 chars)
-  const r1 = encoder.encodeInto(typePrefix, blockBuffer);
-  offset += r1.written!;
+  // Optimization: Use precomputed bytes instead of TextEncoder
+  // This avoids UTF-8 encoding overhead for known static prefixes.
+  const prefixBytes = PREFIX_BYTES[typePrefix as AllowedPrefix];
+  blockBuffer.set(prefixBytes, 0);
+  offset += prefixBytes.length;
 
   // Write space ' '
   blockBuffer[offset++] = 32;
