@@ -114,24 +114,43 @@ const processMessageBlock = (h: Uint32Array, typePrefix: string, index: number):
   blockBuffer[offset++] = 32;
 
   // Write index
-  const idxStr = index.toString();
+  // Optimization: Write integer directly to buffer to avoid string allocation (index.toString())
+  // and TextEncoder overhead. The index is guaranteed to be a non-negative integer.
+  if (index === 0) {
+    blockBuffer[offset++] = 48; // '0'
+  } else {
+    // Determine number of digits
+    let temp = index;
+    let digits = 0;
 
-  // Safety check: ensure we don't overflow the buffer (though unlikely with standard indices)
-  if (offset + idxStr.length > blockBuffer.length) {
-    throw new BoksProtocolError(
-      BoksProtocolErrorId.INVALID_VALUE,
-      `Message too long: ${offset + idxStr.length} bytes`,
-      {
-        received: offset + idxStr.length,
-        limit: blockBuffer.length,
-        reason: 'MESSAGE_TOO_LONG'
-      }
-    );
+    if (temp < 10) digits = 1;
+    else if (temp < 100) digits = 2;
+    else if (temp < 1000) digits = 3;
+    else if (temp < 10000) digits = 4;
+    else if (temp < 100000) digits = 5;
+    else digits = Math.floor(Math.log10(temp)) + 1;
+
+    // Safety check: ensure we don't overflow the buffer
+    if (offset + digits > blockBuffer.length) {
+      throw new BoksProtocolError(
+        BoksProtocolErrorId.INVALID_VALUE,
+        `Message too long: ${offset + digits} bytes`,
+        {
+          received: offset + digits,
+          limit: blockBuffer.length,
+          reason: 'MESSAGE_TOO_LONG'
+        }
+      );
+    }
+
+    // Write digits backwards from end position
+    let pos = offset + digits - 1;
+    while (temp > 0) {
+      blockBuffer[pos--] = 48 + (temp % 10);
+      temp = Math.floor(temp / 10); // Use Math.floor for safe integer division > 2^31
+    }
+    offset += digits;
   }
-
-  // Use subarray to write at offset without copying buffer
-  const r2 = encoder.encodeInto(idxStr, blockBuffer.subarray(offset));
-  offset += r2.written!;
 
   compress(h, block32, 64 + offset, PIN_ALGO_CONFIG.MAX_32, v);
 
