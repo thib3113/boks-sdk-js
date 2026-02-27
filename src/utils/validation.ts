@@ -66,7 +66,8 @@ export function validateCredentialsKey(key: Uint8Array | string): void {
 
 /**
  * Validates an NFC Tag UID.
- * A valid UID is a hex string (optional colons) between 4 and 10 bytes (8-20 hex chars).
+ * A valid UID is a hex string (optional colons).
+ * Enforces standard NFC UID lengths: 4 bytes (8 hex chars), 7 bytes (14 hex chars), or 10 bytes (20 hex chars).
  *
  * @param uid The UID to validate.
  * @throws BoksProtocolError if the UID is invalid.
@@ -80,10 +81,13 @@ export function validateNfcUid(uid: string): void {
     });
   }
 
-  if (cleanUid.length < 8 || cleanUid.length > 20 || cleanUid.length % 2 !== 0) {
+  const length = cleanUid.length;
+  // Length in hex chars: 8 (4 bytes), 14 (7 bytes), 20 (10 bytes)
+  if (length !== 8 && length !== 14 && length !== 20) {
     throw new BoksProtocolError(BoksProtocolErrorId.INVALID_NFC_UID_FORMAT, undefined, {
       received: uid,
-      reason: 'INVALID_LENGTH'
+      reason: 'INVALID_LENGTH',
+      expected: '4, 7, or 10 bytes'
     });
   }
 }
