@@ -44,11 +44,4 @@ export class CreateMasterCodePacket extends AuthPacket {
     payload[14] = this.index;
     return payload;
   }
-
-  toJSON() {
-    return {
-      ...super.toJSON(),
-      pin: '******'
-    };
-  }
 }

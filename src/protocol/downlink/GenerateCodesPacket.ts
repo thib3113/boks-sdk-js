@@ -27,12 +27,4 @@ export class GenerateCodesPacket extends BoksPacket {
     if (seedBytes.length !== 32) throw new Error('Seed must be exactly 32 bytes');
     return seedBytes;
   }
-
-  toJSON() {
-    return {
-      ...this,
-      rawPayload: {},
-      seed: '[REDACTED]'
-    };
-  }
 }

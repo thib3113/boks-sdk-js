@@ -14,12 +14,4 @@ export abstract class AuthPacket extends BoksPacket {
       );
     }
   }
-
-  toJSON() {
-    return {
-      ...this,
-      rawPayload: {},
-      configKey: '[REDACTED]'
-    };
-  }
 }

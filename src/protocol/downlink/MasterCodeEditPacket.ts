@@ -45,11 +45,4 @@ export class MasterCodeEditPacket extends AuthPacket {
 
     return payload;
   }
-
-  toJSON() {
-    return {
-      ...super.toJSON(),
-      newPin: '******'
-    };
-  }
 }
