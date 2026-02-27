@@ -17,6 +17,11 @@ Le `boks-sdk-js` est la bibliothèque de référence centralisant toute la logiq
 - **Indépendance du Transport** : La logique protocolaire doit rester isolée de la couche de transport Bluetooth. N'importe quel bridge BLE (Web, Mobile, Node) peut être utilisé en implémentant l'interface `BoksTransport`.
 - **Couverture de Tests** : Chaque structure de paquet et règle métier doit disposer d'un test unitaire validant son encodage et son décodage.
 
+## ⚠️ Gestion des Données Sensibles
+- **Pas de Masquage** : Ne **JAMAIS** masquer, censurer ou "redacted" les données sensibles (clés, PINs, seeds) dans les logs, les exports JSON ou les erreurs.
+- **Propriété Utilisateur** : Toutes les données manipulées par ce SDK appartiennent exclusivement à l'utilisateur final. Il doit avoir un accès complet et transparent à ses propres informations pour des raisons de débogage, de sauvegarde ou d'audit personnel.
+- **Sécurité** : La sécurité doit être assurée par la validation stricte des entrées et le respect du protocole, non par l'obscurcissement des données locales.
+
 ## Structure du Projet
 - `src/protocol/` : Cœur du système. Dossiers `downlink` (commandes) et `uplink` (réponses/historique).
 - `src/protocol/base/` : Abstractions fondamentales (`_Base.ts`) et constantes globales.
