@@ -78,19 +78,24 @@ export const hexToBytes = (hex: string): Uint8Array => {
 
 export const bytesToHex = (bytes: Uint8Array): string => {
   const len = bytes.length;
-  const arr = new Array(len);
+  let result = '';
+  // Optimization: use string concatenation instead of array allocation and join('')
   for (let i = 0; i < len; i++) {
-    arr[i] = HEX_TABLE[bytes[i]];
+    result += HEX_TABLE[bytes[i]];
   }
-  return arr.join('');
+  return result;
 };
 
+// Optimization: Cached to avoid instantiation overhead
+const sharedEncoder = new TextEncoder();
+const sharedDecoder = new TextDecoder();
+
 export const stringToBytes = (str: string): Uint8Array => {
-  return new TextEncoder().encode(str);
+  return sharedEncoder.encode(str);
 };
 
 export const bytesToString = (bytes: Uint8Array): string => {
-  return new TextDecoder().decode(bytes).replace(/\0/g, '');
+  return sharedDecoder.decode(bytes).replace(/\0/g, '');
 };
 
 export const calculateChecksum = (data: Uint8Array): number => {
