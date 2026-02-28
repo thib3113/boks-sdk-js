@@ -93,6 +93,7 @@ import { NfcRegisteringHistoryPacket } from './uplink/history/NfcRegisteringHist
 
 import { hexToBytes, calculateChecksum } from '@/utils/converters';
 import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';
+import { freeze } from '@/utils/security';
 
 /**
  * List of all supported packet classes.
@@ -196,6 +197,7 @@ const PACKET_CLASSES: BoksPacketConstructor[] = [
 /**
  * Factory class for creating Boks packets from raw data.
  */
+@freeze
 export class BoksPacketFactory {
   private static readonly registry = new Map<number, BoksPacketConstructor>(
     PACKET_CLASSES.map((ctor) => [ctor.opcode, ctor])

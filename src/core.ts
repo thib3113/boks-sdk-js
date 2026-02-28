@@ -3,4 +3,5 @@ export * from './protocol';
 export * from './utils/converters';
 export * from './utils/battery';
 export * from './utils/pin';
+export * from './utils/security';
 export * from './errors/BoksProtocolError';
