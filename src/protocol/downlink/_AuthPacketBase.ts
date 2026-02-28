@@ -1,9 +1,11 @@
 import { BoksPacket } from '@/protocol/_BoksPacketBase';
 import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';
+import { sealed } from '@/utils/security';
 
 /**
  * Base for packets requiring authentication (Config Key)
  */
+@sealed
 export abstract class AuthPacket extends BoksPacket {
   constructor(public readonly configKey: string) {
     super();
