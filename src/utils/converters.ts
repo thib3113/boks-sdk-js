@@ -10,6 +10,14 @@ const HEX_TABLE = Array.from({ length: 256 }, (_, i) =>
   i.toString(16).padStart(2, '0').toUpperCase()
 );
 
+// Optimization: Precompute 16-bit hex lookup table (4 chars) to process 2 bytes per iteration
+const HEX_TABLE_16 = new Array<string>(65536);
+for (let i = 0; i < 256; i++) {
+  for (let j = 0; j < 256; j++) {
+    HEX_TABLE_16[(i << 8) | j] = HEX_TABLE[i] + HEX_TABLE[j];
+  }
+}
+
 // Optimization: Precompute hex decoding table to avoid parseInt calls
 const HEX_DECODE_TABLE = new Uint8Array(256);
 HEX_DECODE_TABLE.fill(255); // Invalid default
@@ -79,8 +87,14 @@ export const hexToBytes = (hex: string): Uint8Array => {
 export const bytesToHex = (bytes: Uint8Array): string => {
   const len = bytes.length;
   let result = '';
-  // Optimization: use string concatenation instead of array allocation and join('')
-  for (let i = 0; i < len; i++) {
+  let i = 0;
+  // Optimization: process 2 bytes at a time using a 16-bit lookup table
+  // to halve the number of iterations and string concatenations.
+  for (; i <= len - 2; i += 2) {
+    result += HEX_TABLE_16[(bytes[i] << 8) | bytes[i + 1]];
+  }
+  // Handle remaining byte for odd lengths
+  if (i < len) {
     result += HEX_TABLE[bytes[i]];
   }
   return result;
