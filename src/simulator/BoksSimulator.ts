@@ -7,6 +7,8 @@ import {
   hexToBytes
 } from '../utils/converters';
 import { precomputeBoksKeyContext, generateBoksPinFromContext } from '../crypto/pin-algorithm';
+import { BoksPacket } from '../protocol/_BoksPacketBase';
+import { BoksPacketFactory } from '../protocol/BoksPacketFactory';
 
 /**
  * Represents a GATT Characteristic structure for simulation.
@@ -85,6 +87,15 @@ export type BoksSimulatorLogger = <K extends keyof BoksSimulatorLogEvents>(
 /**
  * Configuration options for the BoksHardwareSimulator.
  */
+export interface SimulatorPacketEvent {
+  direction: 'TX' | 'RX';
+  packet: BoksPacket;
+  buffer: Uint8Array;
+}
+
+/**
+ * Configuration options for the BoksHardwareSimulator.
+ */
 export interface BoksHardwareSimulatorOptions {
   storage?: SimulatorStorage;
   logger?: BoksSimulatorLogger;
@@ -158,6 +169,7 @@ export class BoksHardwareSimulator {
   #progressDelayMs: number = 600;
   #opcodeOverrides: Map<number, Uint8Array | Error> = new Map();
   #subscribers: ((data: Uint8Array) => void)[] = [];
+  #packetSubscribers: ((event: SimulatorPacketEvent) => void)[] = [];
   #batterySubscribers: ((data: Uint8Array) => void)[] = [];
   #doorAutoCloseTimeout: NodeJS.Timeout | null = null;
   #storage?: SimulatorStorage;
@@ -712,6 +724,17 @@ export class BoksHardwareSimulator {
 
     this.log('debug', 'receive', { opcode, length: data.length });
 
+    if (this.#packetSubscribers.length > 0) {
+      const parsedPacket = BoksPacketFactory.createFromPayload(data, (l, e, c) =>
+        this.log(l, e, c)
+      );
+      if (parsedPacket) {
+        this.#packetSubscribers.forEach((cb) =>
+          cb({ direction: 'TX', packet: parsedPacket, buffer: data })
+        );
+      }
+    }
+
     let response: Uint8Array | null = null;
     if (this.#opcodeOverrides.has(opcode)) {
       const override = this.#opcodeOverrides.get(opcode);
@@ -754,7 +777,31 @@ export class BoksHardwareSimulator {
   private emit(data: Uint8Array): void {
     if (this.shouldDropPacket()) return;
     this.log('debug', 'send', { opcode: data[0], length: data.length });
+
+    if (this.#packetSubscribers.length > 0) {
+      const parsedOutPacket = BoksPacketFactory.createFromPayload(data, (l, e, c) =>
+        this.log(l, e, c)
+      );
+      if (parsedOutPacket) {
+        this.#packetSubscribers.forEach((cb) =>
+          cb({ direction: 'RX', packet: parsedOutPacket, buffer: data })
+        );
+      }
+    }
     this.#subscribers.forEach((cb) => cb(data));
+  }
+
+  /**
+   * Subscribes to incoming (TX) and outgoing (RX) packets.
+   * Useful for End-to-End testing to trace real simulated commands.
+   */
+  public onPacket(callback: (event: SimulatorPacketEvent) => void): () => void {
+    this.#packetSubscribers.push(callback);
+    return () => this.offPacket(callback);
+  }
+
+  public offPacket(callback: (event: SimulatorPacketEvent) => void): void {
+    this.#packetSubscribers = this.#packetSubscribers.filter((cb) => cb !== callback);
   }
 
   public subscribe(callback: (data: Uint8Array) => void): void {
