@@ -29,3 +29,7 @@
 ## 2024-05-18 - Uint8Array subarray vs slice
 **Learning:** Using `Uint8Array.subarray()` instead of `Uint8Array.slice()` prevents copying the underlying memory buffer, which is significantly faster and creates less garbage collection pressure in hot paths like packet parsing.
 **Action:** Always prefer `subarray()` over `slice()` when extracting parts of a `Uint8Array` unless a true copy is strictly necessary to prevent mutation.
+
+## 2025-10-26 - Native String Coercion for Integer to ASCII Byte Conversion
+**Learning:** In V8, converting an integer to ASCII bytes using manual floating point math (`Math.floor(val/10)`) and modulo operations in a loop is significantly slower than relying on native string coercion (`'' + index`) and `.charCodeAt()`. V8's native C++ number-to-string conversion avoids JS execution overhead.
+**Action:** When converting integers to byte buffers in hot paths, prefer `const str = '' + num;` followed by a loop over `str.charCodeAt(i)` instead of manual arithmetic logic.
