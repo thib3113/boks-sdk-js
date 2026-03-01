@@ -17,3 +17,11 @@
 ## 2026-06-18 - Redundant Hashing in Bulk Operations
 **Learning:** The Simulator initializes by generating 3305 PINs from the same Master Key. Recalculating the BLAKE2s state for the constant Key Block (64 bytes) 3305 times accounted for ~65% of the total execution time.
 **Action:** Identify invariant inputs in cryptographic loops and expose an API to precompute and reuse intermediate hash states (context).
+
+## 2024-05-18 - String Concatenation vs Array.join for Hex Encoding
+**Learning:** In V8 (Node.js/Chrome), using simple string concatenation `+=` for small string building (like hex encoding byte arrays) is significantly faster (often 2x faster) than creating an array and calling `Array.join('')`. The overhead of array allocation and the `join` method call outweighs string concatenation optimizations in V8 for these lengths.
+**Action:** Replace `Array.join('')` with string concatenation `+=` in hot loop encoding functions like `bytesToHex`.
+
+## 2024-05-18 - Reusing TextDecoder instances
+**Learning:** Instantiating a `new TextDecoder()` inside a hot function is noticeably slower than reusing a single shared `TextDecoder` instance. While `TextEncoder` instantiation seems optimized in newer V8 versions, `TextDecoder` instantiation still carries a measurable performance penalty.
+**Action:** Share and reuse a single `TextDecoder` instance across calls instead of creating a new one on every `bytesToString` invocation.
