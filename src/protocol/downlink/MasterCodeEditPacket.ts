@@ -24,7 +24,7 @@ export class MasterCodeEditPacket extends AuthPacket {
   }
 
   static fromPayload(payload: Uint8Array): MasterCodeEditPacket {
-    const configKey = bytesToString(payload.subarray(0, 8));
+    const configKey = AuthPacket.extractConfigKey(payload);
     let index = 0;
     if (payload.length > 8) {
       index = payload[8];

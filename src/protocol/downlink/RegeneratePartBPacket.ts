@@ -1,6 +1,6 @@
 import { AuthPacket } from '@/protocol/downlink/_AuthPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
-import { stringToBytes, bytesToString } from '@/utils/converters';
+import { stringToBytes } from '@/utils/converters';
 import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';
 
 /** ⚠️ This packet is theoretical; it has never been tested in real-world conditions. */
@@ -28,7 +28,7 @@ export class RegeneratePartBPacket extends AuthPacket {
   }
 
   static fromPayload(payload: Uint8Array): RegeneratePartBPacket {
-    const configKey = bytesToString(payload.subarray(0, 8));
+    const configKey = AuthPacket.extractConfigKey(payload);
     const part = payload.subarray(8, 24);
     return new RegeneratePartBPacket(configKey, part);
   }

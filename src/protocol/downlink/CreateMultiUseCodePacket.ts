@@ -21,7 +21,7 @@ export class CreateMultiUseCodePacket extends AuthPacket {
   }
 
   static fromPayload(payload: Uint8Array): CreateMultiUseCodePacket {
-    const configKey = bytesToString(payload.subarray(0, 8));
+    const configKey = AuthPacket.extractConfigKey(payload);
     const pin = bytesToString(payload.subarray(8, 14));
     return new CreateMultiUseCodePacket(configKey, pin);
   }
