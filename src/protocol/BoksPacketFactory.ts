@@ -275,8 +275,8 @@ export class BoksPacketFactory {
       });
     }
     return [
-      new RegeneratePartAPacket(configKey, keyBytes.slice(0, 16)),
-      new RegeneratePartBPacket(configKey, keyBytes.slice(16, 32))
+      new RegeneratePartAPacket(configKey, keyBytes.subarray(0, 16)),
+      new RegeneratePartBPacket(configKey, keyBytes.subarray(16, 32))
     ];
   }
 }

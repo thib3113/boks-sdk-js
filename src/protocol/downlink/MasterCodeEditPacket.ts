@@ -24,12 +24,12 @@ export class MasterCodeEditPacket extends AuthPacket {
   }
 
   static fromPayload(payload: Uint8Array): MasterCodeEditPacket {
-    const configKey = bytesToString(payload.slice(0, 8));
+    const configKey = bytesToString(payload.subarray(0, 8));
     let index = 0;
     if (payload.length > 8) {
       index = payload[8];
     }
-    const newPin = bytesToString(payload.slice(9, 15));
+    const newPin = bytesToString(payload.subarray(9, 15));
     return new MasterCodeEditPacket(configKey, index, newPin);
   }
 
@@ -40,7 +40,7 @@ export class MasterCodeEditPacket extends AuthPacket {
 
     const pinBytes = stringToBytes(this.newPin);
     const fixedPin = new Uint8Array(6);
-    fixedPin.set(pinBytes.slice(0, 6));
+    fixedPin.set(pinBytes.subarray(0, 6));
     payload.set(fixedPin, 9);
 
     return payload;

@@ -21,8 +21,8 @@ export class DeleteSingleUseCodePacket extends AuthPacket {
   }
 
   static fromPayload(payload: Uint8Array): DeleteSingleUseCodePacket {
-    const configKey = bytesToString(payload.slice(0, 8));
-    const pin = bytesToString(payload.slice(8, 14));
+    const configKey = bytesToString(payload.subarray(0, 8));
+    const pin = bytesToString(payload.subarray(8, 14));
     return new DeleteSingleUseCodePacket(configKey, pin);
   }
 
@@ -32,7 +32,7 @@ export class DeleteSingleUseCodePacket extends AuthPacket {
 
     const pinBytes = stringToBytes(this.pin);
     const fixedPin = new Uint8Array(6);
-    fixedPin.set(pinBytes.slice(0, 6));
+    fixedPin.set(pinBytes.subarray(0, 6));
     payload.set(fixedPin, 8);
 
     return payload;

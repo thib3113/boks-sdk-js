@@ -21,7 +21,7 @@ export class DeleteMasterCodePacket extends AuthPacket {
   }
 
   static fromPayload(payload: Uint8Array): DeleteMasterCodePacket {
-    const configKey = bytesToString(payload.slice(0, 8));
+    const configKey = bytesToString(payload.subarray(0, 8));
     let index = 0;
     if (payload.length > 8) {
       index = payload[8];

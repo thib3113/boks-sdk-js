@@ -23,8 +23,8 @@ export class CreateMasterCodePacket extends AuthPacket {
   }
 
   static fromPayload(payload: Uint8Array): CreateMasterCodePacket {
-    const configKey = bytesToString(payload.slice(0, 8));
-    const pin = bytesToString(payload.slice(8, 14));
+    const configKey = bytesToString(payload.subarray(0, 8));
+    const pin = bytesToString(payload.subarray(8, 14));
     let index = 0;
     if (payload.length > 14) {
       index = payload[14];
@@ -38,7 +38,7 @@ export class CreateMasterCodePacket extends AuthPacket {
 
     const pinBytes = stringToBytes(this.pin);
     const fixedPin = new Uint8Array(6);
-    fixedPin.set(pinBytes.slice(0, 6));
+    fixedPin.set(pinBytes.subarray(0, 6));
     payload.set(fixedPin, 8);
 
     payload[14] = this.index;

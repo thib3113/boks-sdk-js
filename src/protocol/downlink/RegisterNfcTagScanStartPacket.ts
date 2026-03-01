@@ -16,7 +16,7 @@ export class RegisterNfcTagScanStartPacket extends AuthPacket {
   }
 
   static fromPayload(payload: Uint8Array): RegisterNfcTagScanStartPacket {
-    const configKey = bytesToString(payload.slice(0, 8));
+    const configKey = bytesToString(payload.subarray(0, 8));
     return new RegisterNfcTagScanStartPacket(configKey);
   }
 

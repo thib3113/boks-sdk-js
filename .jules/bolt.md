@@ -25,3 +25,7 @@
 ## 2024-05-18 - Reusing TextDecoder instances
 **Learning:** Instantiating a `new TextDecoder()` inside a hot function is noticeably slower than reusing a single shared `TextDecoder` instance. While `TextEncoder` instantiation seems optimized in newer V8 versions, `TextDecoder` instantiation still carries a measurable performance penalty.
 **Action:** Share and reuse a single `TextDecoder` instance across calls instead of creating a new one on every `bytesToString` invocation.
+
+## 2024-05-18 - Uint8Array subarray vs slice
+**Learning:** Using `Uint8Array.subarray()` instead of `Uint8Array.slice()` prevents copying the underlying memory buffer, which is significantly faster and creates less garbage collection pressure in hot paths like packet parsing.
+**Action:** Always prefer `subarray()` over `slice()` when extracting parts of a `Uint8Array` unless a true copy is strictly necessary to prevent mutation.

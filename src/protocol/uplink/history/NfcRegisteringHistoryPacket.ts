@@ -24,7 +24,7 @@ export class NfcRegisteringHistoryPacket extends BoksHistoryEvent {
     }
 
     if (payload.length > 3) {
-      data = payload.slice(3);
+      data = payload.subarray(3);
     }
     return new NfcRegisteringHistoryPacket(age, data, payload);
   }

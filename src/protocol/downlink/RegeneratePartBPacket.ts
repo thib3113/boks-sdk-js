@@ -28,8 +28,8 @@ export class RegeneratePartBPacket extends AuthPacket {
   }
 
   static fromPayload(payload: Uint8Array): RegeneratePartBPacket {
-    const configKey = bytesToString(payload.slice(0, 8));
-    const part = payload.slice(8, 24);
+    const configKey = bytesToString(payload.subarray(0, 8));
+    const part = payload.subarray(8, 24);
     return new RegeneratePartBPacket(configKey, part);
   }
 

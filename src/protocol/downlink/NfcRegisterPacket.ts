@@ -21,13 +21,13 @@ export class NfcRegisterPacket extends AuthPacket {
   }
 
   static fromPayload(payload: Uint8Array): NfcRegisterPacket {
-    const configKey = bytesToString(payload.slice(0, 8));
+    const configKey = bytesToString(payload.subarray(0, 8));
     let uid = '';
     if (payload.length > 8) {
       const len = payload[8];
       if (payload.length >= 9 + len) {
         uid =
-          bytesToHex(payload.slice(9, 9 + len))
+          bytesToHex(payload.subarray(9, 9 + len))
             .match(/.{1,2}/g)
             ?.join(':') || '';
       }
