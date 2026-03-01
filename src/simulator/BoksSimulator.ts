@@ -854,7 +854,7 @@ export class BoksHardwareSimulator {
   private handleOpenDoor(payload: Uint8Array): Uint8Array {
     let pin: string;
     if (payload.length === 6) pin = bytesToString(payload);
-    else if (payload.length >= 14) pin = bytesToString(payload.slice(0, 6));
+    else if (payload.length >= 14) pin = bytesToString(payload.subarray(0, 6));
     else return this.createResponse(BoksOpcode.INVALID_OPEN_CODE, new Uint8Array(0));
 
     if (this.#pinCodes.has(pin)) {
@@ -930,10 +930,10 @@ export class BoksHardwareSimulator {
   private handleCreateCode(payload: Uint8Array, type: BoksCodeType): Uint8Array {
     if (payload.length < 14)
       return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
-    const rxConfigKey = bytesToString(payload.slice(0, 8));
+    const rxConfigKey = bytesToString(payload.subarray(0, 8));
     if (rxConfigKey !== this.#configKey)
       return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
-    const pin = bytesToString(payload.slice(8, 14));
+    const pin = bytesToString(payload.subarray(8, 14));
     this.#pinCodes.set(pin, type);
     this.saveState('pinCodes');
     return this.createResponse(BoksOpcode.CODE_OPERATION_SUCCESS, new Uint8Array(0));
@@ -955,13 +955,13 @@ export class BoksHardwareSimulator {
   private handleRegisterNfcTag(payload: Uint8Array): Uint8Array {
     if (payload.length < 9)
       return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
-    const rxConfigKey = bytesToString(payload.slice(0, 8));
+    const rxConfigKey = bytesToString(payload.subarray(0, 8));
     if (rxConfigKey !== this.#configKey)
       return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
     const len = payload[8];
     if (payload.length < 9 + len)
       return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
-    const uidBytes = payload.slice(9, 9 + len);
+    const uidBytes = payload.subarray(9, 9 + len);
     const uid =
       bytesToHex(uidBytes)
         .match(/.{1,2}/g)
@@ -975,13 +975,13 @@ export class BoksHardwareSimulator {
   private handleUnregisterNfcTag(payload: Uint8Array): Uint8Array {
     if (payload.length < 9)
       return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
-    const rxConfigKey = bytesToString(payload.slice(0, 8));
+    const rxConfigKey = bytesToString(payload.subarray(0, 8));
     if (rxConfigKey !== this.#configKey)
       return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
     const len = payload[8];
     if (payload.length < 9 + len)
       return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
-    const uidBytes = payload.slice(9, 9 + len);
+    const uidBytes = payload.subarray(9, 9 + len);
     const uid =
       bytesToHex(uidBytes)
         .match(/.{1,2}/g)
@@ -996,10 +996,10 @@ export class BoksHardwareSimulator {
   private handleCreateMasterCode(payload: Uint8Array): Uint8Array {
     if (payload.length < 15)
       return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
-    const rxConfigKey = bytesToString(payload.slice(0, 8));
+    const rxConfigKey = bytesToString(payload.subarray(0, 8));
     if (rxConfigKey !== this.#configKey)
       return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
-    const pin = bytesToString(payload.slice(8, 14));
+    const pin = bytesToString(payload.subarray(8, 14));
     const index = payload[14];
     this.#masterCodes.set(index, pin);
     this.#pinCodes.set(pin, BoksCodeType.Master);
@@ -1011,11 +1011,11 @@ export class BoksHardwareSimulator {
   private handleEditMasterCode(payload: Uint8Array): Uint8Array {
     if (payload.length < 15)
       return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
-    const rxConfigKey = bytesToString(payload.slice(0, 8));
+    const rxConfigKey = bytesToString(payload.subarray(0, 8));
     if (rxConfigKey !== this.#configKey)
       return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
     const index = payload[8];
-    const newPin = bytesToString(payload.slice(9, 15));
+    const newPin = bytesToString(payload.subarray(9, 15));
     const oldPin = this.#masterCodes.get(index);
     if (oldPin) this.#pinCodes.delete(oldPin);
     this.#masterCodes.set(index, newPin);
@@ -1028,7 +1028,7 @@ export class BoksHardwareSimulator {
   private handleDeleteMasterCode(payload: Uint8Array): Uint8Array {
     if (payload.length < 9)
       return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
-    const rxConfigKey = bytesToString(payload.slice(0, 8));
+    const rxConfigKey = bytesToString(payload.subarray(0, 8));
     if (rxConfigKey !== this.#configKey)
       return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
     const index = payload[8];
@@ -1045,10 +1045,10 @@ export class BoksHardwareSimulator {
   private handleDeleteMultiUseCode(payload: Uint8Array): Uint8Array {
     if (payload.length < 14)
       return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
-    const rxConfigKey = bytesToString(payload.slice(0, 8));
+    const rxConfigKey = bytesToString(payload.subarray(0, 8));
     if (rxConfigKey !== this.#configKey)
       return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
-    const pin = bytesToString(payload.slice(8, 14));
+    const pin = bytesToString(payload.subarray(8, 14));
     if (this.#pinCodes.has(pin) && this.#pinCodes.get(pin) === BoksCodeType.Multi) {
       this.#pinCodes.delete(pin);
       this.saveState('pinCodes');
@@ -1060,10 +1060,10 @@ export class BoksHardwareSimulator {
   private handleSingleToMulti(payload: Uint8Array): Uint8Array {
     if (payload.length < 14)
       return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
-    const rxConfigKey = bytesToString(payload.slice(0, 8));
+    const rxConfigKey = bytesToString(payload.subarray(0, 8));
     if (rxConfigKey !== this.#configKey)
       return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
-    const pin = bytesToString(payload.slice(8, 14));
+    const pin = bytesToString(payload.subarray(8, 14));
     if (this.#pinCodes.has(pin) && this.#pinCodes.get(pin) === BoksCodeType.Single) {
       this.#pinCodes.set(pin, BoksCodeType.Multi);
       this.saveState('pinCodes');
@@ -1075,10 +1075,10 @@ export class BoksHardwareSimulator {
   private handleMultiToSingle(payload: Uint8Array): Uint8Array {
     if (payload.length < 14)
       return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
-    const rxConfigKey = bytesToString(payload.slice(0, 8));
+    const rxConfigKey = bytesToString(payload.subarray(0, 8));
     if (rxConfigKey !== this.#configKey)
       return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
-    const pin = bytesToString(payload.slice(8, 14));
+    const pin = bytesToString(payload.subarray(8, 14));
     if (this.#pinCodes.has(pin) && this.#pinCodes.get(pin) === BoksCodeType.Multi) {
       this.#pinCodes.set(pin, BoksCodeType.Single);
       this.saveState('pinCodes');
@@ -1090,10 +1090,10 @@ export class BoksHardwareSimulator {
   private handleReactivateCode(payload: Uint8Array): Uint8Array {
     if (payload.length < 14)
       return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
-    const rxConfigKey = bytesToString(payload.slice(0, 8));
+    const rxConfigKey = bytesToString(payload.subarray(0, 8));
     if (rxConfigKey !== this.#configKey)
       return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
-    const pin = bytesToString(payload.slice(8, 14));
+    const pin = bytesToString(payload.subarray(8, 14));
     if (this.#pinCodes.has(pin))
       return this.createResponse(BoksOpcode.CODE_OPERATION_SUCCESS, new Uint8Array(0));
     return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
@@ -1102,7 +1102,7 @@ export class BoksHardwareSimulator {
   private handleSetConfiguration(payload: Uint8Array): Uint8Array {
     if (payload.length < 10)
       return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
-    const rxConfigKey = bytesToString(payload.slice(0, 8));
+    const rxConfigKey = bytesToString(payload.subarray(0, 8));
     if (rxConfigKey !== this.#configKey)
       return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
     const value = payload[9];
@@ -1143,23 +1143,23 @@ export class BoksHardwareSimulator {
 
   private async handleRegeneratePartA(payload: Uint8Array): Promise<Uint8Array | null> {
     if (payload.length < 24) return null;
-    const receivedConfigKey = bytesToString(payload.slice(0, 8));
+    const receivedConfigKey = bytesToString(payload.subarray(0, 8));
     if (receivedConfigKey !== this.#configKey)
       return this.createResponse(BoksOpcode.ERROR_UNAUTHORIZED, new Uint8Array(0));
-    this.#pendingProvisioningPartA = payload.slice(8, 24);
+    this.#pendingProvisioningPartA = payload.subarray(8, 24);
     return this.createResponse(BoksOpcode.CODE_OPERATION_SUCCESS, new Uint8Array(0));
   }
 
   private async handleRegeneratePartB(payload: Uint8Array): Promise<Uint8Array | null> {
     if (payload.length < 24) return null;
-    const receivedConfigKey = bytesToString(payload.slice(0, 8));
+    const receivedConfigKey = bytesToString(payload.subarray(0, 8));
     if (receivedConfigKey !== this.#configKey)
       return this.createResponse(BoksOpcode.ERROR_UNAUTHORIZED, new Uint8Array(0));
     if (!this.#pendingProvisioningPartA) {
       this.emit(this.createResponse(BoksOpcode.NOTIFY_CODE_GENERATION_ERROR, new Uint8Array(0)));
       return null;
     }
-    const partB = payload.slice(8, 24);
+    const partB = payload.subarray(8, 24);
     const fullKey = new Uint8Array(32);
     fullKey.set(this.#pendingProvisioningPartA, 0);
     fullKey.set(partB, 16);
