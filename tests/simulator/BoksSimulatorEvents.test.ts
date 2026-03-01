@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { BoksHardwareSimulator, SimulatorPacketEvent } from '../../src/simulator/BoksSimulator';
 import { BoksOpcode } from '../../src/protocol/constants';
 import { calculateChecksum } from '../../src/utils/converters';
