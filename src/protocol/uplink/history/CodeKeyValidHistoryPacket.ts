@@ -26,7 +26,7 @@ export class CodeKeyValidHistoryPacket extends BoksHistoryEvent {
 
     const offset = 3;
     if (payload.length >= offset + 6) {
-      code = bytesToString(payload.slice(offset, offset + 6));
+      code = bytesToString(payload.subarray(offset, offset + 6));
     }
     return new CodeKeyValidHistoryPacket(age, code, payload);
   }

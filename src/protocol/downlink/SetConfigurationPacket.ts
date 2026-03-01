@@ -1,6 +1,6 @@
 import { AuthPacket } from '@/protocol/downlink/_AuthPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
-import { stringToBytes, bytesToString } from '@/utils/converters';
+import { stringToBytes } from '@/utils/converters';
 import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';
 
 /**
@@ -30,7 +30,7 @@ export class SetConfigurationPacket extends AuthPacket {
       );
     }
 
-    const configKey = bytesToString(payload.subarray(0, 8));
+    const configKey = AuthPacket.extractConfigKey(payload);
     const configType = payload[8];
     const valueByte = payload[9];
 

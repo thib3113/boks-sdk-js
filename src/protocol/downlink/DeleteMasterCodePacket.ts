@@ -1,6 +1,6 @@
 import { AuthPacket } from '@/protocol/downlink/_AuthPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
-import { stringToBytes, bytesToString } from '@/utils/converters';
+import { stringToBytes } from '@/utils/converters';
 import { validateMasterCodeIndex } from '@/utils/validation';
 
 /**
@@ -21,7 +21,7 @@ export class DeleteMasterCodePacket extends AuthPacket {
   }
 
   static fromPayload(payload: Uint8Array): DeleteMasterCodePacket {
-    const configKey = bytesToString(payload.slice(0, 8));
+    const configKey = AuthPacket.extractConfigKey(payload);
     let index = 0;
     if (payload.length > 8) {
       index = payload[8];

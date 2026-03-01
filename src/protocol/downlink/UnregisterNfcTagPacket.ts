@@ -1,6 +1,6 @@
 import { AuthPacket } from '@/protocol/downlink/_AuthPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
-import { stringToBytes, hexToBytes, bytesToString, bytesToHex } from '@/utils/converters';
+import { stringToBytes, hexToBytes, bytesToHex } from '@/utils/converters';
 import { validateNfcUid } from '@/utils/validation';
 
 /**
@@ -21,13 +21,13 @@ export class UnregisterNfcTagPacket extends AuthPacket {
   }
 
   static fromPayload(payload: Uint8Array): UnregisterNfcTagPacket {
-    const configKey = bytesToString(payload.slice(0, 8));
+    const configKey = AuthPacket.extractConfigKey(payload);
     let uid = '';
     if (payload.length > 8) {
       const len = payload[8];
       if (payload.length >= 9 + len) {
         uid =
-          bytesToHex(payload.slice(9, 9 + len))
+          bytesToHex(payload.subarray(9, 9 + len))
             .match(/.{1,2}/g)
             ?.join(':') || '';
       }

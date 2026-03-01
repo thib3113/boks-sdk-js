@@ -39,7 +39,7 @@ export class NfcOpeningHistoryPacket extends BoksHistoryEvent {
       const uidLen = payload[offset];
       offset++;
       if (payload.length >= offset + uidLen) {
-        uid = bytesToHex(payload.slice(offset, offset + uidLen));
+        uid = bytesToHex(payload.subarray(offset, offset + uidLen));
       }
     }
     return new NfcOpeningHistoryPacket(age, tagType, uid, payload);

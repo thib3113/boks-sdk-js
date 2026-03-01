@@ -28,11 +28,11 @@ export class CodeBleValidHistoryPacket extends BoksHistoryEvent {
 
     const offset = 3;
     if (payload.length >= offset + 6) {
-      code = bytesToString(payload.slice(offset, offset + 6));
+      code = bytesToString(payload.subarray(offset, offset + 6));
     }
     // Offset 3+6+2(padding) = 11. MAC starts at 11, length 6.
     if (payload.length >= 17) {
-      const macBytes = payload.slice(11, 17);
+      const macBytes = payload.subarray(11, 17);
       // Reverse for Big Endian display (Firmware sends Little Endian)
       connectedMac = Array.from(macBytes)
         .reverse()
