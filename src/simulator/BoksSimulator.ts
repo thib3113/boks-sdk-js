@@ -368,7 +368,9 @@ export class BoksHardwareSimulator {
     if (savedPins) {
       try {
         const parsedPins = JSON.parse(savedPins);
-        this.#pinCodes = new Map(parsedPins);
+        if (Array.isArray(parsedPins)) {
+          this.#pinCodes = new Map(parsedPins);
+        }
       } catch (e) {
         this.log('warn', 'storage_read_error', { key: 'pinCodes', error: e });
       }
@@ -380,7 +382,9 @@ export class BoksHardwareSimulator {
     if (savedMasterCodes) {
       try {
         const parsed = JSON.parse(savedMasterCodes);
-        this.#masterCodes = new Map(parsed);
+        if (Array.isArray(parsed)) {
+          this.#masterCodes = new Map(parsed);
+        }
       } catch (e) {
         this.log('warn', 'storage_read_error', { key: 'masterCodes', error: e });
       }
@@ -390,7 +394,9 @@ export class BoksHardwareSimulator {
     if (savedNfcTags) {
       try {
         const parsed = JSON.parse(savedNfcTags);
-        this.#nfcTags = new Set(parsed);
+        if (Array.isArray(parsed)) {
+          this.#nfcTags = new Set(parsed);
+        }
       } catch (e) {
         this.log('warn', 'storage_read_error', { key: 'nfcTags', error: e });
       }
@@ -399,7 +405,10 @@ export class BoksHardwareSimulator {
     const savedConfig = this.#storage.get('configuration');
     if (savedConfig) {
       try {
-        this.#configuration = JSON.parse(savedConfig);
+        const parsedConfig = JSON.parse(savedConfig);
+        if (parsedConfig && typeof parsedConfig === 'object') {
+          this.#configuration.laPosteEnabled = Boolean(parsedConfig.laPosteEnabled);
+        }
       } catch (e) {
         this.log('warn', 'storage_read_error', { key: 'configuration', error: e });
       }
