@@ -37,3 +37,7 @@
 ## 2025-03-01 - Optimizing Hex Encoding with 16-bit Lookups
 **Learning:** In hot loops like `bytesToHex`, iterating 1 byte at a time and doing string concatenation is still a minor bottleneck. By precomputing a 16-bit lookup table (`HEX_TABLE_16` with 65,536 elements) we can read 2 bytes per iteration, yielding a ~2x performance speedup in V8 because we halve both loop iterations and the number of string concatenations.
 **Action:** When working with continuous byte conversions in hot paths, consider reading multiple bytes (e.g., pairs via bitwise shifts `(a << 8) | b`) using a larger lookup table if memory permits.
+
+## 2025-05-18 - String and Bytes conversion overhead
+**Learning:** For short pure-ASCII strings (like 6-digit PINs and 8-char hex keys), the instantiation or even execution overhead of the native `TextEncoder` and `TextDecoder` (or even reusing a shared instance) can be a significant bottleneck compared to a simple manual JS loop using `charCodeAt()` and `String.fromCharCode()`. In Node.js / V8, converting short ASCII strings to `Uint8Array` can be ~8-9x faster using a manual loop, and converting `Uint8Array` to an ASCII string can be ~2x faster.
+**Action:** When working with high-frequency conversions of short strings that are predominantly ASCII, implement an optimistic ASCII fast-path loop that checks for `charCode > 127`, and only fallback to `TextEncoder`/`TextDecoder` if non-ASCII characters are encountered.
