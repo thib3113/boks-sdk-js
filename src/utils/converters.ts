@@ -56,32 +56,46 @@ export const hexToBytes = (hex: string): Uint8Array => {
   }
 
   // Slow path: contains whitespace or invalid characters
-  // We fall back to the original logic which handles whitespace stripping
-  // and throws specific errors for invalid structure/chars.
-  const cleanHex = hex.replace(/\s/g, '');
-  if (cleanHex.length % 2 !== 0) {
-    throw new BoksProtocolError(BoksProtocolErrorId.INVALID_VALUE, undefined, {
-      received: cleanHex.length,
-      reason: 'ODD_LENGTH'
-    });
-  }
-  const cleanLen = cleanHex.length;
-  const bytes = new Uint8Array(cleanLen / 2);
+  // We decode in a single pass ignoring whitespace (space, tab, LF, CR, etc.)
+  // Optimization: Avoiding .replace(/\s/g, '') prevents creating a new string.
+  const bytes = new Uint8Array(len >>> 1); // Max possible length
+  let j = 0;
+  let high = -1;
+  let skippedChars = 0;
 
-  for (let i = 0; i < cleanLen; i += 2) {
-    const high = HEX_DECODE_TABLE[cleanHex.charCodeAt(i)];
-    const low = HEX_DECODE_TABLE[cleanHex.charCodeAt(i + 1)];
+  for (let i = 0; i < len; i++) {
+    const charCode = hex.charCodeAt(i);
+    // Whitespace chars: 32 (space), 9 (tab), 10 (LF), 13 (CR)
+    if (charCode === 32 || charCode === 9 || charCode === 10 || charCode === 13) {
+      skippedChars++;
+      continue;
+    }
 
-    if (high === undefined || low === undefined || high === 255 || low === 255) {
+    const val = HEX_DECODE_TABLE[charCode];
+    if (val === 255 || val === undefined) {
       throw new BoksProtocolError(BoksProtocolErrorId.INVALID_VALUE, undefined, {
-        received: cleanHex[i] + (cleanHex[i + 1] || ''),
+        received: hex[i],
         reason: 'INVALID_HEX_CHAR'
       });
     }
 
-    bytes[i / 2] = (high << 4) | low;
+    if (high === -1) {
+      high = val;
+    } else {
+      bytes[j++] = (high << 4) | val;
+      high = -1;
+    }
   }
-  return bytes;
+
+  if (high !== -1) {
+    throw new BoksProtocolError(BoksProtocolErrorId.INVALID_VALUE, undefined, {
+      received: len - skippedChars,
+      reason: 'ODD_LENGTH'
+    });
+  }
+
+  // If we skipped spaces, the array might be longer than needed
+  return j === bytes.length ? bytes : bytes.subarray(0, j);
 };
 
 export const bytesToHex = (bytes: Uint8Array): string => {
