@@ -84,21 +84,48 @@ describe('validation utils', () => {
   });
 
   describe('validateCredentialsKey', () => {
-    it('should accept valid 32-byte key (Master Key)', () => {
-      const key = new Uint8Array(32).fill(0xBB);
-      expect(() => validateCredentialsKey(key)).not.toThrow();
-      expect(() => validateCredentialsKey('B'.repeat(64))).not.toThrow();
+    describe.each([
+      { type: 'Master Key (Uint8Array)', key: new Uint8Array(32).fill(0xBB) },
+      { type: 'Master Key (hex string)', key: 'B'.repeat(64) },
+      { type: 'Master Key (hex string with spaces)', key: 'BB '.repeat(32).trim() },
+      { type: 'Config Key (Uint8Array)', key: new Uint8Array(4).fill(0xCC) },
+      { type: 'Config Key (hex string)', key: 'C'.repeat(8) },
+      { type: 'Config Key (hex string with dashes)', key: 'CC-CC-CC-CC' },
+      { type: 'Config Key (hex string with mixed spaces)', key: '  C C C C C C C C  ' }
+    ])('valid keys: $type', ({ key }) => {
+      it('should accept valid key', () => {
+        expect(() => validateCredentialsKey(key)).not.toThrow();
+      });
     });
 
-    it('should accept valid 4-byte key (Config Key)', () => {
-      const key = new Uint8Array(4).fill(0xCC);
-      expect(() => validateCredentialsKey(key)).not.toThrow();
-      expect(() => validateCredentialsKey('C'.repeat(8))).not.toThrow();
-    });
+    describe.each([
+      { type: 'Empty Uint8Array', key: new Uint8Array(0), received: 0 },
+      { type: 'Empty string', key: '', received: 0 },
+      { type: 'String with only non-hex chars', key: '    ---   ', received: 0 },
+      { type: '1-byte Uint8Array', key: new Uint8Array(1), received: 1 },
+      { type: '1-byte hex string', key: 'AA', received: 1 },
+      { type: '16-byte Uint8Array', key: new Uint8Array(16), received: 16 },
+      { type: '16-byte hex string', key: 'D'.repeat(32), received: 16 },
+      { type: '31-byte Uint8Array', key: new Uint8Array(31), received: 31 },
+      { type: '33-byte Uint8Array', key: new Uint8Array(33), received: 33 },
+      { type: '64-byte Uint8Array', key: new Uint8Array(64), received: 64 },
+      { type: '64-byte hex string', key: 'E'.repeat(128), received: 64 }
+    ])('invalid keys: $type', ({ key, received }) => {
+      it('should reject invalid key and throw BoksProtocolError', () => {
+        let caughtError: Error | null = null;
+        try {
+          validateCredentialsKey(key);
+        } catch (error) {
+          caughtError = error as Error;
+        }
 
-    it('should reject keys with other lengths', () => {
-      expect(() => validateCredentialsKey(new Uint8Array(16))).toThrow(BoksProtocolErrorId.INVALID_SEED_LENGTH);
-      expect(() => validateCredentialsKey('D'.repeat(10))).toThrow(BoksProtocolErrorId.INVALID_SEED_LENGTH);
+        expect(caughtError).toBeInstanceOf(BoksProtocolError);
+        const protocolError = caughtError as BoksProtocolError;
+        expect(protocolError.id).toBe(BoksProtocolErrorId.INVALID_SEED_LENGTH);
+        expect(protocolError.context).toBeDefined();
+        expect(protocolError.context?.received).toBe(received);
+        expect(protocolError.context?.expected).toBe('32 or 4');
+      });
     });
   });
 
