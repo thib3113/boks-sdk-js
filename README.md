@@ -263,7 +263,7 @@ simulator.triggerDoorOpen(BoksOpenSource.Keypad, '123456');
 simulator.triggerDoorOpen(BoksOpenSource.PhysicalKey);
 
 // Verify that the history logs reflect these events
-const history = simulator.getState().logs;
+const history = simulator.getInternalState().logs;
 ```
 
 ### Integration Testing
