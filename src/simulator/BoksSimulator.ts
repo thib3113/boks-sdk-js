@@ -136,7 +136,7 @@ export interface BoksHardwareSimulatorOptions {
  * @security
  * This class is EXCLUSIVELY intended for development, integration testing, and documentation demos.
  * By design, it priority high-fidelity protocol simulation over security:
- * - Internal state (keys, pins, logs) is accessible via public methods (like getState) without authentication.
+ * - Internal state (keys, pins, logs) is accessible via public methods (like getInternalState) without authentication.
  * - The default masterKey is initialized with zeros (unsecure).
  * - Sensitive data is persisted in plain text if a SimulatorStorage is provided.
  *
@@ -640,9 +640,9 @@ export class BoksHardwareSimulator {
    * Get internal state (for debugging/assertions)
    *
    * @security This method exposes the raw masterKey and all internal secrets.
-   * Use only in test environments.
+   * Use exclusively in test environments or local debugging.
    */
-  public getState() {
+  public getInternalState() {
     return {
       isOpen: this.#isOpen,
       batteryLevel: this.#batteryLevel,
@@ -651,7 +651,11 @@ export class BoksHardwareSimulator {
       masterKey: bytesToHex(this.#masterKey),
       configKey: this.#configKey,
       softwareVersion: this.#softwareVersion,
-      firmwareVersion: this.#firmwareVersion
+      firmwareVersion: this.#firmwareVersion,
+      masterCodes: new Map(this.#masterCodes),
+      nfcTags: new Set(this.#nfcTags),
+      configuration: { ...this.#configuration },
+      isNfcScanning: this.#isNfcScanning
     };
   }
 
