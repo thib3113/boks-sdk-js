@@ -22,6 +22,12 @@ describe('converters', () => {
       expect(bytes).toEqual(new Uint8Array([1, 2, 3, 4]));
     });
 
+    it('should handle hex string with tabs and newlines', () => {
+      const hex = '01\n02\t03\r04';
+      const bytes = hexToBytes(hex);
+      expect(bytes).toEqual(new Uint8Array([1, 2, 3, 4]));
+    });
+
     it('should throw on lowercase characters (uppercase only required)', () => {
       expect(() => hexToBytes('a1B2c3D4')).toThrow(BoksProtocolErrorId.INVALID_VALUE);
     });
