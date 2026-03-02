@@ -6,7 +6,7 @@
  * This helps prevent prototype pollution attacks and unauthorized extensions of sensitive objects.
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function sealed(constructor: new (...args: any[]) => any) {
+export function sealed(constructor: { prototype: any }) {
   Object.seal(constructor);
   Object.seal(constructor.prototype);
 }
@@ -18,7 +18,7 @@ export function sealed(constructor: new (...args: any[]) => any) {
  * This is useful for static registries or configuration classes.
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function freeze(constructor: new (...args: any[]) => any) {
+export function freeze(constructor: { prototype: any }) {
   Object.freeze(constructor);
   Object.freeze(constructor.prototype);
 }
