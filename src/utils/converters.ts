@@ -112,6 +112,29 @@ export const bytesToString = (bytes: Uint8Array): string => {
   return sharedDecoder.decode(bytes).replace(/\0/g, '');
 };
 
+/**
+ * Formats a byte array as a MAC address (XX:XX:XX:XX:XX:XX).
+ * Boks firmware sends MAC addresses in Little Endian, so we reverse by default for Big Endian display.
+ */
+export const bytesToMac = (bytes: Uint8Array, reverse: boolean = true): string => {
+  const len = bytes.length;
+  if (len === 0) return '';
+
+  if (reverse) {
+    let result = HEX_TABLE[bytes[len - 1]];
+    for (let i = len - 2; i >= 0; i--) {
+      result += ':' + HEX_TABLE[bytes[i]];
+    }
+    return result;
+  } else {
+    let result = HEX_TABLE[bytes[0]];
+    for (let i = 1; i < len; i++) {
+      result += ':' + HEX_TABLE[bytes[i]];
+    }
+    return result;
+  }
+};
+
 export const calculateChecksum = (data: Uint8Array): number => {
   let sum = 0;
   for (let i = 0; i < data.length; i++) {
