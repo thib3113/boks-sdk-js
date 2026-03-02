@@ -105,11 +105,31 @@ const sharedEncoder = new TextEncoder();
 const sharedDecoder = new TextDecoder();
 
 export const stringToBytes = (str: string): Uint8Array => {
-  return sharedEncoder.encode(str);
+  const len = str.length;
+  // Optimization: Fast path for pure ASCII strings (which are common for PINs/Keys).
+  // Avoids the overhead of TextEncoder instantiation/execution.
+  const bytes = new Uint8Array(len);
+  for (let i = 0; i < len; i++) {
+    const code = str.charCodeAt(i);
+    // If we hit a non-ASCII character, fallback to full UTF-8 encoding
+    if (code > 127) return sharedEncoder.encode(str);
+    bytes[i] = code;
+  }
+  return bytes;
 };
 
 export const bytesToString = (bytes: Uint8Array): string => {
-  return sharedDecoder.decode(bytes).replace(/\0/g, '');
+  const len = bytes.length;
+  let s = '';
+  // Optimization: Fast path for pure ASCII strings.
+  // Avoids TextDecoder execution which is surprisingly slow in V8 for short strings.
+  for (let i = 0; i < len; i++) {
+    const b = bytes[i];
+    // If we hit a non-ASCII character, fallback to full UTF-8 decoding
+    if (b > 127) return sharedDecoder.decode(bytes).replace(/\0/g, '');
+    if (b !== 0) s += String.fromCharCode(b);
+  }
+  return s;
 };
 
 /**
