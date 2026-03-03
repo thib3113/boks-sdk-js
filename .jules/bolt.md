@@ -45,3 +45,7 @@
 ## 2025-05-18 - String and Bytes conversion overhead
 **Learning:** For short pure-ASCII strings (like 6-digit PINs and 8-char hex keys), the instantiation or even execution overhead of the native `TextEncoder` and `TextDecoder` (or even reusing a shared instance) can be a significant bottleneck compared to a simple manual JS loop using `charCodeAt()` and `String.fromCharCode()`. In Node.js / V8, converting short ASCII strings to `Uint8Array` can be ~8-9x faster using a manual loop, and converting `Uint8Array` to an ASCII string can be ~2x faster.
 **Action:** When working with high-frequency conversions of short strings that are predominantly ASCII, implement an optimistic ASCII fast-path loop that checks for `charCode > 127`, and only fallback to `TextEncoder`/`TextDecoder` if non-ASCII characters are encountered.
+
+## 2025-10-26 - Repeated TextEncoder/Decoder Instantiation in Business Logic
+**Learning:** Using `new TextEncoder()` and `new TextDecoder()` inline within methods like `refreshVersions` or `triggerDoorOpen` incurs repeated instantiation overhead, which can be easily avoided by using centralized parsing utilities.
+**Action:** Use shared string parsing utilities like `bytesToString` and `stringToBytes` from `src/utils/converters.ts` to benefit from pre-established fast paths and cached encoder/decoder instances, instead of scattering standard library instantiations.
