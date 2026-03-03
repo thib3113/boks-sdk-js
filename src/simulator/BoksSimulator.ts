@@ -470,16 +470,14 @@ export class BoksHardwareSimulator {
     let logOpcode: number;
     let payload: Uint8Array;
 
-    const encoder = new TextEncoder();
-
     switch (source) {
       case BoksOpenSource.Ble:
         logOpcode = BoksOpcode.LOG_CODE_BLE_VALID;
-        payload = encoder.encode(codeOrTagId.padEnd(6, '\0').substring(0, 6));
+        payload = stringToBytes(codeOrTagId.padEnd(6, '\0').substring(0, 6));
         break;
       case BoksOpenSource.Keypad:
         logOpcode = BoksOpcode.LOG_CODE_KEY_VALID;
-        payload = encoder.encode(codeOrTagId.padEnd(6, '\0').substring(0, 6));
+        payload = stringToBytes(codeOrTagId.padEnd(6, '\0').substring(0, 6));
         break;
       case BoksOpenSource.PhysicalKey:
         logOpcode = BoksOpcode.LOG_EVENT_KEY_OPENING;

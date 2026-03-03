@@ -48,7 +48,7 @@ import {
   NotifyScaleRawSensorsPacket
 } from '@/protocol';
 import { BoksClientError, BoksClientErrorId } from '@/errors/BoksClientError';
-import { hexToBytes, bytesToHex } from '@/utils/converters';
+import { hexToBytes, bytesToHex, bytesToString } from '@/utils/converters';
 import { validateMasterCodeIndex, validateSeed, validateCredentialsKey } from '@/utils/validation';
 
 export interface BoksHardwareInfo {
@@ -253,15 +253,13 @@ export class BoksController {
    * Refreshes version information from the device.
    */
   private async refreshVersions(): Promise<void> {
-    const textDecoder = new TextDecoder('utf-8');
-
     // Read Software Revision
     const swBytes = await this.#client.readCharacteristic(BOKS_UUIDS.SOFTWARE_REVISION);
-    const swRevision = textDecoder.decode(swBytes).replace(/\0/g, '').trim();
+    const swRevision = bytesToString(swBytes).trim();
 
     // Read Firmware Revision (Internal)
     const fwBytes = await this.#client.readCharacteristic(BOKS_UUIDS.FIRMWARE_REVISION);
-    const fwRevision = textDecoder.decode(fwBytes).replace(/\0/g, '').trim();
+    const fwRevision = bytesToString(fwBytes).trim();
 
     this._hardwareInfo = this.deriveHardwareInfo(fwRevision, swRevision);
   }
