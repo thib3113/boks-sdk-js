@@ -1,5 +1,5 @@
 import { BoksPacket } from '@/protocol/_BoksPacketBase';
-import { BoksOpcode } from '@/protocol/constants';
+import { BoksOpcode, EMPTY_BUFFER } from '@/protocol/constants';
 
 /**
  * Command to reboot the Boks.
@@ -13,6 +13,6 @@ export class RebootPacket extends BoksPacket {
     return new RebootPacket();
   }
   toPayload() {
-    return new Uint8Array(0);
+    return EMPTY_BUFFER;
   }
 }

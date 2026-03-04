@@ -53,3 +53,11 @@
 ## 2025-10-26 - Loop Overhead in High-Frequency Array to String Formatting
 **Learning:** In V8, loop overhead and array iteration for formatting small, fixed-size byte arrays (like 6-byte MAC addresses) into strings can be a bottleneck. By unrolling the loop and manually concatenating pre-mapped string values (e.g. `HEX_TABLE[bytes[0]] + ':' + ...`), we observed an ~8-9x performance speedup.
 **Action:** Introduce explicit fast-paths for highly predictable, common array sizes (like 6 for MAC addresses) using manual string concatenation instead of loops when optimizing hot paths.
+
+## 2025-10-26 - Empty Uint8Array Instantiation Overhead
+**Learning:** Repeatedly instantiating `new Uint8Array(0)` for empty payloads in packets (e.g. `AskDoorStatusPacket.toPayload()`) or simulator logic causes unnecessary GC pressure. Replacing these with a shared `EMPTY_BUFFER` constant is highly effective at reducing memory allocation in high-frequency scenarios.
+**Action:** Use the `EMPTY_BUFFER` constant from `src/protocol/constants.ts` instead of `new Uint8Array(0)` across the codebase.
+
+## 2025-10-26 - Loop Unrolling for Checksum Calculation
+**Learning:** In V8, the simple `for` loop in `calculateChecksum` can be optimized by unrolling. Processing 4 bytes per iteration (`sum += data[i] + data[i+1] + data[i+2] + data[i+3]`) yielded a measurable speedup (~1.5x-1.7x) by significantly reducing loop condition checks and increment overhead.
+**Action:** When performing simple arithmetic aggregation over long TypedArrays in hot paths, apply manual loop unrolling (handling remainders appropriately) to maximize execution speed.

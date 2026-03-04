@@ -1,5 +1,5 @@
 import { BoksPacket } from '@/protocol/_BoksPacketBase';
-import { BoksOpcode } from '@/protocol/constants';
+import { BoksOpcode, EMPTY_BUFFER } from '@/protocol/constants';
 
 /**
  * Command to request logs retrieval
@@ -13,6 +13,6 @@ export class RequestLogsPacket extends BoksPacket {
     return new RequestLogsPacket();
   }
   toPayload() {
-    return new Uint8Array(0);
+    return EMPTY_BUFFER;
   }
 }

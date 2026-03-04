@@ -1,4 +1,4 @@
-import { BoksOpcode } from '@/protocol/constants';
+import { BoksOpcode, EMPTY_BUFFER } from '@/protocol/constants';
 import { calculateChecksum } from '@/utils/converters';
 import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';
 
@@ -16,7 +16,7 @@ export type BoksPacketConstructor<T extends BoksPacket = BoksPacket> = {
  * Base class for all Boks packets
  */
 export abstract class BoksPacket {
-  protected rawPayload: Uint8Array = new Uint8Array(0);
+  protected rawPayload: Uint8Array = EMPTY_BUFFER;
 
   abstract get opcode(): BoksOpcode;
   abstract toPayload(): Uint8Array;

@@ -1,6 +1,7 @@
 import { stringToBytes } from '../utils/converters';
 import { BoksTransport } from '../client/transport';
 import { BoksHardwareSimulator } from './BoksSimulator';
+import { EMPTY_BUFFER } from '../protocol/constants';
 
 /**
  * Transport implementation for the Boks Hardware Simulator.
@@ -43,7 +44,7 @@ export class SimulatorTransport implements BoksTransport {
       return stringToBytes(state.firmwareVersion);
     }
 
-    return new Uint8Array(0);
+    return EMPTY_BUFFER;
   }
 
   async subscribe(callback: (data: Uint8Array) => void): Promise<void> {
