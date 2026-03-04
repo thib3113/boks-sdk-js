@@ -12,7 +12,9 @@ export class WebBluetoothTransport implements BoksTransport {
   private notifyChar: BluetoothRemoteGATTCharacteristic | null = null;
 
   constructor(device?: BluetoothDevice) {
-    if (device) this.device = device;
+    if (device) {
+      this.device = device;
+    }
   }
 
   async connect(): Promise<void> {
@@ -49,7 +51,9 @@ export class WebBluetoothTransport implements BoksTransport {
       this.writeChar = await service.getCharacteristic(BOKS_UUIDS.WRITE);
       this.notifyChar = await service.getCharacteristic(BOKS_UUIDS.NOTIFY);
     } catch (error) {
-      if (error instanceof BoksClientError) throw error;
+      if (error instanceof BoksClientError) {
+        throw error;
+      }
       throw new BoksClientError(
         BoksClientErrorId.CONNECTION_FAILED,
         'Failed to connect to Boks device',
@@ -154,7 +158,9 @@ export class WebBluetoothTransport implements BoksTransport {
       for (const service of services) {
         try {
           char = await service.getCharacteristic(uuid);
-          if (char) break;
+          if (char) {
+            break;
+          }
         } catch {
           /* ignore */
         }

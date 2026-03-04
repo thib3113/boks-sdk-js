@@ -52,7 +52,9 @@ export const hexToBytes = (hex: string): Uint8Array => {
       bytes[j] = (high << 4) | low;
     }
 
-    if (isClean) return bytes;
+    if (isClean) {
+      return bytes;
+    }
   }
 
   // Slow path: contains whitespace or invalid characters
@@ -126,7 +128,9 @@ export const stringToBytes = (str: string): Uint8Array => {
   for (let i = 0; i < len; i++) {
     const code = str.charCodeAt(i);
     // If we hit a non-ASCII character, fallback to full UTF-8 encoding
-    if (code > 127) return sharedEncoder.encode(str);
+    if (code > 127) {
+      return sharedEncoder.encode(str);
+    }
     bytes[i] = code;
   }
   return bytes;
@@ -140,8 +144,12 @@ export const bytesToString = (bytes: Uint8Array): string => {
   for (let i = 0; i < len; i++) {
     const b = bytes[i];
     // If we hit a non-ASCII character, fallback to full UTF-8 decoding
-    if (b > 127) return sharedDecoder.decode(bytes).replace(/\0/g, '');
-    if (b !== 0) s += String.fromCharCode(b);
+    if (b > 127) {
+      return sharedDecoder.decode(bytes).replace(/\0/g, '');
+    }
+    if (b !== 0) {
+      s += String.fromCharCode(b);
+    }
   }
   return s;
 };
@@ -184,12 +192,16 @@ const formatMac6 = (bytes: Uint8Array, reverse: boolean): string => {
 
 export const bytesToMac = (bytes: Uint8Array, reverse: boolean = true): string => {
   const len = bytes.length;
-  if (len === 0) return '';
+  if (len === 0) {
+    return '';
+  }
 
   // Optimization: fast path for standard 6-byte MAC addresses.
   // Directly concatenating the 6 hex strings avoids loop overhead
   // and branching, resulting in an ~8-9x performance speedup in V8.
-  if (len === 6) return formatMac6(bytes, reverse);
+  if (len === 6) {
+    return formatMac6(bytes, reverse);
+  }
 
   // Slow path for non-standard lengths
   if (reverse) {

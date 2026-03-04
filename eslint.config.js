@@ -77,5 +77,11 @@ export default tseslint.config(
       'prettier/prettier': 'off'
     }
   },
-  eslintConfigPrettier
+  eslintConfigPrettier,
+  {
+    // Override prettier configuration to force curly braces
+    rules: {
+      'curly': ['error', 'all']
+    }
+  }
 );

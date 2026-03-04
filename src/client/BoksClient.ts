@@ -243,7 +243,9 @@ export class BoksClient {
   private handleNotification(data: Uint8Array) {
     try {
       const packet = BoksPacketFactory.createFromPayload(data, (l, e, c) => this.log(l, e, c));
-      if (!packet) return;
+      if (!packet) {
+        return;
+      }
 
       this.log('debug', 'receive', { opcode: packet.opcode });
 
