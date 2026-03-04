@@ -182,3 +182,4 @@ export enum BoksOpenSource {
   PhysicalKey = 2,
   Nfc = 3
 }
+export const EMPTY_BUFFER = new Uint8Array(0);

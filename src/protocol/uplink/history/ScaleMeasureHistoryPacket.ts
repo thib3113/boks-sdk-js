@@ -1,5 +1,5 @@
 import { BoksHistoryEvent } from '@/protocol/uplink/history/_BoksHistoryEventBase';
-import { BoksOpcode } from '@/protocol/constants';
+import { BoksOpcode, EMPTY_BUFFER } from '@/protocol/constants';
 
 /** ⚠️ This packet is theoretical; it has never been tested in real-world conditions. */
 /**
@@ -10,7 +10,7 @@ export class ScaleMeasureHistoryPacket extends BoksHistoryEvent {
 
   constructor(
     age: number = 0,
-    public readonly data: Uint8Array = new Uint8Array(0),
+    public readonly data: Uint8Array = EMPTY_BUFFER,
     rawPayload?: Uint8Array
   ) {
     super(ScaleMeasureHistoryPacket.opcode, age, rawPayload);
@@ -18,7 +18,7 @@ export class ScaleMeasureHistoryPacket extends BoksHistoryEvent {
 
   static fromPayload(payload: Uint8Array): ScaleMeasureHistoryPacket {
     let age = 0;
-    let data: Uint8Array = new Uint8Array(0);
+    let data: Uint8Array = EMPTY_BUFFER;
 
     if (payload.length >= 3) {
       age = (payload[0] << 16) | (payload[1] << 8) | payload[2];

@@ -1,5 +1,5 @@
 import { BoksPacket } from '@/protocol/_BoksPacketBase';
-import { BoksOpcode } from '@/protocol/constants';
+import { BoksOpcode, EMPTY_BUFFER } from '@/protocol/constants';
 
 /**
  * Command to get the number of active codes.
@@ -13,6 +13,6 @@ export class CountCodesPacket extends BoksPacket {
     return new CountCodesPacket();
   }
   toPayload() {
-    return new Uint8Array(0);
+    return EMPTY_BUFFER;
   }
 }

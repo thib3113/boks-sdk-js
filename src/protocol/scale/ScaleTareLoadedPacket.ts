@@ -1,5 +1,5 @@
 import { BoksPacket } from '@/protocol/_BoksPacketBase';
-import { BoksOpcode } from '@/protocol/constants';
+import { BoksOpcode, EMPTY_BUFFER } from '@/protocol/constants';
 
 /** ⚠️ This packet is theoretical; it has never been tested in real-world conditions. */
 /**
@@ -10,7 +10,7 @@ export class ScaleTareLoadedPacket extends BoksPacket {
   get opcode() {
     return ScaleTareLoadedPacket.opcode;
   }
-  constructor(public readonly data: Uint8Array = new Uint8Array(0)) {
+  constructor(public readonly data: Uint8Array = EMPTY_BUFFER) {
     super();
   }
   static fromPayload(payload: Uint8Array): ScaleTareLoadedPacket {

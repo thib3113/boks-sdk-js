@@ -1,4 +1,10 @@
-import { BoksOpcode, BoksCodeType, BoksOpenSource, BOKS_UUIDS } from '../protocol/constants';
+import {
+  BoksOpcode,
+  BoksCodeType,
+  BoksOpenSource,
+  BOKS_UUIDS,
+  EMPTY_BUFFER
+} from '../protocol/constants';
 import {
   calculateChecksum,
   bytesToString,
@@ -489,22 +495,20 @@ export class BoksHardwareSimulator {
         break;
       case BoksOpenSource.PhysicalKey:
         logOpcode = BoksOpcode.LOG_EVENT_KEY_OPENING;
-        payload = new Uint8Array(0);
+        payload = EMPTY_BUFFER;
         break;
       case BoksOpenSource.Nfc:
         logOpcode = BoksOpcode.LOG_EVENT_NFC_OPENING;
         if (codeOrTagId) {
           const match = codeOrTagId.match(/.{1,2}/g);
-          payload = match
-            ? new Uint8Array(match.map((byte) => parseInt(byte, 16)))
-            : new Uint8Array(0);
+          payload = match ? new Uint8Array(match.map((byte) => parseInt(byte, 16))) : EMPTY_BUFFER;
         } else {
-          payload = new Uint8Array(0);
+          payload = EMPTY_BUFFER;
         }
         break;
       default:
         logOpcode = BoksOpcode.LOG_DOOR_OPEN;
-        payload = new Uint8Array(0);
+        payload = EMPTY_BUFFER;
     }
 
     // 1. Log the source event
@@ -923,7 +927,7 @@ export class BoksHardwareSimulator {
         this.#isOpen = false;
         this.emit(this.createResponse(BoksOpcode.NOTIFY_DOOR_STATUS, new Uint8Array([0x01, 0x00])));
         // Log door close
-        this.addLog(BoksOpcode.LOG_DOOR_CLOSE, new Uint8Array(0));
+        this.addLog(BoksOpcode.LOG_DOOR_CLOSE, EMPTY_BUFFER);
       }
       this.#doorAutoCloseTimeout = null;
     }, 10000);
@@ -945,14 +949,14 @@ export class BoksHardwareSimulator {
     } else if (payload.length >= 14) {
       pin = bytesToString(payload.subarray(0, 6));
     } else {
-      return this.createResponse(BoksOpcode.INVALID_OPEN_CODE, new Uint8Array(0));
+      return this.createResponse(BoksOpcode.INVALID_OPEN_CODE, EMPTY_BUFFER);
     }
 
     if (this.#pinCodes.has(pin)) {
       this.triggerDoorOpen(BoksOpenSource.Ble, pin);
-      return this.createResponse(BoksOpcode.VALID_OPEN_CODE, new Uint8Array(0));
+      return this.createResponse(BoksOpcode.VALID_OPEN_CODE, EMPTY_BUFFER);
     } else {
-      return this.createResponse(BoksOpcode.INVALID_OPEN_CODE, new Uint8Array(0));
+      return this.createResponse(BoksOpcode.INVALID_OPEN_CODE, EMPTY_BUFFER);
     }
   }
 
@@ -975,7 +979,7 @@ export class BoksHardwareSimulator {
       this.emit(this.createResponse(log.opcode, logPayload));
       await new Promise((r) => setTimeout(r, 50));
     }
-    this.emit(this.createResponse(BoksOpcode.LOG_END_HISTORY, new Uint8Array(0)));
+    this.emit(this.createResponse(BoksOpcode.LOG_END_HISTORY, EMPTY_BUFFER));
     return null;
   }
 
@@ -998,7 +1002,7 @@ export class BoksHardwareSimulator {
 
   private handleDeleteSingleUseCode(payload: Uint8Array): Uint8Array {
     if (payload.length < 14) {
-      return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
+      return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, EMPTY_BUFFER);
     }
     const pin = bytesToString(payload.subarray(8, 14));
     if (this.#pinCodes.has(pin)) {
@@ -1011,7 +1015,7 @@ export class BoksHardwareSimulator {
      * Quirk: Real hardware MUST return 0x78 (Error) even when successfully deleting a single use code.
      * This ensures the SDK remains resilient to this specific protocol behavior.
      */
-    return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
+    return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, EMPTY_BUFFER);
   }
 
   private handleGetLogsCount(): Uint8Array {
@@ -1024,16 +1028,16 @@ export class BoksHardwareSimulator {
 
   private handleCreateCode(payload: Uint8Array, type: BoksCodeType): Uint8Array {
     if (payload.length < 14) {
-      return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
+      return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, EMPTY_BUFFER);
     }
     const rxConfigKey = bytesToString(payload.subarray(0, 8));
     if (rxConfigKey !== this.#configKey) {
-      return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
+      return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, EMPTY_BUFFER);
     }
     const pin = bytesToString(payload.subarray(8, 14));
     this.#pinCodes.set(pin, type);
     this.saveState('pinCodes');
-    return this.createResponse(BoksOpcode.CODE_OPERATION_SUCCESS, new Uint8Array(0));
+    return this.createResponse(BoksOpcode.CODE_OPERATION_SUCCESS, EMPTY_BUFFER);
   }
 
   private handleRegisterNfcScanStart(): Uint8Array {
@@ -1046,20 +1050,20 @@ export class BoksHardwareSimulator {
       this.emit(this.createResponse(BoksOpcode.NOTIFY_NFC_TAG_FOUND, payload));
       this.#pendingNfcTag = null;
     }
-    return this.createResponse(BoksOpcode.CODE_OPERATION_SUCCESS, new Uint8Array(0));
+    return this.createResponse(BoksOpcode.CODE_OPERATION_SUCCESS, EMPTY_BUFFER);
   }
 
   private handleRegisterNfcTag(payload: Uint8Array): Uint8Array {
     if (payload.length < 9) {
-      return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
+      return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, EMPTY_BUFFER);
     }
     const rxConfigKey = bytesToString(payload.subarray(0, 8));
     if (rxConfigKey !== this.#configKey) {
-      return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
+      return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, EMPTY_BUFFER);
     }
     const len = payload[8];
     if (payload.length < 9 + len) {
-      return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
+      return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, EMPTY_BUFFER);
     }
     const uidBytes = payload.subarray(9, 9 + len);
     const uid =
@@ -1069,20 +1073,20 @@ export class BoksHardwareSimulator {
     this.#nfcTags.add(uid);
     this.#isNfcScanning = false;
     this.saveState('nfcTags');
-    return this.createResponse(BoksOpcode.NOTIFY_NFC_TAG_REGISTERED, new Uint8Array(0));
+    return this.createResponse(BoksOpcode.NOTIFY_NFC_TAG_REGISTERED, EMPTY_BUFFER);
   }
 
   private handleUnregisterNfcTag(payload: Uint8Array): Uint8Array {
     if (payload.length < 9) {
-      return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
+      return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, EMPTY_BUFFER);
     }
     const rxConfigKey = bytesToString(payload.subarray(0, 8));
     if (rxConfigKey !== this.#configKey) {
-      return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
+      return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, EMPTY_BUFFER);
     }
     const len = payload[8];
     if (payload.length < 9 + len) {
-      return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
+      return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, EMPTY_BUFFER);
     }
     const uidBytes = payload.subarray(9, 9 + len);
     const uid =
@@ -1093,16 +1097,16 @@ export class BoksHardwareSimulator {
       this.#nfcTags.delete(uid);
       this.saveState('nfcTags');
     }
-    return this.createResponse(BoksOpcode.NOTIFY_NFC_TAG_UNREGISTERED, new Uint8Array(0));
+    return this.createResponse(BoksOpcode.NOTIFY_NFC_TAG_UNREGISTERED, EMPTY_BUFFER);
   }
 
   private handleCreateMasterCode(payload: Uint8Array): Uint8Array {
     if (payload.length < 15) {
-      return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
+      return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, EMPTY_BUFFER);
     }
     const rxConfigKey = bytesToString(payload.subarray(0, 8));
     if (rxConfigKey !== this.#configKey) {
-      return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
+      return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, EMPTY_BUFFER);
     }
     const pin = bytesToString(payload.subarray(8, 14));
     const index = payload[14];
@@ -1110,16 +1114,16 @@ export class BoksHardwareSimulator {
     this.#pinCodes.set(pin, BoksCodeType.Master);
     this.saveState('masterCodes');
     this.saveState('pinCodes');
-    return this.createResponse(BoksOpcode.CODE_OPERATION_SUCCESS, new Uint8Array(0));
+    return this.createResponse(BoksOpcode.CODE_OPERATION_SUCCESS, EMPTY_BUFFER);
   }
 
   private handleEditMasterCode(payload: Uint8Array): Uint8Array {
     if (payload.length < 15) {
-      return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
+      return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, EMPTY_BUFFER);
     }
     const rxConfigKey = bytesToString(payload.subarray(0, 8));
     if (rxConfigKey !== this.#configKey) {
-      return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
+      return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, EMPTY_BUFFER);
     }
     const index = payload[8];
     const newPin = bytesToString(payload.subarray(9, 15));
@@ -1131,16 +1135,16 @@ export class BoksHardwareSimulator {
     this.addPinCode(newPin, BoksCodeType.Master);
     this.saveState('masterCodes');
     this.saveState('pinCodes');
-    return this.createResponse(BoksOpcode.CODE_OPERATION_SUCCESS, new Uint8Array(0));
+    return this.createResponse(BoksOpcode.CODE_OPERATION_SUCCESS, EMPTY_BUFFER);
   }
 
   private handleDeleteMasterCode(payload: Uint8Array): Uint8Array {
     if (payload.length < 9) {
-      return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
+      return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, EMPTY_BUFFER);
     }
     const rxConfigKey = bytesToString(payload.subarray(0, 8));
     if (rxConfigKey !== this.#configKey) {
-      return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
+      return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, EMPTY_BUFFER);
     }
     const index = payload[8];
     const pin = this.#masterCodes.get(index);
@@ -1150,101 +1154,101 @@ export class BoksHardwareSimulator {
       this.saveState('masterCodes');
       this.saveState('pinCodes');
     }
-    return this.createResponse(BoksOpcode.CODE_OPERATION_SUCCESS, new Uint8Array(0));
+    return this.createResponse(BoksOpcode.CODE_OPERATION_SUCCESS, EMPTY_BUFFER);
   }
 
   private handleDeleteMultiUseCode(payload: Uint8Array): Uint8Array {
     if (payload.length < 14) {
-      return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
+      return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, EMPTY_BUFFER);
     }
     const rxConfigKey = bytesToString(payload.subarray(0, 8));
     if (rxConfigKey !== this.#configKey) {
-      return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
+      return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, EMPTY_BUFFER);
     }
     const pin = bytesToString(payload.subarray(8, 14));
     if (this.#pinCodes.has(pin) && this.#pinCodes.get(pin) === BoksCodeType.Multi) {
       this.#pinCodes.delete(pin);
       this.saveState('pinCodes');
-      return this.createResponse(BoksOpcode.CODE_OPERATION_SUCCESS, new Uint8Array(0));
+      return this.createResponse(BoksOpcode.CODE_OPERATION_SUCCESS, EMPTY_BUFFER);
     }
-    return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
+    return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, EMPTY_BUFFER);
   }
 
   private handleSingleToMulti(payload: Uint8Array): Uint8Array {
     if (payload.length < 14) {
-      return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
+      return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, EMPTY_BUFFER);
     }
     const rxConfigKey = bytesToString(payload.subarray(0, 8));
     if (rxConfigKey !== this.#configKey) {
-      return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
+      return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, EMPTY_BUFFER);
     }
     const pin = bytesToString(payload.subarray(8, 14));
     if (this.#pinCodes.has(pin) && this.#pinCodes.get(pin) === BoksCodeType.Single) {
       this.#pinCodes.set(pin, BoksCodeType.Multi);
       this.saveState('pinCodes');
-      return this.createResponse(BoksOpcode.CODE_OPERATION_SUCCESS, new Uint8Array(0));
+      return this.createResponse(BoksOpcode.CODE_OPERATION_SUCCESS, EMPTY_BUFFER);
     }
-    return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
+    return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, EMPTY_BUFFER);
   }
 
   private handleMultiToSingle(payload: Uint8Array): Uint8Array {
     if (payload.length < 14) {
-      return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
+      return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, EMPTY_BUFFER);
     }
     const rxConfigKey = bytesToString(payload.subarray(0, 8));
     if (rxConfigKey !== this.#configKey) {
-      return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
+      return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, EMPTY_BUFFER);
     }
     const pin = bytesToString(payload.subarray(8, 14));
     if (this.#pinCodes.has(pin) && this.#pinCodes.get(pin) === BoksCodeType.Multi) {
       this.#pinCodes.set(pin, BoksCodeType.Single);
       this.saveState('pinCodes');
-      return this.createResponse(BoksOpcode.CODE_OPERATION_SUCCESS, new Uint8Array(0));
+      return this.createResponse(BoksOpcode.CODE_OPERATION_SUCCESS, EMPTY_BUFFER);
     }
-    return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
+    return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, EMPTY_BUFFER);
   }
 
   private handleReactivateCode(payload: Uint8Array): Uint8Array {
     if (payload.length < 14) {
-      return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
+      return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, EMPTY_BUFFER);
     }
     const rxConfigKey = bytesToString(payload.subarray(0, 8));
     if (rxConfigKey !== this.#configKey) {
-      return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
+      return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, EMPTY_BUFFER);
     }
     const pin = bytesToString(payload.subarray(8, 14));
     if (this.#pinCodes.has(pin)) {
-      return this.createResponse(BoksOpcode.CODE_OPERATION_SUCCESS, new Uint8Array(0));
+      return this.createResponse(BoksOpcode.CODE_OPERATION_SUCCESS, EMPTY_BUFFER);
     }
-    return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
+    return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, EMPTY_BUFFER);
   }
 
   private handleSetConfiguration(payload: Uint8Array): Uint8Array {
     if (payload.length < 10) {
-      return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
+      return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, EMPTY_BUFFER);
     }
     const rxConfigKey = bytesToString(payload.subarray(0, 8));
     if (rxConfigKey !== this.#configKey) {
-      return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, new Uint8Array(0));
+      return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, EMPTY_BUFFER);
     }
     const value = payload[9];
     this.#configuration.laPosteEnabled = value === 0x01;
     this.saveState('configuration');
-    return this.createResponse(BoksOpcode.NOTIFY_SET_CONFIGURATION_SUCCESS, new Uint8Array(0));
+    return this.createResponse(BoksOpcode.NOTIFY_SET_CONFIGURATION_SUCCESS, EMPTY_BUFFER);
   }
 
   private handleReboot(): Uint8Array {
-    this.addLog(BoksOpcode.BLE_REBOOT, new Uint8Array(0));
-    return this.createResponse(BoksOpcode.CODE_OPERATION_SUCCESS, new Uint8Array(0));
+    this.addLog(BoksOpcode.BLE_REBOOT, EMPTY_BUFFER);
+    return this.createResponse(BoksOpcode.CODE_OPERATION_SUCCESS, EMPTY_BUFFER);
   }
 
   private handleTestBattery(): Uint8Array {
-    return this.createResponse(BoksOpcode.CODE_OPERATION_SUCCESS, new Uint8Array(0));
+    return this.createResponse(BoksOpcode.CODE_OPERATION_SUCCESS, EMPTY_BUFFER);
   }
 
   private async handleGenerateCodes(payload: Uint8Array): Promise<Uint8Array | null> {
     if (payload.length !== 32) {
-      this.emit(this.createResponse(BoksOpcode.NOTIFY_CODE_GENERATION_ERROR, new Uint8Array(0)));
+      this.emit(this.createResponse(BoksOpcode.NOTIFY_CODE_GENERATION_ERROR, EMPTY_BUFFER));
       return null;
     }
     for (let i = 0; i <= 100; i += 1) {
@@ -1259,7 +1263,7 @@ export class BoksHardwareSimulator {
     this.saveState('masterKey');
     this.saveState('pinCodes');
     this.saveState('masterCodes');
-    this.emit(this.createResponse(BoksOpcode.NOTIFY_CODE_GENERATION_SUCCESS, new Uint8Array(0)));
+    this.emit(this.createResponse(BoksOpcode.NOTIFY_CODE_GENERATION_SUCCESS, EMPTY_BUFFER));
     return null;
   }
 
@@ -1269,10 +1273,10 @@ export class BoksHardwareSimulator {
     }
     const receivedConfigKey = bytesToString(payload.subarray(0, 8));
     if (receivedConfigKey !== this.#configKey) {
-      return this.createResponse(BoksOpcode.ERROR_UNAUTHORIZED, new Uint8Array(0));
+      return this.createResponse(BoksOpcode.ERROR_UNAUTHORIZED, EMPTY_BUFFER);
     }
     this.#pendingProvisioningPartA = payload.subarray(8, 24);
-    return this.createResponse(BoksOpcode.CODE_OPERATION_SUCCESS, new Uint8Array(0));
+    return this.createResponse(BoksOpcode.CODE_OPERATION_SUCCESS, EMPTY_BUFFER);
   }
 
   private async handleRegeneratePartB(payload: Uint8Array): Promise<Uint8Array | null> {
@@ -1281,10 +1285,10 @@ export class BoksHardwareSimulator {
     }
     const receivedConfigKey = bytesToString(payload.subarray(0, 8));
     if (receivedConfigKey !== this.#configKey) {
-      return this.createResponse(BoksOpcode.ERROR_UNAUTHORIZED, new Uint8Array(0));
+      return this.createResponse(BoksOpcode.ERROR_UNAUTHORIZED, EMPTY_BUFFER);
     }
     if (!this.#pendingProvisioningPartA) {
-      this.emit(this.createResponse(BoksOpcode.NOTIFY_CODE_GENERATION_ERROR, new Uint8Array(0)));
+      this.emit(this.createResponse(BoksOpcode.NOTIFY_CODE_GENERATION_ERROR, EMPTY_BUFFER));
       return null;
     }
     const partB = payload.subarray(8, 24);
@@ -1304,7 +1308,7 @@ export class BoksHardwareSimulator {
     this.saveState('masterKey');
     this.saveState('pinCodes');
     this.saveState('masterCodes');
-    this.emit(this.createResponse(BoksOpcode.NOTIFY_CODE_GENERATION_SUCCESS, new Uint8Array(0)));
+    this.emit(this.createResponse(BoksOpcode.NOTIFY_CODE_GENERATION_SUCCESS, EMPTY_BUFFER));
     return null;
   }
 }
