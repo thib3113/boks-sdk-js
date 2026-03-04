@@ -302,8 +302,12 @@ export class BoksController {
     for (let i = 0; i < len; i++) {
       const n1 = p1[i] || 0;
       const n2 = p2[i] || 0;
-      if (n1 > n2) return 1;
-      if (n1 < n2) return -1;
+      if (n1 > n2) {
+        return 1;
+      }
+      if (n1 < n2) {
+        return -1;
+      }
     }
     return 0;
   }
@@ -726,7 +730,9 @@ export class BoksController {
         BoksOpcode.CODE_OPERATION_SUCCESS,
         BoksOpcode.ERROR_UNAUTHORIZED
       );
-      if (!successA) return false;
+      if (!successA) {
+        return false;
+      }
 
       // Part B
       return await this.performOperation(

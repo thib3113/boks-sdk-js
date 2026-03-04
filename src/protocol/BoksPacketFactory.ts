@@ -215,13 +215,17 @@ export class BoksPacketFactory {
       context: { opcode: number; expected: number; received: number }
     ) => void
   ): BoksPacket | undefined {
-    if (data.length < 3) return undefined;
+    if (data.length < 3) {
+      return undefined;
+    }
 
     const opcode = data[0];
     const length = data[1];
 
     // Ensure we have enough data (Opcode + Length + Payload + Checksum)
-    if (data.length < length + 3) return undefined;
+    if (data.length < length + 3) {
+      return undefined;
+    }
 
     const payload = data.subarray(2, 2 + length);
     const checksum = data[length + 2];
@@ -254,7 +258,9 @@ export class BoksPacketFactory {
    */
   static fromResponse(opcode: number, payload: Uint8Array): BoksPacket | undefined {
     const Ctor = this.getConstructor(opcode);
-    if (!Ctor) return undefined;
+    if (!Ctor) {
+      return undefined;
+    }
 
     return Ctor.fromPayload(payload);
   }
