@@ -1,6 +1,6 @@
 import { AuthPacket } from '@/protocol/downlink/_AuthPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
-import { stringToBytes, hexToBytes, bytesToHex } from '@/utils/converters';
+import { stringToBytes, hexToBytes, bytesToMac } from '@/utils/converters';
 import { validateNfcUid } from '@/utils/validation';
 
 /**
@@ -26,10 +26,7 @@ export class NfcRegisterPacket extends AuthPacket {
     if (payload.length > 8) {
       const len = payload[8];
       if (payload.length >= 9 + len) {
-        uid =
-          bytesToHex(payload.subarray(9, 9 + len))
-            .match(/.{1,2}/g)
-            ?.join(':') || '';
+        uid = bytesToMac(payload.subarray(9, 9 + len), false);
       }
     }
     return new NfcRegisterPacket(configKey, uid);

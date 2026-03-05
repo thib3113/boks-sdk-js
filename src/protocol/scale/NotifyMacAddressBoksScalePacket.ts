@@ -1,6 +1,6 @@
 import { BoksRXPacket } from '@/protocol/uplink/_BoksRXPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
-import { bytesToHex } from '../../utils/converters';
+import { bytesToMac } from '../../utils/converters';
 
 /** ⚠️ This packet is theoretical; it has never been tested in real-world conditions. */
 /**
@@ -17,10 +17,7 @@ export class NotifyMacAddressBoksScalePacket extends BoksRXPacket {
   }
 
   static fromPayload(payload: Uint8Array): NotifyMacAddressBoksScalePacket {
-    const macAddress =
-      bytesToHex(payload)
-        .match(/.{1,2}/g)
-        ?.join(':') || '';
+    const macAddress = bytesToMac(payload, false);
     return new NotifyMacAddressBoksScalePacket(macAddress, payload);
   }
 }

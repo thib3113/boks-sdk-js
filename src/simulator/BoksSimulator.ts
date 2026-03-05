@@ -9,6 +9,7 @@ import {
   calculateChecksum,
   bytesToString,
   bytesToHex,
+  bytesToMac,
   stringToBytes,
   hexToBytes
 } from '../utils/converters';
@@ -1066,10 +1067,7 @@ export class BoksHardwareSimulator {
       return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, EMPTY_BUFFER);
     }
     const uidBytes = payload.subarray(9, 9 + len);
-    const uid =
-      bytesToHex(uidBytes)
-        .match(/.{1,2}/g)
-        ?.join(':') || '';
+    const uid = bytesToMac(uidBytes, false);
     this.#nfcTags.add(uid);
     this.#isNfcScanning = false;
     this.saveState('nfcTags');
@@ -1089,10 +1087,7 @@ export class BoksHardwareSimulator {
       return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, EMPTY_BUFFER);
     }
     const uidBytes = payload.subarray(9, 9 + len);
-    const uid =
-      bytesToHex(uidBytes)
-        .match(/.{1,2}/g)
-        ?.join(':') || '';
+    const uid = bytesToMac(uidBytes, false);
     if (this.#nfcTags.has(uid)) {
       this.#nfcTags.delete(uid);
       this.saveState('nfcTags');
