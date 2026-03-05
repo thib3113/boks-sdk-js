@@ -61,3 +61,7 @@
 ## 2025-10-26 - Loop Unrolling for Checksum Calculation
 **Learning:** In V8, the simple `for` loop in `calculateChecksum` can be optimized by unrolling. Processing 4 bytes per iteration (`sum += data[i] + data[i+1] + data[i+2] + data[i+3]`) yielded a measurable speedup (~1.5x-1.7x) by significantly reducing loop condition checks and increment overhead.
 **Action:** When performing simple arithmetic aggregation over long TypedArrays in hot paths, apply manual loop unrolling (handling remainders appropriately) to maximize execution speed.
+
+## 2025-10-26 - Hex Formatting Allocation Overhead
+**Learning:** Using `.match(/.{1,2}/g)?.join(':')` to format hex strings allocates a new array, compiles/executes a regex, and joins elements, which is surprisingly slow (135ms per 100k operations). By replacing it with the `bytesToMac(uidBytes, false)` utility, which relies on a simple loop and precomputed lookup tables (`+=`), we eliminate these allocations and achieve a ~5.8x performance speedup (23ms per 100k operations).
+**Action:** When converting byte arrays into colon-separated hex strings like MAC addresses or UIDs, always use `bytesToMac` and avoid allocating intermediate arrays and regex objects.
