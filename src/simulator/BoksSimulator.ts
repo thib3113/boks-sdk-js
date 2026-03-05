@@ -9,6 +9,7 @@ import {
   calculateChecksum,
   bytesToString,
   bytesToHex,
+  bytesToMac,
   stringToBytes,
   hexToBytes
 } from '../utils/converters';
