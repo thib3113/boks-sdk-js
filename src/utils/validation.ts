@@ -2,6 +2,22 @@ import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolErr
 import { MAX_MASTER_CODE_INDEX } from '@/protocol/constants';
 
 /**
+ * Helper to check if a character code represents an uppercase hexadecimal character
+ */
+function isUppercaseHexCode(code: number): boolean {
+  // '0'-'9' (48-57) or 'A'-'F' (65-70)
+  return (code >= 48 && code <= 57) || (code >= 65 && code <= 70);
+}
+
+/**
+ * Helper to check if a character code represents a case-insensitive hexadecimal character
+ */
+function isHexCode(code: number): boolean {
+  // '0'-'9' (48-57) or 'A'-'F' (65-70) or 'a'-'f' (97-102)
+  return (code >= 48 && code <= 57) || (code >= 65 && code <= 70) || (code >= 97 && code <= 102);
+}
+
+/**
  * Validates a Boks PIN code.
  * A valid PIN must be exactly 6 characters long and only contain 0-9, A or B.
  *
@@ -11,7 +27,7 @@ import { MAX_MASTER_CODE_INDEX } from '@/protocol/constants';
 export function validatePinCode(pin: string): void {
   // Optimization: Replacing Regex /^[0-9A-B]{6}$/.test() with a manual loop
   // Yields ~2.3x performance speedup in V8 by avoiding Regex compilation/execution overhead.
-  if (pin.length !== 6) {
+  if (typeof pin !== 'string' || pin.length !== 6) {
     throw new BoksProtocolError(BoksProtocolErrorId.INVALID_PIN_FORMAT, undefined, {
       received: pin
     });
@@ -76,6 +92,31 @@ export function validateCredentialsKey(key: Uint8Array | string): void {
 }
 
 /**
+ * Validates a Config Key string.
+ * Must be exactly 8 uppercase hexadecimal characters.
+ *
+ * @param configKey The config key to validate.
+ * @throws BoksProtocolError if the config key is invalid.
+ */
+export function validateConfigKeyFormat(configKey: string): void {
+  // Optimization: Replacing Regex /^[0-9A-F]{8}$/.test() with a manual loop
+  if (typeof configKey !== 'string' || configKey.length !== 8) {
+    throw new BoksProtocolError(
+      BoksProtocolErrorId.INVALID_CONFIG_KEY,
+      'Config Key must be exactly 8 uppercase hexadecimal characters'
+    );
+  }
+  for (let i = 0; i < 8; i++) {
+    if (!isUppercaseHexCode(configKey.charCodeAt(i))) {
+      throw new BoksProtocolError(
+        BoksProtocolErrorId.INVALID_CONFIG_KEY,
+        'Config Key must be exactly 8 uppercase hexadecimal characters'
+      );
+    }
+  }
+}
+
+/**
  * Validates an NFC Tag UID.
  * A valid UID is a hex string (optional colons).
  * Enforces standard NFC UID lengths: 4 bytes (8 hex chars), 7 bytes (14 hex chars), or 10 bytes (20 hex chars).
@@ -84,6 +125,13 @@ export function validateCredentialsKey(key: Uint8Array | string): void {
  * @throws BoksProtocolError if the UID is invalid.
  */
 export function validateNfcUid(uid: string): void {
+  if (typeof uid !== 'string') {
+    throw new BoksProtocolError(BoksProtocolErrorId.INVALID_NFC_UID_FORMAT, undefined, {
+      received: uid,
+      reason: 'NOT_HEX'
+    });
+  }
+
   const cleanUid = uid.replace(/:/g, '');
   const length = cleanUid.length;
 
@@ -97,9 +145,7 @@ export function validateNfcUid(uid: string): void {
   // Optimization: Replacing Regex /^[0-9A-F]+$/i.test() with a manual loop
   // Avoids Regex compilation/execution overhead, yielding a minor performance speedup in V8.
   for (let i = 0; i < length; i++) {
-    const code = cleanUid.charCodeAt(i);
-    // '0'-'9' (48-57) or 'A'-'F' (65-70) or 'a'-'f' (97-102)
-    if ((code < 48 || code > 57) && (code < 65 || code > 70) && (code < 97 || code > 102)) {
+    if (!isHexCode(cleanUid.charCodeAt(i))) {
       throw new BoksProtocolError(BoksProtocolErrorId.INVALID_NFC_UID_FORMAT, undefined, {
         received: uid,
         reason: 'NOT_HEX'
