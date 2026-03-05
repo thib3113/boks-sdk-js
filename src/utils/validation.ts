@@ -2,14 +2,6 @@ import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolErr
 import { MAX_MASTER_CODE_INDEX } from '@/protocol/constants';
 
 /**
- * Helper to check if a character code represents an uppercase hexadecimal character
- */
-function isUppercaseHexCode(code: number): boolean {
-  // '0'-'9' (48-57) or 'A'-'F' (65-70)
-  return (code >= 48 && code <= 57) || (code >= 65 && code <= 70);
-}
-
-/**
  * Helper to check if a character code represents a case-insensitive hexadecimal character
  */
 function isHexCode(code: number): boolean {
@@ -97,7 +89,7 @@ export function validateCredentialsKey(key: Uint8Array | string): void {
 
 /**
  * Validates a Config Key string.
- * Must be exactly 8 uppercase hexadecimal characters.
+ * Must be exactly 8 hexadecimal characters.
  *
  * @param configKey The config key to validate.
  * @throws BoksProtocolError if the config key is invalid.
@@ -107,14 +99,14 @@ export function validateConfigKeyFormat(configKey: string): void {
   if (typeof configKey !== 'string' || configKey.length !== 8) {
     throw new BoksProtocolError(
       BoksProtocolErrorId.INVALID_CONFIG_KEY,
-      'Config Key must be exactly 8 uppercase hexadecimal characters'
+      'Config Key must be exactly 8 hexadecimal characters'
     );
   }
   for (let i = 0; i < 8; i++) {
-    if (!isUppercaseHexCode(configKey.charCodeAt(i))) {
+    if (!isHexCode(configKey.charCodeAt(i))) {
       throw new BoksProtocolError(
         BoksProtocolErrorId.INVALID_CONFIG_KEY,
-        'Config Key must be exactly 8 uppercase hexadecimal characters'
+        'Config Key must be exactly 8 hexadecimal characters'
       );
     }
   }

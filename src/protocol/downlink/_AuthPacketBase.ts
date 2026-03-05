@@ -8,9 +8,12 @@ import { bytesToString } from '@/utils/converters';
  */
 @sealed
 export abstract class AuthPacket extends BoksPacket {
-  constructor(public readonly configKey: string) {
+  public readonly configKey: string;
+
+  constructor(configKey: string) {
     super();
     validateConfigKeyFormat(configKey);
+    this.configKey = configKey.toUpperCase();
   }
 
   /**
