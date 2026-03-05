@@ -19,7 +19,7 @@ export function validatePinCode(pin: string): void {
   for (let i = 0; i < 6; i++) {
     const code = pin.charCodeAt(i);
     // '0'-'9' (48-57) or 'A'-'B' (65-66)
-    if ((code < 48 || code > 57) && (code !== 65 && code !== 66)) {
+    if ((code < 48 || code > 57) && code !== 65 && code !== 66) {
       throw new BoksProtocolError(BoksProtocolErrorId.INVALID_PIN_FORMAT, undefined, {
         received: pin
       });
