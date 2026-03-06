@@ -1,6 +1,6 @@
 import { AuthPacket } from '@/protocol/downlink/_AuthPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
-import { stringToBytes, bytesToString } from '@/utils/converters';
+import { stringToBytes, bytesToString, writePinToBuffer } from '@/utils/converters';
 import { validatePinCode } from '@/utils/validation';
 
 /**
@@ -30,10 +30,7 @@ export class DeleteSingleUseCodePacket extends AuthPacket {
     const payload = new Uint8Array(8 + 6);
     payload.set(stringToBytes(this.configKey), 0);
 
-    const pinBytes = stringToBytes(this.pin);
-    const fixedPin = new Uint8Array(6);
-    fixedPin.set(pinBytes.subarray(0, 6));
-    payload.set(fixedPin, 8);
+    writePinToBuffer(payload, 8, this.pin);
 
     return payload;
   }

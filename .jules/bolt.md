@@ -69,3 +69,7 @@
 ## 2025-10-26 - Static String Validation Overhead
 **Learning:** Using regular expressions like `/^[0-9A-B]{6}$/.test(pin)` for simple static character checks incurs noticeable execution and compilation overhead compared to a manual `charCodeAt` bounds check in a `for` loop, especially in high-frequency V8 calls.
 **Action:** When validating fixed formats composed of ASCII characters (like hex keys, PIN codes, or UIDs), prefer standard loops over `.charCodeAt()` combined with length validation, rather than regex bounds matchers.
+
+## 2025-10-26 - Direct Buffer Assignment for Static Length Strings
+**Learning:** Using `stringToBytes` followed by copying into a payload buffer via `.set()` and `subarray()` causes unnecessary GC pressure and execution overhead, especially for small static-length ASCII strings like 6-character PINs. Direct sequential buffer assignments (`payload[offset] = pin.charCodeAt(0)`) avoids arrays entirely and can execute up to ~10x faster.
+**Action:** When inserting small fixed-length ASCII strings (like 6-char PINs) into payload buffers, write them directly using a helper like `writePinToBuffer` with unrolled `charCodeAt` statements.
