@@ -65,3 +65,7 @@
 ## 2025-10-26 - Hex Formatting Allocation Overhead
 **Learning:** Using `.match(/.{1,2}/g)?.join(':')` to format hex strings allocates a new array, compiles/executes a regex, and joins elements, which is surprisingly slow (135ms per 100k operations). By replacing it with the `bytesToMac(uidBytes, false)` utility, which relies on a simple loop and precomputed lookup tables (`+=`), we eliminate these allocations and achieve a ~5.8x performance speedup (23ms per 100k operations).
 **Action:** When converting byte arrays into colon-separated hex strings like MAC addresses or UIDs, always use `bytesToMac` and avoid allocating intermediate arrays and regex objects.
+
+## 2025-10-26 - Static String Validation Overhead
+**Learning:** Using regular expressions like `/^[0-9A-B]{6}$/.test(pin)` for simple static character checks incurs noticeable execution and compilation overhead compared to a manual `charCodeAt` bounds check in a `for` loop, especially in high-frequency V8 calls.
+**Action:** When validating fixed formats composed of ASCII characters (like hex keys, PIN codes, or UIDs), prefer standard loops over `.charCodeAt()` combined with length validation, rather than regex bounds matchers.

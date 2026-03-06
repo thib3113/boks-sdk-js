@@ -1,5 +1,5 @@
 import { BoksPacket } from '@/protocol/_BoksPacketBase';
-import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';
+import { validateConfigKeyFormat } from '@/utils/validation';
 import { sealed } from '@/utils/security';
 import { bytesToString } from '@/utils/converters';
 
@@ -8,14 +8,12 @@ import { bytesToString } from '@/utils/converters';
  */
 @sealed
 export abstract class AuthPacket extends BoksPacket {
-  constructor(public readonly configKey: string) {
+  public readonly configKey: string;
+
+  constructor(configKey: string) {
     super();
-    if (!/^[0-9A-F]{8}$/.test(configKey)) {
-      throw new BoksProtocolError(
-        BoksProtocolErrorId.INVALID_CONFIG_KEY,
-        'Config Key must be exactly 8 uppercase hexadecimal characters'
-      );
-    }
+    validateConfigKeyFormat(configKey);
+    this.configKey = configKey.toUpperCase();
   }
 
   /**
