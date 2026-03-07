@@ -90,10 +90,10 @@ async function build() {
 
     console.log('✅ Build complete! Output in /dist');
 
+
     // 5. Codecov Bundle Analysis
     console.log('📊 Analyzing bundles with Codecov...');
     try {
-        const buildDirs = ["dist"];
         const isCI = process.env.PUBLISH_BUNDLE_ANALYSE === 'true';
 
         // Lire le token depuis codecov.yml
@@ -110,21 +110,59 @@ async function build() {
 
         const coreOpts = {
             dryRun: !isCI,
-            bundleName: pkg.name,
             enableBundleAnalysis: true,
             uploadToken: uploadToken,
         };
 
-        const bundleAnalyzerOpts = {
-            ignorePatterns: ["*.map", "*.d.ts"],
-        };
+        const bundlesToAnalyze = [
+            // Browser (IIFE)
+            { name: `${pkg.name}-iife`, file: 'boks-sdk.js', dir: 'dist' },
+            { name: `core-iife`, file: 'boks-core.js', dir: 'dist' },
+            { name: `simulator-iife`, file: 'simulator.js', dir: 'dist' },
 
-        const reportAsJson = await createAndUploadReport(buildDirs, coreOpts, bundleAnalyzerOpts);
-        console.log(`✅ Report successfully generated and uploaded (DryRun: ${!isCI}).`);
+            // ESM
+            { name: `${pkg.name}-esm`, file: 'boks-sdk.js', dir: 'dist/esm' },
+            { name: `core-esm`, file: 'core.js', dir: 'dist/esm' },
+            { name: `simulator-esm`, file: 'simulator.js', dir: 'dist/esm' },
+
+            // CJS
+            { name: `${pkg.name}-cjs`, file: 'boks-sdk.cjs', dir: 'dist/cjs' },
+            { name: `core-cjs`, file: 'core.cjs', dir: 'dist/cjs' },
+            { name: `simulator-cjs`, file: 'simulator.cjs', dir: 'dist/cjs' },
+        ];
+
+        // We create a temporary directory to isolate files for Codecov
+        const tempDir = '.codecov_temp_dist';
+
+        for (const bundle of bundlesToAnalyze) {
+            try {
+                await fs.rm(tempDir, { recursive: true, force: true });
+                await fs.mkdir(tempDir, { recursive: true });
+
+                const sourcePath = `${bundle.dir}/${bundle.file}`;
+                const destPath = `${tempDir}/${bundle.file}`;
+
+                // Copy the specific file we want to analyze to the temp dir
+                await fs.copyFile(sourcePath, destPath);
+
+                const opts = { ...coreOpts, bundleName: bundle.name };
+
+                await createAndUploadReport([tempDir], opts);
+                console.log(`✅ Report generated and uploaded for bundle: ${bundle.name}`);
+            } catch (err) {
+                 console.error(`❌ Failed to generate or upload report for ${bundle.name}:`, err.message);
+            }
+        }
+
+        // Clean up temp dir
+        await fs.rm(tempDir, { recursive: true, force: true });
+        console.log(`✅ All bundle reports processed (DryRun: ${!isCI}).`);
+
     } catch (err) {
-        console.error("❌ Failed to generate or upload report:", err);
+        console.error("❌ Failed during codecov bundle analysis:", err);
         // Do not fail the entire build if analysis fails
     }
+
 
 }
 
