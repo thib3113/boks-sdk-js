@@ -62,12 +62,32 @@ export function validateMasterCodeIndex(index: number): void {
  * @throws BoksProtocolError if the seed is invalid.
  */
 export function validateSeed(seed: Uint8Array | string): void {
-  const len = typeof seed === 'string' ? seed.replace(/[^0-9A-Fa-f]/g, '').length / 2 : seed.length;
-  if (len !== 32) {
-    throw new BoksProtocolError(BoksProtocolErrorId.INVALID_SEED_LENGTH, undefined, {
-      received: len,
-      expected: 32
-    });
+  if (typeof seed === 'string') {
+    if (seed.length !== 64) {
+      throw new BoksProtocolError(
+        BoksProtocolErrorId.INVALID_SEED_LENGTH,
+        'Seed string must be exactly 64 hex characters',
+        {
+          received: seed.length,
+          expected: 64
+        }
+      );
+    }
+    for (let i = 0; i < 64; i++) {
+      if (!isHexCode(seed.charCodeAt(i))) {
+        throw new BoksProtocolError(
+          BoksProtocolErrorId.INVALID_VALUE,
+          'Seed string must contain only valid hex characters'
+        );
+      }
+    }
+  } else {
+    if (seed.length !== 32) {
+      throw new BoksProtocolError(BoksProtocolErrorId.INVALID_SEED_LENGTH, undefined, {
+        received: seed.length,
+        expected: 32
+      });
+    }
   }
 }
 
@@ -78,12 +98,32 @@ export function validateSeed(seed: Uint8Array | string): void {
  * @throws BoksProtocolError if the key length is invalid.
  */
 export function validateCredentialsKey(key: Uint8Array | string): void {
-  const len = typeof key === 'string' ? key.replace(/[^0-9A-Fa-f]/g, '').length / 2 : key.length;
-  if (len !== 32 && len !== 4) {
-    throw new BoksProtocolError(BoksProtocolErrorId.INVALID_SEED_LENGTH, undefined, {
-      received: len,
-      expected: '32 or 4'
-    });
+  if (typeof key === 'string') {
+    if (key.length !== 64 && key.length !== 8) {
+      throw new BoksProtocolError(
+        BoksProtocolErrorId.INVALID_SEED_LENGTH,
+        'Key string must be exactly 8 or 64 hex characters',
+        {
+          received: key.length,
+          expected: '8 or 64'
+        }
+      );
+    }
+    for (let i = 0; i < key.length; i++) {
+      if (!isHexCode(key.charCodeAt(i))) {
+        throw new BoksProtocolError(
+          BoksProtocolErrorId.INVALID_VALUE,
+          'Key string must contain only valid hex characters'
+        );
+      }
+    }
+  } else {
+    if (key.length !== 32 && key.length !== 4) {
+      throw new BoksProtocolError(BoksProtocolErrorId.INVALID_SEED_LENGTH, undefined, {
+        received: key.length,
+        expected: '32 or 4'
+      });
+    }
   }
 }
 

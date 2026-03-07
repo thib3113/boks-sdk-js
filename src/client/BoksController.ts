@@ -153,7 +153,7 @@ export class BoksController {
 
     let normalizedHex: string;
     if (typeof key === 'string') {
-      normalizedHex = key.replace(/[^0-9A-Fa-f]/g, '').toUpperCase();
+      normalizedHex = key.toUpperCase();
     } else {
       normalizedHex = bytesToHex(key);
     }
@@ -667,8 +667,7 @@ export class BoksController {
   ): Promise<boolean> {
     validateSeed(seed);
 
-    const seedBytes =
-      typeof seed === 'string' ? hexToBytes(seed.replace(/[^0-9A-Fa-f]/g, '')) : seed;
+    const seedBytes = typeof seed === 'string' ? hexToBytes(seed) : seed;
 
     // Setup listener
     const cleanup = this.#client.onPacket((packet) => {
@@ -705,10 +704,7 @@ export class BoksController {
     const configKey = this.getConfigKeyOrThrow();
     validateSeed(newMasterKey);
 
-    const keyBytes =
-      typeof newMasterKey === 'string'
-        ? hexToBytes(newMasterKey.replace(/[^0-9A-Fa-f]/g, ''))
-        : newMasterKey;
+    const keyBytes = typeof newMasterKey === 'string' ? hexToBytes(newMasterKey) : newMasterKey;
 
     const partA = keyBytes.subarray(0, 16);
     const partB = keyBytes.subarray(16, 32);
