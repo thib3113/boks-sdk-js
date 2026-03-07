@@ -1,14 +1,9 @@
 # History Sync
 
-<BoksGlobalProvider />
 
 The Boks device maintains an internal log of events, including door openings, code usages (valid/invalid), system events (power on/off), and more. You can retrieve these logs using the `fetchHistory()` method.
 
-## Interactive Demo
 
-Use the tool below to connect to a Boks device and view its history log.
-
-<HistoryDemo />
 
 ## Usage
 
@@ -50,4 +45,3 @@ try {
 }
 ```
 
-<BoksPacketLogger />

@@ -1,6 +1,5 @@
 # Code Management
 
-<BoksGlobalProvider />
 
 Boks devices allow you to manage different types of codes to open the door, such as Single-Use codes (for deliveries) and Multi-Use codes (for regular users). These codes can be generated and managed directly from the application using the `BoksController`.
 
@@ -57,5 +56,3 @@ try {
   console.error('Error during open command:', error);
 }
 ```
-
-<BoksPacketLogger />

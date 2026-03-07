@@ -1,6 +1,5 @@
 # Gestion d'un code
 
-<BoksGlobalProvider />
 
 Les appareils Boks vous permettent de gérer différents types de codes pour ouvrir la porte, tels que les codes à usage unique (pour les livraisons) et les codes à usage multiple (pour les utilisateurs réguliers). Ces codes peuvent être générés et gérés directement depuis l'application à l'aide du `BoksController`.
 
@@ -57,5 +56,3 @@ try {
   console.error('Erreur lors de la commande d\'ouverture :', error);
 }
 ```
-
-<BoksPacketLogger />

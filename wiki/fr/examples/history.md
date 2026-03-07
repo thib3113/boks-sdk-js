@@ -1,14 +1,9 @@
 # Synchronisation de l'Historique
 
-<BoksGlobalProvider />
 
 L'appareil Boks maintient un journal interne des événements, y compris les ouvertures de porte, les utilisations de codes (valides/invalides), les événements système (allumage/extinction), et plus encore. Vous pouvez récupérer ces journaux en utilisant la méthode `fetchHistory()`.
 
-## Démo Interactive
 
-Utilisez l'outil ci-dessous pour vous connecter à un appareil Boks et consulter son journal d'historique.
-
-<HistoryDemo />
 
 ## Utilisation
 
@@ -49,5 +44,3 @@ try {
   console.error('Échec de la synchronisation de l\'historique :', error);
 }
 ```
-
-<BoksPacketLogger />
