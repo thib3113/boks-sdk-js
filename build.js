@@ -1,3 +1,4 @@
+import { createAndUploadReport } from '@codecov/bundle-analyzer';
 import * as esbuild from 'esbuild';
 import fs from 'fs/promises';
 import { exec } from 'child_process';
@@ -26,7 +27,7 @@ async function build() {
 
     // 1. Browser Bundles (IIFE)
     console.log('📦 Building Browser Bundles (IIFE)...');
-    const iifeResult = await esbuild.build({
+    await esbuild.build({
         entryPoints: {
             'boks-sdk': 'src/index.ts',
             'boks-core': 'src/core.ts',
@@ -36,18 +37,16 @@ async function build() {
         outdir: 'dist',
         minify: true,
         sourcemap: true,
-        metafile: true,
         target: ['es2017'],
         format: 'iife',
         globalName: 'BoksSDK',
         platform: 'browser',
         banner: { js: banner },
     });
-    await fs.writeFile('dist/meta-iife.json', JSON.stringify(iifeResult.metafile));
 
     // 2. ESM Bundles
     console.log('📦 Building ESM Bundles...');
-    const esmResult = await esbuild.build({
+    await esbuild.build({
         entryPoints: {
             'boks-sdk': 'src/index.ts',
             'core': 'src/core.ts',
@@ -57,16 +56,14 @@ async function build() {
         outdir: 'dist/esm',
         minify: true,
         sourcemap: true,
-        metafile: true,
         target: ['esnext'],
         format: 'esm',
         packages: 'external',
     });
-    await fs.writeFile('dist/meta-esm.json', JSON.stringify(esmResult.metafile));
 
     // 3. CJS Bundles
     console.log('📦 Building CJS Bundles...');
-    const cjsResult = await esbuild.build({
+    await esbuild.build({
         entryPoints: {
             'boks-sdk': 'src/index.ts',
             'core': 'src/core.ts',
@@ -77,12 +74,10 @@ async function build() {
         outExtension: { '.js': '.cjs' },
         minify: true,
         sourcemap: true,
-        metafile: true,
         target: ['es2017'],
         format: 'cjs',
         packages: 'external',
     });
-    await fs.writeFile('dist/meta-cjs.json', JSON.stringify(cjsResult.metafile));
 
     // 4. Type Definitions
     console.log('📝 Generating Type Definitions...');
@@ -94,6 +89,31 @@ async function build() {
     }
 
     console.log('✅ Build complete! Output in /dist');
+
+    // 5. Codecov Bundle Analysis
+    console.log('📊 Analyzing bundles with Codecov...');
+    try {
+        const buildDirs = ["dist"];
+        const isCI = process.env.GITHUB_ACTIONS !== undefined || process.env.CI !== undefined;
+
+        const coreOpts = {
+            dryRun: !isCI,
+            bundleName: pkg.name,
+            enableBundleAnalysis: true,
+            // debug: true,
+        };
+
+        const bundleAnalyzerOpts = {
+            ignorePatterns: ["*.map", "*.d.ts"],
+        };
+
+        const reportAsJson = await createAndUploadReport(buildDirs, coreOpts, bundleAnalyzerOpts);
+        console.log(`✅ Report successfully generated and uploaded (DryRun: ${!isCI}).`);
+    } catch (err) {
+        console.error("❌ Failed to generate or upload report:", err);
+        // Do not fail the entire build if analysis fails
+    }
+
 }
 
 build().catch(err => {
