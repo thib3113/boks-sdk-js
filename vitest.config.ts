@@ -4,7 +4,13 @@ import path from 'path';
 export default defineConfig({
   test: {
     globals: true,
-    environment: 'node'
+    environment: 'node',
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'lcov', 'clover'],
+      include: ['src/**/*.ts'],
+      exclude: ['src/**/*.d.ts', 'src/**/index.ts']
+    }
   },
   resolve: {
     alias: {
