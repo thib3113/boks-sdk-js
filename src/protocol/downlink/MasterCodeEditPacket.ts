@@ -1,6 +1,6 @@
 import { AuthPacket } from '@/protocol/downlink/_AuthPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
-import { stringToBytes, bytesToString } from '@/utils/converters';
+import { stringToBytes, bytesToString, writePinToBuffer } from '@/utils/converters';
 import { validateMasterCodeIndex } from '@/utils/validation';
 
 /**
@@ -38,10 +38,7 @@ export class MasterCodeEditPacket extends AuthPacket {
     payload.set(stringToBytes(this.configKey), 0);
     payload[8] = this.index;
 
-    const pinBytes = stringToBytes(this.newPin);
-    const fixedPin = new Uint8Array(6);
-    fixedPin.set(pinBytes.subarray(0, 6));
-    payload.set(fixedPin, 9);
+    writePinToBuffer(payload, 9, this.newPin);
 
     return payload;
   }
