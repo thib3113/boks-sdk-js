@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { boksStore } from '../boksStore'
-import { BoksOpcode, BoksOpenSource } from '../../../src/protocol/constants'
+import { BoksOpcode } from '../../../src/protocol/constants'
 
 // Simulator local state for UI binding
 const simState = ref<any>({})
@@ -27,10 +27,10 @@ async function toggleConnection() {
   }
 }
 
-function triggerRealisticOpen(source: BoksOpenSource) {
-  const detail = source === BoksOpenSource.Keypad ? '123456' : source === BoksOpenSource.Nfc ? 'AABBCCDD' : ''
+function triggerRealisticOpen(type: 'keypad' | 'key' | 'nfc') {
+  const detail = type === 'keypad' ? '123456' : type === 'nfc' ? 'AABBCCDD' : ''
   boksStore.simulator?.triggerDoorOpen(source, detail)
-  boksStore.log(`Simulator: Triggered opening via ${BoksOpenSource[source]}`, 'success')
+  boksStore.log(`Simulator: Triggered opening via ${type}`, 'success')
 }
 </script>
 
@@ -90,9 +90,9 @@ function triggerRealisticOpen(source: BoksOpenSource) {
 
               <div class="sub-title">Trigger Physical Events</div>
               <div class="config-item row tri">
-                <button @click="triggerRealisticOpen(BoksOpenSource.Keypad)" class="small-btn">🔢 Keypad</button>
-                <button @click="triggerRealisticOpen(BoksOpenSource.PhysicalKey)" class="small-btn">🔑 Key</button>
-                <button @click="triggerRealisticOpen(BoksOpenSource.Nfc)" class="small-btn">💳 NFC</button>
+                <button @click="triggerRealisticOpen('keypad')" class="small-btn">🔢 Keypad</button>
+                <button @click="triggerRealisticOpen('key')" class="small-btn">🔑 Key</button>
+                <button @click="triggerRealisticOpen('nfc')" class="small-btn">💳 NFC</button>
               </div>
             </template>
 

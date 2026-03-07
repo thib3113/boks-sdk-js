@@ -126,8 +126,8 @@ describe('BoksController Integration with Simulator', () => {
 
   it('should sync history correctly', async () => {
     // Manually trigger events in simulator
-    simulator.triggerDoorOpen(BoksOpenSource.Keypad, '654321');
-    simulator.triggerDoorOpen(BoksOpenSource.Nfc, 'AABBCC'); // Tag ID
+    simulator.triggerKeypadOpen('654321');
+    simulator.triggerNfcOpen('AABBCC'); // Tag ID
 
     const history = await controller.fetchHistory();
 

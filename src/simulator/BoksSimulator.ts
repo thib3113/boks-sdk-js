@@ -1,10 +1,4 @@
-import {
-  BoksOpcode,
-  BoksCodeType,
-  BoksOpenSource,
-  BOKS_UUIDS,
-  EMPTY_BUFFER
-} from '../protocol/constants';
+import { BoksOpcode, BoksCodeType, BOKS_UUIDS, EMPTY_BUFFER } from '../protocol/constants';
 import {
   calculateChecksum,
   bytesToString,
@@ -250,7 +244,7 @@ export class BoksHardwareSimulator {
       const rand = Math.random();
       if (rand < 0.1 && !this.#isOpen) {
         // 10% chance to open door via NFC randomly
-        this.triggerDoorOpen(BoksOpenSource.Nfc, 'DEADC0DE');
+        this.triggerNfcOpen('DEADC0DE');
       } else if (rand > 0.9) {
         // 10% chance to drop battery slightly
         this.setBatteryLevel(this.#batteryLevel - 1);
@@ -478,40 +472,9 @@ export class BoksHardwareSimulator {
   }
 
   /**
-   * Triggers a door opening event from a specific source, generating realistic history logs.
-   * Validation is performed against the internal #pinCodes map (derived or manually set).
+   * Internal method to execute the door opening sequence.
    */
-  public triggerDoorOpen(source: BoksOpenSource, codeOrTagId: string = ''): void {
-    let logOpcode: number;
-    let payload: Uint8Array;
-
-    switch (source) {
-      case BoksOpenSource.Ble:
-        logOpcode = BoksOpcode.LOG_CODE_BLE_VALID;
-        payload = stringToBytes(codeOrTagId.padEnd(6, '\0').substring(0, 6));
-        break;
-      case BoksOpenSource.Keypad:
-        logOpcode = BoksOpcode.LOG_CODE_KEY_VALID;
-        payload = stringToBytes(codeOrTagId.padEnd(6, '\0').substring(0, 6));
-        break;
-      case BoksOpenSource.PhysicalKey:
-        logOpcode = BoksOpcode.LOG_EVENT_KEY_OPENING;
-        payload = EMPTY_BUFFER;
-        break;
-      case BoksOpenSource.Nfc:
-        logOpcode = BoksOpcode.LOG_EVENT_NFC_OPENING;
-        if (codeOrTagId) {
-          const match = codeOrTagId.match(/.{1,2}/g);
-          payload = match ? new Uint8Array(match.map((byte) => parseInt(byte, 16))) : EMPTY_BUFFER;
-        } else {
-          payload = EMPTY_BUFFER;
-        }
-        break;
-      default:
-        logOpcode = BoksOpcode.LOG_DOOR_OPEN;
-        payload = EMPTY_BUFFER;
-    }
-
+  private executeDoorOpen(logOpcode: number, payload: Uint8Array, codeOrTagId: string): void {
     // 1. Log the source event
     this.addLog(logOpcode, payload);
 
@@ -531,6 +494,41 @@ export class BoksHardwareSimulator {
     }
 
     this.scheduleAutoClose();
+  }
+
+  /**
+   * Triggers a door opening via BLE code.
+   */
+  public triggerBleOpen(pin: string): void {
+    const payload = stringToBytes(pin.padEnd(6, '\0').substring(0, 6));
+    this.executeDoorOpen(BoksOpcode.LOG_CODE_BLE_VALID, payload, pin);
+  }
+
+  /**
+   * Triggers a door opening via Keypad code.
+   */
+  public triggerKeypadOpen(pin: string): void {
+    const payload = stringToBytes(pin.padEnd(6, '\0').substring(0, 6));
+    this.executeDoorOpen(BoksOpcode.LOG_CODE_KEY_VALID, payload, pin);
+  }
+
+  /**
+   * Triggers a door opening via Physical Key.
+   */
+  public triggerPhysicalKeyOpen(): void {
+    this.executeDoorOpen(BoksOpcode.LOG_EVENT_KEY_OPENING, EMPTY_BUFFER, '');
+  }
+
+  /**
+   * Triggers a door opening via NFC Tag.
+   */
+  public triggerNfcOpen(tagId: string = ''): void {
+    let payload = EMPTY_BUFFER;
+    if (tagId) {
+      const match = tagId.match(/.{1,2}/g);
+      payload = match ? new Uint8Array(match.map((byte) => parseInt(byte, 16))) : EMPTY_BUFFER;
+    }
+    this.executeDoorOpen(BoksOpcode.LOG_EVENT_NFC_OPENING, payload, tagId);
   }
 
   /**
@@ -954,7 +952,7 @@ export class BoksHardwareSimulator {
     }
 
     if (this.#pinCodes.has(pin)) {
-      this.triggerDoorOpen(BoksOpenSource.Ble, pin);
+      this.triggerBleOpen(pin);
       return this.createResponse(BoksOpcode.VALID_OPEN_CODE, EMPTY_BUFFER);
     } else {
       return this.createResponse(BoksOpcode.INVALID_OPEN_CODE, EMPTY_BUFFER);
