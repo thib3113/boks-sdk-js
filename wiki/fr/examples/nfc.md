@@ -4,7 +4,7 @@
 
 Les appareils Boks équipés de la version matérielle 4.0 ou supérieure prennent en charge les tags NFC. Cela signifie que vous pouvez utiliser un badge ou un tag NFC pour ouvrir la boîte à colis au lieu d'un code sur le clavier ou d'une application mobile.
 
-Le SDK vous permet de rechercher de nouveaux tags NFC, de les enregistrer et de gérer ceux qui existent déjà en utilisant le `BoksController`.
+Le SDK vous permet de rechercher de nouveaux tags NFC, de les enregistrer et de les gérer en utilisant le `BoksController`.
 
 ## Recherche et Enregistrement de Tags
 
@@ -26,8 +26,9 @@ try {
     console.log(`Tag trouvé ! ID : ${scanResult.tagId}`);
 
     // 2. Enregistrer le tag scanné
-    // Vous pouvez également fournir un nom convivial pour le tag dans votre application
     await scanResult.register();
+    // Ou vous pouvez le faire directement avec :
+    // await controller.registerNFCTag(scanResult.tagId);
 
     console.log(`Tag ${scanResult.tagId} enregistré avec succès sur la Boks !`);
   } else {
@@ -38,33 +39,22 @@ try {
 }
 ```
 
-## Lister et Gérer les Tags
+## Désenregistrement de Tags
 
-Vous pouvez également lister tous les tags NFC actuellement enregistrés pour voir qui a accès. Cela vous permet de retirer des tags s'ils sont perdus.
+Si un tag NFC est perdu ou n'a plus besoin d'accéder, vous pouvez le désenregistrer en utilisant son UID. Vous devez connaître l'UID du tag pour le supprimer, car l'appareil ne fournit pas de commande pour lister tous les tags enregistrés.
 
 ```typescript
 try {
-  // Récupérer la liste des tags enregistrés
-  console.log('Récupération des tags NFC enregistrés...');
-  const tags = await controller.listNFCTags();
+  const tagToRemove = '04:A1:B2:C3:D4:E5:F6'; // L'UID connu du tag
 
-  if (tags.length === 0) {
-    console.log('Aucun tag NFC n\'est encore enregistré.');
-  } else {
-    console.log(`${tags.length} tags enregistrés trouvés :`);
+  // Supprimer le tag de l'appareil Boks
+  console.log(`Désenregistrement du tag NFC : ${tagToRemove}`);
+  await controller.unregisterNFCTag(tagToRemove);
 
-    tags.forEach((tag, index) => {
-      console.log(`- Emplacement ${index + 1} : ${tag.tagId}`);
-    });
-
-    // Optionnellement, supprimer un tag (par exemple, le premier trouvé)
-    const tagToDelete = tags[0];
-    await tagToDelete.delete();
-    console.log(`Le tag ${tagToDelete.tagId} a été retiré.`);
-  }
+  console.log(`Le tag ${tagToRemove} a été supprimé avec succès.`);
 
 } catch (error) {
-  console.error('Échec de la gestion des tags NFC :', error);
+  console.error('Échec du désenregistrement du tag NFC :', error);
 }
 ```
 

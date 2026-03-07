@@ -4,7 +4,7 @@
 
 Boks devices with hardware version 4.0 or higher support NFC tags. This means you can use an NFC badge or tag to open the parcel box instead of a keypad code or a mobile application.
 
-The SDK allows you to scan for new NFC tags, register them, and manage existing ones using the `BoksController`.
+The SDK allows you to scan for new NFC tags, register them, and manage them using the `BoksController`.
 
 ## Scanning and Registering Tags
 
@@ -26,8 +26,9 @@ try {
     console.log(`Tag found! ID: ${scanResult.tagId}`);
 
     // 2. Register the scanned tag
-    // You can also provide a friendly name for the tag in your application
     await scanResult.register();
+    // Or you can do it directly with:
+    // await controller.registerNFCTag(scanResult.tagId);
 
     console.log(`Tag ${scanResult.tagId} successfully registered to Boks!`);
   } else {
@@ -38,33 +39,22 @@ try {
 }
 ```
 
-## Listing and Managing Tags
+## Unregistering Tags
 
-You can also list all currently registered NFC tags to review who has access. This allows you to remove tags if they are lost.
+If an NFC tag is lost or no longer needs access, you can unregister it using its UID. You must know the UID of the tag to remove it, as the device does not provide a command to list all registered tags.
 
 ```typescript
 try {
-  // Retrieve the list of registered tags
-  console.log('Fetching registered NFC tags...');
-  const tags = await controller.listNFCTags();
+  const tagToRemove = '04:A1:B2:C3:D4:E5:F6'; // The known UID of the tag
 
-  if (tags.length === 0) {
-    console.log('No NFC tags registered yet.');
-  } else {
-    console.log(`Found ${tags.length} registered tags:`);
+  // Remove the tag from the Boks device
+  console.log(`Unregistering NFC tag: ${tagToRemove}`);
+  await controller.unregisterNFCTag(tagToRemove);
 
-    tags.forEach((tag, index) => {
-      console.log(`- Slot ${index + 1}: ${tag.tagId}`);
-    });
-
-    // Optionally, delete a tag (e.g., the first one found)
-    const tagToDelete = tags[0];
-    await tagToDelete.delete();
-    console.log(`Tag ${tagToDelete.tagId} has been removed.`);
-  }
+  console.log(`Tag ${tagToRemove} has been successfully removed.`);
 
 } catch (error) {
-  console.error('Failed to manage NFC tags:', error);
+  console.error('Failed to unregister NFC tag:', error);
 }
 ```
 
