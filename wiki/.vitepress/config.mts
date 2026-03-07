@@ -58,6 +58,8 @@ export default defineConfig({
                 { text: 'Démo Initialisation', link: '/fr/examples/initialization' },
                 { text: 'Démo Ouverture', link: '/fr/examples/open-door' },
                 { text: 'Sync Historique', link: '/fr/examples/history' },
+                { text: 'Gestion Codes', link: '/fr/examples/codes' },
+                { text: 'Gestion NFC', link: '/fr/examples/nfc' },
                 { text: 'Batterie & Matériel', link: '/fr/examples/battery' }
               ]
             }
@@ -112,6 +114,8 @@ export default defineConfig({
             { text: 'Initialization Demo', link: '/examples/initialization' },
             { text: 'Open Door Demo', link: '/examples/open-door' },
             { text: 'History Sync', link: '/examples/history' },
+            { text: 'Code Management', link: '/examples/codes' },
+            { text: 'NFC Management', link: '/examples/nfc' },
             { text: 'Battery & Hardware', link: '/examples/battery' }
           ]
         }
