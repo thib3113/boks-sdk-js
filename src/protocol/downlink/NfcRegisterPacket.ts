@@ -32,7 +32,7 @@ export class NfcRegisterPacket extends AuthPacket {
   }
 
   toPayload() {
-    const uidBytes = hexToBytes(this.uid.replace(/:/g, ''));
+    const uidBytes = hexToBytes(this.uid);
     const payload = new Uint8Array(8 + 1 + uidBytes.length);
     payload.set(stringToBytes(this.configKey), 0);
     payload[8] = uidBytes.length; // UID Length (1 byte)
