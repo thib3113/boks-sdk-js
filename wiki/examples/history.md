@@ -20,7 +20,6 @@ Each `BoksHistoryEvent` contains specific fields that help you understand what h
 
 - **`date`**: A calculated Javascript `Date` object representing when the event occurred. *Note: Since the Boks device doesn't have an absolute Real-Time Clock, the date is calculated backwards based on the "age" of the log at the moment of retrieval.*
 - **`opcode`**: The exact `BoksOpcode` identifying the type of event (e.g., a valid code was entered, the door was physically opened).
-- **`source`**: For door opening events, this indicates *how* the door was opened (e.g., `BoksOpenSource.Keypad`, `BoksOpenSource.PhysicalKey`, `BoksOpenSource.App`).
 - **`rawData`**: The raw byte payload from the device, useful for debugging or advanced parsing.
 
 ### Code Example: Fetching and Interpreting Logs
@@ -28,7 +27,7 @@ Each `BoksHistoryEvent` contains specific fields that help you understand what h
 Here is a detailed example of how to fetch the logs and interpret the most common events:
 
 ```typescript
-import { BoksController, BoksOpcode, BoksOpenSource } from '@thib3113/boks-sdk';
+import { BoksController, BoksOpcode } from '@thib3113/boks-sdk';
 
 // ... connect to device ...
 
@@ -86,15 +85,14 @@ try {
   console.error('Failed to sync history:', error);
 }
 
-// Helper to translate the source enum into a readable string
-function getOpenSourceLabel(source?: BoksOpenSource): string {
-  switch (source) {
-    case BoksOpenSource.App: return 'Mobile App (Bluetooth)';
-    case BoksOpenSource.Keypad: return 'Keypad Code';
-    case BoksOpenSource.Nfc: return 'NFC Tag';
-    case BoksOpenSource.PhysicalKey: return 'Physical Override Key';
-    case BoksOpenSource.Button: return 'Internal Exit Button';
-    default: return 'Unknown Source';
+// Helper to deduce the source from the Opcode
+function getOpenSourceLabel(opcode: BoksOpcode): string {
+  switch (opcode) {
+    case BoksOpcode.LOG_CODE_BLE_VALID: return 'Mobile App (Bluetooth)';
+    case BoksOpcode.LOG_CODE_KEY_VALID: return 'Keypad Code';
+    case BoksOpcode.LOG_EVENT_NFC_OPENING: return 'NFC Tag';
+    case BoksOpcode.LOG_EVENT_KEY_OPENING: return 'Physical Override Key';
+    default: return 'Unknown';
   }
 }
 ```

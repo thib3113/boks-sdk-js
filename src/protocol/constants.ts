@@ -176,10 +176,4 @@ export enum BoksCodeType {
   Master = 2
 }
 
-export enum BoksOpenSource {
-  Ble = 0,
-  Keypad = 1,
-  PhysicalKey = 2,
-  Nfc = 3
-}
 export const EMPTY_BUFFER = new Uint8Array(0);

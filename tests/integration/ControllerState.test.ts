@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { BoksController } from '../../src/client/BoksController';
 import { BoksHardwareSimulator } from '../../src/simulator/BoksSimulator';
 import { SimulatorTransport } from '../../src/simulator/SimulatorTransport';
-import { BoksOpcode, BoksOpenSource } from '../../src/protocol/constants';
+import { BoksOpcode } from '../../src/protocol/constants';
 
 describe('BoksController Internal State', () => {
   let simulator: BoksHardwareSimulator;
@@ -39,7 +39,7 @@ describe('BoksController Internal State', () => {
 
   it('should update door status when NotifyDoorStatusPacket (0x84) is received', async () => {
     // Manually trigger door open in simulator (now emits 0x84)
-    simulator.triggerDoorOpen(BoksOpenSource.Ble, 'NON_EXISTENT');
+    simulator.triggerBleOpen('NON_EXISTENT');
     
     // Give some time for notification delivery
     await vi.waitFor(() => expect(controller.doorOpen).toBe(true), { timeout: 1000 });
@@ -56,7 +56,7 @@ describe('BoksController Internal State', () => {
 
   it('should update log count when NotifyLogsCountPacket (0x79) is received', async () => {
     // Generate one log
-    simulator.triggerDoorOpen(BoksOpenSource.PhysicalKey);
+    simulator.triggerPhysicalKeyOpen();
     
     // Get count (0x07 -> 0x79)
     const count = await controller.getLogsCount();
@@ -67,7 +67,7 @@ describe('BoksController Internal State', () => {
 
   it('should allow external listeners to receive packets', async () => {
     // 1. Trigger an event to ensure logCount > 0
-    simulator.triggerDoorOpen(BoksOpenSource.PhysicalKey);
+    simulator.triggerPhysicalKeyOpen();
     
     let capturedOpcode: number | null = null;
     controller.onPacket((p) => {
