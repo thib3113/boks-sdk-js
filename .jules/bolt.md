@@ -1,23 +1,3 @@
-## 2025-10-26 - Hex Conversion Optimization
-**Learning:** `Array.from(bytes).map(...)` for hex conversion is a major bottleneck (5.7x slower than lookup table).
-**Action:** Always use precomputed lookup tables for byte-to-hex conversion in high-frequency paths.
-
-## 2025-10-26 - `parseInt` Behavior in Hex Parsing
-**Learning:** Replacing `parseInt(substr, 16)` with a lookup table changes behavior for invalid characters (e.g., 'G'). `parseInt` allows lenient parsing (ignores invalid suffix), while strict lookups may treat invalid chars as 0 or throw.
-**Action:** When optimizing `hexToBytes`, ensure exact behavior parity for invalid inputs or explicitly decide to change validation logic.
-
-## 2026-02-22 - Pin Generation String Allocation
-**Learning:** In `generateBoksPin`, constructing the message string via `${typePrefix} ${index}` allocated an intermediate string. Replacing this with direct `encodeInto` writes to the buffer improved performance by ~5.7% (589ms vs 625ms for 100k ops).
-**Action:** Avoid string concatenation for binary payloads; write components directly to the target buffer using `TextEncoder.encodeInto` and manual byte assignment.
-
-## 2025-05-18 - Shared Buffers in PIN Generation
-**Learning:** High-frequency object allocation (TypedArrays) in hot loops (like bulk PIN generation) causes significant GC pressure even if CPU time looks fine.
-**Action:** Use module-level shared buffers for synchronous, single-threaded hot paths to eliminate allocation overhead, ensuring they are wiped in a `finally` block for security.
-
-## 2026-06-18 - Redundant Hashing in Bulk Operations
-**Learning:** The Simulator initializes by generating 3305 PINs from the same Master Key. Recalculating the BLAKE2s state for the constant Key Block (64 bytes) 3305 times accounted for ~65% of the total execution time.
-**Action:** Identify invariant inputs in cryptographic loops and expose an API to precompute and reuse intermediate hash states (context).
-
 ## 2024-05-18 - String Concatenation vs Array.join for Hex Encoding
 **Learning:** In V8 (Node.js/Chrome), using simple string concatenation `+=` for small string building (like hex encoding byte arrays) is significantly faster (often 2x faster) than creating an array and calling `Array.join('')`. The overhead of array allocation and the `join` method call outweighs string concatenation optimizations in V8 for these lengths.
 **Action:** Replace `Array.join('')` with string concatenation `+=` in hot loop encoding functions like `bytesToHex`.
@@ -26,25 +6,37 @@
 **Learning:** Instantiating a `new TextDecoder()` inside a hot function is noticeably slower than reusing a single shared `TextDecoder` instance. While `TextEncoder` instantiation seems optimized in newer V8 versions, `TextDecoder` instantiation still carries a measurable performance penalty.
 **Action:** Share and reuse a single `TextDecoder` instance across calls instead of creating a new one on every `bytesToString` invocation.
 
-## 2025-06-12 - Optimizing Fallback String Replacement in Hex Decoding
-**Learning:** Using `.replace(/\s/g, '')` in a slow path to clean strings before decoding creates temporary string allocations that severely degrade performance. By implementing a manual single-pass decode loop that skips specific characters (like space, charCode 32) inline, we avoided regex allocations and made the parsing path ~2.5x faster.
-**Action:** In parsing or conversion utilities, avoid `.replace()` or string mutations for data sanitization; instead, handle invalid characters or skippable characters inline within the single-pass processing loop.
-
 ## 2024-05-18 - Uint8Array subarray vs slice
 **Learning:** Using `Uint8Array.subarray()` instead of `Uint8Array.slice()` prevents copying the underlying memory buffer, which is significantly faster and creates less garbage collection pressure in hot paths like packet parsing.
 **Action:** Always prefer `subarray()` over `slice()` when extracting parts of a `Uint8Array` unless a true copy is strictly necessary to prevent mutation.
-
-## 2025-10-26 - Native String Coercion for Integer to ASCII Byte Conversion
-**Learning:** In V8, converting an integer to ASCII bytes using manual floating point math (`Math.floor(val/10)`) and modulo operations in a loop is significantly slower than relying on native string coercion (`'' + index`) and `.charCodeAt()`. V8's native C++ number-to-string conversion avoids JS execution overhead.
-**Action:** When converting integers to byte buffers in hot paths, prefer `const str = '' + num;` followed by a loop over `str.charCodeAt(i)` instead of manual arithmetic logic.
 
 ## 2025-03-01 - Optimizing Hex Encoding with 16-bit Lookups
 **Learning:** In hot loops like `bytesToHex`, iterating 1 byte at a time and doing string concatenation is still a minor bottleneck. By precomputing a 16-bit lookup table (`HEX_TABLE_16` with 65,536 elements) we can read 2 bytes per iteration, yielding a ~2x performance speedup in V8 because we halve both loop iterations and the number of string concatenations.
 **Action:** When working with continuous byte conversions in hot paths, consider reading multiple bytes (e.g., pairs via bitwise shifts `(a << 8) | b`) using a larger lookup table if memory permits.
 
+## 2025-05-18 - Shared Buffers in PIN Generation
+**Learning:** High-frequency object allocation (TypedArrays) in hot loops (like bulk PIN generation) causes significant GC pressure even if CPU time looks fine.
+**Action:** Use module-level shared buffers for synchronous, single-threaded hot paths to eliminate allocation overhead, ensuring they are wiped in a `finally` block for security.
+
 ## 2025-05-18 - String and Bytes conversion overhead
 **Learning:** For short pure-ASCII strings (like 6-digit PINs and 8-char hex keys), the instantiation or even execution overhead of the native `TextEncoder` and `TextDecoder` (or even reusing a shared instance) can be a significant bottleneck compared to a simple manual JS loop using `charCodeAt()` and `String.fromCharCode()`. In Node.js / V8, converting short ASCII strings to `Uint8Array` can be ~8-9x faster using a manual loop, and converting `Uint8Array` to an ASCII string can be ~2x faster.
 **Action:** When working with high-frequency conversions of short strings that are predominantly ASCII, implement an optimistic ASCII fast-path loop that checks for `charCode > 127`, and only fallback to `TextEncoder`/`TextDecoder` if non-ASCII characters are encountered.
+
+## 2025-06-12 - Optimizing Fallback String Replacement in Hex Decoding
+**Learning:** Using `.replace(/\s/g, '')` in a slow path to clean strings before decoding creates temporary string allocations that severely degrade performance. By implementing a manual single-pass decode loop that skips specific characters (like space, charCode 32) inline, we avoided regex allocations and made the parsing path ~2.5x faster.
+**Action:** In parsing or conversion utilities, avoid `.replace()` or string mutations for data sanitization; instead, handle invalid characters or skippable characters inline within the single-pass processing loop.
+
+## 2025-10-26 - Hex Conversion Optimization
+**Learning:** `Array.from(bytes).map(...)` for hex conversion is a major bottleneck (5.7x slower than lookup table).
+**Action:** Always use precomputed lookup tables for byte-to-hex conversion in high-frequency paths.
+
+## 2025-10-26 - `parseInt` Behavior in Hex Parsing
+**Learning:** Replacing `parseInt(substr, 16)` with a lookup table changes behavior for invalid characters (e.g., 'G'). `parseInt` allows lenient parsing (ignores invalid suffix), while strict lookups may treat invalid chars as 0 or throw.
+**Action:** When optimizing `hexToBytes`, ensure exact behavior parity for invalid inputs or explicitly decide to change validation logic.
+
+## 2025-10-26 - Native String Coercion for Integer to ASCII Byte Conversion
+**Learning:** In V8, converting an integer to ASCII bytes using manual floating point math (`Math.floor(val/10)`) and modulo operations in a loop is significantly slower than relying on native string coercion (`'' + index`) and `.charCodeAt()`. V8's native C++ number-to-string conversion avoids JS execution overhead.
+**Action:** When converting integers to byte buffers in hot paths, prefer `const str = '' + num;` followed by a loop over `str.charCodeAt(i)` instead of manual arithmetic logic.
 
 ## 2025-10-26 - Repeated TextEncoder/Decoder Instantiation in Business Logic
 **Learning:** Using `new TextEncoder()` and `new TextDecoder()` inline within methods like `refreshVersions` or `triggerDoorOpen` incurs repeated instantiation overhead, which can be easily avoided by using centralized parsing utilities.
@@ -77,3 +69,15 @@
 ## 2025-10-26 - String Replacement Allocation Overhead in Validation
 **Learning:** Using `.replace(/:/g, '')` or `.replace(/[^0-9A-Fa-f]/g, '')` simply to count valid characters or compute the length of a cleaned string causes unnecessary intermediate string allocations. In hot code paths like `validateNfcUid` or `validateSeed`, iterating over the original string and counting valid characters inline avoids regex overhead and Garbage Collection pauses, yielding a ~3.4x to ~4.7x speedup in V8.
 **Action:** When validating formats or determining the effective payload length from a formatted string (like UIDs or seeds), iterate through the original string and ignore formatting characters directly instead of mutating the string.
+
+## 2026-02-22 - Pin Generation String Allocation
+**Learning:** In `generateBoksPin`, constructing the message string via `${typePrefix} ${index}` allocated an intermediate string. Replacing this with direct `encodeInto` writes to the buffer improved performance by ~5.7% (589ms vs 625ms for 100k ops).
+**Action:** Avoid string concatenation for binary payloads; write components directly to the target buffer using `TextEncoder.encodeInto` and manual byte assignment.
+
+## 2026-06-18 - Redundant Hashing in Bulk Operations
+**Learning:** The Simulator initializes by generating 3305 PINs from the same Master Key. Recalculating the BLAKE2s state for the constant Key Block (64 bytes) 3305 times accounted for ~65% of the total execution time.
+**Action:** Identify invariant inputs in cryptographic loops and expose an API to precompute and reuse intermediate hash states (context).
+
+## 202X-XX-XX - Avoid Regex Formatting in hexToBytes Parsing
+**Learning:** Using `.replace(/:/g, '')` or `.replace(/[^0-9A-Fa-f]/g, '')` to strip formatting before passing values to `hexToBytes` introduces unnecessary regex allocation and string creation. Updating `hexToBytes` to ignore colons (`:`) and hyphens (`-`) natively eliminates this overhead across multiple packets.
+**Action:** Pass potentially formatted hex strings (like MAC addresses or UUID-like strings) directly to `hexToBytes` rather than pre-cleaning them with `.replace()`, ensuring that `hexToBytes` skips these formatting characters inline.
