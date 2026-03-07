@@ -7,6 +7,8 @@
 [![Build Status](https://img.shields.io/github/actions/workflow/status/thib3113/boks-sdk-js/ci.yml?style=flat-square)](https://github.com/thib3113/boks-sdk-js/actions)
 [![License](https://img.shields.io/github/license/thib3113/boks-sdk-js?style=flat-square)](./LICENSE)
 [![Documentation](https://img.shields.io/badge/docs-technical_manual-blue?style=flat-square)](https://thib3113.github.io/boks-sdk-js/)
+[![codecov](https://codecov.io/gh/thib3113/boks-sdk-js/graph/badge.svg?token=93c94d99-5393-40af-994d-9e9f3fa01f28)](https://codecov.io/gh/thib3113/boks-sdk-js)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=thib3113_boks-sdk-js&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=thib3113_boks-sdk-js)
 
 A community-driven, high-fidelity JavaScript/TypeScript SDK for communicating with Boks Parcel Boxes.
 
