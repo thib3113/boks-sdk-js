@@ -20,13 +20,13 @@ async function build() {
  * Unofficial Boks SDK
  * 
  * GitHub: https://github.com/thib3113/boks-sdk-js
- * Build Run: https://github.com/thib3113/boks-sdk-js/actions/runs/\${process.env.GITHUB_RUN_ID || 'local'}
+ * Build Run: https://github.com/thib3113/boks-sdk-js/actions/runs/${process.env.GITHUB_RUN_ID || 'local'}
  * Attestation: This build is cryptographically attested on GitHub.
  */`;
 
     // 1. Browser Bundles (IIFE)
     console.log('📦 Building Browser Bundles (IIFE)...');
-    await esbuild.build({
+    const iifeResult = await esbuild.build({
         entryPoints: {
             'boks-sdk': 'src/index.ts',
             'boks-core': 'src/core.ts',
@@ -36,16 +36,18 @@ async function build() {
         outdir: 'dist',
         minify: true,
         sourcemap: true,
+        metafile: true,
         target: ['es2017'],
         format: 'iife',
         globalName: 'BoksSDK',
         platform: 'browser',
         banner: { js: banner },
     });
+    await fs.writeFile('dist/meta-iife.json', JSON.stringify(iifeResult.metafile));
 
     // 2. ESM Bundles
     console.log('📦 Building ESM Bundles...');
-    await esbuild.build({
+    const esmResult = await esbuild.build({
         entryPoints: {
             'boks-sdk': 'src/index.ts',
             'core': 'src/core.ts',
@@ -55,14 +57,16 @@ async function build() {
         outdir: 'dist/esm',
         minify: true,
         sourcemap: true,
+        metafile: true,
         target: ['esnext'],
         format: 'esm',
         packages: 'external',
     });
+    await fs.writeFile('dist/meta-esm.json', JSON.stringify(esmResult.metafile));
 
     // 3. CJS Bundles
     console.log('📦 Building CJS Bundles...');
-    await esbuild.build({
+    const cjsResult = await esbuild.build({
         entryPoints: {
             'boks-sdk': 'src/index.ts',
             'core': 'src/core.ts',
@@ -73,10 +77,12 @@ async function build() {
         outExtension: { '.js': '.cjs' },
         minify: true,
         sourcemap: true,
+        metafile: true,
         target: ['es2017'],
         format: 'cjs',
         packages: 'external',
     });
+    await fs.writeFile('dist/meta-cjs.json', JSON.stringify(cjsResult.metafile));
 
     // 4. Type Definitions
     console.log('📝 Generating Type Definitions...');
