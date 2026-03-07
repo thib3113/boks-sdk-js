@@ -96,11 +96,23 @@ async function build() {
         const buildDirs = ["dist"];
         const isCI = process.env.PUBLISH_BUNDLE_ANALYSE === 'true';
 
+        // Lire le token depuis codecov.yml
+        let uploadToken;
+        try {
+            const codecovYml = await fs.readFile('./codecov.yml', 'utf-8');
+            const tokenMatch = codecovYml.match(/token:\s*([\w-]+)/);
+            if (tokenMatch && tokenMatch[1]) {
+                uploadToken = tokenMatch[1];
+            }
+        } catch (e) {
+            console.warn("⚠️ Could not read uploadToken from codecov.yml:", e.message);
+        }
+
         const coreOpts = {
             dryRun: !isCI,
             bundleName: pkg.name,
             enableBundleAnalysis: true,
-            // debug: true,
+            uploadToken: uploadToken,
         };
 
         const bundleAnalyzerOpts = {
