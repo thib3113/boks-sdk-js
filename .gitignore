@@ -41,3 +41,4 @@ coverage/
 lint_output*.txt
 test_output.txt
 .jules/diff.patch
+junit.xml
