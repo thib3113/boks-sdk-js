@@ -2,59 +2,82 @@
 
 Boks devices allow you to manage different types of keypad codes to open the door, such as Single-Use codes (for deliveries) and Multi-Use codes (for regular users). These codes can be generated and managed directly from the application using the `BoksController`.
 
-## Generating Codes
+## End-to-End Workflow: Master Code
 
-You can create different types of codes depending on your needs. When you create a code, the SDK handles the secure exchange with the Boks device.
+Here is a complete example demonstrating the entire lifecycle of a code: creating a Master Code, using it to open the door via Bluetooth, waiting for the door to be opened and closed physically, retrieving the history to confirm the event, and finally deleting the code.
 
 ```typescript
-import { BoksController } from '@thib3113/boks-sdk';
+import { BoksController, BoksOpcode } from '@thib3113/boks-sdk';
 
 // ... connect to device with administrative credentials (Config Key or Master Key) ...
 
 try {
-  // 1. Create a Single-Use Code (One-time delivery code)
-  // This code will only work once on the keypad to open the door.
-  const singleUseCode = '123456';
-  await controller.createSingleUseCode(singleUseCode);
-  console.log(`Single-use code ${singleUseCode} created successfully!`);
-
-  // 2. Create a Multi-Use Code (Recurring user code)
-  // This code can be used indefinitely on the keypad until revoked.
-  const multiUseCode = '987654';
-  await controller.createMultiUseCode(multiUseCode);
-  console.log(`Multi-use code ${multiUseCode} created successfully!`);
-
-  // 3. Create a Master Code
-  // A Master Code is a permanent keypad code (usually up to 4 can exist, indexed 0-3).
-  // Do not confuse this with the 32-byte cryptographic Master Key!
-  // Master Codes can also be used to reset the device directly from the keypad.
-  const masterCodeIndex = 0; // Slot index
+  const masterCodeIndex = 0; // Slot index (0-3)
   const masterCodePin = '000000';
+
+  // 1. Create a Master Code
+  // A Master Code is a permanent keypad code.
+  // Do not confuse this with the 32-byte cryptographic Master Key!
+  console.log('1. Creating Master Code...');
   await controller.createMasterCode(masterCodeIndex, masterCodePin);
-  console.log(`Master code updated at index ${masterCodeIndex}!`);
+  console.log(`✅ Master code created at index ${masterCodeIndex}!`);
+
+  // 2. Open the Door via Bluetooth
+  // The code acts as an authentication token for the BLE command
+  console.log('2. Opening the door via Bluetooth...');
+  const isOpened = await controller.openDoor(masterCodePin);
+
+  if (isOpened) {
+    console.log('✅ Door unlocked successfully!');
+  }
+
+  // --- 🧍 User Interaction ---
+  // At this point, the user physically pulls the door open, puts a parcel inside,
+  // and pushes the door closed.
+  console.log('   (Waiting for user to physically open and close the door...)');
+  // -------------------------
+
+  // 3. Fetch History to verify the event
+  console.log('3. Fetching history logs...');
+  const history = await controller.fetchHistory();
+
+  // Find the most recent successful BLE opening event
+  const lastBleOpen = history.find(e => e.opcode === BoksOpcode.LOG_CODE_BLE_VALID);
+
+  if (lastBleOpen) {
+    console.log(`✅ Verified! Door was opened via App at: ${lastBleOpen.date.toLocaleString()}`);
+  }
+
+  // 4. Clean up: Delete the code
+  console.log('4. Deleting Master Code...');
+  await controller.deleteMasterCode(masterCodeIndex);
+  console.log(`✅ Master code at index ${masterCodeIndex} deleted.`);
 
 } catch (error) {
-  console.error('Failed to manage codes:', error);
+  console.error('Failed in workflow:', error);
 }
 ```
 
-## Opening the Door via Bluetooth (App)
+## Generating Other Codes
 
-If the user is nearby with their smartphone, you don't need a keypad code. You can trigger an open command directly via Bluetooth. The `openDoor` function requires a valid PIN (either single-use, multi-use, or master) to authenticate the command.
+You can also create other types of codes depending on your needs:
 
 ```typescript
 try {
-  // Attempt to open the door via Bluetooth using a known code
-  // The code acts as an authentication token for the BLE command
-  const isOpened = await controller.openDoor('123456');
+  // Create a Single-Use Code (One-time delivery code)
+  // This code will only work once on the keypad to open the door.
+  const singleUseCode = '123456';
+  await controller.createSingleUseCode(singleUseCode);
 
-  if (isOpened) {
-    console.log('Door opened successfully via Bluetooth!');
-  } else {
-    console.log('Failed to open door. Invalid code or device issue.');
-  }
+  // Create a Multi-Use Code (Recurring user code)
+  // This code can be used indefinitely on the keypad until revoked.
+  const multiUseCode = '987654';
+  await controller.createMultiUseCode(multiUseCode);
+
+  // Delete a Multi-Use code
+  await controller.deleteMultiUseCode(multiUseCode);
 
 } catch (error) {
-  console.error('Error during open command:', error);
+  console.error('Failed to manage codes:', error);
 }
 ```
