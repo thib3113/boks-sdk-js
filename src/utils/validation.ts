@@ -56,8 +56,6 @@ export function validateMasterCodeIndex(index: number): void {
 }
 
 /**
-
-/**
  * Validates a 32-byte seed/key.
  *
  * @param seed The seed to validate (Uint8Array or hex string).

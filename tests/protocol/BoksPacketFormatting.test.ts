@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { BoksPacket } from '@/protocol/_BoksPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
-import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';
+import { BoksProtocolError } from '@/errors/BoksProtocolError';
 
 // Dummy implementation of BoksPacket to expose protected format methods
 class DummyPacket extends BoksPacket {
