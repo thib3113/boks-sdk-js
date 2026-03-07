@@ -1,3 +1,4 @@
+import { createAndUploadReport } from '@codecov/bundle-analyzer';
 import * as esbuild from 'esbuild';
 import fs from 'fs/promises';
 import { exec } from 'child_process';
@@ -20,7 +21,7 @@ async function build() {
  * Unofficial Boks SDK
  * 
  * GitHub: https://github.com/thib3113/boks-sdk-js
- * Build Run: https://github.com/thib3113/boks-sdk-js/actions/runs/\${process.env.GITHUB_RUN_ID || 'local'}
+ * Build Run: https://github.com/thib3113/boks-sdk-js/actions/runs/${process.env.GITHUB_RUN_ID || 'local'}
  * Attestation: This build is cryptographically attested on GitHub.
  */`;
 
@@ -88,6 +89,43 @@ async function build() {
     }
 
     console.log('✅ Build complete! Output in /dist');
+
+    // 5. Codecov Bundle Analysis
+    console.log('📊 Analyzing bundles with Codecov...');
+    try {
+        const buildDirs = ["dist"];
+        const isCI = process.env.PUBLISH_BUNDLE_ANALYSE === 'true';
+
+        // Lire le token depuis codecov.yml
+        let uploadToken;
+        try {
+            const codecovYml = await fs.readFile('./codecov.yml', 'utf-8');
+            const tokenMatch = codecovYml.match(/token:\s*([\w-]+)/);
+            if (tokenMatch && tokenMatch[1]) {
+                uploadToken = tokenMatch[1];
+            }
+        } catch (e) {
+            console.warn("⚠️ Could not read uploadToken from codecov.yml:", e.message);
+        }
+
+        const coreOpts = {
+            dryRun: !isCI,
+            bundleName: pkg.name,
+            enableBundleAnalysis: true,
+            uploadToken: uploadToken,
+        };
+
+        const bundleAnalyzerOpts = {
+            ignorePatterns: ["*.map", "*.d.ts"],
+        };
+
+        const reportAsJson = await createAndUploadReport(buildDirs, coreOpts, bundleAnalyzerOpts);
+        console.log(`✅ Report successfully generated and uploaded (DryRun: ${!isCI}).`);
+    } catch (err) {
+        console.error("❌ Failed to generate or upload report:", err);
+        // Do not fail the entire build if analysis fails
+    }
+
 }
 
 build().catch(err => {

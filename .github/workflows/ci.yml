@@ -44,8 +44,9 @@ jobs:
 
     - name: Upload test results to Codecov
       if: ${{ !cancelled() }}
-      uses: codecov/test-results-action@v1
+      uses: codecov/codecov-action@v5
       with:
+        report_type: test_results
         fail_ci_if_error: false
 
     - name: Check Documentation
@@ -53,6 +54,8 @@ jobs:
 
     - name: Build
       run: pnpm run build
+      env:
+        PUBLISH_BUNDLE_ANALYSE: true
 
     - name: Check build artifacts
       run: |
