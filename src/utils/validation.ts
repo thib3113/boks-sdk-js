@@ -28,8 +28,8 @@ export function validatePinCode(pin: string): void {
   }
   for (let i = 0; i < 6; i++) {
     const code = pin.charCodeAt(i);
-    // '0'-'9' (48-57) or 'A'-'B' (65-66)
-    if ((code < 48 || code > 57) && code !== 65 && code !== 66) {
+    // '0'-'9' (48-57) or 'A'-'B' (65-66) or 'a'-'b' (97-98)
+    if ((code < 48 || code > 57) && code !== 65 && code !== 66 && code !== 97 && code !== 98) {
       throw new BoksProtocolError(
         BoksProtocolErrorId.INVALID_PIN_FORMAT,
         'PIN must be exactly 6 characters using only 0-9, A, and B',
