@@ -46,20 +46,6 @@ jobs:
         use_oidc: true
         fail_ci_if_error: false
 
-    - name: SonarQube Scan
-      uses: sonarsource/sonarqube-scan-action@master
-      continue-on-error: true
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      with:
-        args: >
-          -Dsonar.projectKey=thib3113_boks-sdk-js
-          -Dsonar.organization=thib3113
-          -Dsonar.sources=src
-          -Dsonar.tests=tests
-          -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
-
     - name: Check Documentation
       run: pnpm run docs
 
