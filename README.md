@@ -196,7 +196,7 @@ await controller.initialize(seedBytes);
 
 ## Examples
 
-Check the [wiki/examples/](./wiki/examples/) folder for complete scripts demonstrating various use cases:
+Check the [Documentation Examples](https://thib3113.github.io/boks-sdk-js/examples/) folder for complete scripts demonstrating various use cases:
 
 - **Initialization**: How to initialize a brand new Boks device.
 - **Updates**: How to perform firmware updates (if applicable).
