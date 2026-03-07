@@ -94,7 +94,7 @@ async function build() {
     console.log('📊 Analyzing bundles with Codecov...');
     try {
         const buildDirs = ["dist"];
-        const isCI = process.env.GITHUB_ACTIONS !== undefined || process.env.CI !== undefined;
+        const isCI = process.env.PUBLISH_BUNDLE_ANALYSE === 'true';
 
         const coreOpts = {
             dryRun: !isCI,
