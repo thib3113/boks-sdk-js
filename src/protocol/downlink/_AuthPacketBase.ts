@@ -1,5 +1,4 @@
 import { BoksPacket } from '@/protocol/_BoksPacketBase';
-import { validateConfigKeyFormat } from '@/utils/validation';
 import { sealed } from '@/utils/security';
 import { bytesToString } from '@/utils/converters';
 
@@ -12,8 +11,7 @@ export abstract class AuthPacket extends BoksPacket {
 
   constructor(configKey: string) {
     super();
-    validateConfigKeyFormat(configKey);
-    this.configKey = configKey.toUpperCase();
+    this.configKey = this.formatConfigKey(configKey);
   }
 
   /**

@@ -1,7 +1,7 @@
 import { AuthPacket } from '@/protocol/downlink/_AuthPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
 import { stringToBytes, bytesToString, writePinToBuffer } from '@/utils/converters';
-import { validatePinCode, validateMasterCodeIndex } from '@/utils/validation';
+import { validateMasterCodeIndex } from '@/utils/validation';
 
 /**
  * Command to create a permanent master code at a specific index.
@@ -19,7 +19,7 @@ export class CreateMasterCodePacket extends AuthPacket {
   ) {
     super(configKey);
     validateMasterCodeIndex(index);
-    validatePinCode(pin);
+    this.pin = this.formatPin(pin);
   }
 
   static fromPayload(payload: Uint8Array): CreateMasterCodePacket {

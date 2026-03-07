@@ -1,7 +1,6 @@
 import { BoksPacket } from '@/protocol/_BoksPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
 import { hexToBytes } from '@/utils/converters';
-import { validateSeed } from '@/utils/validation';
 
 /** ⚠️ This packet is theoretical; it has never been tested in real-world conditions. */
 /**
@@ -13,9 +12,11 @@ export class GenerateCodesPacket extends BoksPacket {
     return GenerateCodesPacket.opcode;
   }
 
-  constructor(public readonly seed: Uint8Array | string) {
+  public readonly seedStr: string;
+
+  constructor(seed: Uint8Array | string) {
     super();
-    validateSeed(seed);
+    this.seedStr = this.formatSeed(seed);
   }
 
   static fromPayload(payload: Uint8Array): GenerateCodesPacket {
@@ -23,7 +24,7 @@ export class GenerateCodesPacket extends BoksPacket {
   }
 
   toPayload(): Uint8Array {
-    const seedBytes = typeof this.seed === 'string' ? hexToBytes(this.seed) : this.seed;
+    const seedBytes = hexToBytes(this.seedStr);
     if (seedBytes.length !== 32) {
       throw new Error('Seed must be exactly 32 bytes');
     }

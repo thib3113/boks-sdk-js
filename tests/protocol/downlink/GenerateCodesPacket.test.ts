@@ -11,13 +11,13 @@ describe('GenerateCodesPacket', () => {
   it('should construct with valid parameters (hex string)', () => {
     const packet = new GenerateCodesPacket(validSeedHex);
     expect(packet.opcode).toBe(BoksOpcode.GENERATE_CODES);
-    expect(packet.seed).toBe(validSeedHex);
+    expect(packet.seedStr).toBe(validSeedHex);
   });
 
   it('should construct with valid parameters (Uint8Array)', () => {
     const packet = new GenerateCodesPacket(validSeedBytes);
     expect(packet.opcode).toBe(BoksOpcode.GENERATE_CODES);
-    expect(packet.seed).toEqual(validSeedBytes);
+    expect(packet.toPayload()).toEqual(validSeedBytes);
   });
 
   it('should encode correctly', () => {
@@ -31,7 +31,7 @@ describe('GenerateCodesPacket', () => {
 
   it('should parse from payload correctly', () => {
     const packet = GenerateCodesPacket.fromPayload(validSeedBytes);
-    expect(packet.seed).toEqual(validSeedBytes);
+    expect(packet.toPayload()).toEqual(validSeedBytes);
   });
 
   it('should throw INVALID_SEED_LENGTH for invalid seed length', () => {

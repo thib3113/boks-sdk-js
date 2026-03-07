@@ -1,6 +1,12 @@
 import { BoksOpcode, EMPTY_BUFFER } from '@/protocol/constants';
-import { calculateChecksum } from '@/utils/converters';
+import { calculateChecksum, bytesToHex } from '@/utils/converters';
 import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';
+import {
+  validatePinCode,
+  validateNfcUid,
+  validateConfigKeyFormat,
+  validateSeed
+} from '@/utils/validation';
 
 /**
  * Type representing a BoksPacket constructor.
@@ -40,5 +46,42 @@ export abstract class BoksPacket {
     packet.set(payload, 2);
     packet[packet.length - 1] = calculateChecksum(packet.subarray(0, packet.length - 1));
     return packet;
+  }
+
+  /**
+   * Validates and formats a PIN code as an uppercase string.
+   */
+  protected formatPin(pin: string): string {
+    validatePinCode(pin);
+    return pin.toUpperCase();
+  }
+
+  /**
+   * Validates and formats an NFC UID as an uppercase string.
+   */
+  protected formatNfcUid(uid: string): string {
+    validateNfcUid(uid);
+    return uid.toUpperCase();
+  }
+
+  /**
+   * Validates and formats a Config Key as an uppercase string.
+   */
+  protected formatConfigKey(key: string): string {
+    validateConfigKeyFormat(key);
+    return key.toUpperCase();
+  }
+
+  /**
+   * Validates and formats a Master Key / Seed as an uppercase hex string.
+   * Handles both string and Uint8Array inputs.
+   */
+  protected formatSeed(seed: Uint8Array | string): string {
+    validateSeed(seed);
+    if (typeof seed === 'string') {
+      return seed.toUpperCase();
+    } else {
+      return bytesToHex(seed).toUpperCase();
+    }
   }
 }

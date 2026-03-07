@@ -28,8 +28,8 @@ export function validatePinCode(pin: string): void {
   }
   for (let i = 0; i < 6; i++) {
     const code = pin.charCodeAt(i);
-    // '0'-'9' (48-57) or 'A'-'B' (65-66)
-    if ((code < 48 || code > 57) && code !== 65 && code !== 66) {
+    // '0'-'9' (48-57) or 'A'-'B' (65-66) or 'a'-'b' (97-98)
+    if ((code < 48 || code > 57) && code !== 65 && code !== 66 && code !== 97 && code !== 98) {
       throw new BoksProtocolError(
         BoksProtocolErrorId.INVALID_PIN_FORMAT,
         'PIN must be exactly 6 characters using only 0-9, A, and B',
@@ -56,33 +56,38 @@ export function validateMasterCodeIndex(index: number): void {
 }
 
 /**
- * Helper to compute the length of a valid hex string (in bytes) without allocating a new string.
- */
-function getHexByteLength(hex: string): number {
-  let len = 0;
-  for (let i = 0; i < hex.length; i++) {
-    if (isHexCode(hex.charCodeAt(i))) {
-      len++;
-    }
-  }
-  return len / 2;
-}
-
-/**
  * Validates a 32-byte seed/key.
  *
  * @param seed The seed to validate (Uint8Array or hex string).
  * @throws BoksProtocolError if the seed is invalid.
  */
 export function validateSeed(seed: Uint8Array | string): void {
-  // Optimization: Replacing seed.replace(/[^0-9A-Fa-f]/g, '') with a manual loop
-  // Yields a ~3.4x performance speedup in V8 by avoiding Regex allocation/execution.
-  const len = typeof seed === 'string' ? getHexByteLength(seed) : seed.length;
-  if (len !== 32) {
-    throw new BoksProtocolError(BoksProtocolErrorId.INVALID_SEED_LENGTH, undefined, {
-      received: len,
-      expected: 32
-    });
+  if (typeof seed === 'string') {
+    if (seed.length !== 64) {
+      throw new BoksProtocolError(
+        BoksProtocolErrorId.INVALID_SEED_LENGTH,
+        'Seed string must be exactly 64 hex characters',
+        {
+          received: seed.length,
+          expected: 64
+        }
+      );
+    }
+    for (let i = 0; i < 64; i++) {
+      if (!isHexCode(seed.charCodeAt(i))) {
+        throw new BoksProtocolError(
+          BoksProtocolErrorId.INVALID_VALUE,
+          'Seed string must contain only valid hex characters'
+        );
+      }
+    }
+  } else {
+    if (seed.length !== 32) {
+      throw new BoksProtocolError(BoksProtocolErrorId.INVALID_SEED_LENGTH, undefined, {
+        received: seed.length,
+        expected: 32
+      });
+    }
   }
 }
 
@@ -93,14 +98,32 @@ export function validateSeed(seed: Uint8Array | string): void {
  * @throws BoksProtocolError if the key length is invalid.
  */
 export function validateCredentialsKey(key: Uint8Array | string): void {
-  // Optimization: Replacing key.replace(/[^0-9A-Fa-f]/g, '') with a manual loop
-  // Yields a ~3.4x performance speedup in V8 by avoiding Regex allocation/execution.
-  const len = typeof key === 'string' ? getHexByteLength(key) : key.length;
-  if (len !== 32 && len !== 4) {
-    throw new BoksProtocolError(BoksProtocolErrorId.INVALID_SEED_LENGTH, undefined, {
-      received: len,
-      expected: '32 or 4'
-    });
+  if (typeof key === 'string') {
+    if (key.length !== 64 && key.length !== 8) {
+      throw new BoksProtocolError(
+        BoksProtocolErrorId.INVALID_SEED_LENGTH,
+        'Key string must be exactly 8 or 64 hex characters',
+        {
+          received: key.length,
+          expected: '8 or 64'
+        }
+      );
+    }
+    for (let i = 0; i < key.length; i++) {
+      if (!isHexCode(key.charCodeAt(i))) {
+        throw new BoksProtocolError(
+          BoksProtocolErrorId.INVALID_VALUE,
+          'Key string must contain only valid hex characters'
+        );
+      }
+    }
+  } else {
+    if (key.length !== 32 && key.length !== 4) {
+      throw new BoksProtocolError(BoksProtocolErrorId.INVALID_SEED_LENGTH, undefined, {
+        received: key.length,
+        expected: '32 or 4'
+      });
+    }
   }
 }
 
