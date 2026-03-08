@@ -1,6 +1,6 @@
 import { AuthPacket } from '@/protocol/downlink/_AuthPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
-import { stringToBytes, hexToBytes, bytesToMac } from '@/utils/converters';
+import { writeConfigKeyToBuffer, hexToBytes, bytesToMac } from '@/utils/converters';
 
 /**
  * Command to unregister an NFC tag.
@@ -34,7 +34,7 @@ export class UnregisterNfcTagPacket extends AuthPacket {
   toPayload(): Uint8Array {
     const uidBytes = hexToBytes(this.uid);
     const payload = new Uint8Array(8 + 1 + uidBytes.length);
-    payload.set(stringToBytes(this.configKey), 0);
+    writeConfigKeyToBuffer(payload, 0, this.configKey);
     payload[8] = uidBytes.length; // From protocol.md: UID_Length (1 octet)
     payload.set(uidBytes, 9);
     return payload;

@@ -1,6 +1,6 @@
 import { AuthPacket } from '@/protocol/downlink/_AuthPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
-import { stringToBytes } from '@/utils/converters';
+import { writeConfigKeyToBuffer } from '@/utils/converters';
 import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';
 
 /**
@@ -47,7 +47,7 @@ export class SetConfigurationPacket extends AuthPacket {
 
   toPayload() {
     const payload = new Uint8Array(8 + 2);
-    payload.set(stringToBytes(this.configKey), 0);
+    writeConfigKeyToBuffer(payload, 0, this.configKey);
     payload[8] = this.configType;
     payload[9] = this.value ? 0x01 : 0x00;
     return payload;
