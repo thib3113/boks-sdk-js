@@ -81,3 +81,7 @@
 ## 2025-05-18 - PIN Lookup Optimization
 **Learning:** Mapping 6 bytes to 6 characters sequentially from `BOKS_CHAR_MAP` string in a hot loop is slower than grouping mapping.
 **Action:** Use a precomputed 16-bit lookup table `PIN_LOOKUP_16BIT` to map 2 bytes to 2 characters simultaneously, significantly reducing sequential modulo and bitwise operations overhead (around 1.2x speedup).
+
+## YYYY-MM-DD - [Converters] **Optimized:** `hexToBytes` (src/utils/converters.ts)
+**Bottleneck:** Intermediate string allocations and regex execution overhead (`.replace(/:/g, '')`, `.replace(/[^0-9A-Fa-f]/g, '')`) before parsing hex strings.
+**Solution:** Extended the `hexToBytes` slow path `for` loop to explicitly ignore formatting character codes `58` (colon `:`) and `45` (hyphen `-`), in addition to whitespace. Removed upstream regex sanitizations in `NfcRegisterPacket.ts`, `UnregisterNfcTagPacket.ts`, and `BoksSimulator.ts`, allowing native zero-allocation parsing.
