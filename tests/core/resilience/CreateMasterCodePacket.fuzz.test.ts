@@ -1,0 +1,55 @@
+import { describe, it, expect } from 'vitest';
+import fc from 'fast-check';
+import { CreateMasterCodePacket } from '../../../src/protocol/downlink/CreateMasterCodePacket';
+import { BoksProtocolError } from '../../../src/errors/BoksProtocolError';
+
+describe('CreateMasterCodePacket Resilience (Fuzzing)', () => {
+  it('FEATURE REGRESSION: should securely reject invalid constructor arguments with BoksProtocolError', () => {
+    // We fuzz the constructor directly with strings/numbers of various lengths and contents.
+    fc.assert(
+      fc.property(
+        fc.string(), // configKey
+        fc.integer(), // index
+        fc.string(), // pin
+        (configKey, index, pin) => {
+          try {
+            const packet = new CreateMasterCodePacket(configKey, index, pin);
+
+            // If it succeeds, the inputs MUST have matched the strict validation criteria:
+            // Config Key = 8 hex chars, PIN = 6 authorized chars, Index = 0..99
+            expect(configKey.length).toBe(8);
+            expect(pin.length).toBe(6);
+            expect(index).toBeGreaterThanOrEqual(0);
+            expect(index).toBeLessThanOrEqual(99);
+            expect(packet.opcode).toBe(0x0E); // CreateMasterCodePacket opcode
+          } catch (e) {
+            // It is an intended FEATURE that validation throws a BoksProtocolError.
+            // It should NEVER crash with TypeError, RangeError, etc.
+            expect(e).toBeInstanceOf(BoksProtocolError);
+          }
+        }
+      ),
+      { numRuns: 1000 }
+    );
+  });
+
+  it('FEATURE REGRESSION: should securely reject malformed binary payloads in fromPayload with BoksProtocolError', () => {
+    // We fuzz the fromPayload binary parser
+    fc.assert(
+      fc.property(
+        fc.uint8Array({ minLength: 0, maxLength: 256 }),
+        (payload) => {
+          try {
+            const packet = CreateMasterCodePacket.fromPayload(payload);
+            expect(packet).toBeInstanceOf(CreateMasterCodePacket);
+          } catch (e) {
+            // It is an intended FEATURE that fromPayload validation throws a BoksProtocolError
+            // when extracting out-of-bounds or malformed string bytes.
+            expect(e).toBeInstanceOf(BoksProtocolError);
+          }
+        }
+      ),
+      { numRuns: 1000 }
+    );
+  });
+});
