@@ -77,3 +77,7 @@
 ## 2025-10-26 - String Replacement Allocation Overhead in Validation
 **Learning:** Using `.replace(/:/g, '')` or `.replace(/[^0-9A-Fa-f]/g, '')` simply to count valid characters or compute the length of a cleaned string causes unnecessary intermediate string allocations. In hot code paths like `validateNfcUid` or `validateSeed`, iterating over the original string and counting valid characters inline avoids regex overhead and Garbage Collection pauses, yielding a ~3.4x to ~4.7x speedup in V8.
 **Action:** When validating formats or determining the effective payload length from a formatted string (like UIDs or seeds), iterate through the original string and ignore formatting characters directly instead of mutating the string.
+
+## 2025-05-18 - PIN Lookup Optimization
+**Learning:** Mapping 6 bytes to 6 characters sequentially from `BOKS_CHAR_MAP` string in a hot loop is slower than grouping mapping.
+**Action:** Use a precomputed 16-bit lookup table `PIN_LOOKUP_16BIT` to map 2 bytes to 2 characters simultaneously, significantly reducing sequential modulo and bitwise operations overhead (around 1.2x speedup).
