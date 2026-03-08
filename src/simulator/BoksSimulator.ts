@@ -592,7 +592,7 @@ export class BoksHardwareSimulator {
   public setMasterKey(key: string | Uint8Array): void {
     let keyBytes: Uint8Array;
     if (typeof key === 'string') {
-      keyBytes = hexToBytes(key.replace(/[^0-9A-Fa-f]/g, ''));
+      keyBytes = hexToBytes(key);
     } else {
       keyBytes = key;
     }
