@@ -1,0 +1,1 @@
+## 2025-03-08 - [Core] **Hardened:** [BoksPacketFactory.ts / BoksPacketFactory.createFromPayload] **Edge-Cases Covered:** [Random noise buffers, Malformed/truncated payloads with valid headers and checksums]
