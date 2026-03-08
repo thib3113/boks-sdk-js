@@ -67,7 +67,7 @@ export const hexToBytes = (hex: string): Uint8Array => {
 
   for (let i = 0; i < len; i++) {
     const charCode = hex.charCodeAt(i);
-    // Whitespace chars: 32 (space), 9 (tab), 10 (LF), 13 (CR)
+    // Ignored chars: 32 (space), 9 (tab), 10 (LF), 13 (CR), 58 (:), 45 (-)
     if (
       charCode === 32 ||
       charCode === 9 ||
