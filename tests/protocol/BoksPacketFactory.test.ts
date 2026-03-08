@@ -162,4 +162,40 @@ describe('BoksPacketFactory', () => {
       expect(BoksPacketFactory.createFromPayload(fullData)).toBeUndefined();
     });
   });
+
+  describe('createRegeneratePackets', () => {
+    it('should correctly create PartA and PartB packets from a valid 32-byte hex string key', () => {
+      const configKey = 'ABCDEF01';
+      const masterKeyString = '00112233445566778899AABBCCDDEEFF00112233445566778899AABBCCDDEEFF';
+
+      const [partA, partB] = BoksPacketFactory.createRegeneratePackets(configKey, masterKeyString);
+
+      expect(partA).toBeInstanceOf(Packets.RegeneratePartAPacket);
+      expect(partB).toBeInstanceOf(Packets.RegeneratePartBPacket);
+    });
+
+    it('should correctly create PartA and PartB packets from a valid 32-byte Uint8Array key', () => {
+      const configKey = 'ABCDEF01';
+      const masterKeyBytes = new Uint8Array(32).fill(1); // 32 bytes array
+
+      const [partA, partB] = BoksPacketFactory.createRegeneratePackets(configKey, masterKeyBytes);
+
+      expect(partA).toBeInstanceOf(Packets.RegeneratePartAPacket);
+      expect(partB).toBeInstanceOf(Packets.RegeneratePartBPacket);
+    });
+
+    it('should throw INVALID_VALUE error if the key length is not exactly 32 bytes', () => {
+      const configKey = 'ABCDEF01';
+      const invalidMasterKeyString = '00112233445566778899AABBCCDDEEFF'; // 16 bytes, not 32
+      const invalidMasterKeyBytes = new Uint8Array(16).fill(1);
+
+      expect(() => {
+        BoksPacketFactory.createRegeneratePackets(configKey, invalidMasterKeyString);
+      }).toThrowError(/INVALID_VALUE/);
+
+      expect(() => {
+        BoksPacketFactory.createRegeneratePackets(configKey, invalidMasterKeyBytes);
+      }).toThrowError(/INVALID_VALUE/);
+    });
+  });
 });
