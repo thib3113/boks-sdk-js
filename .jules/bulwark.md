@@ -16,3 +16,11 @@
 ## 2025-03-08 - [Core] **Hardened:** src/protocol/downlink/RebootPacket.ts **Edge-Cases Covered:** Empty payload verification, malformed binary payloads.
 ## 2025-03-08 - [Core] **Hardened:** src/protocol/downlink/SingleToMultiCodePacket.ts **Edge-Cases Covered:** Constructor fuzzing, PIN validation, malformed binary payloads.
 ## 2025-03-08 - [Core] **Hardened:** src/protocol/downlink/MultiToSingleCodePacket.ts **Edge-Cases Covered:** Constructor fuzzing, PIN validation, malformed binary payloads.
+## 2025-03-08 - [Core] **Hardened:** src/protocol/downlink/CreateMultiUseCodePacket.ts **Edge-Cases Covered:** Constructor fuzzing, exact byte part length verification, malformed binary payloads.
+## 2025-03-08 - [Core] **Hardened:** src/protocol/downlink/CreateSingleUseCodePacket.ts **Edge-Cases Covered:** Constructor fuzzing, exact byte part length verification, malformed binary payloads.
+## 2025-03-08 - [Core] **Hardened:** src/protocol/downlink/DeleteMasterCodePacket.ts **Edge-Cases Covered:** Constructor fuzzing, exact byte part length verification, malformed binary payloads.
+## 2025-03-08 - [Core] **Hardened:** src/protocol/downlink/DeleteMultiUseCodePacket.ts **Edge-Cases Covered:** Constructor fuzzing, exact byte part length verification, malformed binary payloads.
+## 2025-03-08 - [Core] **Hardened:** src/protocol/downlink/DeleteSingleUseCodePacket.ts **Edge-Cases Covered:** Constructor fuzzing, exact byte part length verification, malformed binary payloads.
+## 2025-03-08 - [Core] **Hardened:** src/protocol/downlink/NfcRegisterPacket.ts **Edge-Cases Covered:** Constructor fuzzing, exact byte part length verification, malformed binary payloads.
+## 2025-03-08 - [Core] **Hardened:** src/protocol/downlink/CountCodesPacket.ts **Edge-Cases Covered:** Constructor fuzzing, exact byte part length verification, malformed binary payloads.
+## 2025-03-08 - [Core] **Hardened:** src/protocol/downlink/RegisterNfcTagScanStartPacket.ts **Edge-Cases Covered:** Constructor fuzzing, exact byte part length verification, malformed binary payloads.
