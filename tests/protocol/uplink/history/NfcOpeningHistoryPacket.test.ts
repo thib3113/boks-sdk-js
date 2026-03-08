@@ -23,4 +23,12 @@ describe('NfcOpeningHistoryPacket', () => {
     const packet = NfcOpeningHistoryPacket.fromPayload(payload);
     expect(packet.uid).toBe('');
   });
+
+
+  describe('NfcOpeningHistoryPacket default construction', () => {
+    it('should handle constructor with default age', () => {
+      const packet = new NfcOpeningHistoryPacket();
+      expect(packet.age).toBe(0);
+    });
+  });
 });

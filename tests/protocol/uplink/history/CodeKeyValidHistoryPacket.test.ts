@@ -21,4 +21,30 @@ describe('CodeKeyValidHistoryPacket', () => {
     const packet = CodeKeyValidHistoryPacket.fromPayload(payload);
     expect(packet.code).toBe('');
   });
+
+
+  describe('CodeKeyValidHistoryPacket default construction', () => {
+    it('should handle constructor with default params', () => {
+      const packet = new CodeKeyValidHistoryPacket();
+      expect(packet.age).toBe(0);
+      expect(packet.code).toBe('');
+    });
+  });
+
+
+  describe('CodeKeyValidHistoryPacket short payload age code block', () => {
+    it('should extract age 0 if payload is shorter than 3', () => {
+      const payload = new Uint8Array([0, 0]); // Length 2
+      const packet = CodeKeyValidHistoryPacket.fromPayload(payload);
+      expect(packet.age).toBe(0);
+    });
+  });
+
+  describe('CodeKeyValidHistoryPacket short payload code block', () => {
+    it('should extract undefined code if payload is shorter than expected', () => {
+      const payload = new Uint8Array([0, 0, 3, 49, 50, 51, 52, 53]); // Length 8
+      const packet = CodeKeyValidHistoryPacket.fromPayload(payload);
+      expect(packet.code).toBe('');
+    });
+  });
 });

@@ -17,4 +17,12 @@ describe('BleRebootHistoryPacket', () => {
     const packet = BleRebootHistoryPacket.fromPayload(payload);
     expect(packet.age).toBe(0);
   });
+
+
+  describe('BleRebootHistoryPacket default construction', () => {
+    it('should handle constructor with default age', () => {
+      const packet = new BleRebootHistoryPacket();
+      expect(packet.age).toBe(0);
+    });
+  });
 });
