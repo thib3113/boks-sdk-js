@@ -135,25 +135,7 @@ describe('BoksClient Transaction', () => {
     transport.emit(res1);
     await p1;
 
-    // Now second tx should write
-    // Need to wait for microtasks?
-    await Promise.resolve();
-    await Promise.resolve();
-
-    // Since we are mocking transport.write as resolved promise, the queue proceeds.
-    // However, execute waits for response before resolving the queue promise?
-    // Let's check BoksClient implementation.
-    // this.commandQueue = nextTask.catch(...)
-    // nextTask awaits promise (the response listener).
-    // So p2 cannot start until p1 resolves.
-
-    // Wait, p1 resolves when transport emits res1.
-    // So transport.write should be called 2nd time only after p1 resolves.
-
-    // We emitted res1. p1 should resolve.
-    // The chain continues.
-
-    // We need to wait enough ticks.
+    // Wait enough ticks.
     await vi.waitFor(() => {
         expect(transport.write).toHaveBeenCalledTimes(2);
     });
@@ -161,5 +143,28 @@ describe('BoksClient Transaction', () => {
     // Complete second tx
     transport.emit(res2);
     await p2;
+  });
+
+  it('should log listener error if a registered listener throws', async () => {
+    // We mock logger to verify it receives the correct error format
+    const loggerMock = vi.fn();
+    client = new BoksClient({ transport, logger: loggerMock });
+    await client.connect();
+
+    client.onPacket(() => {
+      throw new Error('Listener error');
+    });
+
+    const resData = new Uint8Array([BoksOpcode.VALID_OPEN_CODE, 0, 0]);
+    transport.emit(resData);
+
+    expect(loggerMock).toHaveBeenCalledWith(
+      'error',
+      'listener_error',
+      expect.objectContaining({
+        opcode: BoksOpcode.VALID_OPEN_CODE,
+        error: expect.any(Error)
+      })
+    );
   });
 });

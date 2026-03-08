@@ -55,4 +55,10 @@ describe('BoksClient Constructor', () => {
     new BoksClient();
     expect(WebBluetoothTransport).toHaveBeenCalledWith(undefined);
   });
+
+  it('should throw an error when initialized without options and Web Bluetooth is not supported', () => {
+    // Override the mocked navigator.bluetooth to be undefined
+    vi.stubGlobal('navigator', { bluetooth: undefined });
+    expect(() => new BoksClient()).toThrow('No transport provided and Web Bluetooth is not supported.');
+  });
 });
