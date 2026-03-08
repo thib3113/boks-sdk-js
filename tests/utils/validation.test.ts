@@ -37,7 +37,7 @@ describe('validation utils', () => {
     it('should accept valid indices', () => {
       expect(() => validateMasterCodeIndex(0)).not.toThrow();
       expect(() => validateMasterCodeIndex(5)).not.toThrow();
-      //expect(() => validateMasterCodeIndex(9)).not.toThrow();
+      expect(() => validateMasterCodeIndex(255)).not.toThrow();
     });
 
     it('should reject negative indices', () => {
@@ -45,7 +45,7 @@ describe('validation utils', () => {
     });
 
     it('should reject indices out of range', () => {
-      //expect(() => validateMasterCodeIndex(10)).toThrow(BoksProtocolError);
+      expect(() => validateMasterCodeIndex(256)).toThrow(BoksProtocolError);
       expect(() => validateMasterCodeIndex(300)).toThrow(BoksProtocolError);
     });
 
