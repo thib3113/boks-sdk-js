@@ -48,3 +48,18 @@ describe('GenerateCodesPacket', () => {
       }
   });
 });
+
+  describe('error handling', () => {
+    it('should throw Error if seed length is not exactly 32 bytes in toPayload', () => {
+      // Create valid packet first
+      const validSeedStr = '00112233445566778899AABBCCDDEEFF00112233445566778899AABBCCDDEEFF';
+      const packet = new GenerateCodesPacket(validSeedStr);
+
+      // Forcefully alter the internal seed string directly to bypass constructor validation
+      (packet as any).seedStr = '00112233445566778899AABBCCDDEEFF';
+
+      expect(() => {
+        packet.toPayload();
+      }).toThrowError('Seed must be exactly 32 bytes');
+    });
+  });

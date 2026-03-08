@@ -48,3 +48,25 @@ describe('GenerateCodesSupportPacket', () => {
       }
   });
 });
+
+  describe('error handling', () => {
+    it('should throw Error if seed length is not exactly 32 bytes in toPayload (Uint8Array path)', () => {
+      const validSeedBytes = new Uint8Array(32).fill(0x11);
+      const packet = new GenerateCodesSupportPacket(validSeedBytes);
+      (packet as any).seed = new Uint8Array(16).fill(0x11);
+
+      expect(() => {
+        packet.toPayload();
+      }).toThrowError('Seed must be exactly 32 bytes');
+    });
+
+    it('should throw Error if seed length is not exactly 32 bytes in toPayload (String path)', () => {
+      const validSeedBytes = new Uint8Array(32).fill(0x11);
+      const packet = new GenerateCodesSupportPacket(validSeedBytes);
+      (packet as any).seed = '00112233445566778899AABBCCDDEEFF'; // 16 bytes encoded as hex
+
+      expect(() => {
+        packet.toPayload();
+      }).toThrowError('Seed must be exactly 32 bytes');
+    });
+  });
