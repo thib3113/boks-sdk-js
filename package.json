@@ -21,7 +21,7 @@
     "LICENSE"
   ],
   "sideEffects": false,
-  "packageManager": "pnpm@10.30.3",
+  "packageManager": "pnpm@10.31.0",
   "main": "dist/cjs/boks-sdk.cjs",
   "module": "dist/esm/boks-sdk.js",
   "types": "dist/types/index.d.ts",
