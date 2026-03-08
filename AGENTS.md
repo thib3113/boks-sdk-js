@@ -33,3 +33,6 @@ Le `boks-sdk-js` est la bibliothèque de référence centralisant toute la logiq
 Consultez systématiquement le dossier **`.jules/specs/`** pour les spécifications techniques du protocole et `.jules/project_context.md` pour la vision globale du projet.
 
 
+
+## Testing and Coverage
+* **Core Module Coverage**: The core module (`src/core.ts` and all its exported sub-modules in `src/crypto`, `src/protocol`, `src/utils`, and `src/errors`) currently maintains 100% test coverage. You MUST ensure that any modifications or new features added to these core parts preserve this 100% test coverage requirement. Always run `pnpm test:coverage` and verify that the "core" parts report 100% for Statements, Branches, Functions, and Lines.
