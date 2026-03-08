@@ -1,4 +1,4 @@
-import { describe, it, expect} from 'vitest';
+import { describe, it, expect } from 'vitest';
 import fc from 'fast-check';
 import { BoksPacketFactory } from '../../../src/protocol/BoksPacketFactory';
 import { calculateChecksum } from '../../../src/utils/converters';
@@ -39,13 +39,13 @@ describe('BoksPacketFactory Resilience (Fuzzing)', () => {
           // Compute correct checksum
           data[2 + length] = calculateChecksum(data.subarray(0, 2 + length));
 
-          // Test it
+          // The safe state is that the factory catches parsing issues
+          // and either returns undefined (ignored packet) or an ErrorPacket.
+          // It should NOT throw an unhandled exception that bubbles up to the caller
+          // (which could crash the BLE notification listener).
           expect(() => {
             BoksPacketFactory.createFromPayload(data);
           }).not.toThrow();
-          // It should ideally return `undefined` (ignored) or an `ErrorPacket`
-          // if it can't parse the packet according to the constructor's expectations,
-          // instead of throwing an unhandled exception that could crash the Bluetooth listener.
         }
       ),
       { numRuns: 1000 }
