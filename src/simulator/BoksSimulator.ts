@@ -531,6 +531,11 @@ export class BoksHardwareSimulator {
     this.executeDoorOpen(BoksOpcode.LOG_EVENT_NFC_OPENING, payload, tagId);
   }
 
+  public triggerError(opcode: number): void {
+    // Generate an empty error packet
+    this.#subscribers.forEach((cb) => cb(this.createResponse(opcode, EMPTY_BUFFER)));
+  }
+
   /**
    * Forces battery level (0-100).
    */
