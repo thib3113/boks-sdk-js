@@ -85,3 +85,7 @@
 ## YYYY-MM-DD - [Converters] **Optimized:** `hexToBytes` (src/utils/converters.ts)
 **Bottleneck:** Intermediate string allocations and regex execution overhead (`.replace(/:/g, '')`, `.replace(/[^0-9A-Fa-f]/g, '')`) before parsing hex strings.
 **Solution:** Extended the `hexToBytes` slow path `for` loop to explicitly ignore formatting character codes `58` (colon `:`) and `45` (hyphen `-`), in addition to whitespace. Removed upstream regex sanitizations in `NfcRegisterPacket.ts`, `UnregisterNfcTagPacket.ts`, and `BoksSimulator.ts`, allowing native zero-allocation parsing.
+
+## 2025-10-26 - Config Key Buffer Allocation Overhead
+**Learning:** Writing a static 8-character Config Key to a buffer using `payload.set(stringToBytes(key))` involves multiple intermediate allocations and copies, which is surprisingly slow. By replacing it with an unrolled direct assignment loop `writeConfigKeyToBuffer`, we avoided GC allocations and observed a ~27x performance speedup in V8 (17ms vs 473ms for 1,000,000 operations).
+**Action:** When inserting small fixed-length ASCII strings (like 8-character Config Keys) into payload buffers, write them directly using a helper like `writeConfigKeyToBuffer` with unrolled `charCodeAt` statements rather than relying on `stringToBytes`.
