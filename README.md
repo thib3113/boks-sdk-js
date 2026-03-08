@@ -213,7 +213,7 @@ The simulator is available via a dedicated entry point:
 
 ```typescript
 import { BoksHardwareSimulator, SimulatorTransport } from '@thib3113/boks-sdk/simulator';
-import { BoksController, BoksCodeType, BoksOpenSource } from '@thib3113/boks-sdk';
+import { BoksController, BoksCodeType } from '@thib3113/boks-sdk';
 ```
 
 ### Basic Usage
@@ -260,10 +260,10 @@ You can trigger hardware events programmatically to test your application's reac
 
 ```typescript
 // Simulate a user opening the door via the Keypad
-simulator.triggerDoorOpen(BoksOpenSource.Keypad, '123456');
+simulator.triggerKeypadOpen('123456');
 
 // Simulate a physical key opening (no code)
-simulator.triggerDoorOpen(BoksOpenSource.PhysicalKey);
+simulator.triggerPhysicalKeyOpen();
 
 // Verify that the history logs reflect these events
 const history = simulator.getInternalState().logs;

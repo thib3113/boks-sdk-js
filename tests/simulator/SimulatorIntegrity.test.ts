@@ -1,6 +1,6 @@
 import { describe, test, expect, beforeEach, afterEach, vi, Mock } from 'vitest';
 import { BoksHardwareSimulator, SimulatorTransport, SimulatorStorage } from '../../src/simulator';
-import { BoksOpcode, BoksCodeType, BoksOpenSource } from '../../src/protocol/constants';
+import { BoksOpcode, BoksCodeType } from '../../src/protocol/constants';
 import { DeleteSingleUseCodePacket } from '../../src/protocol/downlink/DeleteSingleUseCodePacket';
 import { OpenDoorPacket } from '../../src/protocol/downlink/OpenDoorPacket';
 
@@ -45,7 +45,7 @@ describe('Boks Hardware Simulator Integrity', () => {
     // Check Logs
     const state = simulator.getInternalState();
     // Should log OPEN_DOOR (0x91) as per handleOpenDoor implementation
-    // And handleOpenDoor now calls triggerDoorOpen(Ble), so it should also log LOG_CODE_BLE_VALID (0x86)
+    // And handleOpenDoor now calls triggerBleOpen, so it should also log LOG_CODE_BLE_VALID (0x86)
 
     // We expect at least 2 logs: 0x86 then 0x91
     expect(state.logs.length).toBeGreaterThanOrEqual(2);
@@ -58,7 +58,7 @@ describe('Boks Hardware Simulator Integrity', () => {
 
   test('Should consume Single-Use codes when triggered via simulator', () => {
     simulator.addPinCode('777777', BoksCodeType.Single);
-    simulator.triggerDoorOpen(BoksOpenSource.Keypad, '777777');
+    simulator.triggerKeypadOpen('777777');
 
     expect(simulator.getInternalState().isOpen).toBe(true);
     expect(simulator.getInternalState().pinCodes.has('777777')).toBe(false);
@@ -66,7 +66,7 @@ describe('Boks Hardware Simulator Integrity', () => {
 
   test('Should NOT consume Multi-Use codes when triggered', () => {
     simulator.addPinCode('888888', BoksCodeType.Multi);
-    simulator.triggerDoorOpen(BoksOpenSource.Keypad, '888888');
+    simulator.triggerKeypadOpen('888888');
 
     expect(simulator.getInternalState().isOpen).toBe(true);
     expect(simulator.getInternalState().pinCodes.has('888888')).toBe(true);
@@ -186,7 +186,7 @@ describe('Boks Hardware Simulator Integrity', () => {
 
   describe('triggerDoorOpen and Logging', () => {
     test('Should generate correct logs for BLE source', () => {
-      simulator.triggerDoorOpen(BoksOpenSource.Ble, '123456');
+      simulator.triggerBleOpen('123456');
       const logs = simulator.getInternalState().logs;
 
       // Expect 0x86 (BLE Valid) and 0x91 (Door Open)
@@ -197,7 +197,7 @@ describe('Boks Hardware Simulator Integrity', () => {
     });
 
     test('Should generate correct logs for Keypad source', () => {
-      simulator.triggerDoorOpen(BoksOpenSource.Keypad, '654321');
+      simulator.triggerKeypadOpen('654321');
       const logs = simulator.getInternalState().logs;
 
       // Expect 0x87 (Keypad Valid) and 0x91 (Door Open)
@@ -207,7 +207,7 @@ describe('Boks Hardware Simulator Integrity', () => {
     });
 
     test('Should generate correct logs for Physical Key source', () => {
-      simulator.triggerDoorOpen(BoksOpenSource.PhysicalKey);
+      simulator.triggerPhysicalKeyOpen();
       const logs = simulator.getInternalState().logs;
 
       // Expect 0x99 (Key Opening) and 0x91 (Door Open)
@@ -217,7 +217,7 @@ describe('Boks Hardware Simulator Integrity', () => {
     });
 
     test('Should generate correct logs for NFC source', () => {
-      simulator.triggerDoorOpen(BoksOpenSource.Nfc, 'AABBCCDD');
+      simulator.triggerNfcOpen('AABBCCDD');
       const logs = simulator.getInternalState().logs;
 
       // Expect 0xA1 (NFC Opening) and 0x91 (Door Open)

@@ -2,7 +2,6 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { BoksController } from '../../src/client/BoksController';
 import { BoksHardwareSimulator } from '../../src/simulator/BoksSimulator';
 import { SimulatorTransport } from '../../src/simulator/SimulatorTransport';
-import { BoksOpenSource } from '../../src/protocol/constants';
 
 describe('BoksController Integration with Simulator', () => {
   let simulator: BoksHardwareSimulator;
@@ -126,8 +125,8 @@ describe('BoksController Integration with Simulator', () => {
 
   it('should sync history correctly', async () => {
     // Manually trigger events in simulator
-    simulator.triggerDoorOpen(BoksOpenSource.Keypad, '654321');
-    simulator.triggerDoorOpen(BoksOpenSource.Nfc, 'AABBCC'); // Tag ID
+    simulator.triggerKeypadOpen('654321');
+    simulator.triggerNfcOpen('AABBCC'); // Tag ID
 
     const history = await controller.fetchHistory();
 
