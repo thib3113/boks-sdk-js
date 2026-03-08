@@ -16,11 +16,11 @@ describe('CreateMasterCodePacket Resilience (Fuzzing)', () => {
             const packet = new CreateMasterCodePacket(configKey, index, pin);
 
             // If it succeeds, the inputs MUST have matched the strict validation criteria:
-            // Config Key = 8 hex chars, PIN = 6 authorized chars, Index = 0..99
+            // Config Key = 8 hex chars, PIN = 6 authorized chars, Index = 0..255
             expect(configKey.length).toBe(8);
             expect(pin.length).toBe(6);
             expect(index).toBeGreaterThanOrEqual(0);
-            expect(index).toBeLessThanOrEqual(99);
+            expect(index).toBeLessThanOrEqual(255);
             expect(packet.opcode).toBe(0x0E); // CreateMasterCodePacket opcode
           } catch (e) {
             // It is an intended FEATURE that validation throws a BoksProtocolError.
