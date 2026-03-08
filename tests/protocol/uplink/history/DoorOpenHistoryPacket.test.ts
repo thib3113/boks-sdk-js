@@ -10,4 +10,12 @@ describe('DoorOpenHistoryPacket', () => {
     expect(packet.age).toBe(0x010203);
     expect(packet.status).toBe('open');
   });
+
+
+  describe('DoorOpenHistoryPacket default construction', () => {
+    it('should handle constructor with default age', () => {
+      const packet = new DoorOpenHistoryPacket();
+      expect(packet.age).toBe(0);
+    });
+  });
 });
