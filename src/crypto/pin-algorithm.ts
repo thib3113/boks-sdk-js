@@ -8,6 +8,14 @@ import { BoksProtocolError, BoksProtocolErrorId } from '../errors/BoksProtocolEr
 const encoder = new TextEncoder();
 const BOKS_CHAR_MAP = '0123456789AB';
 
+// Optimization: Precompute 16-bit lookup table (2 chars) for faster PIN extraction.
+// This avoids repeated array access, modulo, and string concatenation in the hot loop.
+// Since memory footprint is small (64K * ~2 bytes = ~128KB), the speedup easily outweighs memory cost.
+const PIN_LOOKUP_16BIT = new Array<string>(65536);
+for (let i = 0; i < 65536; i++) {
+  PIN_LOOKUP_16BIT[i] = BOKS_CHAR_MAP[(i & 255) % 12] + BOKS_CHAR_MAP[((i >>> 8) & 255) % 12];
+}
+
 // Whitelist of allowed prefixes for PIN generation to prevent misuse and buffer overflows.
 // These are the only prefixes defined in the Boks protocol.
 const ALLOWED_PREFIXES = ['single-use', 'multi-use', 'master'] as const;
@@ -148,21 +156,19 @@ const processMessageBlock = (h: Uint32Array, typePrefix: string, index: number):
   // Need to extract 6 bytes from h (which is 8x32bit words)
   // The Python ref uses struct.pack('<I', x) for each word then takes [:6]
 
-  let pin = '';
   // Optimization: Unrolled loop to avoid temporary array allocation
+  // Optimization: Precomputed 16-bit lookup table maps 2 bytes to 2 characters at once.
   // Word 0 (bytes 0, 1, 2, 3)
   const w0 = h[0];
-  pin += BOKS_CHAR_MAP[(w0 & 255) % 12];
-  pin += BOKS_CHAR_MAP[((w0 >>> 8) & 255) % 12];
-  pin += BOKS_CHAR_MAP[((w0 >>> 16) & 255) % 12];
-  pin += BOKS_CHAR_MAP[((w0 >>> 24) & 255) % 12];
 
   // Word 1 (bytes 4, 5)
   const w1 = h[1];
-  pin += BOKS_CHAR_MAP[(w1 & 255) % 12];
-  pin += BOKS_CHAR_MAP[((w1 >>> 8) & 255) % 12];
 
-  return pin;
+  return (
+    PIN_LOOKUP_16BIT[w0 & 65535] +
+    PIN_LOOKUP_16BIT[(w0 >>> 16) & 65535] +
+    PIN_LOOKUP_16BIT[w1 & 65535]
+  );
 };
 
 /**
