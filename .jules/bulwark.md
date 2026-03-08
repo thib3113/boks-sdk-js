@@ -24,3 +24,19 @@
 ## 2025-03-08 - [Core] **Hardened:** src/protocol/downlink/NfcRegisterPacket.ts **Edge-Cases Covered:** Constructor fuzzing, exact byte part length verification, malformed binary payloads.
 ## 2025-03-08 - [Core] **Hardened:** src/protocol/downlink/CountCodesPacket.ts **Edge-Cases Covered:** Constructor fuzzing, exact byte part length verification, malformed binary payloads.
 ## 2025-03-08 - [Core] **Hardened:** src/protocol/downlink/RegisterNfcTagScanStartPacket.ts **Edge-Cases Covered:** Constructor fuzzing, exact byte part length verification, malformed binary payloads.
+## 2025-03-08 - [Core] **Hardened:** src/protocol/uplink/history/BleRebootHistoryPacket.ts **Edge-Cases Covered:** Constructor fuzzing, invalid lengths, malformed binary buffer payloads.
+## 2025-03-08 - [Core] **Hardened:** src/protocol/uplink/history/BlockResetHistoryPacket.ts **Edge-Cases Covered:** Constructor fuzzing, invalid lengths, malformed binary buffer payloads.
+## 2025-03-08 - [Core] **Hardened:** src/protocol/uplink/history/CodeBleInvalidHistoryPacket.ts **Edge-Cases Covered:** Constructor fuzzing, invalid lengths, malformed binary buffer payloads.
+## 2025-03-08 - [Core] **Hardened:** src/protocol/uplink/history/CodeBleValidHistoryPacket.ts **Edge-Cases Covered:** Constructor fuzzing, invalid lengths, malformed binary buffer payloads.
+## 2025-03-08 - [Core] **Hardened:** src/protocol/uplink/history/CodeKeyInvalidHistoryPacket.ts **Edge-Cases Covered:** Constructor fuzzing, invalid lengths, malformed binary buffer payloads.
+## 2025-03-08 - [Core] **Hardened:** src/protocol/uplink/history/CodeKeyValidHistoryPacket.ts **Edge-Cases Covered:** Constructor fuzzing, invalid lengths, malformed binary buffer payloads.
+## 2025-03-08 - [Core] **Hardened:** src/protocol/uplink/history/DoorCloseHistoryPacket.ts **Edge-Cases Covered:** Constructor fuzzing, invalid lengths, malformed binary buffer payloads.
+## 2025-03-08 - [Core] **Hardened:** src/protocol/uplink/history/DoorOpenHistoryPacket.ts **Edge-Cases Covered:** Constructor fuzzing, invalid lengths, malformed binary buffer payloads.
+## 2025-03-08 - [Core] **Hardened:** src/protocol/uplink/history/ErrorHistoryPacket.ts **Edge-Cases Covered:** Constructor fuzzing, invalid lengths, malformed binary buffer payloads.
+## 2025-03-08 - [Core] **Hardened:** src/protocol/uplink/history/HistoryEraseHistoryPacket.ts **Edge-Cases Covered:** Constructor fuzzing, invalid lengths, malformed binary buffer payloads.
+## 2025-03-08 - [Core] **Hardened:** src/protocol/uplink/history/KeyOpeningHistoryPacket.ts **Edge-Cases Covered:** Constructor fuzzing, invalid lengths, malformed binary buffer payloads.
+## 2025-03-08 - [Core] **Hardened:** src/protocol/uplink/history/NfcOpeningHistoryPacket.ts **Edge-Cases Covered:** Constructor fuzzing, invalid lengths, malformed binary buffer payloads.
+## 2025-03-08 - [Core] **Hardened:** src/protocol/uplink/history/NfcRegisteringHistoryPacket.ts **Edge-Cases Covered:** Constructor fuzzing, invalid lengths, malformed binary buffer payloads.
+## 2025-03-08 - [Core] **Hardened:** src/protocol/uplink/history/PowerOffHistoryPacket.ts **Edge-Cases Covered:** Constructor fuzzing, invalid lengths, malformed binary buffer payloads.
+## 2025-03-08 - [Core] **Hardened:** src/protocol/uplink/history/PowerOnHistoryPacket.ts **Edge-Cases Covered:** Constructor fuzzing, invalid lengths, malformed binary buffer payloads.
+## 2025-03-08 - [Core] **Hardened:** src/protocol/uplink/history/ScaleMeasureHistoryPacket.ts **Edge-Cases Covered:** Constructor fuzzing, invalid lengths, malformed binary buffer payloads.
