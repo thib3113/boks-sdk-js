@@ -40,3 +40,10 @@
 ## 2025-03-08 - [Core] **Hardened:** src/protocol/uplink/history/PowerOffHistoryPacket.ts **Edge-Cases Covered:** Constructor fuzzing, invalid lengths, malformed binary buffer payloads.
 ## 2025-03-08 - [Core] **Hardened:** src/protocol/uplink/history/PowerOnHistoryPacket.ts **Edge-Cases Covered:** Constructor fuzzing, invalid lengths, malformed binary buffer payloads.
 ## 2025-03-08 - [Core] **Hardened:** src/protocol/uplink/history/ScaleMeasureHistoryPacket.ts **Edge-Cases Covered:** Constructor fuzzing, invalid lengths, malformed binary buffer payloads.
+## 2025-03-08 - [Core] **Hardened:** src/protocol/uplink/NotifyDoorStatusPacket.ts **Edge-Cases Covered:** Constructor fuzzing, invalid mappings, malformed binary buffers.
+## 2025-03-08 - [Core] **Hardened:** src/protocol/uplink/NotifyCodesCountPacket.ts **Edge-Cases Covered:** Constructor fuzzing, missing lengths, malformed binary buffers.
+## 2025-03-08 - [Core] **Hardened:** src/protocol/uplink/NotifyLogsCountPacket.ts **Edge-Cases Covered:** Constructor fuzzing, missing lengths, malformed binary buffers.
+## 2025-03-08 - [Core] **Hardened:** src/protocol/uplink/AnswerDoorStatusPacket.ts **Edge-Cases Covered:** Constructor fuzzing, invalid mappings, malformed binary buffers.
+## 2025-03-08 - [Core] **Hardened:** src/protocol/uplink/NotifyNfcTagFoundPacket.ts **Edge-Cases Covered:** Constructor fuzzing, invalid empty payloads, malformed binary buffers.
+## 2025-03-08 - [Core] **Hardened:** src/protocol/uplink/NotifyCodeGenerationProgressPacket.ts **Edge-Cases Covered:** Constructor fuzzing, trailing bytes, empty buffers.
+## 2025-03-08 - [Core] **Hardened:** src/protocol/uplink/SimpleNotificationPackets.ts **Edge-Cases Covered:** Constructor fuzzing, empty buffers, invalid error payloads.
