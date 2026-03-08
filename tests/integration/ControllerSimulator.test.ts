@@ -2,7 +2,6 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { BoksController } from '../../src/client/BoksController';
 import { BoksHardwareSimulator } from '../../src/simulator/BoksSimulator';
 import { SimulatorTransport } from '../../src/simulator/SimulatorTransport';
-import { BoksOpenSource } from '../../src/protocol/constants';
 
 describe('BoksController Integration with Simulator', () => {
   let simulator: BoksHardwareSimulator;
