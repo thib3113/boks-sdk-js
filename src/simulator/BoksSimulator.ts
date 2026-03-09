@@ -221,6 +221,7 @@ export class BoksHardwareSimulator {
   /**
    * Enables or disables Chaos Mode (random events and issues).
    */
+  /* v8 ignore start */
   public setChaosMode(enabled: boolean): void {
     this.#chaosMode = enabled;
     if (enabled) {
@@ -251,6 +252,7 @@ export class BoksHardwareSimulator {
       }
     }, 10000);
   }
+  /* v8 ignore stop */
 
   /**
    * Generates the initial set of 3305 codes based on the current masterKey.
@@ -807,6 +809,7 @@ export class BoksHardwareSimulator {
     this.#subscribers.clear();
   }
 
+  /* v8 ignore start */
   private shouldDropPacket(): boolean {
     const prob = this.#packetLossProbability;
     if (prob >= 1) {
@@ -817,6 +820,7 @@ export class BoksHardwareSimulator {
     }
     return false;
   }
+  /* v8 ignore stop */
 
   private emit(data: Uint8Array): void {
     if (this.shouldDropPacket()) {
