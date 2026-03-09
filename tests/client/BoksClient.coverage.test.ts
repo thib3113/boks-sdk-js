@@ -1,8 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { BoksClient } from '@/client/BoksClient';
 import { BoksTransport } from '@/client/transport';
-import { BoksOpcode, BoksPacket, BoksPacketFactory } from '@/protocol';
-import { BoksClientError } from '@/errors/BoksClientError';
+import { BoksOpcode, BoksPacket } from '@/protocol';
 
 class MockTransport implements BoksTransport {
   connect = vi.fn().mockResolvedValue(undefined);
@@ -39,7 +38,7 @@ describe('BoksClient Coverage', () => {
   beforeEach(async () => {
     transport = new MockTransport();
     loggerMock = vi.fn();
-    client = new BoksClient({ transport, logger: loggerMock });
+    client = new BoksClient({ transport, logger: loggerMock as any });
     await client.connect();
   });
 
