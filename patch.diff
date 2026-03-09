@@ -1,0 +1,22 @@
+--- src/client/BoksClient.ts
++++ src/client/BoksClient.ts
+@@ -57,7 +57,7 @@
+ export class BoksClient {
+   private readonly transport: BoksTransport;
+   private readonly logger?: BoksLogger;
+-  private listeners: Array<(packet: BoksPacket) => void> = [];
++  private listeners: Set<(packet: BoksPacket) => void> = new Set();
+   private commandQueue: Promise<void> = Promise.resolve();
+   private currentTransactionContext: TransactionContext | null = null;
+
+@@ -138,9 +138,9 @@
+    * @returns A function to unsubscribe.
+    */
+   onPacket(callback: (packet: BoksPacket) => void): () => void {
+-    this.listeners.push(callback);
++    this.listeners.add(callback);
+     return () => {
+-      this.listeners = this.listeners.filter((l) => l !== callback);
++      this.listeners.delete(callback);
+     };
+   }
