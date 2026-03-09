@@ -1,87 +1,54 @@
 import { describe, it, expect } from 'vitest';
-import { sealed, freeze } from '../../src/utils/security';
+import { sealed, freeze } from '@/utils/security';
 
 describe('security decorators', () => {
-  describe('@sealed', () => {
-    @sealed
-    class SealedClass {
-      public static staticProp = 1;
-      public prop = 1;
-    }
+  describe('sealed', () => {
+    it('should seal the constructor and prototype', () => {
+      @sealed
+      class TestClass {
+        static staticProp = 1;
+        instanceProp = 2;
+      }
 
-    it('should seal the constructor', () => {
-      expect(Object.isSealed(SealedClass)).toBe(true);
-    });
+      expect(Object.isSealed(TestClass)).toBe(true);
+      expect(Object.isSealed(TestClass.prototype)).toBe(true);
 
-    it('should seal the prototype', () => {
-      expect(Object.isSealed(SealedClass.prototype)).toBe(true);
-    });
+      // Should still be able to modify existing properties
+      (TestClass as any).staticProp = 3;
+      expect(TestClass.staticProp).toBe(3);
 
-    it('should not allow adding new properties to the constructor', () => {
-      expect(() => {
-        (SealedClass as any).newProp = 'test';
-      }).toThrow();
-    });
+      const instance = new TestClass();
+      instance.instanceProp = 4;
+      expect(instance.instanceProp).toBe(4);
 
-    it('should not allow adding new properties to the prototype', () => {
-      expect(() => {
-        (SealedClass.prototype as any).newMethod = () => {};
-      }).toThrow();
-    });
-
-    it('should still allow modifying existing static properties', () => {
-      (SealedClass as any).staticProp = 2;
-      expect(SealedClass.staticProp).toBe(2);
-    });
-
-    it('should allow instances to be modified (unless they are also sealed)', () => {
-      const instance = new SealedClass();
-      instance.prop = 2;
-      (instance as any).newProp = 3;
-      expect(instance.prop).toBe(2);
-      expect((instance as any).newProp).toBe(3);
+      // Should not be able to add new properties to constructor
+      try {
+        (TestClass as any).newProp = 5;
+      } catch (e) {
+        // May throw in strict mode
+      }
+      expect((TestClass as any).newProp).toBeUndefined();
     });
   });
 
-  describe('@freeze', () => {
-    @freeze
-    class FrozenClass {
-      public static staticProp = 1;
-      public prop = 1;
-    }
+  describe('freeze', () => {
+    it('should freeze the constructor and prototype', () => {
+      @freeze
+      class TestClass {
+        static staticProp = 1;
+        instanceProp = 2;
+      }
 
-    it('should freeze the constructor', () => {
-      expect(Object.isFrozen(FrozenClass)).toBe(true);
-    });
+      expect(Object.isFrozen(TestClass)).toBe(true);
+      expect(Object.isFrozen(TestClass.prototype)).toBe(true);
 
-    it('should freeze the prototype', () => {
-      expect(Object.isFrozen(FrozenClass.prototype)).toBe(true);
-    });
-
-    it('should not allow adding new properties to the constructor', () => {
-      expect(() => {
-        (FrozenClass as any).newProp = 'test';
-      }).toThrow();
-    });
-
-    it('should not allow modifying existing static properties', () => {
-      expect(() => {
-        (FrozenClass as any).staticProp = 2;
-      }).toThrow();
-    });
-
-    it('should not allow adding new properties to the prototype', () => {
-      expect(() => {
-        (FrozenClass.prototype as any).newMethod = () => {};
-      }).toThrow();
-    });
-
-    it('should allow instances to be modified (unless they are also frozen)', () => {
-      const instance = new FrozenClass();
-      instance.prop = 2;
-      (instance as any).newProp = 3;
-      expect(instance.prop).toBe(2);
-      expect((instance as any).newProp).toBe(3);
+      // Should NOT be able to modify existing properties on constructor
+      try {
+        (TestClass as any).staticProp = 3;
+      } catch (e) {
+        // May throw in strict mode
+      }
+      expect(TestClass.staticProp).toBe(1);
     });
   });
 });

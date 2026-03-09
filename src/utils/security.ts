@@ -5,8 +5,7 @@
  * if they are writable.
  * This helps prevent prototype pollution attacks and unauthorized extensions of sensitive objects.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function sealed(constructor: { prototype: any }) {
+export function sealed(constructor: { prototype: unknown }) {
   Object.seal(constructor);
   Object.seal(constructor.prototype);
 }
@@ -17,8 +16,7 @@ export function sealed(constructor: { prototype: any }) {
  * existing properties cannot be removed, and existing properties cannot be modified.
  * This is useful for static registries or configuration classes.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function freeze(constructor: { prototype: any }) {
+export function freeze(constructor: { prototype: unknown }) {
   Object.freeze(constructor);
   Object.freeze(constructor.prototype);
 }
