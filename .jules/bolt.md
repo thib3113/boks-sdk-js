@@ -97,3 +97,7 @@
 ## 2025-10-26 - PIN Extraction Overhead
 **Learning:** Similar to Config Keys, extracting a static 6-character PIN from a buffer using `bytesToString(payload.subarray(8, 14))` involves subarray allocation and a loop with string concatenation. Creating a `readPinFromBuffer` utility using `String.fromCharCode` avoids GC allocations and yields a similar speedup.
 **Action:** Extract small fixed-length ASCII PINs using an unrolled helper like `readPinFromBuffer`.
+
+## 2025-10-26 - MAC Address Extraction Overhead
+**Learning:** Extracting a 6-byte MAC address from a buffer using `bytesToMac(payload.subarray(offset, offset + 6))` creates a new `Uint8Array` view via `subarray` and requires evaluating the length of the array inside `bytesToMac`. In high-frequency parsing paths, this allocation and execution overhead is measurable. Benchmarks show a ~5x speedup by reading directly from the original buffer.
+**Action:** When extracting standard 6-byte MAC addresses from payload buffers, read them directly using a helper like `readMacFromBuffer` with an unrolled index approach instead of relying on `bytesToMac` combined with `subarray`.

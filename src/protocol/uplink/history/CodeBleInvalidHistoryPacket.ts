@@ -1,6 +1,6 @@
 import { BoksHistoryEvent } from '@/protocol/uplink/history/_BoksHistoryEventBase';
 import { BoksOpcode } from '@/protocol/constants';
-import { readPinFromBuffer, bytesToMac } from '@/utils/converters';
+import { readPinFromBuffer, readMacFromBuffer } from '@/utils/converters';
 
 /**
  * Log: Invalid BLE code usage.
@@ -32,7 +32,7 @@ export class CodeBleInvalidHistoryPacket extends BoksHistoryEvent {
     }
     // Offset 3+6+2(padding) = 11. MAC starts at 11, length 6.
     if (payload.length >= 17) {
-      connectedMac = bytesToMac(payload.subarray(11, 17));
+      connectedMac = readMacFromBuffer(payload, 11);
     }
     return new CodeBleInvalidHistoryPacket(age, code, connectedMac, payload);
   }
