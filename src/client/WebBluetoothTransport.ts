@@ -107,8 +107,14 @@ export class WebBluetoothTransport implements BoksTransport {
           // Ignore error and try next service
         }
       }
-      throw new Error(`Characteristic ${uuid} not found in any visible service.`);
+      throw new BoksClientError(
+        BoksClientErrorId.PARSE_ERROR,
+        `Characteristic ${uuid} not found in any visible service.`
+      );
     } catch (error) {
+      if (error instanceof BoksClientError) {
+        throw error;
+      }
       throw new BoksClientError(
         BoksClientErrorId.PARSE_ERROR,
         `Failed to read characteristic ${uuid}`,
