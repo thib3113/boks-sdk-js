@@ -1,7 +1,6 @@
 import { BoksOpcode, BoksCodeType, BOKS_UUIDS, EMPTY_BUFFER } from '../protocol/constants';
 import {
   calculateChecksum,
-  bytesToString,
   readConfigKeyFromBuffer,
   readPinFromBuffer,
   bytesToHex,
@@ -954,9 +953,7 @@ export class BoksHardwareSimulator {
 
   private handleOpenDoor(payload: Uint8Array): Uint8Array {
     let pin: string;
-    if (payload.length === 6) {
-      pin = bytesToString(payload);
-    } else if (payload.length >= 14) {
+    if (payload.length === 6 || payload.length >= 14) {
       pin = readPinFromBuffer(payload, 0);
     } else {
       return this.createResponse(BoksOpcode.INVALID_OPEN_CODE, EMPTY_BUFFER);
