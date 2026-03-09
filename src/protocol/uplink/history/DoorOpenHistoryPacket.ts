@@ -22,7 +22,7 @@ export class DoorOpenHistoryPacket extends BoksHistoryEvent {
     // Legacy implementation was: if (payload.length >= 3) age = payload[0...]; return new(age, payload)
     // So lengths 0, 1, 2 also result in age 0.
     if (payload.length < 3) {
-       return new DoorOpenHistoryPacket(0, payload);
+      return new DoorOpenHistoryPacket(0, payload);
     }
     const data = PayloadMapper.parse(DoorOpenHistoryPacket, payload);
     return new DoorOpenHistoryPacket(data.parsedAge!, payload);

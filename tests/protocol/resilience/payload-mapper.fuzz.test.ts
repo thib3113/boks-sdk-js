@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import fc from 'fast-check';
-import { PayloadMapper, FieldDefinition, FieldType } from '@/protocol/payload-mapper';
+import { PayloadMapper, FieldType } from '@/protocol/payload-mapper';
 import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';
 
 /**

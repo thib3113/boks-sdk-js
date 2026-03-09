@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-function-type, @typescript-eslint/no-explicit-any */
 import { BoksProtocolError, BoksProtocolErrorId } from '../errors/BoksProtocolError';
 
 /**
@@ -58,10 +59,10 @@ export class PayloadMapper {
     // Prevent Prototype Pollution vectors (__proto__, constructor, prototype)
     const dangerousNames = ['__proto__', 'constructor', 'prototype'];
     if (!/^[a-zA-Z_$][0-9a-zA-Z_$]*$/.test(name) || dangerousNames.includes(name)) {
-       throw new BoksProtocolError(
-          BoksProtocolErrorId.INTERNAL_ERROR,
-          `Unsafe property name mapped: ${name}`
-       );
+      throw new BoksProtocolError(
+        BoksProtocolErrorId.INTERNAL_ERROR,
+        `Unsafe property name mapped: ${name}`
+      );
     }
   }
 
@@ -70,11 +71,17 @@ export class PayloadMapper {
    * or unreasonable memory access definitions in the decorators.
    */
   private static assertSafeBounds(offset: number, size: number): void {
-    if (offset < 0 || size < 0 || !Number.isSafeInteger(offset) || !Number.isSafeInteger(size) || (offset + size) > 1024) {
-       throw new BoksProtocolError(
-          BoksProtocolErrorId.INTERNAL_ERROR,
-          `Invalid mapping bounds: offset=${offset}, size=${size}`
-       );
+    if (
+      offset < 0 ||
+      size < 0 ||
+      !Number.isSafeInteger(offset) ||
+      !Number.isSafeInteger(size) ||
+      offset + size > 1024
+    ) {
+      throw new BoksProtocolError(
+        BoksProtocolErrorId.INTERNAL_ERROR,
+        `Invalid mapping bounds: offset=${offset}, size=${size}`
+      );
     }
   }
 
@@ -84,7 +91,7 @@ export class PayloadMapper {
   private static compileParser(targetClass: any): Function {
     const fields: FieldDefinition[] = targetClass[METADATA_KEY];
     if (!fields || fields.length === 0) {
-      return (payload: Uint8Array) => ({}); // No fields mapped
+      return (_payload: Uint8Array) => ({}); // No fields mapped
     }
 
     // Calculate maximum required payload size securely
@@ -93,26 +100,34 @@ export class PayloadMapper {
       this.assertSafePropertyName(field.propertyName);
 
       let size = 1; // Default min size
-      if (field.type === 'uint16') size = 2;
-      else if (field.type === 'uint24') size = 3;
-      else if (field.type === 'uint32') size = 4;
-      else if (field.type === 'mac_address') size = 6;
-      else if (field.type === 'pin_code') size = 6;
-      else if (field.type === 'config_key') size = 8;
-      else if ((field.type === 'ascii_string' || field.type === 'hex_string')) {
-         if (typeof field.length !== 'number') {
-            throw new BoksProtocolError(
-               BoksProtocolErrorId.INTERNAL_ERROR,
-               `Length required for string type: ${field.type} on property ${field.propertyName}`
-            );
-         }
-         size = field.length;
+      if (field.type === 'uint16') {
+        size = 2;
+      } else if (field.type === 'uint24') {
+        size = 3;
+      } else if (field.type === 'uint32') {
+        size = 4;
+      } else if (field.type === 'mac_address') {
+        size = 6;
+      } else if (field.type === 'pin_code') {
+        size = 6;
+      } else if (field.type === 'config_key') {
+        size = 8;
+      } else if (field.type === 'ascii_string' || field.type === 'hex_string') {
+        if (typeof field.length !== 'number') {
+          throw new BoksProtocolError(
+            BoksProtocolErrorId.INTERNAL_ERROR,
+            `Length required for string type: ${field.type} on property ${field.propertyName}`
+          );
+        }
+        size = field.length;
       }
 
       this.assertSafeBounds(field.offset, size);
 
       const endOffset = field.offset + size;
-      if (endOffset > minSize) minSize = endOffset;
+      if (endOffset > minSize) {
+        minSize = endOffset;
+      }
     }
 
     // Start building the Javascript function body as a string.
@@ -154,14 +169,15 @@ export class PayloadMapper {
           // Big Endian parsing (Note: >>> 0 ensures unsigned 32-bit result in JS)
           fnBody += `result['${prop}'] = ((payload[${o}] << 24) | (payload[${o + 1}] << 16) | (payload[${o + 2}] << 8) | payload[${o + 3}]) >>> 0;\n`;
           break;
-        case 'ascii_string':
+        case 'ascii_string': {
           // Unrolled String.fromCharCode for fast ASCII extraction.
-          let charArgs = [];
+          const charArgs = [];
           for (let i = 0; i < field.length!; i++) {
-             charArgs.push(`payload[${o + i}]`);
+            charArgs.push(`payload[${o + i}]`);
           }
           fnBody += `result['${prop}'] = String.fromCharCode(${charArgs.join(',')}).replace(/\\0/g, '');\n`;
           break;
+        }
         case 'mac_address':
           // Reverse Little Endian to Big Endian (Standard Format: XX:XX:XX:XX:XX:XX)
           fnBody += `
@@ -175,20 +191,20 @@ export class PayloadMapper {
           `;
           break;
         case 'pin_code':
-           // Inline validation for 6-char PIN: '0'-'9', 'A', 'B' (ASCII 48-57, 65-66)
-           fnBody += `
+          // Inline validation for 6-char PIN: '0'-'9', 'A', 'B' (ASCII 48-57, 65-66)
+          fnBody += `
              for(let i=0; i<6; i++) {
                const c = payload[${o} + i];
                if ((c < 48 || c > 57) && c !== 65 && c !== 66 && c !== 97 && c !== 98) {
                   throw new BoksProtocolError(BoksProtocolErrorId.INVALID_PIN_FORMAT, 'Invalid PIN character inline');
                }
              }
-             result['${prop}'] = String.fromCharCode(payload[${o}], payload[${o+1}], payload[${o+2}], payload[${o+3}], payload[${o+4}], payload[${o+5}]).toUpperCase();
+             result['${prop}'] = String.fromCharCode(payload[${o}], payload[${o + 1}], payload[${o + 2}], payload[${o + 3}], payload[${o + 4}], payload[${o + 5}]).toUpperCase();
            `;
-           break;
+          break;
         case 'config_key':
-           // Inline validation for 8-char Config Key (Hex: 0-9, A-F)
-           fnBody += `
+          // Inline validation for 8-char Config Key (Hex: 0-9, A-F)
+          fnBody += `
              for(let i=0; i<8; i++) {
                const c = payload[${o} + i];
                // '0'-'9' (48-57), 'A'-'F' (65-70), 'a'-'f' (97-102)
@@ -196,16 +212,17 @@ export class PayloadMapper {
                   throw new BoksProtocolError(BoksProtocolErrorId.INVALID_CONFIG_KEY, 'Invalid Config Key character inline');
                }
              }
-             result['${prop}'] = String.fromCharCode(payload[${o}], payload[${o+1}], payload[${o+2}], payload[${o+3}], payload[${o+4}], payload[${o+5}], payload[${o+6}], payload[${o+7}]).toUpperCase();
+             result['${prop}'] = String.fromCharCode(payload[${o}], payload[${o + 1}], payload[${o + 2}], payload[${o + 3}], payload[${o + 4}], payload[${o + 5}], payload[${o + 6}], payload[${o + 7}]).toUpperCase();
            `;
-           break;
-        case 'hex_string':
-           let hexArgs = [];
-           for (let i = 0; i < field.length!; i++) {
-             hexArgs.push(`HEX_TABLE[payload[${o + i}]]`);
-           }
-           fnBody += `result['${prop}'] = ${hexArgs.join(' + ')};\n`;
-           break;
+          break;
+        case 'hex_string': {
+          const hexArgs = [];
+          for (let i = 0; i < field.length!; i++) {
+            hexArgs.push(`HEX_TABLE[payload[${o + i}]]`);
+          }
+          fnBody += `result['${prop}'] = ${hexArgs.join(' + ')};\n`;
+          break;
+        }
       }
     }
 
@@ -221,7 +238,7 @@ export class PayloadMapper {
   private static compileSerializer(targetClass: any): Function {
     const fields: FieldDefinition[] = targetClass[METADATA_KEY];
     if (!fields || fields.length === 0) {
-      return (instance: any) => new Uint8Array(0); // No fields mapped
+      return (_instance: any) => new Uint8Array(0); // No fields mapped
     }
 
     // Calculate maximum required payload size securely
@@ -230,20 +247,28 @@ export class PayloadMapper {
       this.assertSafePropertyName(field.propertyName);
 
       let fieldSize = 1;
-      if (field.type === 'uint16') fieldSize = 2;
-      else if (field.type === 'uint24') fieldSize = 3;
-      else if (field.type === 'uint32') fieldSize = 4;
-      else if (field.type === 'mac_address') fieldSize = 6;
-      else if (field.type === 'pin_code') fieldSize = 6;
-      else if (field.type === 'config_key') fieldSize = 8;
-      else if ((field.type === 'ascii_string' || field.type === 'hex_string')) {
-         fieldSize = field.length!;
+      if (field.type === 'uint16') {
+        fieldSize = 2;
+      } else if (field.type === 'uint24') {
+        fieldSize = 3;
+      } else if (field.type === 'uint32') {
+        fieldSize = 4;
+      } else if (field.type === 'mac_address') {
+        fieldSize = 6;
+      } else if (field.type === 'pin_code') {
+        fieldSize = 6;
+      } else if (field.type === 'config_key') {
+        fieldSize = 8;
+      } else if (field.type === 'ascii_string' || field.type === 'hex_string') {
+        fieldSize = field.length!;
       }
 
       this.assertSafeBounds(field.offset, fieldSize);
 
       const endOffset = field.offset + fieldSize;
-      if (endOffset > size) size = endOffset;
+      if (endOffset > size) {
+        size = endOffset;
+      }
     }
 
     let fnBody = `
@@ -281,28 +306,28 @@ export class PayloadMapper {
           fnBody += `payload[${o + 3}] = ${val} & 0xFF;\n`;
           break;
         case 'ascii_string':
-           // Unrolled charCodeAt, pads with 0x00 if string is shorter than fixed length
-           for (let i = 0; i < field.length!; i++) {
-              fnBody += `payload[${o + i}] = ${strVal}.length > ${i} ? ${strVal}.charCodeAt(${i}) : 0;\n`;
-           }
-           break;
+          // Unrolled charCodeAt, pads with 0x00 if string is shorter than fixed length
+          for (let i = 0; i < field.length!; i++) {
+            fnBody += `payload[${o + i}] = ${strVal}.length > ${i} ? ${strVal}.charCodeAt(${i}) : 0;\n`;
+          }
+          break;
         case 'mac_address':
-           // Reverse Mac formatting not yet supported for serialization in POC,
-           // but we leave it empty to not break JIT. Downlinks rarely serialize MACs.
-           break;
+          // Reverse Mac formatting not yet supported for serialization in POC,
+          // but we leave it empty to not break JIT. Downlinks rarely serialize MACs.
+          break;
         case 'pin_code':
-           for (let i = 0; i < 6; i++) {
-              fnBody += `payload[${o + i}] = ${strVal}.length > ${i} ? ${strVal}.charCodeAt(${i}) : 48;\n`; // Default '0'
-           }
-           break;
+          for (let i = 0; i < 6; i++) {
+            fnBody += `payload[${o + i}] = ${strVal}.length > ${i} ? ${strVal}.charCodeAt(${i}) : 48;\n`; // Default '0'
+          }
+          break;
         case 'config_key':
-           for (let i = 0; i < 8; i++) {
-              fnBody += `payload[${o + i}] = ${strVal}.length > ${i} ? ${strVal}.charCodeAt(${i}) : 48;\n`; // Default '0'
-           }
-           break;
+          for (let i = 0; i < 8; i++) {
+            fnBody += `payload[${o + i}] = ${strVal}.length > ${i} ? ${strVal}.charCodeAt(${i}) : 48;\n`; // Default '0'
+          }
+          break;
         case 'hex_string':
-           // Convert hex string back to bytes. Not fully implemented in POC serializer yet.
-           break;
+          // Convert hex string back to bytes. Not fully implemented in POC serializer yet.
+          break;
       }
     }
 
@@ -317,7 +342,10 @@ export class PayloadMapper {
    * @param payload The raw buffer
    * @returns A mapped object containing the extracted properties
    */
-  public static parse<T>(targetClass: { new (...args: any[]): T } | Function, payload: Uint8Array): Partial<T> {
+  public static parse<T>(
+    targetClass: { new (...args: any[]): T } | Function,
+    payload: Uint8Array
+  ): Partial<T> {
     let parser = this.compiledParsers.get(targetClass);
     if (!parser) {
       parser = this.compileParser(targetClass);
@@ -331,7 +359,10 @@ export class PayloadMapper {
    */
   public static serialize(instance: any): Uint8Array {
     if (!instance || typeof instance !== 'object') {
-       throw new BoksProtocolError(BoksProtocolErrorId.INTERNAL_ERROR, 'Cannot serialize null or non-object instance');
+      throw new BoksProtocolError(
+        BoksProtocolErrorId.INTERNAL_ERROR,
+        'Cannot serialize null or non-object instance'
+      );
     }
     const targetClass = instance.constructor;
     let serializer = this.compiledSerializers.get(targetClass);
@@ -346,10 +377,10 @@ export class PayloadMapper {
    * Defines a raw payload schema without decorators (useful for internal/dynamic mapping or tests).
    */
   public static defineSchema(targetClass: any, schema: FieldDefinition[]): void {
-     targetClass[METADATA_KEY] = schema;
-     // Clear any existing compiled functions for this class
-     this.compiledParsers.delete(targetClass);
-     this.compiledSerializers.delete(targetClass);
+    targetClass[METADATA_KEY] = schema;
+    // Clear any existing compiled functions for this class
+    this.compiledParsers.delete(targetClass);
+    this.compiledSerializers.delete(targetClass);
   }
 }
 
