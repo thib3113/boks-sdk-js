@@ -404,10 +404,8 @@ describe('WebBluetoothTransport', () => {
       const transport = new WebBluetoothTransport(device as unknown as BluetoothDevice);
       (transport as any).server = device.gatt;
 
-      const expectedError = new Error('Characteristic missing-char not found in any visible service.');
-
       await expect(transport.read('missing-char')).rejects.toThrowError(
-        new BoksClientError(BoksClientErrorId.PARSE_ERROR, 'Failed to read characteristic missing-char', { error: expectedError })
+        new BoksClientError(BoksClientErrorId.PARSE_ERROR, 'Characteristic missing-char not found in any visible service.')
       );
     });
 
