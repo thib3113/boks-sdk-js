@@ -50,3 +50,4 @@
 ## 2026-03-08 - [Scale] **Hardened:** src/protocol/scale/ **Edge-Cases Covered:** arbitrary payload buffers, parsing lengths < 4, empty buffer graceful parsing
 ## 2026-03-09 - [Client] **Hardened:** src/client/BoksTransaction.ts **Edge-Cases Covered:** Fuzzing state transitions with concurrent random interactions.
 ## 2026-03-09 - [Core] **Hardened:** src/protocol/uplink/NfcNotificationPackets.ts **Edge-Cases Covered:** Constructor fuzzing, empty buffers, invalid error payloads.
+## 2026-03-09 - [Client] **Hardened:** src/client/BoksClient.ts **Edge-Cases Covered:** Fuzzing the transaction queue with simulated concurrent requests, timeouts, and arbitrary notifications to ensure state resilience.
