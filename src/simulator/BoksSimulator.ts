@@ -952,12 +952,11 @@ export class BoksHardwareSimulator {
   // --- Specific Opcode Handlers ---
 
   private handleOpenDoor(payload: Uint8Array): Uint8Array {
-    let pin: string;
-    if (payload.length === 6 || payload.length >= 14) {
-      pin = readPinFromBuffer(payload, 0);
-    } else {
+    if (payload.length !== 6) {
       return this.createResponse(BoksOpcode.INVALID_OPEN_CODE, EMPTY_BUFFER);
     }
+
+    const pin = readPinFromBuffer(payload, 0);
 
     if (this.#pinCodes.has(pin)) {
       this.triggerBleOpen(pin);
