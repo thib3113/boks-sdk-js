@@ -21,7 +21,7 @@ class MockBluetoothRemoteGATTCharacteristic {
     return this.value;
   }
 
-  async writeValueWithResponse(data: BufferSource) {
+  async writeValueWithResponse(_data: BufferSource) {
     // mock success
   }
 
@@ -99,7 +99,7 @@ class MockBluetoothRemoteGATTServer {
 }
 
 class MockBluetoothDevice {
-  gatt: MockBluetoothRemoteGATTServer;
+  gatt!: MockBluetoothRemoteGATTServer;
 
   constructor(hasGatt: boolean = true) {
     if (hasGatt) {
