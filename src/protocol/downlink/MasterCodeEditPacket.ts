@@ -1,6 +1,6 @@
 import { AuthPacket } from '@/protocol/downlink/_AuthPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
-import { writeConfigKeyToBuffer, bytesToString, writePinToBuffer } from '@/utils/converters';
+import { writeConfigKeyToBuffer, readPinFromBuffer, writePinToBuffer } from '@/utils/converters';
 import { validateMasterCodeIndex } from '@/utils/validation';
 
 /**
@@ -29,7 +29,7 @@ export class MasterCodeEditPacket extends AuthPacket {
     if (payload.length > 8) {
       index = payload[8];
     }
-    const newPin = bytesToString(payload.subarray(9, 15));
+    const newPin = readPinFromBuffer(payload, 9);
     return new MasterCodeEditPacket(configKey, index, newPin);
   }
 

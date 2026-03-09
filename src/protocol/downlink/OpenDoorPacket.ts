@@ -1,9 +1,10 @@
 import { BoksPacket } from '@/protocol/_BoksPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
-import { stringToBytes, bytesToString } from '@/utils/converters';
+import { readPinFromBuffer, writePinToBuffer } from '@/utils/converters';
+import { validatePinCode } from '@/utils/validation';
 
 /**
- * Command to open the door with an optional PIN.
+ * Command to open the door with a 6-character PIN.
  */
 export class OpenDoorPacket extends BoksPacket {
   static readonly opcode = BoksOpcode.OPEN_DOOR;
@@ -15,13 +16,16 @@ export class OpenDoorPacket extends BoksPacket {
   constructor(public readonly pin: string) {
     super();
     this.pin = this.formatPin(pin);
+    validatePinCode(this.pin);
   }
 
   static fromPayload(payload: Uint8Array): OpenDoorPacket {
-    return new OpenDoorPacket(bytesToString(payload));
+    return new OpenDoorPacket(readPinFromBuffer(payload, 0));
   }
 
-  toPayload() {
-    return stringToBytes(this.pin);
+  toPayload(): Uint8Array {
+    const payload = new Uint8Array(6);
+    writePinToBuffer(payload, 0, this.pin);
+    return payload;
   }
 }

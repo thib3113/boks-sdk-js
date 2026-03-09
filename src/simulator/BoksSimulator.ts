@@ -1,7 +1,8 @@
 import { BoksOpcode, BoksCodeType, BOKS_UUIDS, EMPTY_BUFFER } from '../protocol/constants';
 import {
   calculateChecksum,
-  bytesToString,
+  readConfigKeyFromBuffer,
+  readPinFromBuffer,
   bytesToHex,
   bytesToMac,
   stringToBytes,
@@ -951,14 +952,11 @@ export class BoksHardwareSimulator {
   // --- Specific Opcode Handlers ---
 
   private handleOpenDoor(payload: Uint8Array): Uint8Array {
-    let pin: string;
-    if (payload.length === 6) {
-      pin = bytesToString(payload);
-    } else if (payload.length >= 14) {
-      pin = bytesToString(payload.subarray(0, 6));
-    } else {
+    if (payload.length !== 6) {
       return this.createResponse(BoksOpcode.INVALID_OPEN_CODE, EMPTY_BUFFER);
     }
+
+    const pin = readPinFromBuffer(payload, 0);
 
     if (this.#pinCodes.has(pin)) {
       this.triggerBleOpen(pin);
@@ -1012,7 +1010,7 @@ export class BoksHardwareSimulator {
     if (payload.length < 14) {
       return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, EMPTY_BUFFER);
     }
-    const pin = bytesToString(payload.subarray(8, 14));
+    const pin = readPinFromBuffer(payload, 8);
     if (this.#pinCodes.has(pin)) {
       if (this.#pinCodes.get(pin) === BoksCodeType.Single) {
         this.#pinCodes.delete(pin);
@@ -1038,11 +1036,11 @@ export class BoksHardwareSimulator {
     if (payload.length < 14) {
       return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, EMPTY_BUFFER);
     }
-    const rxConfigKey = bytesToString(payload.subarray(0, 8));
+    const rxConfigKey = readConfigKeyFromBuffer(payload, 0);
     if (rxConfigKey !== this.#configKey) {
       return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, EMPTY_BUFFER);
     }
-    const pin = bytesToString(payload.subarray(8, 14));
+    const pin = readPinFromBuffer(payload, 8);
     this.#pinCodes.set(pin, type);
     this.saveState('pinCodes');
     return this.createResponse(BoksOpcode.CODE_OPERATION_SUCCESS, EMPTY_BUFFER);
@@ -1065,7 +1063,7 @@ export class BoksHardwareSimulator {
     if (payload.length < 9) {
       return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, EMPTY_BUFFER);
     }
-    const rxConfigKey = bytesToString(payload.subarray(0, 8));
+    const rxConfigKey = readConfigKeyFromBuffer(payload, 0);
     if (rxConfigKey !== this.#configKey) {
       return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, EMPTY_BUFFER);
     }
@@ -1085,7 +1083,7 @@ export class BoksHardwareSimulator {
     if (payload.length < 9) {
       return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, EMPTY_BUFFER);
     }
-    const rxConfigKey = bytesToString(payload.subarray(0, 8));
+    const rxConfigKey = readConfigKeyFromBuffer(payload, 0);
     if (rxConfigKey !== this.#configKey) {
       return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, EMPTY_BUFFER);
     }
@@ -1106,11 +1104,11 @@ export class BoksHardwareSimulator {
     if (payload.length < 15) {
       return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, EMPTY_BUFFER);
     }
-    const rxConfigKey = bytesToString(payload.subarray(0, 8));
+    const rxConfigKey = readConfigKeyFromBuffer(payload, 0);
     if (rxConfigKey !== this.#configKey) {
       return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, EMPTY_BUFFER);
     }
-    const pin = bytesToString(payload.subarray(8, 14));
+    const pin = readPinFromBuffer(payload, 8);
     const index = payload[14];
     this.#masterCodes.set(index, pin);
     this.#pinCodes.set(pin, BoksCodeType.Master);
@@ -1123,12 +1121,12 @@ export class BoksHardwareSimulator {
     if (payload.length < 15) {
       return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, EMPTY_BUFFER);
     }
-    const rxConfigKey = bytesToString(payload.subarray(0, 8));
+    const rxConfigKey = readConfigKeyFromBuffer(payload, 0);
     if (rxConfigKey !== this.#configKey) {
       return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, EMPTY_BUFFER);
     }
     const index = payload[8];
-    const newPin = bytesToString(payload.subarray(9, 15));
+    const newPin = readPinFromBuffer(payload, 9);
     const oldPin = this.#masterCodes.get(index);
     if (oldPin) {
       this.#pinCodes.delete(oldPin);
@@ -1144,7 +1142,7 @@ export class BoksHardwareSimulator {
     if (payload.length < 9) {
       return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, EMPTY_BUFFER);
     }
-    const rxConfigKey = bytesToString(payload.subarray(0, 8));
+    const rxConfigKey = readConfigKeyFromBuffer(payload, 0);
     if (rxConfigKey !== this.#configKey) {
       return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, EMPTY_BUFFER);
     }
@@ -1163,11 +1161,11 @@ export class BoksHardwareSimulator {
     if (payload.length < 14) {
       return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, EMPTY_BUFFER);
     }
-    const rxConfigKey = bytesToString(payload.subarray(0, 8));
+    const rxConfigKey = readConfigKeyFromBuffer(payload, 0);
     if (rxConfigKey !== this.#configKey) {
       return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, EMPTY_BUFFER);
     }
-    const pin = bytesToString(payload.subarray(8, 14));
+    const pin = readPinFromBuffer(payload, 8);
     if (this.#pinCodes.has(pin) && this.#pinCodes.get(pin) === BoksCodeType.Multi) {
       this.#pinCodes.delete(pin);
       this.saveState('pinCodes');
@@ -1180,11 +1178,11 @@ export class BoksHardwareSimulator {
     if (payload.length < 14) {
       return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, EMPTY_BUFFER);
     }
-    const rxConfigKey = bytesToString(payload.subarray(0, 8));
+    const rxConfigKey = readConfigKeyFromBuffer(payload, 0);
     if (rxConfigKey !== this.#configKey) {
       return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, EMPTY_BUFFER);
     }
-    const pin = bytesToString(payload.subarray(8, 14));
+    const pin = readPinFromBuffer(payload, 8);
     if (this.#pinCodes.has(pin) && this.#pinCodes.get(pin) === BoksCodeType.Single) {
       this.#pinCodes.set(pin, BoksCodeType.Multi);
       this.saveState('pinCodes');
@@ -1197,11 +1195,11 @@ export class BoksHardwareSimulator {
     if (payload.length < 14) {
       return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, EMPTY_BUFFER);
     }
-    const rxConfigKey = bytesToString(payload.subarray(0, 8));
+    const rxConfigKey = readConfigKeyFromBuffer(payload, 0);
     if (rxConfigKey !== this.#configKey) {
       return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, EMPTY_BUFFER);
     }
-    const pin = bytesToString(payload.subarray(8, 14));
+    const pin = readPinFromBuffer(payload, 8);
     if (this.#pinCodes.has(pin) && this.#pinCodes.get(pin) === BoksCodeType.Multi) {
       this.#pinCodes.set(pin, BoksCodeType.Single);
       this.saveState('pinCodes');
@@ -1214,11 +1212,11 @@ export class BoksHardwareSimulator {
     if (payload.length < 14) {
       return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, EMPTY_BUFFER);
     }
-    const rxConfigKey = bytesToString(payload.subarray(0, 8));
+    const rxConfigKey = readConfigKeyFromBuffer(payload, 0);
     if (rxConfigKey !== this.#configKey) {
       return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, EMPTY_BUFFER);
     }
-    const pin = bytesToString(payload.subarray(8, 14));
+    const pin = readPinFromBuffer(payload, 8);
     if (this.#pinCodes.has(pin)) {
       return this.createResponse(BoksOpcode.CODE_OPERATION_SUCCESS, EMPTY_BUFFER);
     }
@@ -1229,7 +1227,7 @@ export class BoksHardwareSimulator {
     if (payload.length < 10) {
       return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, EMPTY_BUFFER);
     }
-    const rxConfigKey = bytesToString(payload.subarray(0, 8));
+    const rxConfigKey = readConfigKeyFromBuffer(payload, 0);
     if (rxConfigKey !== this.#configKey) {
       return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, EMPTY_BUFFER);
     }
@@ -1273,7 +1271,7 @@ export class BoksHardwareSimulator {
     if (payload.length < 24) {
       return null;
     }
-    const receivedConfigKey = bytesToString(payload.subarray(0, 8));
+    const receivedConfigKey = readConfigKeyFromBuffer(payload, 0);
     if (receivedConfigKey !== this.#configKey) {
       return this.createResponse(BoksOpcode.ERROR_UNAUTHORIZED, EMPTY_BUFFER);
     }
@@ -1285,7 +1283,7 @@ export class BoksHardwareSimulator {
     if (payload.length < 24) {
       return null;
     }
-    const receivedConfigKey = bytesToString(payload.subarray(0, 8));
+    const receivedConfigKey = readConfigKeyFromBuffer(payload, 0);
     if (receivedConfigKey !== this.#configKey) {
       return this.createResponse(BoksOpcode.ERROR_UNAUTHORIZED, EMPTY_BUFFER);
     }

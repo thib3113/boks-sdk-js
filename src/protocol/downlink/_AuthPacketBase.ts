@@ -1,6 +1,6 @@
 import { BoksPacket } from '@/protocol/_BoksPacketBase';
 import { sealed } from '@/utils/security';
-import { bytesToString } from '@/utils/converters';
+import { readConfigKeyFromBuffer } from '@/utils/converters';
 
 /**
  * Base for packets requiring authentication (Config Key)
@@ -18,6 +18,6 @@ export abstract class AuthPacket extends BoksPacket {
    * Helper to quickly extract the config key string from a standard AuthPacket payload.
    */
   static extractConfigKey(payload: Uint8Array): string {
-    return bytesToString(payload.subarray(0, 8));
+    return readConfigKeyFromBuffer(payload, 0);
   }
 }

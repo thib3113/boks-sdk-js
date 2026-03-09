@@ -1,6 +1,6 @@
 import { BoksHistoryEvent } from '@/protocol/uplink/history/_BoksHistoryEventBase';
 import { BoksOpcode } from '@/protocol/constants';
-import { bytesToString } from '@/utils/converters';
+import { readPinFromBuffer } from '@/utils/converters';
 
 /**
  * Log: Invalid Key code usage (Physical keypad).
@@ -26,7 +26,7 @@ export class CodeKeyInvalidHistoryPacket extends BoksHistoryEvent {
 
     const offset = 3;
     if (payload.length >= offset + 6) {
-      code = bytesToString(payload.subarray(offset, offset + 6));
+      code = readPinFromBuffer(payload, offset);
     }
     return new CodeKeyInvalidHistoryPacket(age, code, payload);
   }
