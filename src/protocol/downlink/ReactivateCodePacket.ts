@@ -1,6 +1,6 @@
 import { AuthPacket } from '@/protocol/downlink/_AuthPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
-import { writeConfigKeyToBuffer, bytesToString, writePinToBuffer } from '@/utils/converters';
+import { writeConfigKeyToBuffer, readPinFromBuffer, writePinToBuffer } from '@/utils/converters';
 
 /**
  * Command to reactivate a disabled code.
@@ -21,7 +21,7 @@ export class ReactivateCodePacket extends AuthPacket {
 
   static fromPayload(payload: Uint8Array): ReactivateCodePacket {
     const configKey = AuthPacket.extractConfigKey(payload);
-    const pin = bytesToString(payload.subarray(8, 14));
+    const pin = readPinFromBuffer(payload, 8);
     return new ReactivateCodePacket(configKey, pin);
   }
 

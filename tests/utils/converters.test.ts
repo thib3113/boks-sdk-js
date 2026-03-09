@@ -6,6 +6,8 @@ import {
   bytesToString,
   calculateChecksum,
   bytesToMac,
+  readConfigKeyFromBuffer,
+  readPinFromBuffer,
 } from '../../src/utils/converters';
 import { BoksProtocolErrorId } from '../../src/errors/BoksProtocolError';
 
@@ -71,6 +73,20 @@ describe('converters', () => {
 
     it('should handle empty string', () => {
       expect(stringToBytes('')).toEqual(new Uint8Array(0));
+    });
+  });
+
+  describe('readConfigKeyFromBuffer', () => {
+    it('should read exactly 8 characters from buffer at offset', () => {
+      const buffer = new Uint8Array([0, 1, 65, 66, 67, 68, 69, 70, 48, 49, 255]); // 'ABCDEF01'
+      expect(readConfigKeyFromBuffer(buffer, 2)).toBe('ABCDEF01');
+    });
+  });
+
+  describe('readPinFromBuffer', () => {
+    it('should read exactly 6 characters from buffer at offset', () => {
+      const buffer = new Uint8Array([255, 49, 50, 51, 52, 53, 54, 0]); // '123456'
+      expect(readPinFromBuffer(buffer, 1)).toBe('123456');
     });
   });
 

@@ -1,6 +1,6 @@
 import { AuthPacket } from '@/protocol/downlink/_AuthPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
-import { writeConfigKeyToBuffer, bytesToString, writePinToBuffer } from '@/utils/converters';
+import { writeConfigKeyToBuffer, readPinFromBuffer, writePinToBuffer } from '@/utils/converters';
 
 /**
  * Command to convert a Multi-Use code to Single-Use.
@@ -21,7 +21,7 @@ export class MultiToSingleCodePacket extends AuthPacket {
 
   static fromPayload(payload: Uint8Array): MultiToSingleCodePacket {
     const configKey = AuthPacket.extractConfigKey(payload);
-    const pin = bytesToString(payload.subarray(8, 14));
+    const pin = readPinFromBuffer(payload, 8);
     return new MultiToSingleCodePacket(configKey, pin);
   }
 
