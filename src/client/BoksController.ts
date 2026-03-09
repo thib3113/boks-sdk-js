@@ -405,7 +405,7 @@ export class BoksController {
       tx.error ||
       new BoksClientError(
         BoksClientErrorId.UNKNOWN_ERROR,
-        `Unexpected packet during scan: \${(tx.response as any)?.opcode}`
+        `Unexpected packet during scan: ${tx.response?.opcode}`
       )
     );
   }
