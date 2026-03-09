@@ -2,6 +2,11 @@ import { BoksHistoryEvent } from '@/protocol/uplink/history/_BoksHistoryEventBas
 import { BoksOpcode } from '@/protocol/constants';
 import { PayloadMapper, PayloadUint24 } from '@/protocol/payload-mapper';
 
+export interface DoorOpenHistoryPacketProps {
+  age: number;
+  rawPayload?: Uint8Array;
+}
+
 /**
  * Log: Door Open event.
  */
@@ -12,19 +17,17 @@ export class DoorOpenHistoryPacket extends BoksHistoryEvent {
   @PayloadUint24(0)
   public readonly parsedAge: number;
 
-  constructor(age: number = 0, rawPayload?: Uint8Array) {
-    super(DoorOpenHistoryPacket.opcode, age, rawPayload);
-    this.parsedAge = age;
+  constructor(props: DoorOpenHistoryPacketProps) {
+    super(DoorOpenHistoryPacket.opcode, props.age, props.rawPayload);
+    this.parsedAge = props.age;
+    PayloadMapper.validate(this);
   }
 
   static fromPayload(payload: Uint8Array): DoorOpenHistoryPacket {
-    // History events with 0 bytes have a default age of 0
-    // Legacy implementation was: if (payload.length >= 3) age = payload[0...]; return new(age, payload)
-    // So lengths 0, 1, 2 also result in age 0.
     if (payload.length < 3) {
-      return new DoorOpenHistoryPacket(0, payload);
+      return new DoorOpenHistoryPacket({ age: 0, rawPayload: payload });
     }
     const data = PayloadMapper.parse(DoorOpenHistoryPacket, payload);
-    return new DoorOpenHistoryPacket(data.parsedAge!, payload);
+    return new DoorOpenHistoryPacket({ age: data.parsedAge as number, rawPayload: payload });
   }
 }

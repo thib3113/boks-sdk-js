@@ -472,7 +472,7 @@ export class BoksController {
     this.#lastOpenAttempt = now;
 
     return this.performOperation(
-      new OpenDoorPacket(pin),
+      new OpenDoorPacket({ pin }),
       BoksOpcode.VALID_OPEN_CODE,
       BoksOpcode.INVALID_OPEN_CODE
     );
@@ -560,7 +560,7 @@ export class BoksController {
   async createMasterCode(index: number, pin: string): Promise<boolean> {
     const configKey = this.getConfigKeyOrThrow();
     validateMasterCodeIndex(index);
-    return this.performOperation(new CreateMasterCodePacket(configKey, index, pin));
+    return this.performOperation(new CreateMasterCodePacket({ configKey, index, pin }));
   }
 
   /**

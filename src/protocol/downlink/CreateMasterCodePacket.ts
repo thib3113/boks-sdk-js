@@ -8,6 +8,12 @@ import {
   PayloadUint8
 } from '@/protocol/payload-mapper';
 
+export interface CreateMasterCodePacketProps {
+  configKey: string;
+  index: number;
+  pin: string;
+}
+
 /**
  * Command to create a permanent master code at a specific index.
  */
@@ -26,23 +32,28 @@ export class CreateMasterCodePacket extends AuthPacket {
   @PayloadUint8(14)
   public readonly index: number;
 
-  constructor(configKey: string, index: number, pin: string) {
-    super(configKey);
-    validateMasterCodeIndex(index);
-    this.configKeyStr = this.formatConfigKey(configKey);
-    this.pin = this.formatPin(pin);
-    this.index = index;
+  constructor(props: CreateMasterCodePacketProps) {
+    super(props.configKey);
+    this.configKeyStr = props.configKey ? props.configKey.toUpperCase() : props.configKey;
+    this.pin = props.pin ? props.pin.toUpperCase() : props.pin;
+    this.index = props.index;
+
+    validateMasterCodeIndex(this.index);
+    PayloadMapper.validate(this);
   }
 
   static fromPayload(payload: Uint8Array): CreateMasterCodePacket {
-    // Legacy fallback: Pad payload with 0 if it is exactly 14 bytes long (missing index byte)
     let safePayload = payload;
     if (payload.length === 14) {
       safePayload = new Uint8Array(15);
       safePayload.set(payload);
     }
     const data = PayloadMapper.parse(CreateMasterCodePacket, safePayload);
-    return new CreateMasterCodePacket(data.configKeyStr!, data.index || 0, data.pin!);
+    return new CreateMasterCodePacket({
+      configKey: data.configKeyStr as string,
+      index: (data.index as number) || 0,
+      pin: data.pin as string
+    });
   }
 
   toPayload(): Uint8Array {

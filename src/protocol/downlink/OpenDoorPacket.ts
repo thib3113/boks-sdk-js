@@ -1,7 +1,10 @@
 import { BoksPacket } from '@/protocol/_BoksPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
-import { validatePinCode } from '@/utils/validation';
 import { PayloadMapper, PayloadPinCode } from '@/protocol/payload-mapper';
+
+export interface OpenDoorPacketProps {
+  pin: string;
+}
 
 /**
  * Command to open the door with a 6-character PIN.
@@ -16,15 +19,16 @@ export class OpenDoorPacket extends BoksPacket {
     return OpenDoorPacket.opcode;
   }
 
-  constructor(pin: string) {
+  constructor(props: OpenDoorPacketProps) {
     super();
-    this.pin = this.formatPin(pin);
-    validatePinCode(this.pin);
+    // BoksPacketBase's formatPin is protected, but we can do uppercase here
+    this.pin = props.pin ? props.pin.toUpperCase() : props.pin;
+    PayloadMapper.validate(this);
   }
 
   static fromPayload(payload: Uint8Array): OpenDoorPacket {
     const data = PayloadMapper.parse(OpenDoorPacket, payload);
-    return new OpenDoorPacket(data.pin!);
+    return new OpenDoorPacket({ pin: data.pin as string });
   }
 
   toPayload(): Uint8Array {

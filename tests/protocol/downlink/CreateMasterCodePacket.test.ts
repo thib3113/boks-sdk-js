@@ -10,7 +10,7 @@ describe('CreateMasterCodePacket', () => {
   const validIndex = 1;
 
   it('should construct with valid parameters', () => {
-    const packet = new CreateMasterCodePacket(validKey, validIndex, validPin);
+    const packet = new CreateMasterCodePacket({ configKey: validKey, index: validIndex, pin: validPin });
     expect(packet.opcode).toBe(BoksOpcode.CREATE_MASTER_CODE);
     expect(packet.configKey).toBe(validKey);
     expect(packet.index).toBe(validIndex);
@@ -22,7 +22,7 @@ describe('CreateMasterCodePacket', () => {
     // Pin: 313233343536 (123456)
     // Index: 01
     // Length: 8 + 6 + 1 = 15 (0F)
-    const packet = new CreateMasterCodePacket(validKey, validIndex, validPin);
+    const packet = new CreateMasterCodePacket({ configKey: validKey, index: validIndex, pin: validPin });
     const encoded = packet.encode();
     // Opcode 11 (0x11), Len 0F, ... payload ... checksum
     expect(encoded[0]).toBe(0x11);
@@ -56,9 +56,9 @@ describe('CreateMasterCodePacket', () => {
   });
 
   it('should throw INVALID_CONFIG_KEY for invalid config key format', () => {
-    expect(() => new CreateMasterCodePacket('invalid', validIndex, validPin)).toThrowError(BoksProtocolError);
+    expect(() => new CreateMasterCodePacket({ configKey: 'invalid', index: validIndex, pin: validPin })).toThrowError(BoksProtocolError);
     try {
-      new CreateMasterCodePacket('invalid', validIndex, validPin);
+      new CreateMasterCodePacket({ configKey: 'invalid', index: validIndex, pin: validPin });
     } catch (e) {
       expect(e).toBeInstanceOf(BoksProtocolError);
       expect((e as BoksProtocolError).id).toBe(BoksProtocolErrorId.INVALID_CONFIG_KEY);
@@ -67,24 +67,24 @@ describe('CreateMasterCodePacket', () => {
 
   it('should throw INVALID_PIN_FORMAT for invalid pin', () => {
       // Too short
-      expect(() => new CreateMasterCodePacket(validKey, validIndex, '123')).toThrowError(BoksProtocolError);
+      expect(() => new CreateMasterCodePacket({ configKey: validKey, index: validIndex, pin: '123' })).toThrowError(BoksProtocolError);
       // Invalid char
-      expect(() => new CreateMasterCodePacket(validKey, validIndex, '12345C')).toThrowError(BoksProtocolError);
+      expect(() => new CreateMasterCodePacket({ configKey: validKey, index: validIndex, pin: '12345C' })).toThrowError(BoksProtocolError);
 
       try {
-        new CreateMasterCodePacket(validKey, validIndex, '12345C');
+        new CreateMasterCodePacket({ configKey: validKey, index: validIndex, pin: '12345C' });
       } catch (e) {
          expect((e as BoksProtocolError).id).toBe(BoksProtocolErrorId.INVALID_PIN_FORMAT);
       }
   });
 
   it('should throw INVALID_INDEX_RANGE for invalid index', () => {
-      expect(() => new CreateMasterCodePacket(validKey, -1, validPin)).toThrowError(BoksProtocolError);
-      expect(() => new CreateMasterCodePacket(validKey, 256, validPin)).toThrowError(BoksProtocolError);
-      expect(() => new CreateMasterCodePacket(validKey, 1.5, validPin)).toThrowError(BoksProtocolError);
+      expect(() => new CreateMasterCodePacket({ configKey: validKey, index: -1, pin: validPin })).toThrowError(BoksProtocolError);
+      expect(() => new CreateMasterCodePacket({ configKey: validKey, index: 256, pin: validPin })).toThrowError(BoksProtocolError);
+      expect(() => new CreateMasterCodePacket({ configKey: validKey, index: 1.5, pin: validPin })).toThrowError(BoksProtocolError);
 
        try {
-        new CreateMasterCodePacket(validKey, 256, validPin);
+        new CreateMasterCodePacket({ configKey: validKey, index: 256, pin: validPin });
       } catch (e) {
          expect((e as BoksProtocolError).id).toBe(BoksProtocolErrorId.INVALID_INDEX_RANGE);
       }
