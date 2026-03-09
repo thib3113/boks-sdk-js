@@ -169,9 +169,9 @@ export class BoksHardwareSimulator {
   #responseDelayMs: number = 0;
   #progressDelayMs: number = 600;
   #opcodeOverrides: Map<number, Uint8Array | Error> = new Map();
-  #subscribers: ((data: Uint8Array) => void)[] = [];
-  #packetSubscribers: ((event: SimulatorPacketEvent) => void)[] = [];
-  #batterySubscribers: ((data: Uint8Array) => void)[] = [];
+  #subscribers: Set<(data: Uint8Array) => void> = new Set();
+  #packetSubscribers: Set<(event: SimulatorPacketEvent) => void> = new Set();
+  #batterySubscribers: Set<(data: Uint8Array) => void> = new Set();
   #doorAutoCloseTimeout: NodeJS.Timeout | null = null;
   #storage?: SimulatorStorage;
   readonly #logger?: BoksSimulatorLogger;
@@ -546,7 +546,7 @@ export class BoksHardwareSimulator {
   }
 
   public subscribeToBattery(callback: (data: Uint8Array) => void): void {
-    this.#batterySubscribers.push(callback);
+    this.#batterySubscribers.add(callback);
     // Immediately notify current level
     callback(new Uint8Array([this.#batteryLevel]));
   }
@@ -759,7 +759,7 @@ export class BoksHardwareSimulator {
 
     this.log('debug', 'receive', { opcode, length: data.length });
 
-    if (this.#packetSubscribers.length > 0) {
+    if (this.#packetSubscribers.size > 0) {
       const parsedPacket = BoksPacketFactory.createFromPayload(data, (l, e, c) =>
         this.log(l, e, c)
       );
@@ -804,7 +804,7 @@ export class BoksHardwareSimulator {
       clearInterval(this.#chaosInterval);
       this.#chaosInterval = null;
     }
-    this.#subscribers = [];
+    this.#subscribers.clear();
   }
 
   private shouldDropPacket(): boolean {
@@ -824,7 +824,7 @@ export class BoksHardwareSimulator {
     }
     this.log('debug', 'send', { opcode: data[0], length: data.length });
 
-    if (this.#packetSubscribers.length > 0) {
+    if (this.#packetSubscribers.size > 0) {
       const parsedOutPacket = BoksPacketFactory.createFromPayload(data, (l, e, c) =>
         this.log(l, e, c)
       );
@@ -842,20 +842,20 @@ export class BoksHardwareSimulator {
    * Useful for End-to-End testing to trace real simulated commands.
    */
   public onPacket(callback: (event: SimulatorPacketEvent) => void): () => void {
-    this.#packetSubscribers.push(callback);
+    this.#packetSubscribers.add(callback);
     return () => this.offPacket(callback);
   }
 
   public offPacket(callback: (event: SimulatorPacketEvent) => void): void {
-    this.#packetSubscribers = this.#packetSubscribers.filter((cb) => cb !== callback);
+    this.#packetSubscribers.delete(callback);
   }
 
   public subscribe(callback: (data: Uint8Array) => void): void {
-    this.#subscribers.push(callback);
+    this.#subscribers.add(callback);
   }
 
   public unsubscribe(callback: (data: Uint8Array) => void): void {
-    this.#subscribers = this.#subscribers.filter((cb) => cb !== callback);
+    this.#subscribers.delete(callback);
   }
 
   private async processOpcode(opcode: number, payload: Uint8Array): Promise<Uint8Array | null> {
