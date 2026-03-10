@@ -465,7 +465,7 @@ export class PayloadMapper {
  * Decorator to map an 8-bit unsigned integer field.
  */
 export function PayloadUint8(offset: number) {
-  return function (target: any, propertyKey: string, descriptor?: PropertyDescriptor) {
+  return function (target: any, propertyKey: string, _descriptor?: PropertyDescriptor) {
     const meta = getOrCreateMetadata(target);
     meta.push({ propertyName: propertyKey, type: 'uint8', offset });
   };
@@ -475,7 +475,7 @@ export function PayloadUint8(offset: number) {
  * Decorator to map a 16-bit unsigned integer field (Big Endian).
  */
 export function PayloadUint16(offset: number) {
-  return function (target: any, propertyKey: string, descriptor?: PropertyDescriptor) {
+  return function (target: any, propertyKey: string, _descriptor?: PropertyDescriptor) {
     const meta = getOrCreateMetadata(target);
     meta.push({ propertyName: propertyKey, type: 'uint16', offset });
   };
@@ -485,7 +485,7 @@ export function PayloadUint16(offset: number) {
  * Decorator to map a 24-bit unsigned integer field (Big Endian).
  */
 export function PayloadUint24(offset: number) {
-  return function (target: any, propertyKey: string, descriptor?: PropertyDescriptor) {
+  return function (target: any, propertyKey: string, _descriptor?: PropertyDescriptor) {
     const meta = getOrCreateMetadata(target);
     meta.push({ propertyName: propertyKey, type: 'uint24', offset });
   };
@@ -495,7 +495,7 @@ export function PayloadUint24(offset: number) {
  * Decorator to map a 32-bit unsigned integer field (Big Endian).
  */
 export function PayloadUint32(offset: number) {
-  return function (target: any, propertyKey: string, descriptor?: PropertyDescriptor) {
+  return function (target: any, propertyKey: string, _descriptor?: PropertyDescriptor) {
     const meta = getOrCreateMetadata(target);
     meta.push({ propertyName: propertyKey, type: 'uint32', offset });
   };
@@ -505,7 +505,7 @@ export function PayloadUint32(offset: number) {
  * Decorator to map a fixed-length ASCII string field.
  */
 export function PayloadAsciiString(offset: number, length: number) {
-  return function (target: any, propertyKey: string, descriptor?: PropertyDescriptor) {
+  return function (target: any, propertyKey: string, _descriptor?: PropertyDescriptor) {
     const meta = getOrCreateMetadata(target);
     meta.push({ propertyName: propertyKey, type: 'ascii_string', offset, length });
   };
@@ -515,7 +515,7 @@ export function PayloadAsciiString(offset: number, length: number) {
  * Decorator to map a 6-byte MAC Address field.
  */
 export function PayloadMacAddress(offset: number) {
-  return function (target: any, propertyKey: string, descriptor?: PropertyDescriptor) {
+  return function (target: any, propertyKey: string, _descriptor?: PropertyDescriptor) {
     const meta = getOrCreateMetadata(target);
     meta.push({ propertyName: propertyKey, type: 'mac_address', offset, length: 6 });
   };
@@ -525,7 +525,7 @@ export function PayloadMacAddress(offset: number) {
  * Decorator to map a fixed-length Hexadecimal string field.
  */
 export function PayloadHexString(offset: number, length: number) {
-  return function (target: any, propertyKey: string, descriptor?: PropertyDescriptor) {
+  return function (target: any, propertyKey: string, _descriptor?: PropertyDescriptor) {
     const meta = getOrCreateMetadata(target);
     meta.push({ propertyName: propertyKey, type: 'hex_string', offset, length });
   };
@@ -536,13 +536,13 @@ export function PayloadHexString(offset: number, length: number) {
  * Intercepts the explicit setter.
  */
 export function PayloadPinCode(offset: number) {
-  return function (target: any, propertyKey: string, descriptor?: PropertyDescriptor) {
+  return function (target: any, propertyKey: string, _descriptor?: PropertyDescriptor) {
     const meta = getOrCreateMetadata(target);
     meta.push({ propertyName: propertyKey, type: 'pin_code', offset, length: 6 });
 
-    if (descriptor && descriptor.set) {
-      const originalSet = descriptor.set;
-      descriptor.set = function (val: any) {
+    if (_descriptor && _descriptor.set) {
+      const originalSet = _descriptor.set;
+      _descriptor.set = function (val: any) {
         if (val === undefined || val === null) {
           originalSet.call(this, val);
           return;
@@ -574,13 +574,13 @@ export function PayloadPinCode(offset: number) {
  * Intercepts the explicit setter.
  */
 export function PayloadConfigKey(offset: number) {
-  return function (target: any, propertyKey: string, descriptor?: PropertyDescriptor) {
+  return function (target: any, propertyKey: string, _descriptor?: PropertyDescriptor) {
     const meta = getOrCreateMetadata(target);
     meta.push({ propertyName: propertyKey, type: 'config_key', offset, length: 8 });
 
-    if (descriptor && descriptor.set) {
-      const originalSet = descriptor.set;
-      descriptor.set = function (val: any) {
+    if (_descriptor && _descriptor.set) {
+      const originalSet = _descriptor.set;
+      _descriptor.set = function (val: any) {
         if (val === undefined || val === null) {
           originalSet.call(this, val);
           return;
