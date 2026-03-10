@@ -54,3 +54,4 @@
 ## 2024-03-09 - [Module Scale] **Hardened:** [Various Notification Packets] **Edge-Cases Covered:** [Simple Arbitrary Payload Resilience and default handling]
 ## 2024-03-09 - [Core/Uplink/History] **Hardened:** [All History Packets] **Edge-Cases Covered:** [Arbitrary payload lengths from 0 to 256 bytes ensuring parsing safety]
 ## 2026-03-10 - [Core/Uplink] **Hardened:** src/protocol/uplink/SimpleNotificationPackets.ts **Edge-Cases Covered:** [Arbitrary payload lengths from 0 to 256 bytes ensuring parsing safety, empty buffer handling, bounds checking]
+## 2026-03-10 - [Client] **Hardened:** src/client/BoksController.ts **Edge-Cases Covered:** [Arbitrary inputs to `setCredentials` preventing state corruption and validation errors, fuzzed hardware string parsing for internal logic, random inputs via `checkRequirements` for reliable SemVer parsing]
