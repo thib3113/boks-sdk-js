@@ -11,8 +11,83 @@ import { NotifySetConfigurationSuccessPacket } from '../../../../src/protocol/up
 import { OperationSuccessPacket } from '../../../../src/protocol/uplink/OperationSuccessPacket';
 import { ValidOpenCodePacket } from '../../../../src/protocol/uplink/ValidOpenCodePacket';
 import { OperationErrorPacket } from '../../../../src/protocol/uplink/OperationErrorPacket';
+import { AnswerDoorStatusPacket } from '../../../../src/protocol/uplink/AnswerDoorStatusPacket';
+import { NotifyDoorStatusPacket } from '../../../../src/protocol/uplink/NotifyDoorStatusPacket';
+import { NotifyCodesCountPacket } from '../../../../src/protocol/uplink/NotifyCodesCountPacket';
+import { NotifyLogsCountPacket } from '../../../../src/protocol/uplink/NotifyLogsCountPacket';
 
 describe('SimpleNotificationPackets Resilience (Fuzzing)', () => {
+  it('FEATURE REGRESSION: AnswerDoorStatusPacket should safely handle arbitrary payload lengths and set isOpen properly', () => {
+    fc.assert(
+      fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (payload) => {
+        const packet = AnswerDoorStatusPacket.fromPayload(payload);
+        expect(packet).toBeInstanceOf(AnswerDoorStatusPacket);
+        expect(packet.opcode).toBe(0x85);
+        expect((packet as any).rawPayload).toEqual(payload);
+        if (payload.length >= 2) {
+          expect(packet.isOpen).toBe(payload[1] === 0x01 && payload[0] === 0x00);
+        } else {
+          expect(packet.isOpen).toBe(false);
+        }
+      }),
+      { numRuns: 1000 }
+    );
+  });
+
+  it('FEATURE REGRESSION: NotifyDoorStatusPacket should safely handle arbitrary payload lengths and set isOpen properly', () => {
+    fc.assert(
+      fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (payload) => {
+        const packet = NotifyDoorStatusPacket.fromPayload(payload);
+        expect(packet).toBeInstanceOf(NotifyDoorStatusPacket);
+        expect(packet.opcode).toBe(0x84);
+        expect((packet as any).rawPayload).toEqual(payload);
+        if (payload.length >= 2) {
+          expect(packet.isOpen).toBe(payload[1] === 0x01 && payload[0] === 0x00);
+        } else {
+          expect(packet.isOpen).toBe(false);
+        }
+      }),
+      { numRuns: 1000 }
+    );
+  });
+
+  it('FEATURE REGRESSION: NotifyCodesCountPacket should safely handle arbitrary payload lengths and parse counts from DataView', () => {
+    fc.assert(
+      fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (payload) => {
+        const packet = NotifyCodesCountPacket.fromPayload(payload);
+        expect(packet).toBeInstanceOf(NotifyCodesCountPacket);
+        expect(packet.opcode).toBe(0xC3);
+        expect((packet as any).rawPayload).toEqual(payload);
+        if (payload.length >= 4) {
+          const view = new DataView(payload.buffer, payload.byteOffset, payload.byteLength);
+          expect(packet.masterCount).toBe(view.getUint16(0, false));
+          expect(packet.otherCount).toBe(view.getUint16(2, false));
+        } else {
+          expect(packet.masterCount).toBe(0);
+          expect(packet.otherCount).toBe(0);
+        }
+      }),
+      { numRuns: 1000 }
+    );
+  });
+
+  it('FEATURE REGRESSION: NotifyLogsCountPacket should safely handle arbitrary payload lengths and parse count from DataView', () => {
+    fc.assert(
+      fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (payload) => {
+        const packet = NotifyLogsCountPacket.fromPayload(payload);
+        expect(packet).toBeInstanceOf(NotifyLogsCountPacket);
+        expect(packet.opcode).toBe(0x79);
+        expect((packet as any).rawPayload).toEqual(payload);
+        if (payload.length >= 2) {
+          const view = new DataView(payload.buffer, payload.byteOffset, payload.byteLength);
+          expect(packet.count).toBe(view.getUint16(0, false));
+        } else {
+          expect(packet.count).toBe(0);
+        }
+      }),
+      { numRuns: 1000 }
+    );
+  });
   it('FEATURE REGRESSION: EndHistoryPacket should safely handle arbitrary payload lengths', () => {
     fc.assert(
       fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (payload) => {
