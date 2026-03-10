@@ -1,5 +1,6 @@
 import { defineConfig } from 'vitepress'
 import { fileURLToPath, URL } from 'node:url'
+import babel from 'vite-plugin-babel'
 
 export default defineConfig({
   title: "Boks SDK",
@@ -70,6 +71,18 @@ export default defineConfig({
   },
 
   vite: {
+    plugins: [
+      babel({
+        babelConfig: {
+          plugins: [
+            ['@babel/plugin-proposal-decorators', { version: '2023-05' }]
+          ]
+        }
+      })
+    ],
+    esbuild: {
+      target: 'es2022'
+    },
     resolve: {
       alias: [
         { find: '@', replacement: fileURLToPath(new URL('../../src', import.meta.url)) }

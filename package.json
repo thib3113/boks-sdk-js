@@ -66,6 +66,8 @@
   "author": "Thib3113",
   "license": "ISC",
   "devDependencies": {
+    "@babel/core": "^7.29.0",
+    "@babel/plugin-proposal-decorators": "^7.29.0",
     "@codecov/bundle-analyzer": "1.9.1",
     "@eslint/js": "10.0.1",
     "@types/node": "24.12.0",
@@ -81,6 +83,7 @@
     "typedoc": "0.28.17",
     "typescript": "5.9.3",
     "typescript-eslint": "8.57.0",
+    "vite-plugin-babel": "^1.5.1",
     "vitepress": "1.6.4",
     "vitest": "4.0.18",
     "vue": "3.5.30"

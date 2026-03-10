@@ -1,25 +1,27 @@
 export function PayloadPinCode(length: number) {
-  return function (target: any, context: ClassAccessorDecoratorContext) {
+  return function <T, V extends string>(
+    target: ClassAccessorDecoratorTarget<T, V>,
+    context: ClassAccessorDecoratorContext<T, V>
+  ): ClassAccessorDecoratorResult<T, V> | void {
     if (context.kind === 'accessor') {
       return {
-        get() {
+        get(this: T): V {
           console.log(`Getting value for ${context.name.toString()}`);
           return target.get.call(this);
         },
-        set(value: string) {
+        set(this: T, value: V): void {
           if (value.length !== length) {
             throw new Error(`Length must be ${length}`);
           }
           console.log(`Setting value for ${context.name.toString()}`);
           target.set.call(this, value);
         },
-        init(initialValue: string) {
+        init(this: T, initialValue: V): V {
           console.log(`Init value for ${context.name.toString()} to ${initialValue}`);
           return initialValue;
         }
       };
     }
-    return;
   };
 }
 
@@ -35,6 +37,8 @@ console.log(obj.pin);
 
 try {
   obj.pin = '123';
-} catch (e: any) {
-  console.log('Validation failed as expected:', e.message);
+} catch (e: unknown) {
+  if (e instanceof Error) {
+    console.log('Validation failed as expected:', e.message);
+  }
 }

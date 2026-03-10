@@ -5,7 +5,7 @@
  * if they are writable.
  * This helps prevent prototype pollution attacks and unauthorized extensions of sensitive objects.
  */
-export function sealed(constructor: { prototype: unknown }, context?: any) {
+export function sealed(constructor: { prototype: unknown }, context?: ClassDecoratorContext) {
   // If we're using standard TS decorators (context is defined),
   // we cannot simply seal immediately, because build tools like esbuild
   // will try to add Symbol.metadata to the constructor AFTER the decorator returns.
@@ -28,7 +28,7 @@ export function sealed(constructor: { prototype: unknown }, context?: any) {
  * existing properties cannot be removed, and existing properties cannot be modified.
  * This is useful for static registries or configuration classes.
  */
-export function freeze(constructor: { prototype: unknown }, context?: any) {
+export function freeze(constructor: { prototype: unknown }, context?: ClassDecoratorContext) {
   if (context && context.kind === 'class') {
     Promise.resolve().then(() => {
       Object.freeze(constructor);
