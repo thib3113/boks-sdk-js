@@ -147,13 +147,13 @@ describe('PayloadMapper Exhaustive Deterministic Tests', () => {
 
     describe('Decorator Generic Accessor Coverage', () => {
         class FullPacket {
-            @PayloadUint8(0) accessor val8!: number = 8;
-            @PayloadUint16(1) accessor val16!: number = 16;
-            @PayloadUint24(3) accessor val24!: number = 24;
-            @PayloadUint32(6) accessor val32!: number = 32;
-            @PayloadAsciiString(0, 4) accessor ascii!: string = 'A';
-            @PayloadHexString(4, 3) accessor hex!: string = 'B';
-            @PayloadMacAddress(7) accessor mac!: string = 'C';
+            @PayloadUint8(0) accessor val8: number = 8;
+            @PayloadUint16(1) accessor val16: number = 16;
+            @PayloadUint24(3) accessor val24: number = 24;
+            @PayloadUint32(6) accessor val32: number = 32;
+            @PayloadAsciiString(0, 4) accessor ascii: string = 'A';
+            @PayloadHexString(4, 3) accessor hex: string = 'B';
+            @PayloadMacAddress(7) accessor mac: string = 'C';
         }
 
         it('should hit get, set, init for all accessors', () => {
@@ -175,7 +175,7 @@ describe('PayloadMapper Exhaustive Deterministic Tests', () => {
     describe('Missing Decorator Coverage (Uncovered Lines)', () => {
 
         it('should handle getOrCreateMetadata when no context.metadata exists (legacy path)', () => {
-            class LegacyMetaPacket {}
+
             const context: any = { name: 'test' }; // No metadata
             // Call the decorator directly to force getOrCreateMetadata to run with undefined context.metadata
             const decorator = PayloadUint8(0);
@@ -191,7 +191,7 @@ describe('PayloadMapper Exhaustive Deterministic Tests', () => {
         });
 
         it('should set schema on Symbol.metadata if available during defineSchema', () => {
-            class MetaPacket {}
+            class MetaPacket { a?: number; }
             (MetaPacket as any)[Symbol.metadata as any] = {}; // Fake the metadata object
             PayloadMapper.defineSchema(MetaPacket, [{ propertyName: 'a', type: 'uint8', offset: 0 }]);
             const data = PayloadMapper.parse(MetaPacket, new Uint8Array([99]));
