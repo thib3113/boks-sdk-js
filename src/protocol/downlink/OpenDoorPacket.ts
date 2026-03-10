@@ -12,7 +12,7 @@ export interface OpenDoorPacketProps {
 export class OpenDoorPacket extends BoksPacket {
   static readonly opcode = BoksOpcode.OPEN_DOOR;
 
-  #pin: string = '';
+  #pin!: string;
 
   @PayloadPinCode(0)
   public get pin(): string {

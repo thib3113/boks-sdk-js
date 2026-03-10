@@ -6,22 +6,22 @@ describe('PayloadMapper Exhaustive Deterministic Tests', () => {
 
     describe('Numeric Types Extraction', () => {
         class NumericPacket {
-           #val8: number = 0;
+           #val8!: number;
 
            @PayloadUint8(0)
            get val8(): number { return this.#val8; }
            set val8(value: number) { this.#val8 = value; }
-           #val16: number = 0;
+           #val16!: number;
 
            @PayloadUint16(1)
            get val16(): number { return this.#val16; }
            set val16(value: number) { this.#val16 = value; }
-           #val24: number = 0;
+           #val24!: number;
 
            @PayloadUint24(3)
            get val24(): number { return this.#val24; }
            set val24(value: number) { this.#val24 = value; }
-           #val32: number = 0;
+           #val32!: number;
 
            @PayloadUint32(6)
            get val32(): number { return this.#val32; }
@@ -54,17 +54,17 @@ describe('PayloadMapper Exhaustive Deterministic Tests', () => {
 
     describe('String Types Extraction', () => {
          class StringPacket {
-             #ascii: string = '';
+             #ascii!: string;
 
            @PayloadAsciiString(0, 4)
            get ascii(): string { return this.#ascii; }
            set ascii(value: string) { this.#ascii = value; }
-             #hex: string = '';
+             #hex!: string;
 
            @PayloadHexString(4, 3)
            get hex(): string { return this.#hex; }
            set hex(value: string) { this.#hex = value; }
-             #mac: string = '';
+             #mac!: string;
 
            @PayloadMacAddress(7)
            get mac(): string { return this.#mac; }
@@ -86,12 +86,12 @@ describe('PayloadMapper Exhaustive Deterministic Tests', () => {
 
     describe('Semantic Type Validation (PIN & Config Key)', () => {
          class SemanticPacket {
-            #pin: string = '';
+            #pin!: string;
 
            @PayloadPinCode(0)
            get pin(): string { return this.#pin; }
            set pin(value: string) { this.#pin = value; }
-            #key: string = '';
+            #key!: string;
 
            @PayloadConfigKey(6)
            get key(): string { return this.#key; }
@@ -127,12 +127,12 @@ describe('PayloadMapper Exhaustive Deterministic Tests', () => {
 
     describe('Constructor Validation (Setters)', () => {
          class ValidatedPacket {
-            #pin: string = '';
+            #pin!: string;
 
            @PayloadPinCode(0)
            get pin(): string { return this.#pin; }
            set pin(value: string) { this.#pin = value; }
-            #key: string = '';
+            #key!: string;
 
            @PayloadConfigKey(6)
            get key(): string { return this.#key; }

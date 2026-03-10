@@ -1,11 +1,10 @@
 import { AuthPacket } from '@/protocol/downlink/_AuthPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
-import { validateMasterCodeIndex } from '@/utils/validation';
 import {
   PayloadMapper,
   PayloadPinCode,
   PayloadConfigKey,
-  PayloadUint8
+  PayloadMasterCodeIndex
 } from '@/protocol/payload-mapper';
 
 export interface CreateMasterCodePacketProps {
@@ -23,7 +22,7 @@ export class CreateMasterCodePacket extends AuthPacket {
     return CreateMasterCodePacket.opcode;
   }
 
-  #configKeyStr: string = '';
+  #configKeyStr!: string;
 
   @PayloadConfigKey(0)
   public get configKeyStr(): string {
@@ -33,7 +32,7 @@ export class CreateMasterCodePacket extends AuthPacket {
     this.#configKeyStr = value;
   }
 
-  #pin: string = '';
+  #pin!: string;
 
   @PayloadPinCode(8)
   public get pin(): string {
@@ -43,9 +42,9 @@ export class CreateMasterCodePacket extends AuthPacket {
     this.#pin = value;
   }
 
-  #index: number = 0;
+  #index!: number;
 
-  @PayloadUint8(14)
+  @PayloadMasterCodeIndex(14)
   public get index(): number {
     return this.#index;
   }
@@ -58,8 +57,6 @@ export class CreateMasterCodePacket extends AuthPacket {
     this.configKeyStr = props.configKey;
     this.pin = props.pin;
     this.index = props.index;
-
-    validateMasterCodeIndex(this.index);
   }
 
   static fromPayload(payload: Uint8Array): CreateMasterCodePacket {

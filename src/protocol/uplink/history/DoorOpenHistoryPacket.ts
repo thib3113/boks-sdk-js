@@ -14,7 +14,7 @@ export class DoorOpenHistoryPacket extends BoksHistoryEvent {
   static readonly opcode = BoksOpcode.LOG_DOOR_OPEN;
   public readonly status = 'open';
 
-  #parsedAge: number = 0;
+  #parsedAge!: number;
 
   @PayloadUint24(0)
   public get parsedAge(): number {
