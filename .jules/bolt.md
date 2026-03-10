@@ -101,3 +101,7 @@
 ## 2025-10-26 - Map vs Array Lookup for Small Integer Keys
 **Learning:** In V8, using a `Map` for key-value lookups where the keys are small, dense integers (like 1-byte opcodes ranging from 0 to 255) incurs significant overhead compared to direct Array indexing. A benchmark demonstrated that a direct Array lookup `array[index]` is ~4x faster than `map.get(key)` for 10M iterations (22ms vs 86ms).
 **Action:** When implementing registries or lookup tables keyed by small, bounded integers (e.g., opcodes, status codes), prefer pre-allocated fixed-size arrays over `Map` objects to maximize access speed in hot paths like packet parsing.
+
+## 2025-10-26 - Null Byte Stripping Performance Overhead
+**Learning:** Using `.replace(/\0/g, '')` on the result of `String.fromCharCode` to strip null byte padding is unexpectedly slow in V8 (up to ~6x slower) compared to an unrolled conditional concatenation loop. The regex operation forces intermediate string allocations and compilation overhead that negates the benefits of fast ASCII fast-paths.
+**Action:** When reading fixed-length strings from buffers that might contain null byte padding (like PINs, Config Keys, or parsed payloads), use an unrolled loop that checks `if (char !== 0)` before concatenation instead of relying on regex replacements on the final string.

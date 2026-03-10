@@ -149,15 +149,34 @@ export const writeConfigKeyToBuffer = (payload: Uint8Array, offset: number, key:
  * and loop overhead, yielding a ~5x performance speedup in V8.
  */
 export const readPinFromBuffer = (payload: Uint8Array, offset: number): string => {
-  // If the protocol padded with null bytes (0x00), strip them from the resulting string
-  return String.fromCharCode(
-    payload[offset],
-    payload[offset + 1],
-    payload[offset + 2],
-    payload[offset + 3],
-    payload[offset + 4],
-    payload[offset + 5]
-  ).replace(/\0/g, '');
+  // If the protocol padded with null bytes (0x00), skip them
+  let s = '';
+  let c;
+  c = payload[offset];
+  if (c) {
+    s += String.fromCharCode(c);
+  }
+  c = payload[offset + 1];
+  if (c) {
+    s += String.fromCharCode(c);
+  }
+  c = payload[offset + 2];
+  if (c) {
+    s += String.fromCharCode(c);
+  }
+  c = payload[offset + 3];
+  if (c) {
+    s += String.fromCharCode(c);
+  }
+  c = payload[offset + 4];
+  if (c) {
+    s += String.fromCharCode(c);
+  }
+  c = payload[offset + 5];
+  if (c) {
+    s += String.fromCharCode(c);
+  }
+  return s;
 };
 
 /**
@@ -166,17 +185,42 @@ export const readPinFromBuffer = (payload: Uint8Array, offset: number): string =
  * and loop overhead, yielding a ~5x performance speedup in V8.
  */
 export const readConfigKeyFromBuffer = (payload: Uint8Array, offset: number): string => {
-  // If the protocol padded with null bytes (0x00), strip them from the resulting string
-  return String.fromCharCode(
-    payload[offset],
-    payload[offset + 1],
-    payload[offset + 2],
-    payload[offset + 3],
-    payload[offset + 4],
-    payload[offset + 5],
-    payload[offset + 6],
-    payload[offset + 7]
-  ).replace(/\0/g, '');
+  // If the protocol padded with null bytes (0x00), skip them
+  let s = '';
+  let c;
+  c = payload[offset];
+  if (c) {
+    s += String.fromCharCode(c);
+  }
+  c = payload[offset + 1];
+  if (c) {
+    s += String.fromCharCode(c);
+  }
+  c = payload[offset + 2];
+  if (c) {
+    s += String.fromCharCode(c);
+  }
+  c = payload[offset + 3];
+  if (c) {
+    s += String.fromCharCode(c);
+  }
+  c = payload[offset + 4];
+  if (c) {
+    s += String.fromCharCode(c);
+  }
+  c = payload[offset + 5];
+  if (c) {
+    s += String.fromCharCode(c);
+  }
+  c = payload[offset + 6];
+  if (c) {
+    s += String.fromCharCode(c);
+  }
+  c = payload[offset + 7];
+  if (c) {
+    s += String.fromCharCode(c);
+  }
+  return s;
 };
 
 export const stringToBytes = (str: string): Uint8Array => {
@@ -204,9 +248,18 @@ export const bytesToString = (bytes: Uint8Array): string => {
     const b = bytes[i];
     // If we hit a non-ASCII character, fallback to full UTF-8 decoding
     if (b > 127) {
-      return sharedDecoder.decode(bytes).replace(/\0/g, '');
+      const decoded = sharedDecoder.decode(bytes);
+      // Fast manual replacement of null characters to avoid regex allocation
+      let clean = '';
+      for (let j = 0; j < decoded.length; j++) {
+        const c = decoded.charCodeAt(j);
+        if (c) {
+          clean += decoded[j];
+        }
+      }
+      return clean;
     }
-    if (b !== 0) {
+    if (b) {
       s += String.fromCharCode(b);
     }
   }

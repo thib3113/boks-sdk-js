@@ -221,12 +221,23 @@ export class PayloadMapper {
           fnBody += `result['${prop}'] = ((payload[${o}] << 24) | (payload[${o + 1}] << 16) | (payload[${o + 2}] << 8) | payload[${o + 3}]) >>> 0;\n`;
           break;
         case 'ascii_string': {
-          // Unrolled String.fromCharCode for fast ASCII extraction.
-          const charArgs = [];
+          // Unrolled String.fromCharCode for fast ASCII extraction without Regex allocation
+          // Encapsulated in a block scope to avoid variable name collisions or syntax errors
+          fnBody += `
+          {
+             let s = '';
+             let c;
+          `;
           for (let i = 0; i < field.length!; i++) {
-            charArgs.push(`payload[${o + i}]`);
+            fnBody += `
+             c = payload[${o + i}];
+             if (c) s += String.fromCharCode(c);
+            `;
           }
-          fnBody += `result['${prop}'] = String.fromCharCode(${charArgs.join(',')}).replace(/\\0/g, '');\n`;
+          fnBody += `
+             result['${prop}'] = s;
+          }
+          `;
           break;
         }
         case 'mac_address':
