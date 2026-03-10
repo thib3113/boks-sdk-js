@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { TestClass } from '@/poc-accessor';
+import { TestClass, PayloadPinCode } from '@/poc-accessor';
 
 describe('poc-accessor', () => {
   it('should initialize and validate property correctly', () => {
@@ -12,5 +12,15 @@ describe('poc-accessor', () => {
     expect(() => {
       obj.pin = '123';
     }).toThrow('Length must be 8');
+  });
+
+  it('should ignore decorators that are not applied to accessors', () => {
+    const decorator = PayloadPinCode(8);
+    // Simulate applying the decorator to a method instead of an accessor
+    const fakeContext = { kind: 'method', name: 'myMethod' } as any;
+    const fakeTarget = function() {};
+
+    const result = decorator(fakeTarget as any, fakeContext);
+    expect(result).toBeUndefined();
   });
 });
