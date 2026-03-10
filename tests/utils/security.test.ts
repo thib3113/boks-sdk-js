@@ -3,13 +3,14 @@ import { sealed, freeze } from '@/utils/security';
 
 describe('security decorators', () => {
   describe('sealed', () => {
-    it('should seal the constructor and prototype', () => {
+    it('should seal the constructor and prototype', async () => {
       @sealed
       class TestClass {
         static staticProp = 1;
         instanceProp = 2;
       }
 
+      await Promise.resolve();
       expect(Object.isSealed(TestClass)).toBe(true);
       expect(Object.isSealed(TestClass.prototype)).toBe(true);
 
@@ -32,13 +33,14 @@ describe('security decorators', () => {
   });
 
   describe('freeze', () => {
-    it('should freeze the constructor and prototype', () => {
+    it('should freeze the constructor and prototype', async () => {
       @freeze
       class TestClass {
         static staticProp = 1;
         instanceProp = 2;
       }
 
+      await Promise.resolve();
       expect(Object.isFrozen(TestClass)).toBe(true);
       expect(Object.isFrozen(TestClass.prototype)).toBe(true);
 

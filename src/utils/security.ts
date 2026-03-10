@@ -5,9 +5,14 @@
  * if they are writable.
  * This helps prevent prototype pollution attacks and unauthorized extensions of sensitive objects.
  */
-export function sealed(constructor: { prototype: unknown }) {
-  Object.seal(constructor);
-  Object.seal(constructor.prototype);
+export function sealed<T extends abstract new (...args: unknown[]) => unknown>(
+  target: T,
+  _context: ClassDecoratorContext
+) {
+  Promise.resolve().then(() => {
+    Object.seal(target);
+    Object.seal(target.prototype);
+  });
 }
 
 /**
@@ -16,7 +21,12 @@ export function sealed(constructor: { prototype: unknown }) {
  * existing properties cannot be removed, and existing properties cannot be modified.
  * This is useful for static registries or configuration classes.
  */
-export function freeze(constructor: { prototype: unknown }) {
-  Object.freeze(constructor);
-  Object.freeze(constructor.prototype);
+export function freeze<T extends abstract new (...args: unknown[]) => unknown>(
+  target: T,
+  _context: ClassDecoratorContext
+) {
+  Promise.resolve().then(() => {
+    Object.freeze(target);
+    Object.freeze(target.prototype);
+  });
 }

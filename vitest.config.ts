@@ -1,7 +1,17 @@
+import babel from 'vite-plugin-babel';
 import { defineConfig } from 'vitest/config';
 import path from 'path';
 
 export default defineConfig({
+  plugins: [
+    babel({
+      babelConfig: {
+        plugins: [
+          ['@babel/plugin-proposal-decorators', { version: '2023-05' }]
+        ]
+      }
+    })
+  ],
   test: {
     globals: true,
     environment: 'node',

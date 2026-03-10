@@ -20,7 +20,7 @@ describe('PayloadMapper Security and Penetration Testing', () => {
                  PayloadMapper.parse(ExploitClass, new Uint8Array([0x01]));
             } catch (e) { err = e; }
 
-            expect(err).toBeInstanceOf(BoksProtocolError);
+            expect(err).toBeDefined(); if (err) expect(err).toBeInstanceOf(BoksProtocolError);
             expect(err.id).toBe(BoksProtocolErrorId.INTERNAL_ERROR);
             expect(err.message).toContain('Unsafe property name mapped');
         });
@@ -37,7 +37,7 @@ describe('PayloadMapper Security and Penetration Testing', () => {
                  PayloadMapper.parse(ExploitClass, new Uint8Array([0x01]));
             } catch (e) { err = e; }
 
-            expect(err).toBeInstanceOf(BoksProtocolError);
+            expect(err).toBeDefined(); if (err) expect(err).toBeInstanceOf(BoksProtocolError);
             expect(err.id).toBe(BoksProtocolErrorId.INTERNAL_ERROR);
         });
 
@@ -52,7 +52,7 @@ describe('PayloadMapper Security and Penetration Testing', () => {
                  PayloadMapper.parse(ExploitClass, new Uint8Array([0x01]));
             } catch (e) { err = e; }
 
-            expect(err).toBeInstanceOf(BoksProtocolError);
+            expect(err).toBeDefined(); if (err) expect(err).toBeInstanceOf(BoksProtocolError);
             expect(err.message).toContain('Length required');
         });
     });
@@ -71,7 +71,7 @@ describe('PayloadMapper Security and Penetration Testing', () => {
                  PayloadMapper.serialize(new ExploitClass());
             } catch (e) { err = e; }
 
-            expect(err).toBeInstanceOf(BoksProtocolError);
+            expect(err).toBeDefined(); if (err) expect(err).toBeInstanceOf(BoksProtocolError);
             expect(err.id).toBe(BoksProtocolErrorId.INTERNAL_ERROR);
         });
 
@@ -115,7 +115,7 @@ describe('PayloadMapper Security and Penetration Testing', () => {
                   PayloadMapper.parse(ValidClass, payload);
              } catch (e) { err = e; }
 
-             expect(err).toBeInstanceOf(BoksProtocolError);
+             expect(err).toBeDefined(); if (err) expect(err).toBeInstanceOf(BoksProtocolError);
              expect(err.id).toBe(BoksProtocolErrorId.MALFORMED_DATA);
              expect(err.message).toContain('Payload too short');
         });
