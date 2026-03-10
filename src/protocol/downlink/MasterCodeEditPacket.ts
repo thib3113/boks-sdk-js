@@ -1,6 +1,6 @@
 import { AuthPacket } from '@/protocol/downlink/_AuthPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
-import { writeConfigKeyToBuffer, readPinFromBuffer, writePinToBuffer } from '@/utils/converters';
+import { PayloadMapper, PayloadPinCode, PayloadMasterCodeIndex } from '@/protocol/payload-mapper';
 import { validateMasterCodeIndex } from '@/utils/validation';
 
 /**
@@ -13,33 +13,25 @@ export class MasterCodeEditPacket extends AuthPacket {
     return MasterCodeEditPacket.opcode;
   }
 
-  constructor(
-    configKey: string,
-    public readonly index: number,
-    public readonly newPin: string
-  ) {
+  @PayloadMasterCodeIndex(8)
+  public accessor index!: number;
+
+  @PayloadPinCode(9)
+  public accessor newPin!: string;
+
+  constructor(configKey: string, index: number, newPin: string) {
     super(configKey);
     validateMasterCodeIndex(index);
+    this.index = index;
     this.newPin = this.formatPin(newPin);
   }
 
   static fromPayload(payload: Uint8Array): MasterCodeEditPacket {
-    const configKey = AuthPacket.extractConfigKey(payload);
-    let index = 0;
-    if (payload.length > 8) {
-      index = payload[8];
-    }
-    const newPin = readPinFromBuffer(payload, 9);
-    return new MasterCodeEditPacket(configKey, index, newPin);
-  }
-
-  toPayload(): Uint8Array {
-    const payload = new Uint8Array(8 + 1 + 6);
-    writeConfigKeyToBuffer(payload, 0, this.configKey);
-    payload[8] = this.index;
-
-    writePinToBuffer(payload, 9, this.newPin);
-
-    return payload;
+    const data = PayloadMapper.parse(MasterCodeEditPacket, payload);
+    return new MasterCodeEditPacket(
+      data.configKey as string,
+      data.index || 0,
+      data.newPin as string
+    );
   }
 }

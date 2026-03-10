@@ -29,8 +29,4 @@ export class OpenDoorPacket extends BoksPacket {
     const data = PayloadMapper.parse(OpenDoorPacket, payload);
     return new OpenDoorPacket({ pin: data.pin as string });
   }
-
-  toPayload(): Uint8Array {
-    return PayloadMapper.serialize(this);
-  }
 }

@@ -35,6 +35,9 @@ function getOrCreateMetadata(context: ClassAccessorDecoratorContext<any, any>): 
   if (context.metadata) {
     if (!context.metadata[METADATA_KEY]) {
       context.metadata[METADATA_KEY] = [];
+    } else if (!Object.prototype.hasOwnProperty.call(context.metadata, METADATA_KEY)) {
+      // It's inherited from a parent! We must clone it so we don't mutate the parent's schema!
+      context.metadata[METADATA_KEY] = [...(context.metadata[METADATA_KEY] as FieldDefinition[])];
     }
     return context.metadata[METADATA_KEY] as FieldDefinition[];
   }
@@ -96,19 +99,45 @@ export class PayloadMapper {
   /**
    * Compiles the JIT parsing function for a class.
    */
-  private static compileParser(targetClass: any): Function {
-    let symMetadata: symbol | undefined = Symbol.metadata;
-    if (!symMetadata) {
-      const symbols = Object.getOwnPropertySymbols(targetClass);
-      symMetadata = symbols.find((s) => s.toString() === 'Symbol(Symbol.metadata)');
+
+  private static getFields(targetClass: any): FieldDefinition[] {
+    const allFields: FieldDefinition[] = [];
+    let currentClass = targetClass;
+    while (
+      currentClass &&
+      currentClass !== Function.prototype &&
+      currentClass !== Object.prototype
+    ) {
+      let symMetadata: symbol | undefined = Symbol.metadata;
+      if (!symMetadata) {
+        const symbols = Object.getOwnPropertySymbols(currentClass);
+        symMetadata = symbols.find((s) => s.toString() === 'Symbol(Symbol.metadata)');
+      }
+      const fields =
+        (symMetadata && currentClass[symMetadata as any]?.[METADATA_KEY]) ||
+        currentClass[Symbol.metadata as any]?.[METADATA_KEY] ||
+        currentClass.constructor?.[Symbol.metadata as any]?.[METADATA_KEY] ||
+        legacyMetadataMap.get(currentClass) ||
+        currentClass[METADATA_KEY] ||
+        currentClass.constructor?.[METADATA_KEY];
+
+      if (fields && Array.isArray(fields)) {
+        // Add fields that aren't already mapped
+        for (const f of fields) {
+          if (!allFields.find((existing) => existing.propertyName === f.propertyName)) {
+            allFields.push(f);
+          }
+        }
+      }
+      currentClass = Object.getPrototypeOf(currentClass);
     }
-    const fields: FieldDefinition[] =
-      (symMetadata && targetClass[symMetadata as any]?.[METADATA_KEY]) ||
-      targetClass[Symbol.metadata as any]?.[METADATA_KEY] ||
-      targetClass.constructor?.[Symbol.metadata as any]?.[METADATA_KEY] ||
-      legacyMetadataMap.get(targetClass) ||
-      targetClass[METADATA_KEY] ||
-      targetClass.constructor?.[METADATA_KEY];
+
+    console.log('FIELDS FOR', targetClass.name, 'ARE', allFields);
+    return allFields;
+  }
+
+  private static compileParser(targetClass: any): Function {
+    const fields = this.getFields(targetClass);
 
     if (typeof process !== 'undefined' && process.env.DEBUG_MAPPER) {
       console.log('FIELDS FOR', targetClass.name, 'ARE', fields);
@@ -264,18 +293,7 @@ export class PayloadMapper {
    * Used in constructors to validate manually provided properties.
    */
   private static compileValidator(targetClass: any): Function {
-    let symMetadata: symbol | undefined = Symbol.metadata;
-    if (!symMetadata) {
-      const symbols = Object.getOwnPropertySymbols(targetClass);
-      symMetadata = symbols.find((s) => s.toString() === 'Symbol(Symbol.metadata)');
-    }
-    const fields: FieldDefinition[] =
-      (symMetadata && targetClass[symMetadata as any]?.[METADATA_KEY]) ||
-      targetClass[Symbol.metadata as any]?.[METADATA_KEY] ||
-      targetClass.constructor?.[Symbol.metadata as any]?.[METADATA_KEY] ||
-      legacyMetadataMap.get(targetClass) ||
-      targetClass[METADATA_KEY] ||
-      targetClass.constructor?.[METADATA_KEY];
+    const fields = this.getFields(targetClass);
 
     if (typeof process !== 'undefined' && process.env.DEBUG_MAPPER) {
       console.log('FIELDS FOR', targetClass.name, 'ARE', fields);
@@ -323,18 +341,7 @@ export class PayloadMapper {
   }
 
   private static compileSerializer(targetClass: any): Function {
-    let symMetadata: symbol | undefined = Symbol.metadata;
-    if (!symMetadata) {
-      const symbols = Object.getOwnPropertySymbols(targetClass);
-      symMetadata = symbols.find((s) => s.toString() === 'Symbol(Symbol.metadata)');
-    }
-    const fields: FieldDefinition[] =
-      (symMetadata && targetClass[symMetadata as any]?.[METADATA_KEY]) ||
-      targetClass[Symbol.metadata as any]?.[METADATA_KEY] ||
-      targetClass.constructor?.[Symbol.metadata as any]?.[METADATA_KEY] ||
-      legacyMetadataMap.get(targetClass) ||
-      targetClass[METADATA_KEY] ||
-      targetClass.constructor?.[METADATA_KEY];
+    const fields = this.getFields(targetClass);
 
     if (typeof process !== 'undefined' && process.env.DEBUG_MAPPER) {
       console.log('FIELDS FOR', targetClass.name, 'ARE', fields);
