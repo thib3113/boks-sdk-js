@@ -29,16 +29,3 @@ export class TestClass {
   @PayloadPinCode(8)
   public accessor pin: string = '12345678';
 }
-
-const obj = new TestClass();
-console.log(obj.pin);
-obj.pin = 'abcdefgh';
-console.log(obj.pin);
-
-try {
-  obj.pin = '123';
-} catch (e: unknown) {
-  if (e instanceof Error) {
-    console.log('Validation failed as expected:', e.message);
-  }
-}

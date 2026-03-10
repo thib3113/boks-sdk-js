@@ -31,6 +31,18 @@ describe('security decorators', () => {
       }
       expect((TestClass as any).newProp).toBeUndefined();
     });
+
+    it('should seal the constructor and prototype immediately if legacy decorators are used', () => {
+      class LegacyTestClass {
+        static staticProp = 1;
+        instanceProp = 2;
+      }
+
+      sealed(LegacyTestClass);
+
+      expect(Object.isSealed(LegacyTestClass)).toBe(true);
+      expect(Object.isSealed(LegacyTestClass.prototype)).toBe(true);
+    });
   });
 
   describe('freeze', () => {
@@ -53,6 +65,18 @@ describe('security decorators', () => {
         // May throw in strict mode
       }
       expect(TestClass.staticProp).toBe(1);
+    });
+
+    it('should freeze the constructor and prototype immediately if legacy decorators are used', () => {
+      class LegacyTestClass {
+        static staticProp = 1;
+        instanceProp = 2;
+      }
+
+      freeze(LegacyTestClass);
+
+      expect(Object.isFrozen(LegacyTestClass)).toBe(true);
+      expect(Object.isFrozen(LegacyTestClass.prototype)).toBe(true);
     });
   });
 });
