@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * A class decorator that seals the constructor and its prototype.
  * Sealing prevents new properties from being added and existing properties from being removed.
@@ -5,7 +6,7 @@
  * if they are writable.
  * This helps prevent prototype pollution attacks and unauthorized extensions of sensitive objects.
  */
-export function sealed<T extends abstract new (...args: unknown[]) => unknown>(
+export function sealed<T extends abstract new (...args: any) => any>(
   target: T,
   _context: ClassDecoratorContext
 ) {
@@ -21,7 +22,7 @@ export function sealed<T extends abstract new (...args: unknown[]) => unknown>(
  * existing properties cannot be removed, and existing properties cannot be modified.
  * This is useful for static registries or configuration classes.
  */
-export function freeze<T extends abstract new (...args: unknown[]) => unknown>(
+export function freeze<T extends abstract new (...args: any) => any>(
   target: T,
   _context: ClassDecoratorContext
 ) {
