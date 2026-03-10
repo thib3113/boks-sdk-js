@@ -23,14 +23,35 @@ export class CreateMasterCodePacket extends AuthPacket {
     return CreateMasterCodePacket.opcode;
   }
 
+  #configKeyStr: string = '';
+
   @PayloadConfigKey(0)
-  public accessor configKeyStr: string;
+  public get configKeyStr(): string {
+    return this.#configKeyStr;
+  }
+  public set configKeyStr(value: string) {
+    this.#configKeyStr = value;
+  }
+
+  #pin: string = '';
 
   @PayloadPinCode(8)
-  public accessor pin: string;
+  public get pin(): string {
+    return this.#pin;
+  }
+  public set pin(value: string) {
+    this.#pin = value;
+  }
+
+  #index: number = 0;
 
   @PayloadUint8(14)
-  public accessor index: number;
+  public get index(): number {
+    return this.#index;
+  }
+  public set index(value: number) {
+    this.#index = value;
+  }
 
   constructor(props: CreateMasterCodePacketProps) {
     super(props.configKey);

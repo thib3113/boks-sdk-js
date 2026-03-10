@@ -6,10 +6,26 @@ describe('PayloadMapper Exhaustive Deterministic Tests', () => {
 
     describe('Numeric Types Extraction', () => {
         class NumericPacket {
-           @PayloadUint8(0) accessor val8!: number;
-           @PayloadUint16(1) accessor val16!: number;
-           @PayloadUint24(3) accessor val24!: number;
-           @PayloadUint32(6) accessor val32!: number;
+           #val8: number = 0;
+
+           @PayloadUint8(0)
+           get val8(): number { return this.#val8; }
+           set val8(value: number) { this.#val8 = value; }
+           #val16: number = 0;
+
+           @PayloadUint16(1)
+           get val16(): number { return this.#val16; }
+           set val16(value: number) { this.#val16 = value; }
+           #val24: number = 0;
+
+           @PayloadUint24(3)
+           get val24(): number { return this.#val24; }
+           set val24(value: number) { this.#val24 = value; }
+           #val32: number = 0;
+
+           @PayloadUint32(6)
+           get val32(): number { return this.#val32; }
+           set val32(value: number) { this.#val32 = value; }
         }
 
         it('should correctly parse boundaries and endianness', () => {
@@ -38,9 +54,21 @@ describe('PayloadMapper Exhaustive Deterministic Tests', () => {
 
     describe('String Types Extraction', () => {
          class StringPacket {
-             @PayloadAsciiString(0, 4) accessor ascii!: string;
-             @PayloadHexString(4, 3) accessor hex!: string;
-             @PayloadMacAddress(7) accessor mac!: string;
+             #ascii: string = '';
+
+           @PayloadAsciiString(0, 4)
+           get ascii(): string { return this.#ascii; }
+           set ascii(value: string) { this.#ascii = value; }
+             #hex: string = '';
+
+           @PayloadHexString(4, 3)
+           get hex(): string { return this.#hex; }
+           set hex(value: string) { this.#hex = value; }
+             #mac: string = '';
+
+           @PayloadMacAddress(7)
+           get mac(): string { return this.#mac; }
+           set mac(value: string) { this.#mac = value; }
          }
 
          it('should correctly parse standard values and strip null bytes', () => {
@@ -58,8 +86,16 @@ describe('PayloadMapper Exhaustive Deterministic Tests', () => {
 
     describe('Semantic Type Validation (PIN & Config Key)', () => {
          class SemanticPacket {
-            @PayloadPinCode(0) accessor pin!: string;
-            @PayloadConfigKey(6) accessor key!: string;
+            #pin: string = '';
+
+           @PayloadPinCode(0)
+           get pin(): string { return this.#pin; }
+           set pin(value: string) { this.#pin = value; }
+            #key: string = '';
+
+           @PayloadConfigKey(6)
+           get key(): string { return this.#key; }
+           set key(value: string) { this.#key = value; }
          }
 
          it('should parse valid semantic strings', () => {
@@ -91,8 +127,16 @@ describe('PayloadMapper Exhaustive Deterministic Tests', () => {
 
     describe('Constructor Validation (Setters)', () => {
          class ValidatedPacket {
-            @PayloadPinCode(0) accessor pin!: string;
-            @PayloadConfigKey(6) accessor key!: string;
+            #pin: string = '';
+
+           @PayloadPinCode(0)
+           get pin(): string { return this.#pin; }
+           set pin(value: string) { this.#pin = value; }
+            #key: string = '';
+
+           @PayloadConfigKey(6)
+           get key(): string { return this.#key; }
+           set key(value: string) { this.#key = value; }
             constructor(public props: { pin: any, key: any }) {
                 this.pin = props.pin;
                 this.key = props.key;

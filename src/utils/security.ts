@@ -10,7 +10,10 @@
 export function sealed<T extends { prototype: unknown }>(value: T, context?: any): T {
   if (context && context.addInitializer) {
     context.addInitializer(function () {
-      if (!(value as any)[Symbol.for("Symbol.metadata")]) { (value as any)[Symbol.for("Symbol.metadata")] = Object.create(null); } Object.seal(value);
+      if (!(value as any)[Symbol.for('Symbol.metadata')]) {
+        (value as any)[Symbol.for('Symbol.metadata')] = Object.create(null);
+      }
+      Object.seal(value);
       Object.seal(value.prototype);
     });
     return value;
@@ -23,7 +26,10 @@ export function sealed<T extends { prototype: unknown }>(value: T, context?: any
 export function freeze<T extends { prototype: unknown }>(value: T, context?: any): T {
   if (context && context.addInitializer) {
     context.addInitializer(function () {
-      if (!(value as any)[Symbol.for("Symbol.metadata")]) { (value as any)[Symbol.for("Symbol.metadata")] = Object.create(null); } Object.freeze(value);
+      if (!(value as any)[Symbol.for('Symbol.metadata')]) {
+        (value as any)[Symbol.for('Symbol.metadata')] = Object.create(null);
+      }
+      Object.freeze(value);
       Object.freeze(value.prototype);
     });
     return value;

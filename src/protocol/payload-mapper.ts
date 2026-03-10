@@ -1,7 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-if (!(Symbol as any).metadata) {
-  (Symbol as any).metadata = Symbol('Symbol.metadata');
-}
 /* eslint-disable @typescript-eslint/no-unsafe-function-type, @typescript-eslint/no-explicit-any */
 import { BoksProtocolError, BoksProtocolErrorId } from '../errors/BoksProtocolError';
 
@@ -31,11 +27,11 @@ export interface FieldDefinition {
 /**
  * Ensures the target class has a metadata array for field definitions.
  */
-function getOrCreateMetadata(targetConstructor: any): FieldDefinition[] {
-  if (!targetConstructor[METADATA_KEY]) {
-    targetConstructor[METADATA_KEY] = [];
+function getOrCreateMetadata(target: any): FieldDefinition[] {
+  if (!target.constructor[METADATA_KEY]) {
+    target.constructor[METADATA_KEY] = [];
   }
-  return targetConstructor[METADATA_KEY];
+  return target.constructor[METADATA_KEY];
 }
 
 /**
@@ -465,44 +461,13 @@ export class PayloadMapper {
 
 // --- Decorators ---
 
-const ES_META_KEY = Symbol.for('BoksPayloadMapperESMeta');
-
-function pushMetadata(
-  context: ClassAccessorDecoratorContext | ClassFieldDecoratorContext,
-  def: Omit<FieldDefinition, 'propertyName'>
-) {
-  // Use metadata if available (TS 5.2+ standard)
-  if (context.metadata) {
-    if (!context.metadata[ES_META_KEY]) {
-      context.metadata[ES_META_KEY] = [];
-    }
-    const meta = context.metadata[ES_META_KEY] as FieldDefinition[];
-    if (!meta.find((m) => m.propertyName === String(context.name))) {
-      meta.push({ propertyName: String(context.name), ...def });
-    }
-  }
-
-  // Fallback: Use addInitializer to attach to the prototype/constructor directly
-  context.addInitializer(function (this: any) {
-    // If 'this' is the prototype (class definition), or instance (object creation)
-    const targetConstructor = typeof this === 'function' ? this : this.constructor;
-    const meta = getOrCreateMetadata(targetConstructor);
-    if (!meta.find((m) => m.propertyName === String(context.name))) {
-      meta.push({ propertyName: String(context.name), ...def });
-    }
-  });
-}
-
 /**
  * Decorator to map an 8-bit unsigned integer field.
  */
 export function PayloadUint8(offset: number) {
-  return function <T, V>(
-    target: ClassAccessorDecoratorTarget<T, V>,
-    context: ClassAccessorDecoratorContext<T, V> | ClassFieldDecoratorContext<T, V>
-  ) {
-    pushMetadata(context, { type: 'uint8', offset });
-    return target; // No special getter/setter logic needed
+  return function (target: any, propertyKey: string, descriptor?: PropertyDescriptor) {
+    const meta = getOrCreateMetadata(target);
+    meta.push({ propertyName: propertyKey, type: 'uint8', offset });
   };
 }
 
@@ -510,12 +475,9 @@ export function PayloadUint8(offset: number) {
  * Decorator to map a 16-bit unsigned integer field (Big Endian).
  */
 export function PayloadUint16(offset: number) {
-  return function <T, V>(
-    target: ClassAccessorDecoratorTarget<T, V>,
-    context: ClassAccessorDecoratorContext<T, V> | ClassFieldDecoratorContext<T, V>
-  ) {
-    pushMetadata(context, { type: 'uint16', offset });
-    return target;
+  return function (target: any, propertyKey: string, descriptor?: PropertyDescriptor) {
+    const meta = getOrCreateMetadata(target);
+    meta.push({ propertyName: propertyKey, type: 'uint16', offset });
   };
 }
 
@@ -523,12 +485,9 @@ export function PayloadUint16(offset: number) {
  * Decorator to map a 24-bit unsigned integer field (Big Endian).
  */
 export function PayloadUint24(offset: number) {
-  return function <T, V>(
-    target: ClassAccessorDecoratorTarget<T, V>,
-    context: ClassAccessorDecoratorContext<T, V> | ClassFieldDecoratorContext<T, V>
-  ) {
-    pushMetadata(context, { type: 'uint24', offset });
-    return target;
+  return function (target: any, propertyKey: string, descriptor?: PropertyDescriptor) {
+    const meta = getOrCreateMetadata(target);
+    meta.push({ propertyName: propertyKey, type: 'uint24', offset });
   };
 }
 
@@ -536,12 +495,9 @@ export function PayloadUint24(offset: number) {
  * Decorator to map a 32-bit unsigned integer field (Big Endian).
  */
 export function PayloadUint32(offset: number) {
-  return function <T, V>(
-    target: ClassAccessorDecoratorTarget<T, V>,
-    context: ClassAccessorDecoratorContext<T, V> | ClassFieldDecoratorContext<T, V>
-  ) {
-    pushMetadata(context, { type: 'uint32', offset });
-    return target;
+  return function (target: any, propertyKey: string, descriptor?: PropertyDescriptor) {
+    const meta = getOrCreateMetadata(target);
+    meta.push({ propertyName: propertyKey, type: 'uint32', offset });
   };
 }
 
@@ -549,12 +505,9 @@ export function PayloadUint32(offset: number) {
  * Decorator to map a fixed-length ASCII string field.
  */
 export function PayloadAsciiString(offset: number, length: number) {
-  return function <T, V>(
-    target: ClassAccessorDecoratorTarget<T, V>,
-    context: ClassAccessorDecoratorContext<T, V> | ClassFieldDecoratorContext<T, V>
-  ) {
-    pushMetadata(context, { type: 'ascii_string', offset, length });
-    return target;
+  return function (target: any, propertyKey: string, descriptor?: PropertyDescriptor) {
+    const meta = getOrCreateMetadata(target);
+    meta.push({ propertyName: propertyKey, type: 'ascii_string', offset, length });
   };
 }
 
@@ -562,12 +515,9 @@ export function PayloadAsciiString(offset: number, length: number) {
  * Decorator to map a 6-byte MAC Address field.
  */
 export function PayloadMacAddress(offset: number) {
-  return function <T, V>(
-    target: ClassAccessorDecoratorTarget<T, V>,
-    context: ClassAccessorDecoratorContext<T, V> | ClassFieldDecoratorContext<T, V>
-  ) {
-    pushMetadata(context, { type: 'mac_address', offset, length: 6 });
-    return target;
+  return function (target: any, propertyKey: string, descriptor?: PropertyDescriptor) {
+    const meta = getOrCreateMetadata(target);
+    meta.push({ propertyName: propertyKey, type: 'mac_address', offset, length: 6 });
   };
 }
 
@@ -575,33 +525,26 @@ export function PayloadMacAddress(offset: number) {
  * Decorator to map a fixed-length Hexadecimal string field.
  */
 export function PayloadHexString(offset: number, length: number) {
-  return function <T, V>(
-    target: ClassAccessorDecoratorTarget<T, V>,
-    context: ClassAccessorDecoratorContext<T, V> | ClassFieldDecoratorContext<T, V>
-  ) {
-    pushMetadata(context, { type: 'hex_string', offset, length });
-    return target;
+  return function (target: any, propertyKey: string, descriptor?: PropertyDescriptor) {
+    const meta = getOrCreateMetadata(target);
+    meta.push({ propertyName: propertyKey, type: 'hex_string', offset, length });
   };
 }
 
 /**
  * Decorator to map and validate a 6-character Boks PIN code field.
- * Injects a setter that validates and formats the PIN using the native JS #private storage.
+ * Intercepts the explicit setter.
  */
 export function PayloadPinCode(offset: number) {
-  return function <T, V extends string>(
-    target: ClassAccessorDecoratorTarget<T, V>,
-    context: ClassAccessorDecoratorContext<T, V>
-  ) {
-    pushMetadata(context, { type: 'pin_code', offset, length: 6 });
+  return function (target: any, propertyKey: string, descriptor?: PropertyDescriptor) {
+    const meta = getOrCreateMetadata(target);
+    meta.push({ propertyName: propertyKey, type: 'pin_code', offset, length: 6 });
 
-    return {
-      get(this: T) {
-        return target.get.call(this);
-      },
-      set(this: T, val: V) {
+    if (descriptor && descriptor.set) {
+      const originalSet = descriptor.set;
+      descriptor.set = function (val: any) {
         if (val === undefined || val === null) {
-          target.set.call(this, val);
+          originalSet.call(this, val);
           return;
         }
         const formatted = typeof val === 'string' ? val.toUpperCase() : String(val).toUpperCase();
@@ -620,43 +563,26 @@ export function PayloadPinCode(offset: number) {
             );
           }
         }
-        target.set.call(this, formatted as V);
-      },
-      init(this: T, initialValue: V) {
-        // Initializer triggers during class instantiation when auto-accessors are set up.
-        // If there's an initial value (e.g., accessor pin = '123456'), we validate it.
-        // However, in our classes we don't initialize inline, so initialValue is likely undefined.
-        if (initialValue !== undefined && initialValue !== null) {
-          const formatted =
-            typeof initialValue === 'string'
-              ? initialValue.toUpperCase()
-              : String(initialValue).toUpperCase();
-          return formatted as V;
-        }
-        return initialValue;
-      }
-    };
+        originalSet.call(this, formatted);
+      };
+    }
   };
 }
 
 /**
  * Decorator to map and validate an 8-character Boks Configuration Key field.
- * Injects a setter that validates and formats the Config Key using the native JS #private storage.
+ * Intercepts the explicit setter.
  */
 export function PayloadConfigKey(offset: number) {
-  return function <T, V extends string>(
-    target: ClassAccessorDecoratorTarget<T, V>,
-    context: ClassAccessorDecoratorContext<T, V>
-  ) {
-    pushMetadata(context, { type: 'config_key', offset, length: 8 });
+  return function (target: any, propertyKey: string, descriptor?: PropertyDescriptor) {
+    const meta = getOrCreateMetadata(target);
+    meta.push({ propertyName: propertyKey, type: 'config_key', offset, length: 8 });
 
-    return {
-      get(this: T) {
-        return target.get.call(this);
-      },
-      set(this: T, val: V) {
+    if (descriptor && descriptor.set) {
+      const originalSet = descriptor.set;
+      descriptor.set = function (val: any) {
         if (val === undefined || val === null) {
-          target.set.call(this, val);
+          originalSet.call(this, val);
           return;
         }
         const formatted = typeof val === 'string' ? val.toUpperCase() : String(val).toUpperCase();
@@ -675,18 +601,8 @@ export function PayloadConfigKey(offset: number) {
             );
           }
         }
-        target.set.call(this, formatted as V);
-      },
-      init(this: T, initialValue: V) {
-        if (initialValue !== undefined && initialValue !== null) {
-          const formatted =
-            typeof initialValue === 'string'
-              ? initialValue.toUpperCase()
-              : String(initialValue).toUpperCase();
-          return formatted as V;
-        }
-        return initialValue;
-      }
-    };
+        originalSet.call(this, formatted);
+      };
+    }
   };
 }
