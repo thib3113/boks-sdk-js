@@ -22,7 +22,9 @@ describe('SetConfigurationPacket Resilience (Fuzzing)', () => {
           } catch (e) {
             // It is an intended FEATURE that validation throws a BoksProtocolError.
             // It should NEVER crash with TypeError, RangeError, etc.
-            expect(e).toBeInstanceOf(BoksProtocolError);
+            if (!(e instanceof BoksProtocolError)) {
+              throw e;
+            }
           }
         }
       ),
