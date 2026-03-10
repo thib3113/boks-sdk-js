@@ -15,7 +15,7 @@ export class DoorOpenHistoryPacket extends BoksHistoryEvent {
   public readonly status = 'open';
 
   @PayloadUint24(0)
-  public readonly parsedAge: number;
+  public accessor parsedAge: number;
 
   constructor(props: DoorOpenHistoryPacketProps) {
     super(DoorOpenHistoryPacket.opcode, props.age, props.rawPayload);

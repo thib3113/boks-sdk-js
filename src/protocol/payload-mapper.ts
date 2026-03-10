@@ -1,3 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+if (!(Symbol as any).metadata) {
+  (Symbol as any).metadata = Symbol('Symbol.metadata');
+}
 /* eslint-disable @typescript-eslint/no-unsafe-function-type, @typescript-eslint/no-explicit-any */
 import { BoksProtocolError, BoksProtocolErrorId } from '../errors/BoksProtocolError';
 
@@ -27,11 +31,11 @@ export interface FieldDefinition {
 /**
  * Ensures the target class has a metadata array for field definitions.
  */
-function getOrCreateMetadata(target: any): FieldDefinition[] {
-  if (!target.constructor[METADATA_KEY]) {
-    target.constructor[METADATA_KEY] = [];
+function getOrCreateMetadata(targetConstructor: any): FieldDefinition[] {
+  if (!targetConstructor[METADATA_KEY]) {
+    targetConstructor[METADATA_KEY] = [];
   }
-  return target.constructor[METADATA_KEY];
+  return targetConstructor[METADATA_KEY];
 }
 
 /**
@@ -90,7 +94,10 @@ export class PayloadMapper {
    * Compiles the JIT parsing function for a class.
    */
   private static compileParser(targetClass: any): Function {
-    const fields: FieldDefinition[] = targetClass[METADATA_KEY];
+    const fields: FieldDefinition[] =
+      (targetClass[Symbol.metadata] &&
+        targetClass[Symbol.metadata][Symbol.for('BoksPayloadMapperESMeta')]) ||
+      targetClass[METADATA_KEY];
     if (!fields || fields.length === 0) {
       return (_payload: Uint8Array) => ({}); // No fields mapped
     }
@@ -242,7 +249,10 @@ export class PayloadMapper {
    * Used in constructors to validate manually provided properties.
    */
   private static compileValidator(targetClass: any): Function {
-    const fields: FieldDefinition[] = targetClass[METADATA_KEY];
+    const fields: FieldDefinition[] =
+      (targetClass[Symbol.metadata] &&
+        targetClass[Symbol.metadata][Symbol.for('BoksPayloadMapperESMeta')]) ||
+      targetClass[METADATA_KEY];
     if (!fields || fields.length === 0) {
       return (_instance: any) => {};
     }
@@ -286,7 +296,10 @@ export class PayloadMapper {
   }
 
   private static compileSerializer(targetClass: any): Function {
-    const fields: FieldDefinition[] = targetClass[METADATA_KEY];
+    const fields: FieldDefinition[] =
+      (targetClass[Symbol.metadata] &&
+        targetClass[Symbol.metadata][Symbol.for('BoksPayloadMapperESMeta')]) ||
+      targetClass[METADATA_KEY];
     if (!fields || fields.length === 0) {
       return (_instance: any) => new Uint8Array(0); // No fields mapped
     }
@@ -334,7 +347,7 @@ export class PayloadMapper {
       const prop = field.propertyName;
       // We read the instance value. Missing values default to 0 for numbers, or empty string.
       const val = `(instance['${prop}'] || 0)`;
-      const strVal = `(instance['${prop}'] || '')`;
+      const strVal = `(String(instance['${prop}'] || ''))`;
 
       switch (field.type) {
         case 'uint8':
@@ -452,13 +465,44 @@ export class PayloadMapper {
 
 // --- Decorators ---
 
+const ES_META_KEY = Symbol.for('BoksPayloadMapperESMeta');
+
+function pushMetadata(
+  context: ClassAccessorDecoratorContext | ClassFieldDecoratorContext,
+  def: Omit<FieldDefinition, 'propertyName'>
+) {
+  // Use metadata if available (TS 5.2+ standard)
+  if (context.metadata) {
+    if (!context.metadata[ES_META_KEY]) {
+      context.metadata[ES_META_KEY] = [];
+    }
+    const meta = context.metadata[ES_META_KEY] as FieldDefinition[];
+    if (!meta.find((m) => m.propertyName === String(context.name))) {
+      meta.push({ propertyName: String(context.name), ...def });
+    }
+  }
+
+  // Fallback: Use addInitializer to attach to the prototype/constructor directly
+  context.addInitializer(function (this: any) {
+    // If 'this' is the prototype (class definition), or instance (object creation)
+    const targetConstructor = typeof this === 'function' ? this : this.constructor;
+    const meta = getOrCreateMetadata(targetConstructor);
+    if (!meta.find((m) => m.propertyName === String(context.name))) {
+      meta.push({ propertyName: String(context.name), ...def });
+    }
+  });
+}
+
 /**
  * Decorator to map an 8-bit unsigned integer field.
  */
 export function PayloadUint8(offset: number) {
-  return function (target: any, propertyKey: string) {
-    const meta = getOrCreateMetadata(target);
-    meta.push({ propertyName: propertyKey, type: 'uint8', offset });
+  return function <T, V>(
+    target: ClassAccessorDecoratorTarget<T, V>,
+    context: ClassAccessorDecoratorContext<T, V> | ClassFieldDecoratorContext<T, V>
+  ) {
+    pushMetadata(context, { type: 'uint8', offset });
+    return target; // No special getter/setter logic needed
   };
 }
 
@@ -466,9 +510,12 @@ export function PayloadUint8(offset: number) {
  * Decorator to map a 16-bit unsigned integer field (Big Endian).
  */
 export function PayloadUint16(offset: number) {
-  return function (target: any, propertyKey: string) {
-    const meta = getOrCreateMetadata(target);
-    meta.push({ propertyName: propertyKey, type: 'uint16', offset });
+  return function <T, V>(
+    target: ClassAccessorDecoratorTarget<T, V>,
+    context: ClassAccessorDecoratorContext<T, V> | ClassFieldDecoratorContext<T, V>
+  ) {
+    pushMetadata(context, { type: 'uint16', offset });
+    return target;
   };
 }
 
@@ -476,9 +523,12 @@ export function PayloadUint16(offset: number) {
  * Decorator to map a 24-bit unsigned integer field (Big Endian).
  */
 export function PayloadUint24(offset: number) {
-  return function (target: any, propertyKey: string) {
-    const meta = getOrCreateMetadata(target);
-    meta.push({ propertyName: propertyKey, type: 'uint24', offset });
+  return function <T, V>(
+    target: ClassAccessorDecoratorTarget<T, V>,
+    context: ClassAccessorDecoratorContext<T, V> | ClassFieldDecoratorContext<T, V>
+  ) {
+    pushMetadata(context, { type: 'uint24', offset });
+    return target;
   };
 }
 
@@ -486,19 +536,25 @@ export function PayloadUint24(offset: number) {
  * Decorator to map a 32-bit unsigned integer field (Big Endian).
  */
 export function PayloadUint32(offset: number) {
-  return function (target: any, propertyKey: string) {
-    const meta = getOrCreateMetadata(target);
-    meta.push({ propertyName: propertyKey, type: 'uint32', offset });
+  return function <T, V>(
+    target: ClassAccessorDecoratorTarget<T, V>,
+    context: ClassAccessorDecoratorContext<T, V> | ClassFieldDecoratorContext<T, V>
+  ) {
+    pushMetadata(context, { type: 'uint32', offset });
+    return target;
   };
 }
 
 /**
- * Decorator to map a fixed-length ASCII string field (e.g., PIN, Config Key).
+ * Decorator to map a fixed-length ASCII string field.
  */
 export function PayloadAsciiString(offset: number, length: number) {
-  return function (target: any, propertyKey: string) {
-    const meta = getOrCreateMetadata(target);
-    meta.push({ propertyName: propertyKey, type: 'ascii_string', offset, length });
+  return function <T, V>(
+    target: ClassAccessorDecoratorTarget<T, V>,
+    context: ClassAccessorDecoratorContext<T, V> | ClassFieldDecoratorContext<T, V>
+  ) {
+    pushMetadata(context, { type: 'ascii_string', offset, length });
+    return target;
   };
 }
 
@@ -506,9 +562,12 @@ export function PayloadAsciiString(offset: number, length: number) {
  * Decorator to map a 6-byte MAC Address field.
  */
 export function PayloadMacAddress(offset: number) {
-  return function (target: any, propertyKey: string) {
-    const meta = getOrCreateMetadata(target);
-    meta.push({ propertyName: propertyKey, type: 'mac_address', offset, length: 6 });
+  return function <T, V>(
+    target: ClassAccessorDecoratorTarget<T, V>,
+    context: ClassAccessorDecoratorContext<T, V> | ClassFieldDecoratorContext<T, V>
+  ) {
+    pushMetadata(context, { type: 'mac_address', offset, length: 6 });
+    return target;
   };
 }
 
@@ -516,28 +575,118 @@ export function PayloadMacAddress(offset: number) {
  * Decorator to map a fixed-length Hexadecimal string field.
  */
 export function PayloadHexString(offset: number, length: number) {
-  return function (target: any, propertyKey: string) {
-    const meta = getOrCreateMetadata(target);
-    meta.push({ propertyName: propertyKey, type: 'hex_string', offset, length });
+  return function <T, V>(
+    target: ClassAccessorDecoratorTarget<T, V>,
+    context: ClassAccessorDecoratorContext<T, V> | ClassFieldDecoratorContext<T, V>
+  ) {
+    pushMetadata(context, { type: 'hex_string', offset, length });
+    return target;
   };
 }
 
 /**
  * Decorator to map and validate a 6-character Boks PIN code field.
+ * Injects a setter that validates and formats the PIN using the native JS #private storage.
  */
 export function PayloadPinCode(offset: number) {
-  return function (target: any, propertyKey: string) {
-    const meta = getOrCreateMetadata(target);
-    meta.push({ propertyName: propertyKey, type: 'pin_code', offset, length: 6 });
+  return function <T, V extends string>(
+    target: ClassAccessorDecoratorTarget<T, V>,
+    context: ClassAccessorDecoratorContext<T, V>
+  ) {
+    pushMetadata(context, { type: 'pin_code', offset, length: 6 });
+
+    return {
+      get(this: T) {
+        return target.get.call(this);
+      },
+      set(this: T, val: V) {
+        if (val === undefined || val === null) {
+          target.set.call(this, val);
+          return;
+        }
+        const formatted = typeof val === 'string' ? val.toUpperCase() : String(val).toUpperCase();
+        if (formatted.length !== 6) {
+          throw new BoksProtocolError(
+            BoksProtocolErrorId.INVALID_PIN_FORMAT,
+            'PIN must be exactly 6 characters'
+          );
+        }
+        for (let i = 0; i < 6; i++) {
+          const c = formatted.charCodeAt(i);
+          if ((c < 48 || c > 57) && c !== 65 && c !== 66 && c !== 97 && c !== 98) {
+            throw new BoksProtocolError(
+              BoksProtocolErrorId.INVALID_PIN_FORMAT,
+              'PIN must contain only 0-9, A, B'
+            );
+          }
+        }
+        target.set.call(this, formatted as V);
+      },
+      init(this: T, initialValue: V) {
+        // Initializer triggers during class instantiation when auto-accessors are set up.
+        // If there's an initial value (e.g., accessor pin = '123456'), we validate it.
+        // However, in our classes we don't initialize inline, so initialValue is likely undefined.
+        if (initialValue !== undefined && initialValue !== null) {
+          const formatted =
+            typeof initialValue === 'string'
+              ? initialValue.toUpperCase()
+              : String(initialValue).toUpperCase();
+          return formatted as V;
+        }
+        return initialValue;
+      }
+    };
   };
 }
 
 /**
  * Decorator to map and validate an 8-character Boks Configuration Key field.
+ * Injects a setter that validates and formats the Config Key using the native JS #private storage.
  */
 export function PayloadConfigKey(offset: number) {
-  return function (target: any, propertyKey: string) {
-    const meta = getOrCreateMetadata(target);
-    meta.push({ propertyName: propertyKey, type: 'config_key', offset, length: 8 });
+  return function <T, V extends string>(
+    target: ClassAccessorDecoratorTarget<T, V>,
+    context: ClassAccessorDecoratorContext<T, V>
+  ) {
+    pushMetadata(context, { type: 'config_key', offset, length: 8 });
+
+    return {
+      get(this: T) {
+        return target.get.call(this);
+      },
+      set(this: T, val: V) {
+        if (val === undefined || val === null) {
+          target.set.call(this, val);
+          return;
+        }
+        const formatted = typeof val === 'string' ? val.toUpperCase() : String(val).toUpperCase();
+        if (formatted.length !== 8) {
+          throw new BoksProtocolError(
+            BoksProtocolErrorId.INVALID_CONFIG_KEY,
+            'Config Key must be exactly 8 characters'
+          );
+        }
+        for (let i = 0; i < 8; i++) {
+          const c = formatted.charCodeAt(i);
+          if ((c < 48 || c > 57) && (c < 65 || c > 70) && (c < 97 || c > 102)) {
+            throw new BoksProtocolError(
+              BoksProtocolErrorId.INVALID_CONFIG_KEY,
+              'Config Key must contain only hex characters'
+            );
+          }
+        }
+        target.set.call(this, formatted as V);
+      },
+      init(this: T, initialValue: V) {
+        if (initialValue !== undefined && initialValue !== null) {
+          const formatted =
+            typeof initialValue === 'string'
+              ? initialValue.toUpperCase()
+              : String(initialValue).toUpperCase();
+          return formatted as V;
+        }
+        return initialValue;
+      }
+    };
   };
 }

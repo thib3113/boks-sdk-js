@@ -16,7 +16,7 @@
     "noImplicitReturns": true,
     "skipLibCheck": true,
     "declaration": true,
-    "experimentalDecorators": true,
+    "experimentalDecorators": false,
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"]

@@ -24,13 +24,13 @@ export class CreateMasterCodePacket extends AuthPacket {
   }
 
   @PayloadConfigKey(0)
-  public readonly configKeyStr: string;
+  public accessor configKeyStr: string;
 
   @PayloadPinCode(8)
-  public readonly pin: string;
+  public accessor pin: string;
 
   @PayloadUint8(14)
-  public readonly index: number;
+  public accessor index: number;
 
   constructor(props: CreateMasterCodePacketProps) {
     super(props.configKey);

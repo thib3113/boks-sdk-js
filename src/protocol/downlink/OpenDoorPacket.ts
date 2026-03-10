@@ -13,7 +13,7 @@ export class OpenDoorPacket extends BoksPacket {
   static readonly opcode = BoksOpcode.OPEN_DOOR;
 
   @PayloadPinCode(0)
-  public readonly pin: string;
+  public accessor pin: string;
 
   get opcode() {
     return OpenDoorPacket.opcode;
