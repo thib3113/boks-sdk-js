@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * A class decorator that seals the constructor and its prototype.
  * Sealing prevents new properties from being added and existing properties from being removed.
@@ -6,35 +5,18 @@
  * if they are writable.
  * This helps prevent prototype pollution attacks and unauthorized extensions of sensitive objects.
  */
-
-export function sealed<T extends { prototype: unknown }>(value: T, context?: any): T {
-  if (context && context.addInitializer) {
-    context.addInitializer(function () {
-      if (!(value as any)[Symbol.for('Symbol.metadata')]) {
-        (value as any)[Symbol.for('Symbol.metadata')] = Object.create(null);
-      }
-      Object.seal(value);
-      Object.seal(value.prototype);
-    });
-    return value;
-  }
-  Object.seal(value);
-  Object.seal(value.prototype);
-  return value;
+export function sealed(constructor: { prototype: unknown }) {
+  Object.seal(constructor);
+  Object.seal(constructor.prototype);
 }
 
-export function freeze<T extends { prototype: unknown }>(value: T, context?: any): T {
-  if (context && context.addInitializer) {
-    context.addInitializer(function () {
-      if (!(value as any)[Symbol.for('Symbol.metadata')]) {
-        (value as any)[Symbol.for('Symbol.metadata')] = Object.create(null);
-      }
-      Object.freeze(value);
-      Object.freeze(value.prototype);
-    });
-    return value;
-  }
-  Object.freeze(value);
-  Object.freeze(value.prototype);
-  return value;
+/**
+ * A class decorator that deeply freezes the constructor and its prototype.
+ * Freezing makes the object completely immutable: no new properties can be added,
+ * existing properties cannot be removed, and existing properties cannot be modified.
+ * This is useful for static registries or configuration classes.
+ */
+export function freeze(constructor: { prototype: unknown }) {
+  Object.freeze(constructor);
+  Object.freeze(constructor.prototype);
 }

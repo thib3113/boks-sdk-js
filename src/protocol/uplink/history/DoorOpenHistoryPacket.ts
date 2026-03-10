@@ -27,7 +27,6 @@ export class DoorOpenHistoryPacket extends BoksHistoryEvent {
   constructor(props: DoorOpenHistoryPacketProps) {
     super(DoorOpenHistoryPacket.opcode, props.age, props.rawPayload);
     this.parsedAge = props.age;
-    PayloadMapper.validate(this);
   }
 
   static fromPayload(payload: Uint8Array): DoorOpenHistoryPacket {

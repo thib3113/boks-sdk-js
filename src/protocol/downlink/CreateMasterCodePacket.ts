@@ -55,12 +55,11 @@ export class CreateMasterCodePacket extends AuthPacket {
 
   constructor(props: CreateMasterCodePacketProps) {
     super(props.configKey);
-    this.configKeyStr = props.configKey ? props.configKey.toUpperCase() : props.configKey;
-    this.pin = props.pin ? props.pin.toUpperCase() : props.pin;
+    this.configKeyStr = props.configKey;
+    this.pin = props.pin;
     this.index = props.index;
 
     validateMasterCodeIndex(this.index);
-    PayloadMapper.validate(this);
   }
 
   static fromPayload(payload: Uint8Array): CreateMasterCodePacket {

@@ -29,8 +29,7 @@ export class OpenDoorPacket extends BoksPacket {
   constructor(props: OpenDoorPacketProps) {
     super();
     // BoksPacketBase's formatPin is protected, but we can do uppercase here
-    this.pin = props.pin ? props.pin.toUpperCase() : props.pin;
-    PayloadMapper.validate(this);
+    this.pin = props.pin;
   }
 
   static fromPayload(payload: Uint8Array): OpenDoorPacket {
