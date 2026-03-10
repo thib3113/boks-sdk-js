@@ -544,7 +544,12 @@ export function PayloadPinCode(offset: number) {
     if (_descriptor && _descriptor.set) {
       const originalSet = _descriptor.set;
       _descriptor.set = function (val: any) {
-        if (val === undefined || val === null) { throw new BoksProtocolError(BoksProtocolErrorId.INVALID_VALUE, 'Required field cannot be undefined'); }
+        if (val === undefined || val === null) {
+          throw new BoksProtocolError(
+            BoksProtocolErrorId.INVALID_VALUE,
+            'Required field cannot be undefined'
+          );
+        }
         const formatted = typeof val === 'string' ? val.toUpperCase() : String(val).toUpperCase();
         if (formatted.length !== 6) {
           throw new BoksProtocolError(
@@ -579,7 +584,12 @@ export function PayloadConfigKey(offset: number) {
     if (_descriptor && _descriptor.set) {
       const originalSet = _descriptor.set;
       _descriptor.set = function (val: any) {
-        if (val === undefined || val === null) { throw new BoksProtocolError(BoksProtocolErrorId.INVALID_VALUE, 'Required field cannot be undefined'); }
+        if (val === undefined || val === null) {
+          throw new BoksProtocolError(
+            BoksProtocolErrorId.INVALID_VALUE,
+            'Required field cannot be undefined'
+          );
+        }
         const formatted = typeof val === 'string' ? val.toUpperCase() : String(val).toUpperCase();
         if (formatted.length !== 8) {
           throw new BoksProtocolError(
@@ -602,7 +612,6 @@ export function PayloadConfigKey(offset: number) {
   };
 }
 
-
 /**
  * Decorator to map an 8-bit unsigned integer field specifically for a Master Code Index.
  * Injects a setter that validates the index range.
@@ -616,7 +625,10 @@ export function PayloadMasterCodeIndex(offset: number) {
       const originalSet = _descriptor.set;
       _descriptor.set = function (val: any) {
         if (val === undefined || val === null) {
-          throw new BoksProtocolError(BoksProtocolErrorId.INVALID_VALUE, 'Required field cannot be undefined');
+          throw new BoksProtocolError(
+            BoksProtocolErrorId.INVALID_VALUE,
+            'Required field cannot be undefined'
+          );
         }
         validateMasterCodeIndex(val);
         originalSet.call(this, val);
