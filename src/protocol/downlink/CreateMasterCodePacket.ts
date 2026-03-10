@@ -1,7 +1,17 @@
 import { AuthPacket } from '@/protocol/downlink/_AuthPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
-import { writeConfigKeyToBuffer, readPinFromBuffer, writePinToBuffer } from '@/utils/converters';
-import { validateMasterCodeIndex } from '@/utils/validation';
+import {
+  PayloadMapper,
+  PayloadPinCode,
+  PayloadConfigKey,
+  PayloadMasterCodeIndex
+} from '@/protocol/payload-mapper';
+
+export interface CreateMasterCodePacketProps {
+  configKey: string;
+  index: number;
+  pin: string;
+}
 
 /**
  * Command to create a permanent master code at a specific index.
@@ -12,33 +22,58 @@ export class CreateMasterCodePacket extends AuthPacket {
     return CreateMasterCodePacket.opcode;
   }
 
-  constructor(
-    configKey: string,
-    public readonly index: number,
-    public readonly pin: string
-  ) {
-    super(configKey);
-    validateMasterCodeIndex(index);
-    this.pin = this.formatPin(pin);
+  #configKeyStr!: string;
+
+  @PayloadConfigKey(0)
+  public get configKeyStr(): string {
+    return this.#configKeyStr;
+  }
+  public set configKeyStr(value: string) {
+    this.#configKeyStr = value;
+  }
+
+  #pin!: string;
+
+  @PayloadPinCode(8)
+  public get pin(): string {
+    return this.#pin;
+  }
+  public set pin(value: string) {
+    this.#pin = value;
+  }
+
+  #index!: number;
+
+  @PayloadMasterCodeIndex(14)
+  public get index(): number {
+    return this.#index;
+  }
+  public set index(value: number) {
+    this.#index = value;
+  }
+
+  constructor(props: CreateMasterCodePacketProps) {
+    super(props.configKey);
+    this.configKeyStr = props.configKey;
+    this.pin = props.pin;
+    this.index = props.index;
   }
 
   static fromPayload(payload: Uint8Array): CreateMasterCodePacket {
-    const configKey = AuthPacket.extractConfigKey(payload);
-    const pin = readPinFromBuffer(payload, 8);
-    let index = 0;
-    if (payload.length > 14) {
-      index = payload[14];
+    let safePayload = payload;
+    if (payload.length === 14) {
+      safePayload = new Uint8Array(15);
+      safePayload.set(payload);
     }
-    return new CreateMasterCodePacket(configKey, index, pin);
+    const data = PayloadMapper.parse(CreateMasterCodePacket, safePayload);
+    return new CreateMasterCodePacket({
+      configKey: data.configKeyStr as string,
+      index: (data.index as number) || 0,
+      pin: data.pin as string
+    });
   }
 
   toPayload(): Uint8Array {
-    const payload = new Uint8Array(8 + 6 + 1);
-    writeConfigKeyToBuffer(payload, 0, this.configKey);
-
-    writePinToBuffer(payload, 8, this.pin);
-
-    payload[14] = this.index;
-    return payload;
+    return PayloadMapper.serialize(this);
   }
 }

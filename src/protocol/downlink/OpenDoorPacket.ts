@@ -1,7 +1,10 @@
 import { BoksPacket } from '@/protocol/_BoksPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
-import { readPinFromBuffer, writePinToBuffer } from '@/utils/converters';
-import { validatePinCode } from '@/utils/validation';
+import { PayloadMapper, PayloadPinCode } from '@/protocol/payload-mapper';
+
+export interface OpenDoorPacketProps {
+  pin: string;
+}
 
 /**
  * Command to open the door with a 6-character PIN.
@@ -9,23 +12,32 @@ import { validatePinCode } from '@/utils/validation';
 export class OpenDoorPacket extends BoksPacket {
   static readonly opcode = BoksOpcode.OPEN_DOOR;
 
+  #pin!: string;
+
+  @PayloadPinCode(0)
+  public get pin(): string {
+    return this.#pin;
+  }
+  public set pin(value: string) {
+    this.#pin = value;
+  }
+
   get opcode() {
     return OpenDoorPacket.opcode;
   }
 
-  constructor(public readonly pin: string) {
+  constructor(props: OpenDoorPacketProps) {
     super();
-    this.pin = this.formatPin(pin);
-    validatePinCode(this.pin);
+    // BoksPacketBase's formatPin is protected, but we can do uppercase here
+    this.pin = props.pin;
   }
 
   static fromPayload(payload: Uint8Array): OpenDoorPacket {
-    return new OpenDoorPacket(readPinFromBuffer(payload, 0));
+    const data = PayloadMapper.parse(OpenDoorPacket, payload);
+    return new OpenDoorPacket({ pin: data.pin as string });
   }
 
   toPayload(): Uint8Array {
-    const payload = new Uint8Array(6);
-    writePinToBuffer(payload, 0, this.pin);
-    return payload;
+    return PayloadMapper.serialize(this);
   }
 }
