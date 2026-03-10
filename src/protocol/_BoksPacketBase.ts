@@ -1,4 +1,5 @@
 import { BoksOpcode, EMPTY_BUFFER } from '@/protocol/constants';
+import { PayloadMapper } from '@/protocol/payload-mapper';
 import { calculateChecksum, bytesToHex } from '@/utils/converters';
 import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';
 import {
@@ -25,7 +26,9 @@ export abstract class BoksPacket {
   protected rawPayload: Uint8Array = EMPTY_BUFFER;
 
   abstract get opcode(): BoksOpcode;
-  abstract toPayload(): Uint8Array;
+  toPayload(): Uint8Array {
+    return PayloadMapper.serialize(this);
+  }
 
   /**
    * Static factory method to create an instance from a payload.

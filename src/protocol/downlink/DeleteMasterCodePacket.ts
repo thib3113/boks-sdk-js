@@ -1,6 +1,6 @@
 import { AuthPacket } from '@/protocol/downlink/_AuthPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
-import { writeConfigKeyToBuffer } from '@/utils/converters';
+import { PayloadMapper, PayloadMasterCodeIndex } from '@/protocol/payload-mapper';
 import { validateMasterCodeIndex } from '@/utils/validation';
 
 /**
@@ -12,27 +12,22 @@ export class DeleteMasterCodePacket extends AuthPacket {
     return DeleteMasterCodePacket.opcode;
   }
 
-  constructor(
-    configKey: string,
-    public readonly index: number
-  ) {
+  @PayloadMasterCodeIndex(8)
+  public accessor index!: number;
+
+  constructor(configKey: string, index: number) {
     super(configKey);
     validateMasterCodeIndex(index);
+    this.index = index;
   }
 
   static fromPayload(payload: Uint8Array): DeleteMasterCodePacket {
-    const configKey = AuthPacket.extractConfigKey(payload);
-    let index = 0;
-    if (payload.length > 8) {
-      index = payload[8];
+    let safePayload = payload;
+    if (payload.length === 8) {
+      safePayload = new Uint8Array(9);
+      safePayload.set(payload);
     }
-    return new DeleteMasterCodePacket(configKey, index);
-  }
-
-  toPayload(): Uint8Array {
-    const payload = new Uint8Array(8 + 1);
-    writeConfigKeyToBuffer(payload, 0, this.configKey);
-    payload[8] = this.index;
-    return payload;
+    const data = PayloadMapper.parse(DeleteMasterCodePacket, safePayload);
+    return new DeleteMasterCodePacket(data.configKey as string, data.index as number);
   }
 }

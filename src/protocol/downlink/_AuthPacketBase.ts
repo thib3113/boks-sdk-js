@@ -1,13 +1,15 @@
 import { BoksPacket } from '@/protocol/_BoksPacketBase';
 import { sealed } from '@/utils/security';
 import { readConfigKeyFromBuffer } from '@/utils/converters';
+import { PayloadConfigKey } from '@/protocol/payload-mapper';
 
 /**
  * Base for packets requiring authentication (Config Key)
  */
 @sealed
 export abstract class AuthPacket extends BoksPacket {
-  public readonly configKey: string;
+  @PayloadConfigKey(0)
+  public accessor configKey!: string;
 
   constructor(configKey: string) {
     super();

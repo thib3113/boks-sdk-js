@@ -1,11 +1,6 @@
 import { AuthPacket } from '@/protocol/downlink/_AuthPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
-import {
-  PayloadMapper,
-  PayloadPinCode,
-  PayloadConfigKey,
-  PayloadMasterCodeIndex
-} from '@/protocol/payload-mapper';
+import { PayloadMapper, PayloadPinCode, PayloadMasterCodeIndex } from '@/protocol/payload-mapper';
 
 export interface CreateMasterCodePacketProps {
   configKey: string;
@@ -22,39 +17,14 @@ export class CreateMasterCodePacket extends AuthPacket {
     return CreateMasterCodePacket.opcode;
   }
 
-  #configKeyStr!: string;
-
-  @PayloadConfigKey(0)
-  public get configKeyStr(): string {
-    return this.#configKeyStr;
-  }
-  public set configKeyStr(value: string) {
-    this.#configKeyStr = value;
-  }
-
-  #pin!: string;
-
   @PayloadPinCode(8)
-  public get pin(): string {
-    return this.#pin;
-  }
-  public set pin(value: string) {
-    this.#pin = value;
-  }
-
-  #index!: number;
+  public accessor pin!: string;
 
   @PayloadMasterCodeIndex(14)
-  public get index(): number {
-    return this.#index;
-  }
-  public set index(value: number) {
-    this.#index = value;
-  }
+  public accessor index!: number;
 
   constructor(props: CreateMasterCodePacketProps) {
     super(props.configKey);
-    this.configKeyStr = props.configKey;
     this.pin = props.pin;
     this.index = props.index;
   }
@@ -67,13 +37,9 @@ export class CreateMasterCodePacket extends AuthPacket {
     }
     const data = PayloadMapper.parse(CreateMasterCodePacket, safePayload);
     return new CreateMasterCodePacket({
-      configKey: data.configKeyStr as string,
+      configKey: data.configKey as string,
       index: (data.index as number) || 0,
       pin: data.pin as string
     });
-  }
-
-  toPayload(): Uint8Array {
-    return PayloadMapper.serialize(this);
   }
 }

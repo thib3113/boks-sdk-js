@@ -1,6 +1,5 @@
 import { AuthPacket } from '@/protocol/downlink/_AuthPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
-import { writeConfigKeyToBuffer } from '@/utils/converters';
 
 /**
  * Command to start NFC scanning for registration.
@@ -18,11 +17,5 @@ export class RegisterNfcTagScanStartPacket extends AuthPacket {
   static fromPayload(payload: Uint8Array): RegisterNfcTagScanStartPacket {
     const configKey = AuthPacket.extractConfigKey(payload);
     return new RegisterNfcTagScanStartPacket(configKey);
-  }
-
-  toPayload(): Uint8Array {
-    const payload = new Uint8Array(8);
-    writeConfigKeyToBuffer(payload, 0, this.configKey);
-    return payload;
   }
 }

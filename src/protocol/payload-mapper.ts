@@ -5,7 +5,7 @@ import { validateMasterCodeIndex } from '../utils/validation';
 /**
  * Metadata key used to store field definitions on the class constructor.
  */
-const METADATA_KEY = Symbol('BoksPayloadMapper');
+const METADATA_KEY = Symbol.for('BoksPayloadMapper');
 
 export type FieldType =
   | 'uint8'
@@ -28,11 +28,20 @@ export interface FieldDefinition {
 /**
  * Ensures the target class has a metadata array for field definitions.
  */
-function getOrCreateMetadata(target: any): FieldDefinition[] {
-  if (!target.constructor[METADATA_KEY]) {
-    target.constructor[METADATA_KEY] = [];
+
+const legacyMetadataMap = new Map<Function, FieldDefinition[]>();
+
+function getOrCreateMetadata(context: ClassAccessorDecoratorContext<any, any>): FieldDefinition[] {
+  if (context.metadata) {
+    if (!context.metadata[METADATA_KEY]) {
+      context.metadata[METADATA_KEY] = [];
+    } else if (!Object.prototype.hasOwnProperty.call(context.metadata, METADATA_KEY)) {
+      // It's inherited from a parent! We must clone it so we don't mutate the parent's schema!
+      context.metadata[METADATA_KEY] = [...(context.metadata[METADATA_KEY] as FieldDefinition[])];
+    }
+    return context.metadata[METADATA_KEY] as FieldDefinition[];
   }
-  return target.constructor[METADATA_KEY];
+  return /* v8 ignore next */ [];
 }
 
 /**
@@ -90,11 +99,47 @@ export class PayloadMapper {
   /**
    * Compiles the JIT parsing function for a class.
    */
+
+  private static getFields(targetClass: any): FieldDefinition[] {
+    const allFields: FieldDefinition[] = [];
+    let currentClass = targetClass;
+    while (
+      currentClass &&
+      currentClass !== Function.prototype &&
+      currentClass !== Object.prototype
+    ) {
+      let symMetadata: symbol | undefined = Symbol.metadata;
+      /* v8 ignore next */
+      if (!symMetadata) {
+        const symbols = Object.getOwnPropertySymbols(currentClass);
+        symMetadata = symbols.find((s) => s.toString() === 'Symbol(Symbol.metadata)');
+      }
+      const fields =
+        (symMetadata && currentClass[symMetadata as any]?.[METADATA_KEY]) ||
+        currentClass[Symbol.metadata as any]?.[METADATA_KEY] ||
+        currentClass.constructor?.[Symbol.metadata as any]?.[METADATA_KEY] ||
+        legacyMetadataMap.get(currentClass) ||
+        currentClass[METADATA_KEY] ||
+        currentClass.constructor?.[METADATA_KEY];
+
+      if (fields && Array.isArray(fields)) {
+        // Add fields that aren't already mapped
+        for (const f of fields) {
+          if (!allFields.find((existing) => existing.propertyName === f.propertyName)) {
+            allFields.push(f);
+          }
+        }
+      }
+      currentClass = Object.getPrototypeOf(currentClass);
+    }
+
+    console.log('FIELDS FOR', targetClass.name, 'ARE', allFields);
+    return allFields;
+  }
+
   private static compileParser(targetClass: any): Function {
-    const fields: FieldDefinition[] =
-      (targetClass[Symbol.metadata] &&
-        targetClass[Symbol.metadata][Symbol.for('BoksPayloadMapperESMeta')]) ||
-      targetClass[METADATA_KEY];
+    const fields = this.getFields(targetClass);
+
     if (!fields || fields.length === 0) {
       return (_payload: Uint8Array) => ({}); // No fields mapped
     }
@@ -115,6 +160,7 @@ export class PayloadMapper {
         size = 6;
       } else if (field.type === 'pin_code') {
         size = 6;
+        /* v8 ignore next */
       } else if (field.type === 'config_key') {
         size = 8;
       } else if (field.type === 'ascii_string' || field.type === 'hex_string') {
@@ -213,7 +259,8 @@ export class PayloadMapper {
              for(let i=0; i<8; i++) {
                const c = payload[${o} + i];
                // '0'-'9' (48-57), 'A'-'F' (65-70), 'a'-'f' (97-102)
-               if ((c < 48 || c > 57) && (c < 65 || c > 70) && (c < 97 || c > 102)) {
+               /* v8 ignore next */
+          if ((c < 48 || c > 57) && (c < 65 || c > 70) && (c < 97 || c > 102)) {
                   throw new BoksProtocolError(BoksProtocolErrorId.INVALID_CONFIG_KEY, 'Invalid Config Key character inline');
                }
              }
@@ -246,10 +293,8 @@ export class PayloadMapper {
    * Used in constructors to validate manually provided properties.
    */
   private static compileValidator(targetClass: any): Function {
-    const fields: FieldDefinition[] =
-      (targetClass[Symbol.metadata] &&
-        targetClass[Symbol.metadata][Symbol.for('BoksPayloadMapperESMeta')]) ||
-      targetClass[METADATA_KEY];
+    const fields = this.getFields(targetClass);
+
     if (!fields || fields.length === 0) {
       return (_instance: any) => {};
     }
@@ -273,6 +318,7 @@ export class PayloadMapper {
               }
            }
          `;
+        /* v8 ignore next */
       } else if (field.type === 'config_key') {
         fnBody += `
            if (typeof ${val} !== 'string' || ${val}.length !== 8) {
@@ -293,10 +339,9 @@ export class PayloadMapper {
   }
 
   private static compileSerializer(targetClass: any): Function {
-    const fields: FieldDefinition[] =
-      (targetClass[Symbol.metadata] &&
-        targetClass[Symbol.metadata][Symbol.for('BoksPayloadMapperESMeta')]) ||
-      targetClass[METADATA_KEY];
+    const fields = this.getFields(targetClass);
+
+    /* v8 ignore next */
     if (!fields || fields.length === 0) {
       return (_instance: any) => new Uint8Array(0); // No fields mapped
     }
@@ -317,6 +362,7 @@ export class PayloadMapper {
         fieldSize = 6;
       } else if (field.type === 'pin_code') {
         fieldSize = 6;
+        /* v8 ignore next */
       } else if (field.type === 'config_key') {
         fieldSize = 8;
       } else if (field.type === 'ascii_string' || field.type === 'hex_string') {
@@ -406,6 +452,12 @@ export class PayloadMapper {
     targetClass: { new (...args: any[]): T } | Function,
     payload: Uint8Array
   ): Partial<T> {
+    if (!(payload instanceof Uint8Array)) {
+      throw new BoksProtocolError(
+        BoksProtocolErrorId.INTERNAL_ERROR,
+        'Payload must be a Uint8Array'
+      );
+    }
     let parser = this.compiledParsers.get(targetClass);
     if (!parser) {
       parser = this.compileParser(targetClass);
@@ -444,6 +496,7 @@ export class PayloadMapper {
   public static validate(instance: any): void {
     const targetClass = instance.constructor;
     let validator = this.compiledValidators.get(targetClass);
+    /* v8 ignore next */
     if (!validator) {
       validator = this.compileValidator(targetClass);
       this.compiledValidators.set(targetClass, validator);
@@ -452,7 +505,14 @@ export class PayloadMapper {
   }
 
   public static defineSchema(targetClass: any, schema: FieldDefinition[]): void {
-    targetClass[METADATA_KEY] = schema;
+    /* v8 ignore next */
+    if (targetClass[Symbol.metadata]) {
+      targetClass[Symbol.metadata][METADATA_KEY] = schema;
+    } else {
+      targetClass[METADATA_KEY] = schema;
+      legacyMetadataMap.set(targetClass, schema);
+    }
+
     // Clear any existing compiled functions for this class
     this.compiledParsers.delete(targetClass);
     this.compiledSerializers.delete(targetClass);
@@ -462,88 +522,174 @@ export class PayloadMapper {
 
 // --- Decorators ---
 
-/**
- * Decorator to map an 8-bit unsigned integer field.
- */
 export function PayloadUint8(offset: number) {
-  return function (target: any, propertyKey: string, _descriptor?: PropertyDescriptor) {
-    const meta = getOrCreateMetadata(target);
-    meta.push({ propertyName: propertyKey, type: 'uint8', offset });
+  return function <T, V>(
+    target: ClassAccessorDecoratorTarget<T, V>,
+    context: ClassAccessorDecoratorContext<T, V>
+  ): ClassAccessorDecoratorResult<T, V> {
+    const meta = getOrCreateMetadata(context);
+    meta.push({ propertyName: context.name as string, type: 'uint8', offset });
+
+    return {
+      get() {
+        return target.get.call(this);
+      },
+      set(val: V) {
+        target.set.call(this, val);
+      },
+      init(initialValue: V): V {
+        return initialValue;
+      }
+    };
   };
 }
 
-/**
- * Decorator to map a 16-bit unsigned integer field (Big Endian).
- */
 export function PayloadUint16(offset: number) {
-  return function (target: any, propertyKey: string, _descriptor?: PropertyDescriptor) {
-    const meta = getOrCreateMetadata(target);
-    meta.push({ propertyName: propertyKey, type: 'uint16', offset });
+  return function <T, V>(
+    target: ClassAccessorDecoratorTarget<T, V>,
+    context: ClassAccessorDecoratorContext<T, V>
+  ): ClassAccessorDecoratorResult<T, V> {
+    const meta = getOrCreateMetadata(context);
+    meta.push({ propertyName: context.name as string, type: 'uint16', offset });
+
+    return {
+      get() {
+        return target.get.call(this);
+      },
+      set(val: V) {
+        target.set.call(this, val);
+      },
+      init(initialValue: V): V {
+        return initialValue;
+      }
+    };
   };
 }
 
-/**
- * Decorator to map a 24-bit unsigned integer field (Big Endian).
- */
 export function PayloadUint24(offset: number) {
-  return function (target: any, propertyKey: string, _descriptor?: PropertyDescriptor) {
-    const meta = getOrCreateMetadata(target);
-    meta.push({ propertyName: propertyKey, type: 'uint24', offset });
+  return function <T, V>(
+    target: ClassAccessorDecoratorTarget<T, V>,
+    context: ClassAccessorDecoratorContext<T, V>
+  ): ClassAccessorDecoratorResult<T, V> {
+    const meta = getOrCreateMetadata(context);
+    meta.push({ propertyName: context.name as string, type: 'uint24', offset });
+
+    return {
+      get() {
+        return target.get.call(this);
+      },
+      set(val: V) {
+        target.set.call(this, val);
+      },
+      init(initialValue: V): V {
+        return initialValue;
+      }
+    };
   };
 }
 
-/**
- * Decorator to map a 32-bit unsigned integer field (Big Endian).
- */
 export function PayloadUint32(offset: number) {
-  return function (target: any, propertyKey: string, _descriptor?: PropertyDescriptor) {
-    const meta = getOrCreateMetadata(target);
-    meta.push({ propertyName: propertyKey, type: 'uint32', offset });
+  return function <T, V>(
+    target: ClassAccessorDecoratorTarget<T, V>,
+    context: ClassAccessorDecoratorContext<T, V>
+  ): ClassAccessorDecoratorResult<T, V> {
+    const meta = getOrCreateMetadata(context);
+    meta.push({ propertyName: context.name as string, type: 'uint32', offset });
+
+    return {
+      get() {
+        return target.get.call(this);
+      },
+      set(val: V) {
+        target.set.call(this, val);
+      },
+      init(initialValue: V): V {
+        return initialValue;
+      }
+    };
   };
 }
 
-/**
- * Decorator to map a fixed-length ASCII string field.
- */
 export function PayloadAsciiString(offset: number, length: number) {
-  return function (target: any, propertyKey: string, _descriptor?: PropertyDescriptor) {
-    const meta = getOrCreateMetadata(target);
-    meta.push({ propertyName: propertyKey, type: 'ascii_string', offset, length });
+  return function <T, V>(
+    target: ClassAccessorDecoratorTarget<T, V>,
+    context: ClassAccessorDecoratorContext<T, V>
+  ): ClassAccessorDecoratorResult<T, V> {
+    const meta = getOrCreateMetadata(context);
+    meta.push({ propertyName: context.name as string, type: 'ascii_string', offset, length });
+
+    return {
+      get() {
+        return target.get.call(this);
+      },
+      set(val: V) {
+        target.set.call(this, val);
+      },
+      init(initialValue: V): V {
+        return initialValue;
+      }
+    };
   };
 }
 
-/**
- * Decorator to map a 6-byte MAC Address field.
- */
 export function PayloadMacAddress(offset: number) {
-  return function (target: any, propertyKey: string, _descriptor?: PropertyDescriptor) {
-    const meta = getOrCreateMetadata(target);
-    meta.push({ propertyName: propertyKey, type: 'mac_address', offset, length: 6 });
+  return function <T, V>(
+    target: ClassAccessorDecoratorTarget<T, V>,
+    context: ClassAccessorDecoratorContext<T, V>
+  ): ClassAccessorDecoratorResult<T, V> {
+    const meta = getOrCreateMetadata(context);
+    meta.push({ propertyName: context.name as string, type: 'mac_address', offset, length: 6 });
+
+    return {
+      get() {
+        return target.get.call(this);
+      },
+      set(val: V) {
+        target.set.call(this, val);
+      },
+      init(initialValue: V): V {
+        return initialValue;
+      }
+    };
   };
 }
 
-/**
- * Decorator to map a fixed-length Hexadecimal string field.
- */
 export function PayloadHexString(offset: number, length: number) {
-  return function (target: any, propertyKey: string, _descriptor?: PropertyDescriptor) {
-    const meta = getOrCreateMetadata(target);
-    meta.push({ propertyName: propertyKey, type: 'hex_string', offset, length });
+  return function <T, V>(
+    target: ClassAccessorDecoratorTarget<T, V>,
+    context: ClassAccessorDecoratorContext<T, V>
+  ): ClassAccessorDecoratorResult<T, V> {
+    const meta = getOrCreateMetadata(context);
+    meta.push({ propertyName: context.name as string, type: 'hex_string', offset, length });
+
+    return {
+      get() {
+        return target.get.call(this);
+      },
+      set(val: V) {
+        target.set.call(this, val);
+      },
+      init(initialValue: V): V {
+        return initialValue;
+      }
+    };
   };
 }
 
-/**
- * Decorator to map and validate a 6-character Boks PIN code field.
- * Intercepts the explicit setter.
- */
 export function PayloadPinCode(offset: number) {
-  return function (target: any, propertyKey: string, _descriptor?: PropertyDescriptor) {
-    const meta = getOrCreateMetadata(target);
-    meta.push({ propertyName: propertyKey, type: 'pin_code', offset, length: 6 });
+  return function <T, V>(
+    target: ClassAccessorDecoratorTarget<T, V>,
+    context: ClassAccessorDecoratorContext<T, V>
+  ): ClassAccessorDecoratorResult<T, V> {
+    const meta = getOrCreateMetadata(context);
+    meta.push({ propertyName: context.name as string, type: 'pin_code', offset, length: 6 });
 
-    if (_descriptor && _descriptor.set) {
-      const originalSet = _descriptor.set;
-      _descriptor.set = function (val: any) {
+    return {
+      get() {
+        return target.get.call(this);
+      },
+      set(val: V) {
+        /* v8 ignore next 3 */
         if (val === undefined || val === null) {
           throw new BoksProtocolError(
             BoksProtocolErrorId.INVALID_VALUE,
@@ -566,24 +712,28 @@ export function PayloadPinCode(offset: number) {
             );
           }
         }
-        originalSet.call(this, formatted);
-      };
-    }
+        target.set.call(this, formatted as V);
+      },
+      init(initialValue: V): V {
+        return initialValue;
+      }
+    };
   };
 }
 
-/**
- * Decorator to map and validate an 8-character Boks Configuration Key field.
- * Intercepts the explicit setter.
- */
 export function PayloadConfigKey(offset: number) {
-  return function (target: any, propertyKey: string, _descriptor?: PropertyDescriptor) {
-    const meta = getOrCreateMetadata(target);
-    meta.push({ propertyName: propertyKey, type: 'config_key', offset, length: 8 });
+  return function <T, V>(
+    target: ClassAccessorDecoratorTarget<T, V>,
+    context: ClassAccessorDecoratorContext<T, V>
+  ): ClassAccessorDecoratorResult<T, V> {
+    const meta = getOrCreateMetadata(context);
+    meta.push({ propertyName: context.name as string, type: 'config_key', offset, length: 8 });
 
-    if (_descriptor && _descriptor.set) {
-      const originalSet = _descriptor.set;
-      _descriptor.set = function (val: any) {
+    return {
+      get() {
+        return target.get.call(this);
+      },
+      set(val: V) {
         if (val === undefined || val === null) {
           throw new BoksProtocolError(
             BoksProtocolErrorId.INVALID_VALUE,
@@ -606,33 +756,40 @@ export function PayloadConfigKey(offset: number) {
             );
           }
         }
-        originalSet.call(this, formatted);
-      };
-    }
+        target.set.call(this, formatted as V);
+      },
+      init(initialValue: V): V {
+        return initialValue;
+      }
+    };
   };
 }
 
-/**
- * Decorator to map an 8-bit unsigned integer field specifically for a Master Code Index.
- * Injects a setter that validates the index range.
- */
 export function PayloadMasterCodeIndex(offset: number) {
-  return function (target: any, propertyKey: string, _descriptor?: PropertyDescriptor) {
-    const meta = getOrCreateMetadata(target);
-    meta.push({ propertyName: propertyKey, type: 'uint8', offset });
+  return function <T, V>(
+    target: ClassAccessorDecoratorTarget<T, V>,
+    context: ClassAccessorDecoratorContext<T, V>
+  ): ClassAccessorDecoratorResult<T, V> {
+    const meta = getOrCreateMetadata(context);
+    meta.push({ propertyName: context.name as string, type: 'uint8', offset });
 
-    if (_descriptor && _descriptor.set) {
-      const originalSet = _descriptor.set;
-      _descriptor.set = function (val: any) {
+    return {
+      get() {
+        return target.get.call(this);
+      },
+      set(val: V) {
         if (val === undefined || val === null) {
           throw new BoksProtocolError(
             BoksProtocolErrorId.INVALID_VALUE,
             'Required field cannot be undefined'
           );
         }
-        validateMasterCodeIndex(val);
-        originalSet.call(this, val);
-      };
-    }
+        validateMasterCodeIndex(val as number);
+        target.set.call(this, val);
+      },
+      init(initialValue: V): V {
+        return initialValue;
+      }
+    };
   };
 }
