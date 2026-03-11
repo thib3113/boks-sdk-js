@@ -7,22 +7,22 @@ export class NfcOpeningHistoryPacket extends BoksHistoryEvent {
   static readonly opcode = BoksOpcode.LOG_EVENT_NFC_OPENING;
 
   @PayloadUint8(3)
-  public accessor parsedTagType: number = 0;
+  public accessor tagType: number = 0;
 
   @PayloadUint8(4)
-  public accessor parsedUidLength: number = 0;
+  public accessor uidLength: number = 0;
 
   @PayloadByteArray(5, 7)
   public accessor rawUidBytes: Uint8Array = new Uint8Array(0);
 
   constructor(
     age: number = 0,
-    public readonly tagType: number = 0,
+    tagType: number = 0,
     public readonly uid: string = '',
     rawPayload?: Uint8Array
   ) {
     super(NfcOpeningHistoryPacket.opcode, age, rawPayload);
-    this.parsedTagType = tagType;
+    this.tagType = tagType;
   }
 
   static fromPayload(payload: Uint8Array): NfcOpeningHistoryPacket {
@@ -30,7 +30,7 @@ export class NfcOpeningHistoryPacket extends BoksHistoryEvent {
 
     let uid = '';
     const offset = 5;
-    const uidLen = (data.parsedUidLength as number) || 0;
+    const uidLen = (data.uidLength as number) || 0;
 
     if (uidLen > 0 && payload.length >= offset + uidLen) {
       uid = bytesToHex(payload.subarray(offset, offset + uidLen));
@@ -38,7 +38,7 @@ export class NfcOpeningHistoryPacket extends BoksHistoryEvent {
 
     return new NfcOpeningHistoryPacket(
       data.age as number,
-      (data.parsedTagType as number) || 0,
+      (data.tagType as number) || 0,
       uid,
       payload
     );

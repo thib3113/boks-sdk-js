@@ -6,23 +6,15 @@ export class CodeKeyValidHistoryPacket extends BoksHistoryEvent {
   static readonly opcode = BoksOpcode.LOG_CODE_KEY_VALID;
 
   @PayloadPinCode(3)
-  public accessor parsedCode: string = '';
+  public accessor code: string = '';
 
-  constructor(
-    age: number = 0,
-    public readonly code: string = '',
-    rawPayload?: Uint8Array
-  ) {
+  constructor(age: number = 0, code: string = '', rawPayload?: Uint8Array) {
     super(CodeKeyValidHistoryPacket.opcode, age, rawPayload);
-    this.parsedCode = code;
+    this.code = code;
   }
 
   static fromPayload(payload: Uint8Array): CodeKeyValidHistoryPacket {
     const data = PayloadMapper.parse(CodeKeyValidHistoryPacket, payload);
-    return new CodeKeyValidHistoryPacket(
-      data.age as number,
-      (data.parsedCode as string) || '',
-      payload
-    );
+    return new CodeKeyValidHistoryPacket(data.age as number, (data.code as string) || '', payload);
   }
 }
