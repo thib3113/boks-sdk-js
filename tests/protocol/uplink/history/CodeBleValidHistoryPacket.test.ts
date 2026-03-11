@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { CodeBleValidHistoryPacket } from '@/protocol/uplink/history/CodeBleValidHistoryPacket';
 import { BoksOpcode } from '@/protocol/constants';
-import { stringToBytes } from '@/utils/converters';
 
 describe('CodeBleValidHistoryPacket', () => {
   it('should parse correctly with age and code', () => {

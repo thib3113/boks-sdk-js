@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { CodeKeyInvalidHistoryPacket } from '@/protocol/uplink/history/CodeKeyInvalidHistoryPacket';
 import { BoksOpcode } from '@/protocol/constants';
-import { stringToBytes } from '@/utils/converters';
 
 describe('CodeKeyInvalidHistoryPacket', () => {
   it('should parse correctly with age and code', () => {
