@@ -1,7 +1,6 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { NfcOpeningHistoryPacket } from '@/protocol/uplink/history/NfcOpeningHistoryPacket';
 import { BoksOpcode } from '@/protocol/constants';
-import { PayloadMapper } from '@/protocol/payload-mapper';
 import { BoksProtocolError } from '@/errors/BoksProtocolError';
 
 describe('NfcOpeningHistoryPacket', () => {
