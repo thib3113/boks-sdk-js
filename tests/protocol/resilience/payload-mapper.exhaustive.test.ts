@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { PayloadMapper, PayloadUint8, PayloadUint16, PayloadUint24, PayloadUint32, PayloadPinCode, PayloadConfigKey, PayloadAsciiString, PayloadMacAddress, PayloadHexString, PayloadMasterCodeIndex } from '@/protocol/payload-mapper';
+import { PayloadMapper, PayloadUint8, PayloadUint16, PayloadUint24, PayloadUint32, PayloadPinCode, PayloadConfigKey, PayloadAsciiString, PayloadMacAddress, PayloadHexString, PayloadMasterCodeIndex, PayloadBoolean, PayloadByteArray } from '@/protocol/payload-mapper';
 import { BoksProtocolError } from '@/errors/BoksProtocolError';
 
 describe('PayloadMapper Exhaustive Deterministic Tests', () => {
@@ -99,7 +99,46 @@ describe('PayloadMapper Exhaustive Deterministic Tests', () => {
     });
 
 
-    describe('Decorator Setter Validations (Coverage)', () => {
+
+  describe('New Custom Decorators (Boolean & ByteArray)', () => {
+    class CustomPacket {
+      @PayloadBoolean(0)
+      public accessor boolVal!: boolean;
+
+      @PayloadByteArray(1, 4)
+      public accessor byteVal!: Uint8Array;
+
+      constructor(boolVal: boolean, byteVal: Uint8Array) {
+        this.boolVal = boolVal;
+        this.byteVal = byteVal;
+      }
+    }
+
+    it('should correctly get and set Boolean and ByteArray', () => {
+      const packet = new CustomPacket(true, new Uint8Array([1, 2, 3, 4]));
+      expect(packet.boolVal).toBe(true);
+      expect(packet.byteVal).toEqual(new Uint8Array([1, 2, 3, 4]));
+
+      packet.boolVal = false;
+      expect(packet.boolVal).toBe(false);
+
+      packet.byteVal = new Uint8Array([5, 6, 7, 8]);
+      expect(packet.byteVal).toEqual(new Uint8Array([5, 6, 7, 8]));
+    });
+
+    it('should parse and serialize CustomPacket', () => {
+      const payload = new Uint8Array([0x01, 10, 20, 30, 40]);
+      const parsed = PayloadMapper.parse(CustomPacket, payload);
+      expect(parsed.boolVal).toBe(true);
+      expect(parsed.byteVal).toEqual(new Uint8Array([10, 20, 30, 40]));
+
+      const serialized = PayloadMapper.serialize(new CustomPacket(false, new Uint8Array([50, 60, 70, 80])));
+      expect(serialized[0]).toBe(0x00);
+      expect(serialized.subarray(1, 5)).toEqual(new Uint8Array([50, 60, 70, 80]));
+    });
+  });
+
+  describe('Decorator Setter Validations (Coverage)', () => {
 
         it('should coerce non-string values to string and validate', () => {
             const pkt = new ValidationPacket();
