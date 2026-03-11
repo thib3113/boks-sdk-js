@@ -415,9 +415,18 @@ export class PayloadMapper {
     for (const field of fields) {
       const o = field.offset;
       const prop = field.propertyName;
-      // We read the instance value. Missing values default to 0 for numbers, or empty string.
-      const val = `(instance['${prop}'] || 0)`;
-      const strVal = `(String(instance['${prop}'] || ''))`;
+      // Strict validation for missing fields
+      fnBody += `
+        if (instance['${prop}'] === undefined || instance['${prop}'] === null) {
+          throw new BoksProtocolError(
+            BoksProtocolErrorId.INVALID_VALUE,
+            'Missing required field: ${prop}'
+          );
+        }
+      `;
+
+      const val = `instance['${prop}']`;
+      const strVal = `String(instance['${prop}'])`;
 
       switch (field.type) {
         case 'uint8':
@@ -451,6 +460,8 @@ export class PayloadMapper {
           fnBody += `
             if (instance['${prop}'] && instance['${prop}'] instanceof Uint8Array) {
                payload.set(instance['${prop}'].subarray(0, ${field.length}), ${o});
+            } else {
+               throw new BoksProtocolError(BoksProtocolErrorId.INVALID_VALUE, 'Field ${prop} must be a Uint8Array');
             }
           `;
           break;
@@ -460,12 +471,12 @@ export class PayloadMapper {
           break;
         case 'pin_code':
           for (let i = 0; i < 6; i++) {
-            fnBody += `payload[${o + i}] = ${strVal}.length > ${i} ? ${strVal}.charCodeAt(${i}) : 48;\n`; // Default '0'
+            fnBody += `payload[${o + i}] = ${strVal}.charCodeAt(${i});\n`;
           }
           break;
         case 'config_key':
           for (let i = 0; i < 8; i++) {
-            fnBody += `payload[${o + i}] = ${strVal}.length > ${i} ? ${strVal}.charCodeAt(${i}) : 48;\n`; // Default '0'
+            fnBody += `payload[${o + i}] = ${strVal}.charCodeAt(${i});\n`;
           }
           break;
         case 'hex_string':

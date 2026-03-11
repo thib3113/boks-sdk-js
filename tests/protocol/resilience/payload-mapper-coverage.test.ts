@@ -1,3 +1,4 @@
+import { PayloadByteArray } from '@/protocol/payload-mapper';
 import { describe, expect, it } from 'vitest';
 import { PayloadMapper, PayloadConfigKey } from '@/protocol/payload-mapper';
 import { BoksProtocolError } from '@/errors/BoksProtocolError';
@@ -58,4 +59,27 @@ describe('PayloadMapper Coverage additions', () => {
           PayloadMapper.validate(inst); // triggers cached validation flow
       });
   });
+
+  describe('strict missing field validation in serializer', () => {
+      it('should throw BoksProtocolError when serializing an instance with missing required fields', () => {
+          class MissingFieldPacket {
+              @PayloadConfigKey(0)
+              public accessor key!: string;
+          }
+          const inst = new MissingFieldPacket();
+          expect(() => PayloadMapper.serialize(inst)).toThrowError(/Missing required field: key/);
+      });
+  });
 });
+
+  describe('strict Uint8Array validation in serializer for byte_array', () => {
+      it('should throw BoksProtocolError when serializing byte_array with non-Uint8Array data', () => {
+          class ByteArrayPacket {
+              @PayloadByteArray(0, 4)
+              public accessor data!: Uint8Array;
+          }
+          const inst = new ByteArrayPacket();
+          (inst as any).data = [1, 2, 3, 4]; // Incorrect type
+          expect(() => PayloadMapper.serialize(inst)).toThrowError(/must be a Uint8Array/);
+      });
+  });
