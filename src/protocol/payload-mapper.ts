@@ -16,7 +16,9 @@ export type FieldType =
   | 'mac_address'
   | 'hex_string'
   | 'pin_code'
-  | 'config_key';
+  | 'config_key'
+  | 'boolean'
+  | 'byte_array';
 
 export interface FieldDefinition {
   propertyName: string;
@@ -163,7 +165,11 @@ export class PayloadMapper {
         /* v8 ignore next */
       } else if (field.type === 'config_key') {
         size = 8;
-      } else if (field.type === 'ascii_string' || field.type === 'hex_string') {
+      } else if (
+        field.type === 'ascii_string' ||
+        field.type === 'hex_string' ||
+        field.type === 'byte_array'
+      ) {
         if (typeof field.length !== 'number') {
           throw new BoksProtocolError(
             BoksProtocolErrorId.INTERNAL_ERROR,
@@ -240,6 +246,12 @@ export class PayloadMapper {
           `;
           break;
         }
+        case 'boolean':
+          fnBody += `result['${prop}'] = payload[${o}] === 0x01;\n`;
+          break;
+        case 'byte_array':
+          fnBody += `result['${prop}'] = payload.subarray(${o}, ${o} + ${field.length});\n`;
+          break;
         case 'mac_address':
           // Reverse Little Endian to Big Endian (Standard Format: XX:XX:XX:XX:XX:XX)
           fnBody += `
@@ -376,7 +388,11 @@ export class PayloadMapper {
         /* v8 ignore next */
       } else if (field.type === 'config_key') {
         fieldSize = 8;
-      } else if (field.type === 'ascii_string' || field.type === 'hex_string') {
+      } else if (
+        field.type === 'ascii_string' ||
+        field.type === 'hex_string' ||
+        field.type === 'byte_array'
+      ) {
         fieldSize = field.length!;
       }
 
@@ -427,6 +443,16 @@ export class PayloadMapper {
           for (let i = 0; i < field.length!; i++) {
             fnBody += `payload[${o + i}] = ${strVal}.length > ${i} ? ${strVal}.charCodeAt(${i}) : 0;\n`;
           }
+          break;
+        case 'boolean':
+          fnBody += `payload[${o}] = instance['${prop}'] ? 0x01 : 0x00;\n`;
+          break;
+        case 'byte_array':
+          fnBody += `
+            if (instance['${prop}'] && instance['${prop}'] instanceof Uint8Array) {
+               payload.set(instance['${prop}'].subarray(0, ${field.length}), ${o});
+            }
+          `;
           break;
         case 'mac_address':
           // Reverse Mac formatting not yet supported for serialization in POC,
@@ -796,6 +822,50 @@ export function PayloadMasterCodeIndex(offset: number) {
           );
         }
         validateMasterCodeIndex(val as number);
+        target.set.call(this, val);
+      },
+      init(initialValue: V): V {
+        return initialValue;
+      }
+    };
+  };
+}
+
+export function PayloadBoolean(offset: number) {
+  return function <T, V>(
+    target: ClassAccessorDecoratorTarget<T, V>,
+    context: ClassAccessorDecoratorContext<T, V>
+  ): ClassAccessorDecoratorResult<T, V> {
+    const meta = getOrCreateMetadata(context);
+    meta.push({ propertyName: context.name as string, type: 'boolean', offset });
+
+    return {
+      get() {
+        return target.get.call(this);
+      },
+      set(val: V) {
+        target.set.call(this, val);
+      },
+      init(initialValue: V): V {
+        return initialValue;
+      }
+    };
+  };
+}
+
+export function PayloadByteArray(offset: number, length: number) {
+  return function <T, V>(
+    target: ClassAccessorDecoratorTarget<T, V>,
+    context: ClassAccessorDecoratorContext<T, V>
+  ): ClassAccessorDecoratorResult<T, V> {
+    const meta = getOrCreateMetadata(context);
+    meta.push({ propertyName: context.name as string, type: 'byte_array', offset, length });
+
+    return {
+      get() {
+        return target.get.call(this);
+      },
+      set(val: V) {
         target.set.call(this, val);
       },
       init(initialValue: V): V {

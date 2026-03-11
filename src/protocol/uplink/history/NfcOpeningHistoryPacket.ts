@@ -1,13 +1,19 @@
+import { PayloadMapper, PayloadUint8, PayloadByteArray } from '@/protocol/payload-mapper';
 import { BoksHistoryEvent } from '@/protocol/uplink/history/_BoksHistoryEventBase';
 import { BoksOpcode } from '@/protocol/constants';
 import { bytesToHex } from '@/utils/converters';
 
-/**
- * Log: Door opened via NFC.
- * (UNTESTED)
- */
 export class NfcOpeningHistoryPacket extends BoksHistoryEvent {
   static readonly opcode = BoksOpcode.LOG_EVENT_NFC_OPENING;
+
+  @PayloadUint8(3)
+  public accessor parsedTagType: number = 0;
+
+  @PayloadUint8(4)
+  public accessor parsedUidLength: number = 0;
+
+  @PayloadByteArray(5, 7)
+  public accessor rawUidBytes: Uint8Array = new Uint8Array(0);
 
   constructor(
     age: number = 0,
@@ -16,32 +22,25 @@ export class NfcOpeningHistoryPacket extends BoksHistoryEvent {
     rawPayload?: Uint8Array
   ) {
     super(NfcOpeningHistoryPacket.opcode, age, rawPayload);
+    this.parsedTagType = tagType;
   }
 
   static fromPayload(payload: Uint8Array): NfcOpeningHistoryPacket {
-    let age = 0;
-    let tagType = 0;
+    const data = PayloadMapper.parse(NfcOpeningHistoryPacket, payload);
+
     let uid = '';
+    const offset = 5;
+    const uidLen = (data.parsedUidLength as number) || 0;
 
-    if (payload.length >= 3) {
-      age = (payload[0] << 16) | (payload[1] << 8) | payload[2];
+    if (uidLen > 0 && payload.length >= offset + uidLen) {
+      uid = bytesToHex(payload.subarray(offset, offset + uidLen));
     }
 
-    let offset = 3;
-    if (payload.length > offset) {
-      tagType = payload[offset];
-      offset++;
-    }
-    if (payload.length > offset) {
-      // Assuming next byte is length? The original code did: const uidLen = payload[offset];
-      // But didn't check if payload had enough bytes for length byte?
-      // "if (payload.length > offset)" covers the length byte existence.
-      const uidLen = payload[offset];
-      offset++;
-      if (payload.length >= offset + uidLen) {
-        uid = bytesToHex(payload.subarray(offset, offset + uidLen));
-      }
-    }
-    return new NfcOpeningHistoryPacket(age, tagType, uid, payload);
+    return new NfcOpeningHistoryPacket(
+      data.age as number,
+      (data.parsedTagType as number) || 0,
+      uid,
+      payload
+    );
   }
 }

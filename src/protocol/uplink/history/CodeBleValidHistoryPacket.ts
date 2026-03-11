@@ -1,12 +1,15 @@
+import { PayloadMapper, PayloadPinCode, PayloadMacAddress } from '@/protocol/payload-mapper';
 import { BoksHistoryEvent } from '@/protocol/uplink/history/_BoksHistoryEventBase';
 import { BoksOpcode } from '@/protocol/constants';
-import { readPinFromBuffer, bytesToMac } from '@/utils/converters';
 
-/**
- * Log: Successful BLE code usage.
- */
 export class CodeBleValidHistoryPacket extends BoksHistoryEvent {
   static readonly opcode = BoksOpcode.LOG_CODE_BLE_VALID;
+
+  @PayloadPinCode(3)
+  public accessor parsedCode: string = '';
+
+  @PayloadMacAddress(11)
+  public accessor parsedConnectedMac: string = '';
 
   constructor(
     age: number = 0,
@@ -15,25 +18,17 @@ export class CodeBleValidHistoryPacket extends BoksHistoryEvent {
     rawPayload?: Uint8Array
   ) {
     super(CodeBleValidHistoryPacket.opcode, age, rawPayload);
+    this.parsedCode = code;
+    this.parsedConnectedMac = connectedMac;
   }
 
   static fromPayload(payload: Uint8Array): CodeBleValidHistoryPacket {
-    let age = 0;
-    let code = '';
-    let connectedMac = '';
-
-    if (payload.length >= 3) {
-      age = (payload[0] << 16) | (payload[1] << 8) | payload[2];
-    }
-
-    const offset = 3;
-    if (payload.length >= offset + 6) {
-      code = readPinFromBuffer(payload, offset);
-    }
-    // Offset 3+6+2(padding) = 11. MAC starts at 11, length 6.
-    if (payload.length >= 17) {
-      connectedMac = bytesToMac(payload.subarray(11, 17));
-    }
-    return new CodeBleValidHistoryPacket(age, code, connectedMac, payload);
+    const data = PayloadMapper.parse(CodeBleValidHistoryPacket, payload);
+    return new CodeBleValidHistoryPacket(
+      data.age as number,
+      (data.parsedCode as string) || '',
+      (data.parsedConnectedMac as string) || '',
+      payload
+    );
   }
 }

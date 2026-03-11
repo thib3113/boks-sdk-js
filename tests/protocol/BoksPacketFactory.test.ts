@@ -36,9 +36,9 @@ describe('BoksPacketFactory', () => {
       { name: 'ErrorBadRequestPacket', class: Packets.ErrorBadRequestPacket, payload: new Uint8Array(0) },
 
       // History
-      { name: 'CodeBleValidHistoryPacket', class: Packets.CodeBleValidHistoryPacket, payload: new Uint8Array([0, 0, 1, 49, 50, 51, 52, 53, 54, 1, 2, 3, 4, 5, 6]) },
-      { name: 'CodeBleInvalidHistoryPacket', class: Packets.CodeBleInvalidHistoryPacket, payload: new Uint8Array([0, 0, 2, 49, 50, 51, 52, 53, 54, 1, 2, 3, 4, 5, 6]) },
-      { name: 'CodeKeyValidHistoryPacket', class: Packets.CodeKeyValidHistoryPacket, payload: new Uint8Array([0, 0, 3, 49, 50, 51, 52, 53, 54]) },
+      { name: 'CodeBleValidHistoryPacket', class: Packets.CodeBleValidHistoryPacket, payload: new Uint8Array([0, 0, 3, 49, 50, 51, 52, 53, 54, 0, 0, 0, 0, 0, 0, 0, 0]) },
+      { name: 'CodeBleInvalidHistoryPacket', class: Packets.CodeBleInvalidHistoryPacket, payload: new Uint8Array([0, 0, 3, 49, 50, 51, 52, 53, 54, 0, 0, 0, 0, 0, 0, 0, 0]) },
+      { name: 'CodeKeyValidHistoryPacket', class: Packets.CodeKeyValidHistoryPacket, payload: new Uint8Array([0, 0, 3, 49, 50, 51, 52, 53, 54, 0, 0, 0, 0, 0, 0, 0, 0]) },
       { name: 'CodeKeyInvalidHistoryPacket', class: Packets.CodeKeyInvalidHistoryPacket, payload: new Uint8Array([0, 0, 4, 49, 50, 51, 52, 53, 54]) },
       { name: 'DoorOpenHistoryPacket', class: Packets.DoorOpenHistoryPacket, payload: new Uint8Array([0, 0, 5]) },
       { name: 'DoorCloseHistoryPacket', class: Packets.DoorCloseHistoryPacket, payload: new Uint8Array([0, 0, 6]) },
@@ -50,7 +50,7 @@ describe('BoksPacketFactory', () => {
       { name: 'ScaleMeasureHistoryPacket', class: Packets.ScaleMeasureHistoryPacket, payload: new Uint8Array([0, 0, 12, 0, 0, 10, 0]) },
       { name: 'KeyOpeningHistoryPacket', class: Packets.KeyOpeningHistoryPacket, payload: new Uint8Array([0, 0, 13]) },
       { name: 'ErrorHistoryPacket', class: Packets.ErrorHistoryPacket, payload: new Uint8Array([0, 0, 14, 0x01]) },
-      { name: 'NfcOpeningHistoryPacket', class: Packets.NfcOpeningHistoryPacket, payload: new Uint8Array([0, 0, 15, 0x01, 7, 1, 2, 3, 4, 5, 6, 7]) },
+      { name: 'NfcOpeningHistoryPacket', class: Packets.NfcOpeningHistoryPacket, payload: new Uint8Array([0, 0, 10, 1, 4, 1, 2, 3, 4, 0, 0, 0]) },
       { name: 'NfcRegisteringHistoryPacket', class: Packets.NfcRegisteringHistoryPacket, payload: new Uint8Array([0, 0, 16, 0x01, 7, 1, 2, 3, 4, 5, 6, 7]) },
 
       // Scale Notifications
