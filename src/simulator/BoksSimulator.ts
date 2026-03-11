@@ -526,7 +526,7 @@ export class BoksHardwareSimulator {
    * Triggers a door opening via NFC Tag.
    */
   public triggerNfcOpen(tagId: string = ''): void {
-    let payload = EMPTY_BUFFER;
+    let payload: Uint8Array = EMPTY_BUFFER;
     if (tagId) {
       // Optimization: Using hexToBytes avoids regex and parseInt execution overhead
       // yielding a significant performance boost during NFC simulation.
