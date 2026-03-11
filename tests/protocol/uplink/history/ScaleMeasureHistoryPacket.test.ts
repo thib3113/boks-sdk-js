@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { ScaleMeasureHistoryPacket } from '@/protocol/uplink/history/ScaleMeasureHistoryPacket';
 import { BoksOpcode } from '@/protocol/constants';
+import { BoksProtocolError } from '@/errors/BoksProtocolError';
 
 describe('ScaleMeasureHistoryPacket', () => {
   it('should parse correctly with age and data', () => {
@@ -19,14 +20,12 @@ describe('ScaleMeasureHistoryPacket', () => {
     expect(packet.data.length).toBe(0);
   });
 
-
   describe('ScaleMeasureHistoryPacket default construction', () => {
     it('should handle constructor with default age', () => {
       const packet = new ScaleMeasureHistoryPacket();
       expect(packet.age).toBe(0);
     });
   });
-
 
   describe('ScaleMeasureHistoryPacket short payload data block', () => {
     it('should extract empty data if payload is 3 bytes', () => {
@@ -42,12 +41,10 @@ describe('ScaleMeasureHistoryPacket', () => {
     });
   });
 
-
   describe('ScaleMeasureHistoryPacket very short payload edge case', () => {
-    it('should extract age 0 if payload is less than 3 bytes', () => {
+    it('should throw BoksProtocolError if payload is less than 3 bytes', () => {
       const payload = new Uint8Array([0, 0]); // Length 2
-      const packet = ScaleMeasureHistoryPacket.fromPayload(payload);
-      expect(packet.age).toBe(0);
+      expect(() => ScaleMeasureHistoryPacket.fromPayload(payload)).toThrow(BoksProtocolError);
     });
   });
 });

@@ -2,6 +2,7 @@ import { PayloadMapper, PayloadUint8, PayloadByteArray } from '@/protocol/payloa
 import { BoksHistoryEvent } from '@/protocol/uplink/history/_BoksHistoryEventBase';
 import { BoksOpcode } from '@/protocol/constants';
 import { bytesToHex } from '@/utils/converters';
+import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';
 
 export class NfcOpeningHistoryPacket extends BoksHistoryEvent {
   static readonly opcode = BoksOpcode.LOG_EVENT_NFC_OPENING;
@@ -30,15 +31,22 @@ export class NfcOpeningHistoryPacket extends BoksHistoryEvent {
 
     let uid = '';
     const offset = 5;
-    const uidLen = (data.uidLength as number) || 0;
+    const uidLen = data.uidLength as number;
 
-    if (uidLen > 0 && payload.length >= offset + uidLen) {
+    // Strict validation, throw if data is not correctly matching the declared length
+    if (uidLen > 0) {
+      if (payload.length < offset + uidLen) {
+         throw new BoksProtocolError(
+            BoksProtocolErrorId.MALFORMED_DATA,
+            `Payload too short for UID length ${uidLen}`
+         );
+      }
       uid = bytesToHex(payload.subarray(offset, offset + uidLen));
     }
 
     return new NfcOpeningHistoryPacket(
       data.age as number,
-      (data.tagType as number) || 0,
+      data.tagType as number,
       uid,
       payload
     );

@@ -26,8 +26,8 @@ export class CodeBleInvalidHistoryPacket extends BoksHistoryEvent {
     const data = PayloadMapper.parse(CodeBleInvalidHistoryPacket, payload);
     return new CodeBleInvalidHistoryPacket(
       data.age as number,
-      (data.code as string) || '',
-      (data.connectedMac as string) || '',
+      data.code as string,
+      data.connectedMac as string,
       payload
     );
   }

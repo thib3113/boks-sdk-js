@@ -531,7 +531,9 @@ export class BoksHardwareSimulator {
     if (tagId) {
       const match = tagId.match(/.{1,2}/g);
       const bytes = match ? new Uint8Array(match.map((byte) => parseInt(byte, 16))) : EMPTY_BUFFER;
-      payload.set(bytes, 0); // Put tag ID at start of payload for simulator purposes
+      payload[3] = 1; // tagType
+      payload[4] = bytes.length; // uidLength
+      payload.set(bytes, 5); // Put tag ID at offset 5
     }
     this.executeDoorOpen(BoksOpcode.LOG_EVENT_NFC_OPENING, payload, tagId);
   }
