@@ -1,5 +1,7 @@
 import { BoksHistoryEvent } from '@/protocol/uplink/history/_BoksHistoryEventBase';
 import { BoksOpcode, EMPTY_BUFFER } from '@/protocol/constants';
+import { PayloadMapper, PayloadUint24 } from '@/protocol/payload-mapper';
+import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';
 
 /** ⚠️ This packet is theoretical; it has never been tested in real-world conditions. */
 /**
@@ -8,25 +10,27 @@ import { BoksOpcode, EMPTY_BUFFER } from '@/protocol/constants';
 export class ScaleMeasureHistoryPacket extends BoksHistoryEvent {
   static readonly opcode = BoksOpcode.LOG_EVENT_SCALE_MEASURE;
 
+  @PayloadUint24(0)
+  public accessor _age: number = 0;
+
+  // We specify length=0 as a wildcard, but the decorator logic currently requires strict length.
+  // Instead of full annotation for a dynamic suffix, we map the known part:
+
   constructor(
     age: number = 0,
     public readonly data: Uint8Array = EMPTY_BUFFER,
     rawPayload?: Uint8Array
   ) {
     super(ScaleMeasureHistoryPacket.opcode, age, rawPayload);
+    this._age = age;
   }
 
   static fromPayload(payload: Uint8Array): ScaleMeasureHistoryPacket {
-    let age = 0;
-    let data: Uint8Array = EMPTY_BUFFER;
-
-    if (payload.length >= 3) {
-      age = (payload[0] << 16) | (payload[1] << 8) | payload[2];
+    if (payload.length < 3) {
+      throw new BoksProtocolError(BoksProtocolErrorId.MALFORMED_DATA, 'Payload too short');
     }
-
-    if (payload.length > 3) {
-      data = payload.subarray(3) as Uint8Array;
-    }
-    return new ScaleMeasureHistoryPacket(age, data, payload);
+    const parsed = PayloadMapper.parse(ScaleMeasureHistoryPacket, payload);
+    const data = payload.length > 3 ? (payload.subarray(3) as Uint8Array) : EMPTY_BUFFER;
+    return new ScaleMeasureHistoryPacket(parsed._age as number, data, payload);
   }
 }

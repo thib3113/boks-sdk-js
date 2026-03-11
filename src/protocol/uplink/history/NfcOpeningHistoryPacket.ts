@@ -1,47 +1,49 @@
+import { PayloadMapper, PayloadUint8, PayloadByteArray } from '@/protocol/payload-mapper';
 import { BoksHistoryEvent } from '@/protocol/uplink/history/_BoksHistoryEventBase';
 import { BoksOpcode } from '@/protocol/constants';
 import { bytesToHex } from '@/utils/converters';
+import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';
 
-/**
- * Log: Door opened via NFC.
- * (UNTESTED)
- */
 export class NfcOpeningHistoryPacket extends BoksHistoryEvent {
   static readonly opcode = BoksOpcode.LOG_EVENT_NFC_OPENING;
 
+  @PayloadUint8(3)
+  public accessor tagType: number = 0;
+
+  @PayloadUint8(4)
+  public accessor uidLength: number = 0;
+
+  @PayloadByteArray(5, 7)
+  public accessor rawUidBytes: Uint8Array = new Uint8Array(0);
+
   constructor(
     age: number = 0,
-    public readonly tagType: number = 0,
+    tagType: number = 0,
     public readonly uid: string = '',
     rawPayload?: Uint8Array
   ) {
     super(NfcOpeningHistoryPacket.opcode, age, rawPayload);
+    this.tagType = tagType;
   }
 
   static fromPayload(payload: Uint8Array): NfcOpeningHistoryPacket {
-    let age = 0;
-    let tagType = 0;
+    const data = PayloadMapper.parse(NfcOpeningHistoryPacket, payload);
+
     let uid = '';
+    const offset = 5;
+    const uidLen = data.uidLength as number;
 
-    if (payload.length >= 3) {
-      age = (payload[0] << 16) | (payload[1] << 8) | payload[2];
-    }
-
-    let offset = 3;
-    if (payload.length > offset) {
-      tagType = payload[offset];
-      offset++;
-    }
-    if (payload.length > offset) {
-      // Assuming next byte is length? The original code did: const uidLen = payload[offset];
-      // But didn't check if payload had enough bytes for length byte?
-      // "if (payload.length > offset)" covers the length byte existence.
-      const uidLen = payload[offset];
-      offset++;
-      if (payload.length >= offset + uidLen) {
-        uid = bytesToHex(payload.subarray(offset, offset + uidLen));
+    // Strict validation, throw if data is not correctly matching the declared length
+    if (uidLen > 0) {
+      if (payload.length < offset + uidLen) {
+        throw new BoksProtocolError(
+          BoksProtocolErrorId.MALFORMED_DATA,
+          `Payload too short for UID length ${uidLen}`
+        );
       }
+      uid = bytesToHex(payload.subarray(offset, offset + uidLen));
     }
-    return new NfcOpeningHistoryPacket(age, tagType, uid, payload);
+
+    return new NfcOpeningHistoryPacket(data.age as number, data.tagType as number, uid, payload);
   }
 }

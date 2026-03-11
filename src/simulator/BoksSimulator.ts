@@ -503,7 +503,8 @@ export class BoksHardwareSimulator {
    * Triggers a door opening via BLE code.
    */
   public triggerBleOpen(pin: string): void {
-    const payload = stringToBytes(pin.padEnd(6, '\0').substring(0, 6));
+    const payload = new Uint8Array(17);
+    payload.set(stringToBytes(pin.padEnd(6, ' ').substring(0, 6)), 0);
     this.executeDoorOpen(BoksOpcode.LOG_CODE_BLE_VALID, payload, pin);
   }
 
@@ -526,10 +527,13 @@ export class BoksHardwareSimulator {
    * Triggers a door opening via NFC Tag.
    */
   public triggerNfcOpen(tagId: string = ''): void {
-    let payload = EMPTY_BUFFER;
+    const payload = new Uint8Array(12);
     if (tagId) {
       const match = tagId.match(/.{1,2}/g);
-      payload = match ? new Uint8Array(match.map((byte) => parseInt(byte, 16))) : EMPTY_BUFFER;
+      const bytes = match ? new Uint8Array(match.map((byte) => parseInt(byte, 16))) : EMPTY_BUFFER;
+      payload[3] = 1; // tagType
+      payload[4] = bytes.length; // uidLength
+      payload.set(bytes, 5); // Put tag ID at offset 5
     }
     this.executeDoorOpen(BoksOpcode.LOG_EVENT_NFC_OPENING, payload, tagId);
   }

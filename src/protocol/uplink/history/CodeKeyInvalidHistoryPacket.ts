@@ -1,33 +1,20 @@
+import { PayloadMapper, PayloadPinCode } from '@/protocol/payload-mapper';
 import { BoksHistoryEvent } from '@/protocol/uplink/history/_BoksHistoryEventBase';
 import { BoksOpcode } from '@/protocol/constants';
-import { readPinFromBuffer } from '@/utils/converters';
 
-/**
- * Log: Invalid Key code usage (Physical keypad).
- */
 export class CodeKeyInvalidHistoryPacket extends BoksHistoryEvent {
   static readonly opcode = BoksOpcode.LOG_CODE_KEY_INVALID;
 
-  constructor(
-    age: number = 0,
-    public readonly code: string = '',
-    rawPayload?: Uint8Array
-  ) {
+  @PayloadPinCode(3)
+  public accessor code: string = '';
+
+  constructor(age: number = 0, code: string = '', rawPayload?: Uint8Array) {
     super(CodeKeyInvalidHistoryPacket.opcode, age, rawPayload);
+    this.code = code;
   }
 
   static fromPayload(payload: Uint8Array): CodeKeyInvalidHistoryPacket {
-    let age = 0;
-    let code = '';
-
-    if (payload.length >= 3) {
-      age = (payload[0] << 16) | (payload[1] << 8) | payload[2];
-    }
-
-    const offset = 3;
-    if (payload.length >= offset + 6) {
-      code = readPinFromBuffer(payload, offset);
-    }
-    return new CodeKeyInvalidHistoryPacket(age, code, payload);
+    const data = PayloadMapper.parse(CodeKeyInvalidHistoryPacket, payload);
+    return new CodeKeyInvalidHistoryPacket(data.age as number, data.code as string, payload);
   }
 }
