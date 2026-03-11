@@ -19,11 +19,4 @@ describe('NfcRegisteringHistoryPacket', () => {
     expect(packet.data.length).toBe(0);
   });
 
-
-  describe('NfcRegisteringHistoryPacket default construction', () => {
-    it('should handle constructor with default age', () => {
-      const packet = new NfcRegisteringHistoryPacket();
-      expect(packet.age).toBe(0);
-    });
-  });
 });

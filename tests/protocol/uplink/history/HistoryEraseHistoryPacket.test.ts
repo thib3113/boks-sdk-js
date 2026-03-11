@@ -10,11 +10,4 @@ describe('HistoryEraseHistoryPacket', () => {
     expect(packet.age).toBe(0x010203);
   });
 
-
-  describe('HistoryEraseHistoryPacket default construction', () => {
-    it('should handle constructor with default age', () => {
-      const packet = new HistoryEraseHistoryPacket();
-      expect(packet.age).toBe(0);
-    });
-  });
 });

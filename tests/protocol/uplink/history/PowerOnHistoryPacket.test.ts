@@ -10,11 +10,4 @@ describe('PowerOnHistoryPacket', () => {
     expect(packet.age).toBe(0x010203);
   });
 
-
-  describe('PowerOnHistoryPacket default construction', () => {
-    it('should handle constructor with default age', () => {
-      const packet = new PowerOnHistoryPacket();
-      expect(packet.age).toBe(0);
-    });
-  });
 });

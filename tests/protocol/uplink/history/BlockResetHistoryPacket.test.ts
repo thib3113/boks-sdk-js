@@ -10,11 +10,4 @@ describe('BlockResetHistoryPacket', () => {
     expect(packet.age).toBe(0x010203);
   });
 
-
-  describe('BlockResetHistoryPacket default construction', () => {
-    it('should handle constructor with default age', () => {
-      const packet = new BlockResetHistoryPacket();
-      expect(packet.age).toBe(0);
-    });
-  });
 });

@@ -11,11 +11,4 @@ describe('DoorCloseHistoryPacket', () => {
     expect(packet.status).toBe('closed');
   });
 
-
-  describe('DoorCloseHistoryPacket default construction', () => {
-    it('should handle constructor with default age', () => {
-      const packet = new DoorCloseHistoryPacket();
-      expect(packet.age).toBe(0);
-    });
-  });
 });

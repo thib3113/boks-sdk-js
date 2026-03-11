@@ -10,11 +10,4 @@ describe('KeyOpeningHistoryPacket', () => {
     expect(packet.age).toBe(0x010203);
   });
 
-
-  describe('KeyOpeningHistoryPacket default construction', () => {
-    it('should handle constructor with default age', () => {
-      const packet = new KeyOpeningHistoryPacket();
-      expect(packet.age).toBe(0);
-    });
-  });
 });

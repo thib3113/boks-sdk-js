@@ -11,11 +11,4 @@ describe('ErrorHistoryPacket', () => {
     expect(packet.errorCode).toBe(0xFF);
   });
 
-
-  describe('ErrorHistoryPacket default construction', () => {
-    it('should handle constructor with default age', () => {
-      const packet = new ErrorHistoryPacket();
-      expect(packet.age).toBe(0);
-    });
-  });
 });

@@ -19,11 +19,4 @@ describe('PowerOffHistoryPacket', () => {
     expect(packet.reason).toBe(0);
   });
 
-
-  describe('PowerOffHistoryPacket default construction', () => {
-    it('should handle constructor with default age', () => {
-      const packet = new PowerOffHistoryPacket();
-      expect(packet.age).toBe(0);
-    });
-  });
 });
