@@ -36,19 +36,14 @@ export class NfcOpeningHistoryPacket extends BoksHistoryEvent {
     // Strict validation, throw if data is not correctly matching the declared length
     if (uidLen > 0) {
       if (payload.length < offset + uidLen) {
-         throw new BoksProtocolError(
-            BoksProtocolErrorId.MALFORMED_DATA,
-            `Payload too short for UID length ${uidLen}`
-         );
+        throw new BoksProtocolError(
+          BoksProtocolErrorId.MALFORMED_DATA,
+          `Payload too short for UID length ${uidLen}`
+        );
       }
       uid = bytesToHex(payload.subarray(offset, offset + uidLen));
     }
 
-    return new NfcOpeningHistoryPacket(
-      data.age as number,
-      data.tagType as number,
-      uid,
-      payload
-    );
+    return new NfcOpeningHistoryPacket(data.age as number, data.tagType as number, uid, payload);
   }
 }

@@ -8,21 +8,13 @@ export class CodeKeyInvalidHistoryPacket extends BoksHistoryEvent {
   @PayloadPinCode(3)
   public accessor code: string = '';
 
-  constructor(
-    age: number = 0,
-    code: string = '',
-    rawPayload?: Uint8Array
-  ) {
+  constructor(age: number = 0, code: string = '', rawPayload?: Uint8Array) {
     super(CodeKeyInvalidHistoryPacket.opcode, age, rawPayload);
     this.code = code;
   }
 
   static fromPayload(payload: Uint8Array): CodeKeyInvalidHistoryPacket {
     const data = PayloadMapper.parse(CodeKeyInvalidHistoryPacket, payload);
-    return new CodeKeyInvalidHistoryPacket(
-      data.age as number,
-      data.code as string,
-      payload
-    );
+    return new CodeKeyInvalidHistoryPacket(data.age as number, data.code as string, payload);
   }
 }
