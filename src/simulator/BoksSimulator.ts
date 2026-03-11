@@ -528,8 +528,9 @@ export class BoksHardwareSimulator {
   public triggerNfcOpen(tagId: string = ''): void {
     let payload = EMPTY_BUFFER;
     if (tagId) {
-      const match = tagId.match(/.{1,2}/g);
-      payload = match ? new Uint8Array(match.map((byte) => parseInt(byte, 16))) : EMPTY_BUFFER;
+      // Optimization: Using hexToBytes avoids regex and parseInt execution overhead
+      // yielding a significant performance boost during NFC simulation.
+      payload = hexToBytes(tagId);
     }
     this.executeDoorOpen(BoksOpcode.LOG_EVENT_NFC_OPENING, payload, tagId);
   }

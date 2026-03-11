@@ -105,3 +105,7 @@
 ## 2025-10-26 - Null Byte Stripping Performance Overhead
 **Learning:** Using `.replace(/\0/g, '')` on the result of `String.fromCharCode` to strip null byte padding is unexpectedly slow in V8 (up to ~6x slower) compared to an unrolled conditional concatenation loop. The regex operation forces intermediate string allocations and compilation overhead that negates the benefits of fast ASCII fast-paths.
 **Action:** When reading fixed-length strings from buffers that might contain null byte padding (like PINs, Config Keys, or parsed payloads), use an unrolled loop that checks `if (char !== 0)` before concatenation instead of relying on regex replacements on the final string.
+
+## 2025-10-26 - Hex Parsing Allocation and Execution Overhead
+**Learning:** Parsing a hex string into a `Uint8Array` using `tagId.match(/.{1,2}/g)` followed by `.map((byte) => parseInt(byte, 16))` creates intermediate arrays, runs expensive regular expressions, and iterates twice, introducing significant GC and execution overhead. Replacing it with a direct lookup-table-based function like `hexToBytes` handles character skipping efficiently and requires zero intermediate allocations.
+**Action:** When converting hex strings (like NFC UIDs) into byte arrays, always use `hexToBytes` instead of regex and `parseInt` in high-frequency paths.
