@@ -3,6 +3,7 @@ import {
   calculateChecksum,
   readConfigKeyFromBuffer,
   readPinFromBuffer,
+  writePinToBuffer,
   bytesToHex,
   bytesToMac,
   stringToBytes,
@@ -504,7 +505,7 @@ export class BoksHardwareSimulator {
    */
   public triggerBleOpen(pin: string): void {
     const payload = new Uint8Array(17);
-    payload.set(stringToBytes(pin.padEnd(6, ' ').substring(0, 6)), 0);
+    writePinToBuffer(payload, 0, pin.padEnd(6, '\0').substring(0, 6));
     this.executeDoorOpen(BoksOpcode.LOG_CODE_BLE_VALID, payload, pin);
   }
 
@@ -512,7 +513,8 @@ export class BoksHardwareSimulator {
    * Triggers a door opening via Keypad code.
    */
   public triggerKeypadOpen(pin: string): void {
-    const payload = stringToBytes(pin.padEnd(6, '\0').substring(0, 6));
+    const payload = new Uint8Array(6);
+    writePinToBuffer(payload, 0, pin.padEnd(6, '\0').substring(0, 6));
     this.executeDoorOpen(BoksOpcode.LOG_CODE_KEY_VALID, payload, pin);
   }
 
