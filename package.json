@@ -90,7 +90,7 @@
   "author": "Thib3113",
   "license": "ISC",
   "devDependencies": {
-    "@arethetypeswrong/cli": "^0.18.2",
+    "@arethetypeswrong/cli": "0.18.2",
     "@babel/core": "7.29.0",
     "@babel/plugin-proposal-decorators": "7.29.0",
     "@codecov/bundle-analyzer": "1.9.1",
@@ -105,7 +105,7 @@
     "fast-check": "4.6.0",
     "globals": "17.4.0",
     "prettier": "3.8.1",
-    "publint": "^0.3.18",
+    "publint": "0.3.18",
     "typedoc": "0.28.17",
     "typescript": "5.9.3",
     "typescript-eslint": "8.57.0",
