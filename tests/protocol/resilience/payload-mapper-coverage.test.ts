@@ -70,7 +70,6 @@ describe('PayloadMapper Coverage additions', () => {
           expect(() => PayloadMapper.serialize(inst)).toThrowError(/Missing required field: key/);
       });
   });
-});
 
   describe('strict Uint8Array validation in serializer for byte_array', () => {
       it('should throw BoksProtocolError when serializing byte_array with non-Uint8Array data', () => {
@@ -83,3 +82,4 @@ describe('PayloadMapper Coverage additions', () => {
           expect(() => PayloadMapper.serialize(inst)).toThrowError(/must be a Uint8Array/);
       });
   });
+});
