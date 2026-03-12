@@ -105,3 +105,7 @@
 ## 2025-10-26 - Null Byte Stripping Performance Overhead
 **Learning:** Using `.replace(/\0/g, '')` on the result of `String.fromCharCode` to strip null byte padding is unexpectedly slow in V8 (up to ~6x slower) compared to an unrolled conditional concatenation loop. The regex operation forces intermediate string allocations and compilation overhead that negates the benefits of fast ASCII fast-paths.
 **Action:** When reading fixed-length strings from buffers that might contain null byte padding (like PINs, Config Keys, or parsed payloads), use an unrolled loop that checks `if (char !== 0)` before concatenation instead of relying on regex replacements on the final string.
+
+## 2025-10-26 - Memory Leaks with Map vs WeakMap
+**Learning:** Using `Map` to cache metadata or compiled functions keyed by class constructors or instances can lead to memory leaks, especially when classes or objects are created dynamically or when instances are no longer needed but remain referenced by the cache. Switching to `WeakMap` resolves this issue, allowing garbage collection of unreferenced keys while maintaining caching benefits.
+**Action:** When caching objects or functions using classes or instances as keys, prefer `WeakMap` over `Map` to avoid memory leaks.

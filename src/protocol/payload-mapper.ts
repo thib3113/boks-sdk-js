@@ -31,7 +31,7 @@ export interface FieldDefinition {
  * Ensures the target class has a metadata array for field definitions.
  */
 
-const legacyMetadataMap = new Map<Function, FieldDefinition[]>();
+const legacyMetadataMap = new WeakMap<Function, FieldDefinition[]>();
 
 function getOrCreateMetadata(context: ClassAccessorDecoratorContext<any, any>): FieldDefinition[] {
   if (context.metadata) {
@@ -52,10 +52,10 @@ function getOrCreateMetadata(context: ClassAccessorDecoratorContext<any, any>): 
  */
 export class PayloadMapper {
   // Cache of compiled parsing functions, keyed by Class Constructor
-  private static compiledParsers = new Map<Function, Function>();
+  private static compiledParsers = new WeakMap<Function, Function>();
   // Cache of compiled serialization functions
-  private static compiledSerializers = new Map<Function, Function>();
-  private static compiledValidators = new Map<Function, Function>();
+  private static compiledSerializers = new WeakMap<Function, Function>();
+  private static compiledValidators = new WeakMap<Function, Function>();
 
   /**
    * Pre-computed hex table for JIT compilers
