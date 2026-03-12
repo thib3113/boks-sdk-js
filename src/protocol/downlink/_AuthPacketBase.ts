@@ -13,7 +13,7 @@ export abstract class AuthPacket extends BoksPacket {
 
   constructor(configKey: string) {
     super();
-    this.configKey = this.formatConfigKey(configKey);
+    this.configKey = configKey;
   }
 
   /**

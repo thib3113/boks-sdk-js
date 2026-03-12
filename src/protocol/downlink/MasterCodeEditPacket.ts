@@ -23,7 +23,7 @@ export class MasterCodeEditPacket extends AuthPacket {
     super(configKey);
     validateMasterCodeIndex(index);
     this.index = index;
-    this.newPin = this.formatPin(newPin);
+    this.newPin = newPin;
   }
 
   static fromPayload(payload: Uint8Array): MasterCodeEditPacket {
