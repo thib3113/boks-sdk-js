@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import fc from 'fast-check';
-import { hexToBytes, bytesToMac, stringToBytes, readConfigKeyFromBuffer, readPinFromBuffer, writeConfigKeyToBuffer } from '../../../../src/utils/converters';
+import { hexToBytes, bytesToMac, stringToBytes, readConfigKeyFromBuffer, readPinFromBuffer, writeConfigKeyToBuffer, bytesToString } from '../../../../src/utils/converters';
 import { BoksProtocolError } from '../../../../src/errors/BoksProtocolError';
 
 describe('Converters Utils Resilience (Fuzzing)', () => {
@@ -9,7 +9,8 @@ describe('Converters Utils Resilience (Fuzzing)', () => {
     fc.assert(
       fc.property(fc.string(), (str) => {
         try {
-          hexToBytes(str);
+          const result = hexToBytes(str);
+          expect(result).toBeInstanceOf(Uint8Array);
         } catch (e) {
           expect(e).toBeInstanceOf(BoksProtocolError);
         }
@@ -64,9 +65,21 @@ describe('Converters Utils Resilience (Fuzzing)', () => {
         try {
           writeConfigKeyToBuffer(arr, offset, str);
         } catch (e) {
-            // TypeError or RangeError might be thrown for out of bounds access, ensure it is not crashing native extensions
-            expect(e).toBeInstanceOf(TypeError);
+            // Out of bounds or string too short
+            expect(e instanceof TypeError || e instanceof RangeError).toBe(true);
         }
+      }),
+      { numRuns: 1000 }
+    );
+  });
+
+  it('FEATURE REGRESSION: bytesToString should safely handle arbitrary UTF-8 bounds and null characters', () => {
+    fc.assert(
+      fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (bytes) => {
+        const result = bytesToString(bytes);
+        expect(typeof result).toBe('string');
+        // also check that no null bytes exist in the parsed string
+        expect(result.indexOf('\x00')).toBe(-1);
       }),
       { numRuns: 1000 }
     );

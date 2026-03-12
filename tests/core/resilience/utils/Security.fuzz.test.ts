@@ -10,7 +10,7 @@ describe('Security Utils Resilience (Fuzzing)', () => {
         class Dummy {}
         Object.defineProperty(Dummy, 'name', { value: name });
         sealed(Dummy, {} as any);
-        await new Promise((resolve) => setTimeout(resolve, 0));
+        await Promise.resolve(); // Flush microtask queue
         expect(Object.isSealed(Dummy)).toBe(true);
         expect(Object.isSealed(Dummy.prototype)).toBe(true);
       }),
@@ -24,7 +24,7 @@ describe('Security Utils Resilience (Fuzzing)', () => {
         class Dummy {}
         Object.defineProperty(Dummy, 'name', { value: name });
         freeze(Dummy, {} as any);
-        await new Promise((resolve) => setTimeout(resolve, 0));
+        await Promise.resolve(); // Flush microtask queue
         expect(Object.isFrozen(Dummy)).toBe(true);
         expect(Object.isFrozen(Dummy.prototype)).toBe(true);
       }),
