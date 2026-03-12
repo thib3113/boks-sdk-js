@@ -17,7 +17,7 @@ describe('BoksPacketFactory', () => {
       { name: 'OperationErrorPacket', class: Packets.OperationErrorPacket, payload: new Uint8Array([0x01]) },
       { name: 'NotifyLogsCountPacket', class: Packets.NotifyLogsCountPacket, payload: new Uint8Array([0x00, 0x05]) },
       { name: 'NotifyCodesCountPacket', class: Packets.NotifyCodesCountPacket, payload: new Uint8Array([0x00, 0x01, 0x00, 0x0A]) },
-      { name: 'NotifyDoorStatusPacket', class: Packets.NotifyDoorStatusPacket, payload: new Uint8Array([0x01]) },
+      { name: 'NotifyDoorStatusPacket', class: Packets.NotifyDoorStatusPacket, payload: new Uint8Array([0x01, 0x00]) },
       { name: 'AnswerDoorStatusPacket', class: Packets.AnswerDoorStatusPacket, payload: new Uint8Array([0x00]) },
       { name: 'ValidOpenCodePacket', class: Packets.ValidOpenCodePacket, payload: new Uint8Array(0) },
       { name: 'InvalidOpenCodePacket', class: Packets.InvalidOpenCodePacket, payload: new Uint8Array(0) },

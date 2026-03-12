@@ -33,9 +33,11 @@ describe('NotifyNfcTagFoundPacket', () => {
     expect(packet.status).toBe('found');
   });
 
-  it('should throw if UID length is greater than 10', () => {
+  it('should parse cleanly if UID length is greater than 10', () => {
+    // We removed manual length validation from fromPayload, relying entirely on the payload mapper bounds checking
     const payload = new Uint8Array([0x0B, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B]);
-    expect(() => NotifyNfcTagFoundPacket.fromPayload(payload)).toThrow(/UID length greater than 10 is not supported/);
+    const packet = NotifyNfcTagFoundPacket.fromPayload(payload);
+    expect(packet.uid).toBe('0102030405060708090A0B');
   });
 
   it('should throw on empty payload', () => {

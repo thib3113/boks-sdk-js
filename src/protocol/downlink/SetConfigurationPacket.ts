@@ -1,7 +1,7 @@
 import { AuthPacket } from '@/protocol/downlink/_AuthPacketBase';
 import { BoksOpcode, BoksConfigType } from '@/protocol/constants';
-import { writeConfigKeyToBuffer } from '@/utils/converters';
 import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';
+import { PayloadUint8, PayloadBoolean, PayloadMapper } from '@/protocol/payload-mapper';
 
 /**
  * Set configuration (e.g. La Poste NFC).
@@ -13,12 +13,16 @@ export class SetConfigurationPacket extends AuthPacket {
     return SetConfigurationPacket.opcode;
   }
 
-  constructor(
-    configKey: string,
-    public readonly configType: BoksConfigType,
-    public readonly value: boolean
-  ) {
-    super(configKey);
+  @PayloadUint8(8)
+  public accessor configType!: BoksConfigType;
+
+  @PayloadBoolean(9)
+  public accessor value!: boolean;
+
+  constructor(props: { configKey: string; configType: BoksConfigType; value: boolean }) {
+    super(props.configKey);
+    this.configType = props.configType;
+    this.value = props.value;
   }
 
   static fromPayload(payload: Uint8Array): SetConfigurationPacket {
@@ -30,10 +34,7 @@ export class SetConfigurationPacket extends AuthPacket {
       );
     }
 
-    const configKey = AuthPacket.extractConfigKey(payload);
-    const configType = payload[8];
     const valueByte = payload[9];
-
     if (valueByte !== 0x00 && valueByte !== 0x01) {
       throw new BoksProtocolError(
         BoksProtocolErrorId.INVALID_VALUE,
@@ -42,14 +43,15 @@ export class SetConfigurationPacket extends AuthPacket {
       );
     }
 
-    return new SetConfigurationPacket(configKey, configType, valueByte === 0x01);
+    const parsed = PayloadMapper.parse(SetConfigurationPacket, payload);
+    return new SetConfigurationPacket({
+      configKey: parsed.configKey!,
+      configType: parsed.configType!,
+      value: parsed.value!
+    });
   }
 
   toPayload() {
-    const payload = new Uint8Array(8 + 2);
-    writeConfigKeyToBuffer(payload, 0, this.configKey);
-    payload[8] = this.configType;
-    payload[9] = this.value ? 0x01 : 0x00;
-    return payload;
+    return PayloadMapper.serialize(this);
   }
 }

@@ -1,5 +1,6 @@
 import { BoksRXPacket } from '@/protocol/uplink/_BoksRXPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
+import { PayloadUint16, PayloadMapper } from '@/protocol/payload-mapper';
 
 /**
  * Notification of active code counts.
@@ -7,22 +8,25 @@ import { BoksOpcode } from '@/protocol/constants';
 export class NotifyCodesCountPacket extends BoksRXPacket {
   static readonly opcode = BoksOpcode.NOTIFY_CODES_COUNT;
 
-  constructor(
-    public readonly masterCount: number,
-    public readonly otherCount: number,
-    rawPayload?: Uint8Array
-  ) {
-    super(NotifyCodesCountPacket.opcode, rawPayload);
+  @PayloadUint16(0)
+  public accessor masterCount!: number;
+
+  @PayloadUint16(2)
+  public accessor otherCount!: number;
+
+  constructor(props: { masterCount: number; otherCount: number }) {
+    super(NotifyCodesCountPacket.opcode);
+    this.masterCount = props.masterCount;
+    this.otherCount = props.otherCount;
   }
 
   static fromPayload(payload: Uint8Array): NotifyCodesCountPacket {
-    let masterCount = 0;
-    let otherCount = 0;
-    if (payload.length >= 4) {
-      const view = new DataView(payload.buffer, payload.byteOffset, payload.byteLength);
-      masterCount = view.getUint16(0, false);
-      otherCount = view.getUint16(2, false);
-    }
-    return new NotifyCodesCountPacket(masterCount, otherCount, payload);
+    const parsed = PayloadMapper.parse(NotifyCodesCountPacket, payload);
+    const packet = new NotifyCodesCountPacket({
+      masterCount: parsed.masterCount!,
+      otherCount: parsed.otherCount!
+    });
+    packet.rawPayload = payload;
+    return packet;
   }
 }

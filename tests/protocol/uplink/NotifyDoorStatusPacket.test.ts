@@ -22,9 +22,8 @@ describe('NotifyDoorStatusPacket', () => {
     expect(packet.isOpen).toBe(false);
   });
 
-  it('should default to CLOSED if payload too short', () => {
+  it('should throw an error if payload is too short', () => {
     const payload = new Uint8Array(1);
-    const packet = NotifyDoorStatusPacket.fromPayload(payload);
-    expect(packet.isOpen).toBe(false);
+    expect(() => NotifyDoorStatusPacket.fromPayload(payload)).toThrowError();
   });
 });

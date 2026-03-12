@@ -13,7 +13,7 @@ describe('SetConfigurationPacket Resilience (Fuzzing)', () => {
         fc.boolean(), // value
         (configKey, configType, value) => {
           try {
-            const packet = new SetConfigurationPacket(configKey, configType, value);
+            const packet = new SetConfigurationPacket({ configKey, configType, value });
 
             // If it succeeds, the inputs MUST have matched strict validation:
             // Config Key = 8 hex chars
