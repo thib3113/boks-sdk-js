@@ -1,3 +1,4 @@
+import { BoksProtocolError } from '@/errors/BoksProtocolError';
 import { describe, it, expect, vi } from 'vitest';
 import { BoksPacketFactory } from '@/protocol/BoksPacketFactory';
 import * as Packets from '@/protocol';
@@ -20,7 +21,7 @@ describe('BoksPacketFactory', () => {
       { name: 'AnswerDoorStatusPacket', class: Packets.AnswerDoorStatusPacket, payload: new Uint8Array([0x00]) },
       { name: 'ValidOpenCodePacket', class: Packets.ValidOpenCodePacket, payload: new Uint8Array(0) },
       { name: 'InvalidOpenCodePacket', class: Packets.InvalidOpenCodePacket, payload: new Uint8Array(0) },
-      { name: 'NotifyNfcTagFoundPacket', class: Packets.NotifyNfcTagFoundPacket, payload: new Uint8Array([0x01]) },
+      { name: 'NotifyNfcTagFoundPacket', class: Packets.NotifyNfcTagFoundPacket, payload: new Uint8Array([0x04, 0x01, 0x02, 0x03, 0x04]) },
       { name: 'ErrorNfcTagAlreadyExistsScanPacket', class: Packets.ErrorNfcTagAlreadyExistsScanPacket, payload: new Uint8Array(0) },
       { name: 'ErrorNfcScanTimeoutPacket', class: Packets.ErrorNfcScanTimeoutPacket, payload: new Uint8Array(0) },
       { name: 'NotifyNfcTagRegisteredPacket', class: Packets.NotifyNfcTagRegisteredPacket, payload: new Uint8Array(0) },
@@ -114,37 +115,53 @@ describe('BoksPacketFactory', () => {
   });
 
   describe('createFromPayload error handling', () => {
-    it('should return undefined if data length is less than 3', () => {
-      const data = new Uint8Array([0x77, 0x00]);
-      expect(BoksPacketFactory.createFromPayload(data)).toBeUndefined();
+    it('should throw if data length is less than 3', () => {
+      const invalidData = new Uint8Array([0x01, 0x02]);
+      expect(() => BoksPacketFactory.createFromPayload(invalidData)).toThrow(BoksProtocolError);
     });
 
-    it('should return undefined if data length is less than indicated by length byte', () => {
+    it('should throw if data length is less than indicated by length byte', () => {
+      const invalidData = new Uint8Array([0x01, 0x05, 0x03, 0x04]); // Length says 5, but only 2 bytes payload
+      expect(() => BoksPacketFactory.createFromPayload(invalidData)).toThrow(BoksProtocolError);
+    });
+
+    it('should throw if checksum is invalid', () => {
+      const invalidData = new Uint8Array([0x01, 0x01, 0x00, 0xFF]); // Invalid checksum
+      expect(() => BoksPacketFactory.createFromPayload(invalidData)).toThrow(BoksProtocolError);
+    });
+
+    it('should call logger and throw if checksum is invalid', () => {
+      const invalidData = new Uint8Array([0x01, 0x01, 0x00, 0xFF]); // Invalid checksum
+      const loggerMock = vi.fn();
+      expect(() => BoksPacketFactory.createFromPayload(invalidData, loggerMock)).toThrow(BoksProtocolError);
+      expect(loggerMock).toHaveBeenCalled();
+    });
+  });
+
+    it('should throw if data length is less than indicated by length byte', () => {
       const opcode = 0x77;
       const length = 5;
       const data = new Uint8Array([opcode, length, 0x01, 0x02]); // Missing 3 bytes of payload + checksum
-      expect(BoksPacketFactory.createFromPayload(data)).toBeUndefined();
+      expect(() => BoksPacketFactory.createFromPayload(data)).toThrow(BoksProtocolError);
     });
 
-    it('should return undefined if checksum is invalid', () => {
+    it('should throw if checksum is invalid', () => {
       const opcode = 0x77;
       const length = 0;
       const invalidChecksum = 0xFF;
       const data = new Uint8Array([opcode, length, invalidChecksum]);
 
-      expect(BoksPacketFactory.createFromPayload(data)).toBeUndefined();
+      expect(() => BoksPacketFactory.createFromPayload(data)).toThrow(BoksProtocolError);
     });
 
-    it('should call logger and return undefined if checksum is invalid', () => {
+    it('should call logger and throw if checksum is invalid', () => {
       const opcode = 0x77;
       const length = 0;
       const invalidChecksum = 0x00; // Correct would be 0x77 + 0x00 = 0x77
       const data = new Uint8Array([opcode, length, invalidChecksum]);
       const logger = vi.fn();
 
-      const packet = BoksPacketFactory.createFromPayload(data, logger);
-
-      expect(packet).toBeUndefined();
+      expect(() => BoksPacketFactory.createFromPayload(data, logger)).toThrow(BoksProtocolError);
       expect(logger).toHaveBeenCalledWith('warn', 'checksum_error', {
         opcode,
         expected: 0x77,
@@ -198,4 +215,3 @@ describe('BoksPacketFactory', () => {
       }).toThrowError(/INVALID_VALUE/);
     });
   });
-});

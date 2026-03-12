@@ -8,8 +8,8 @@ export class NfcRegisteringHistoryPacket extends BoksHistoryEvent {
   static readonly opcode = BoksOpcode.LOG_EVENT_NFC_REGISTERING;
 
   constructor(
-    age: number = 0,
-    public readonly data: Uint8Array = EMPTY_BUFFER,
+    age: number,
+    public readonly data: Uint8Array,
     rawPayload?: Uint8Array
   ) {
     super(NfcRegisteringHistoryPacket.opcode, age, rawPayload);

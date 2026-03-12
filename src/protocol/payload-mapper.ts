@@ -416,8 +416,23 @@ export class PayloadMapper {
       const o = field.offset;
       const prop = field.propertyName;
       // We read the instance value. Missing values default to 0 for numbers, or empty string.
+
+      // Throw if mandatory fields are missing
+      const isMandatory =
+        field.type === 'pin_code' ||
+        field.type === 'config_key' ||
+        (field.type === 'uint8' && prop === 'index');
+      if (isMandatory) {
+        fnBody += `
+          if (instance['${prop}'] === undefined || instance['${prop}'] === null) {
+            throw new BoksProtocolError(BoksProtocolErrorId.INVALID_VALUE, 'Missing mandatory field: ${prop}');
+          }
+        `;
+      }
+
       const val = `(instance['${prop}'] || 0)`;
       const strVal = `(String(instance['${prop}'] || ''))`;
+      const strValRaw = `(String(instance['${prop}']))`;
 
       switch (field.type) {
         case 'uint8':
@@ -460,12 +475,12 @@ export class PayloadMapper {
           break;
         case 'pin_code':
           for (let i = 0; i < 6; i++) {
-            fnBody += `payload[${o + i}] = ${strVal}.length > ${i} ? ${strVal}.charCodeAt(${i}) : 48;\n`; // Default '0'
+            fnBody += `payload[${o + i}] = ${strValRaw}.charCodeAt(${i});\n`;
           }
           break;
         case 'config_key':
           for (let i = 0; i < 8; i++) {
-            fnBody += `payload[${o + i}] = ${strVal}.length > ${i} ? ${strVal}.charCodeAt(${i}) : 48;\n`; // Default '0'
+            fnBody += `payload[${o + i}] = ${strValRaw}.charCodeAt(${i});\n`;
           }
           break;
         case 'hex_string':
@@ -515,6 +530,9 @@ export class PayloadMapper {
       );
     }
     const targetClass = instance.constructor;
+    if (!targetClass) {
+      throw new BoksProtocolError(BoksProtocolErrorId.INTERNAL_ERROR, 'Cannot serialize instance without constructor');
+    }
     let serializer = this.compiledSerializers.get(targetClass);
     if (!serializer) {
       serializer = this.compileSerializer(targetClass);

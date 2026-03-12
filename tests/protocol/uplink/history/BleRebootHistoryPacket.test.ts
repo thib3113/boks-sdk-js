@@ -21,7 +21,7 @@ describe('BleRebootHistoryPacket', () => {
 
   describe('BleRebootHistoryPacket default construction', () => {
     it('should handle constructor with default age', () => {
-      const packet = new BleRebootHistoryPacket();
+      const packet = new BleRebootHistoryPacket(0);
       expect(packet.age).toBe(0);
     });
   });

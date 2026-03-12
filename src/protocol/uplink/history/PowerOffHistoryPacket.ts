@@ -8,8 +8,8 @@ export class PowerOffHistoryPacket extends BoksHistoryEvent {
   static readonly opcode = BoksOpcode.POWER_OFF;
 
   constructor(
-    age: number = 0,
-    public readonly reason: number = 0,
+    age: number,
+    public readonly reason: number,
     rawPayload?: Uint8Array
   ) {
     super(PowerOffHistoryPacket.opcode, age, rawPayload);

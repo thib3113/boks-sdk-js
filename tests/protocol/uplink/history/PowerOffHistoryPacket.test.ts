@@ -22,7 +22,7 @@ describe('PowerOffHistoryPacket', () => {
 
   describe('PowerOffHistoryPacket default construction', () => {
     it('should handle constructor with default age', () => {
-      const packet = new PowerOffHistoryPacket();
+      const packet = new PowerOffHistoryPacket(0, 0);
       expect(packet.age).toBe(0);
     });
   });

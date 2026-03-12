@@ -17,9 +17,9 @@ export class NfcOpeningHistoryPacket extends BoksHistoryEvent {
   public accessor rawUidBytes: Uint8Array = new Uint8Array(0);
 
   constructor(
-    age: number = 0,
-    tagType: number = 0,
-    public readonly uid: string = '',
+    age: number,
+    tagType: number,
+    public readonly uid: string,
     rawPayload?: Uint8Array
   ) {
     super(NfcOpeningHistoryPacket.opcode, age, rawPayload);

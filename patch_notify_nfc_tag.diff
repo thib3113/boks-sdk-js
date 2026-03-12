@@ -1,0 +1,40 @@
+--- src/protocol/uplink/NotifyNfcTagFoundPacket.ts
++++ src/protocol/uplink/NotifyNfcTagFoundPacket.ts
+@@ -2,6 +2,7 @@
+ import { BoksOpcode } from '@/protocol/constants';
+ import { bytesToHex } from '@/utils/converters';
++import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';
+
+ /**
+  * Notification: NFC Tag found during scan.
+@@ -12,12 +13,27 @@
+
+   constructor(
+-    public readonly uid: string = '',
++    public readonly uid: string,
+     rawPayload?: Uint8Array
+   ) {
+     super(NotifyNfcTagFoundPacket.opcode, rawPayload);
+   }
+
+   static fromPayload(payload: Uint8Array): NotifyNfcTagFoundPacket {
+-    const uid = bytesToHex(payload);
++    if (payload.length < 1) {
++      throw new BoksProtocolError(
++        BoksProtocolErrorId.MALFORMED_DATA,
++        'Payload too short for NotifyNfcTagFoundPacket'
++      );
++    }
++    const uidLength = payload[0];
++    if (uidLength > 4) {
++      throw new BoksProtocolError(
++        BoksProtocolErrorId.MALFORMED_DATA,
++        'UID length greater than 4 is not supported',
++        { length: uidLength }
++      );
++    }
++    const uidBytes = payload.subarray(1, 1 + uidLength);
++    const uid = bytesToHex(uidBytes);
+     return new NotifyNfcTagFoundPacket(uid, payload);
+   }
+ }

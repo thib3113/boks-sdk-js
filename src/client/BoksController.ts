@@ -747,7 +747,7 @@ export class BoksController {
    */
   async bondScale(): Promise<boolean> {
     return this.performOperation(
-      new ScaleBondPacket(),
+      new ScaleBondPacket(new Uint8Array(0)),
       BoksOpcode.NOTIFY_SCALE_BONDING_SUCCESS,
       BoksOpcode.NOTIFY_SCALE_BONDING_ERROR
     );
@@ -771,7 +771,9 @@ export class BoksController {
    * @experimental
    */
   async tareScale(empty: boolean): Promise<boolean> {
-    const packet = empty ? new ScaleTareEmptyPacket() : new ScaleTareLoadedPacket();
+    const packet = empty
+      ? new ScaleTareEmptyPacket()
+      : new ScaleTareLoadedPacket(new Uint8Array(0));
     const successOpcode = empty
       ? BoksOpcode.NOTIFY_SCALE_TARE_EMPTY_OK
       : BoksOpcode.NOTIFY_SCALE_TARE_LOADED_OK;

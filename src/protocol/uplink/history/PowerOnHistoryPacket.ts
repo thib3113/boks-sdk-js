@@ -8,7 +8,7 @@ import { BoksOpcode } from '@/protocol/constants';
 export class PowerOnHistoryPacket extends BoksHistoryEvent {
   static readonly opcode = BoksOpcode.POWER_ON;
 
-  constructor(age: number = 0, rawPayload?: Uint8Array) {
+  constructor(age: number, rawPayload?: Uint8Array) {
     super(PowerOnHistoryPacket.opcode, age, rawPayload);
   }
 

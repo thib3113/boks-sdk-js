@@ -9,7 +9,7 @@ export class NotifyScaleMeasureWeightPacket extends BoksRXPacket {
   static readonly opcode = BoksOpcode.NOTIFY_SCALE_MEASURE_WEIGHT;
 
   constructor(
-    public readonly weight: number = 0,
+    public readonly weight: number,
     rawPayload?: Uint8Array
   ) {
     super(NotifyScaleMeasureWeightPacket.opcode, rawPayload);

@@ -1,0 +1,3 @@
+
+> @thib3113/boks-sdk@0.0.11 type-check /app
+> tsc --noEmit

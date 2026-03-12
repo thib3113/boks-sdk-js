@@ -22,7 +22,7 @@ describe('ScaleMeasureHistoryPacket', () => {
 
   describe('ScaleMeasureHistoryPacket default construction', () => {
     it('should handle constructor with default age', () => {
-      const packet = new ScaleMeasureHistoryPacket();
+      const packet = new ScaleMeasureHistoryPacket(0, new Uint8Array(0));
       expect(packet.age).toBe(0);
     });
   });

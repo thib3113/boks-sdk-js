@@ -11,12 +11,7 @@ export class CodeBleValidHistoryPacket extends BoksHistoryEvent {
   @PayloadMacAddress(11)
   public accessor connectedMac: string = '';
 
-  constructor(
-    age: number = 0,
-    code: string = '',
-    connectedMac: string = '',
-    rawPayload?: Uint8Array
-  ) {
+  constructor(age: number, code: string, connectedMac: string, rawPayload?: Uint8Array) {
     super(CodeBleValidHistoryPacket.opcode, age, rawPayload);
     this.code = code;
     this.connectedMac = connectedMac;

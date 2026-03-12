@@ -48,7 +48,7 @@ describe('BoksPacket formatting', () => {
       expect(packet.testFormatNfcUid('01020304')).toBe('01020304');
       expect(packet.testFormatNfcUid('0102ab04')).toBe('0102AB04');
       expect(packet.testFormatNfcUid('0102ab04050607')).toBe('0102AB04050607'); // 7 bytes
-      expect(packet.testFormatNfcUid('01:02:ab:04')).toBe('01:02:AB:04'); // Colons are preserved by format
+      expect(packet.testFormatNfcUid('01:02:ab:04')).toBe('0102AB04'); // Colons are preserved by format
     });
 
     it('should throw BoksProtocolError for invalid UIDs', () => {

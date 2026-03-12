@@ -7,7 +7,7 @@ import { BoksOpcode } from '@/protocol/constants';
 export class BleRebootHistoryPacket extends BoksHistoryEvent {
   static readonly opcode = BoksOpcode.BLE_REBOOT;
 
-  constructor(age: number = 0, rawPayload?: Uint8Array) {
+  constructor(age: number, rawPayload?: Uint8Array) {
     super(BleRebootHistoryPacket.opcode, age, rawPayload);
   }
 

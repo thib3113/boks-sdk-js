@@ -222,7 +222,11 @@ export class BoksPacketFactory {
     ) => void
   ): BoksPacket | undefined {
     if (data.length < 3) {
-      return undefined;
+      throw new BoksProtocolError(
+        BoksProtocolErrorId.INVALID_PAYLOAD_LENGTH,
+        'Packet length too short (needs at least 3 bytes)',
+        { received: data.length }
+      );
     }
 
     const opcode = data[0];
@@ -230,7 +234,11 @@ export class BoksPacketFactory {
 
     // Ensure we have enough data (Opcode + Length + Payload + Checksum)
     if (data.length < length + 3) {
-      return undefined;
+      throw new BoksProtocolError(
+        BoksProtocolErrorId.INVALID_PAYLOAD_LENGTH,
+        'Packet length too short based on length byte',
+        { received: data.length, expected: length + 3 }
+      );
     }
 
     const payload = data.subarray(2, 2 + length);
@@ -246,7 +254,10 @@ export class BoksPacketFactory {
           received: checksum
         });
       }
-      return undefined;
+      throw new BoksProtocolError(BoksProtocolErrorId.CHECKSUM_MISMATCH, 'Invalid checksum', {
+        expected: computedChecksum,
+        received: checksum
+      });
     }
 
     return this.fromResponse(opcode, payload);

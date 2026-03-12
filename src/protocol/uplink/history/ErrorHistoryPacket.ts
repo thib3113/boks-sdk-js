@@ -8,8 +8,8 @@ export class ErrorHistoryPacket extends BoksHistoryEvent {
   static readonly opcode = BoksOpcode.LOG_EVENT_ERROR;
 
   constructor(
-    age: number = 0,
-    public readonly errorCode: number = 0,
+    age: number,
+    public readonly errorCode: number,
     rawPayload?: Uint8Array
   ) {
     super(ErrorHistoryPacket.opcode, age, rawPayload);
