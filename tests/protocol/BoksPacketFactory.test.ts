@@ -169,14 +169,15 @@ describe('BoksPacketFactory', () => {
       });
     });
 
-    it('should return undefined for unknown opcode', () => {
+    it('should throw BoksProtocolError for unknown opcode', () => {
       const unknownOpcode = 0xFF; // Assuming 0xFF is not used
       const length = 0;
       const data = new Uint8Array([unknownOpcode, length]);
       const checksum = calculateChecksum(data);
       const fullData = new Uint8Array([unknownOpcode, length, checksum]);
 
-      expect(BoksPacketFactory.createFromPayload(fullData)).toBeUndefined();
+      expect(() => BoksPacketFactory.createFromPayload(fullData)).toThrowError(BoksProtocolError);
+      expect(() => BoksPacketFactory.createFromPayload(fullData)).toThrowError(/Unknown or unregistered opcode/);
     });
   });
 

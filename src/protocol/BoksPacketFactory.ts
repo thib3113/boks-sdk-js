@@ -220,7 +220,7 @@ export class BoksPacketFactory {
       event: 'checksum_error',
       context: { opcode: number; expected: number; received: number }
     ) => void
-  ): BoksPacket | undefined {
+  ): BoksPacket {
     if (data.length < 3) {
       throw new BoksProtocolError(
         BoksProtocolErrorId.INVALID_PAYLOAD_LENGTH,
@@ -273,10 +273,14 @@ export class BoksPacketFactory {
   /**
    * Creates an RX packet instance from an opcode and its payload.
    */
-  static fromResponse(opcode: number, payload: Uint8Array): BoksPacket | undefined {
+  static fromResponse(opcode: number, payload: Uint8Array): BoksPacket {
     const Ctor = this.getConstructor(opcode);
     if (!Ctor) {
-      return undefined;
+      throw new BoksProtocolError(
+        BoksProtocolErrorId.MALFORMED_DATA,
+        'Unknown or unregistered opcode',
+        { opcode }
+      );
     }
 
     return Ctor.fromPayload(payload);

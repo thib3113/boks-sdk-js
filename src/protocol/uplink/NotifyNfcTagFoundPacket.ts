@@ -26,10 +26,10 @@ export class NotifyNfcTagFoundPacket extends BoksRXPacket {
       );
     }
     const uidLength = payload[0];
-    if (uidLength > 4) {
+    if (uidLength > 10) {
       throw new BoksProtocolError(
         BoksProtocolErrorId.MALFORMED_DATA,
-        'UID length greater than 4 is not supported',
+        'UID length greater than 10 is not supported',
         { length: uidLength }
       );
     }
