@@ -12,7 +12,7 @@ describe('NfcRegisterPacket Resilience (Fuzzing)', () => {
         fc.string(), // uid
         (configKey, uid) => {
           try {
-            const packet = new NfcRegisterPacket(configKey, uid);
+            const packet = new NfcRegisterPacket({ configKey: configKey, uid: uid });
 
             // If it succeeds, the inputs MUST have matched the strict validation criteria:
             // Config Key = 8 hex chars

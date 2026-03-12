@@ -427,7 +427,7 @@ export class BoksController {
     });
 
     return this.performOperation(
-      new NfcRegisterPacket(configKey, tagId),
+      new NfcRegisterPacket({ configKey, uid: tagId }),
       BoksOpcode.NOTIFY_NFC_TAG_REGISTERED,
       BoksOpcode.NOTIFY_NFC_TAG_REGISTERED_ERROR_ALREADY_EXISTS
     );
@@ -631,7 +631,7 @@ export class BoksController {
   async setConfiguration(params: { type: number; value: boolean }): Promise<boolean> {
     const configKey = this.getConfigKeyOrThrow();
     return this.performOperation(
-      new SetConfigurationPacket(configKey, params.type, params.value),
+      new SetConfigurationPacket({ configKey, configType: params.type, value: params.value }),
       BoksOpcode.NOTIFY_SET_CONFIGURATION_SUCCESS,
       BoksOpcode.CODE_OPERATION_ERROR
     );

@@ -18,14 +18,16 @@ export class NotifyDoorStatusPacket extends BoksRXPacket {
     return this.raw === 0x01 && this.inverted === 0x00;
   }
 
-  constructor(inverted: number, raw: number, rawPayload?: Uint8Array) {
-    super(NotifyDoorStatusPacket.opcode, rawPayload);
-    this.inverted = inverted;
-    this.raw = raw;
+  constructor(props: { inverted: number; raw: number }) {
+    super(NotifyDoorStatusPacket.opcode);
+    this.inverted = props.inverted;
+    this.raw = props.raw;
   }
 
   static fromPayload(payload: Uint8Array): NotifyDoorStatusPacket {
     const parsed = PayloadMapper.parse(NotifyDoorStatusPacket, payload);
-    return new NotifyDoorStatusPacket(parsed.inverted!, parsed.raw!, payload);
+    const packet = new NotifyDoorStatusPacket({ inverted: parsed.inverted!, raw: parsed.raw! });
+    packet.rawPayload = payload;
+    return packet;
   }
 }

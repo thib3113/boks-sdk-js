@@ -19,10 +19,10 @@ export class SetConfigurationPacket extends AuthPacket {
   @PayloadBoolean(9)
   public accessor value!: boolean;
 
-  constructor(configKey: string, configType: BoksConfigType, value: boolean) {
-    super(configKey);
-    this.configType = configType;
-    this.value = value;
+  constructor(props: { configKey: string; configType: BoksConfigType; value: boolean }) {
+    super(props.configKey);
+    this.configType = props.configType;
+    this.value = props.value;
   }
 
   static fromPayload(payload: Uint8Array): SetConfigurationPacket {
@@ -44,7 +44,11 @@ export class SetConfigurationPacket extends AuthPacket {
     }
 
     const parsed = PayloadMapper.parse(SetConfigurationPacket, payload);
-    return new SetConfigurationPacket(parsed.configKey!, parsed.configType!, parsed.value!);
+    return new SetConfigurationPacket({
+      configKey: parsed.configKey!,
+      configType: parsed.configType!,
+      value: parsed.value!
+    });
   }
 
   toPayload() {

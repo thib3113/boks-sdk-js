@@ -9,7 +9,7 @@ describe('NfcRegisterPacket', () => {
   const validUid = '01:02:03:04'; // 4 bytes -> 8 hex chars. Minimum allowed.
 
   it('should construct with valid parameters', () => {
-    const packet = new NfcRegisterPacket(validKey, validUid);
+    const packet = new NfcRegisterPacket({ configKey: validKey, uid: validUid });
     expect(packet.opcode).toBe(BoksOpcode.REGISTER_NFC_TAG);
     expect(packet.configKey).toBe(validKey);
     expect(packet.uid).toBe('01020304');
@@ -19,12 +19,12 @@ describe('NfcRegisterPacket', () => {
       // The constructor calls validateNfcUid, which strips colons for regex check, but doesn't modify this.uid.
       // However, toPayload strips colons.
       const unformatted = '01020304';
-      const packet = new NfcRegisterPacket(validKey, unformatted);
+      const packet = new NfcRegisterPacket({ configKey: validKey, uid: unformatted });
       expect(packet.uid).toBe(unformatted);
   });
 
   it('should encode correctly', () => {
-    const packet = new NfcRegisterPacket(validKey, validUid);
+    const packet = new NfcRegisterPacket({ configKey: validKey, uid: validUid });
     const encoded = packet.encode();
     // Opcode 0x18.
     // Key: 3132333435363738 (8 bytes)
@@ -52,16 +52,16 @@ describe('NfcRegisterPacket', () => {
   });
 
   it('should throw INVALID_CONFIG_KEY for invalid config key format', () => {
-     expect(() => new NfcRegisterPacket('invalid', validUid)).toThrowError(BoksProtocolError);
+     expect(() => new NfcRegisterPacket({ configKey: 'invalid', uid: validUid })).toThrowError(BoksProtocolError);
   });
 
   it('should throw INVALID_NFC_UID_FORMAT for invalid uid', () => {
       // Too short (< 8 chars / 4 bytes)
-      expect(() => new NfcRegisterPacket(validKey, '01:02:03')).toThrowError(BoksProtocolError);
+      expect(() => new NfcRegisterPacket({ configKey: validKey, uid: '01:02:03' })).toThrowError(BoksProtocolError);
       // Too long (> 20 chars / 10 bytes)
-      expect(() => new NfcRegisterPacket(validKey, '0102030405060708090A0B')).toThrowError(BoksProtocolError);
+      expect(() => new NfcRegisterPacket({ configKey: validKey, uid: '0102030405060708090A0B' })).toThrowError(BoksProtocolError);
       // Not hex
-      expect(() => new NfcRegisterPacket(validKey, 'ZZZZZZZZ')).toThrowError(BoksProtocolError);
+      expect(() => new NfcRegisterPacket({ configKey: validKey, uid: 'ZZZZZZZZ' })).toThrowError(BoksProtocolError);
   });
 
   it('should fail parsing if payload is malformed (short/invalid length byte)', () => {

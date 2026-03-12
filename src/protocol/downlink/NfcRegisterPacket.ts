@@ -14,17 +14,14 @@ export class NfcRegisterPacket extends AuthPacket {
   @PayloadVarLenHex(8)
   public accessor uid!: string;
 
-  constructor(configKey: string, uid: string) {
-    super(configKey);
-    this.uid = this.formatNfcUid(uid);
+  constructor(props: { configKey: string; uid: string }) {
+    super(props.configKey);
+    this.uid = this.formatNfcUid(props.uid);
   }
 
   static fromPayload(payload: Uint8Array): NfcRegisterPacket {
-    if (payload.length < 8) {
-      return new NfcRegisterPacket('', ''); // invalid payload, let generic validation fail or construct empty
-    }
     const parsed = PayloadMapper.parse(NfcRegisterPacket, payload);
-    return new NfcRegisterPacket(parsed.configKey!, parsed.uid!);
+    return new NfcRegisterPacket({ configKey: parsed.configKey!, uid: parsed.uid! });
   }
 
   toPayload() {

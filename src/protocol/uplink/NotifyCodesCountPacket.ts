@@ -14,14 +14,19 @@ export class NotifyCodesCountPacket extends BoksRXPacket {
   @PayloadUint16(2)
   public accessor otherCount!: number;
 
-  constructor(masterCount: number, otherCount: number, rawPayload?: Uint8Array) {
-    super(NotifyCodesCountPacket.opcode, rawPayload);
-    this.masterCount = masterCount;
-    this.otherCount = otherCount;
+  constructor(props: { masterCount: number; otherCount: number }) {
+    super(NotifyCodesCountPacket.opcode);
+    this.masterCount = props.masterCount;
+    this.otherCount = props.otherCount;
   }
 
   static fromPayload(payload: Uint8Array): NotifyCodesCountPacket {
     const parsed = PayloadMapper.parse(NotifyCodesCountPacket, payload);
-    return new NotifyCodesCountPacket(parsed.masterCount!, parsed.otherCount!, payload);
+    const packet = new NotifyCodesCountPacket({
+      masterCount: parsed.masterCount!,
+      otherCount: parsed.otherCount!
+    });
+    packet.rawPayload = payload;
+    return packet;
   }
 }
