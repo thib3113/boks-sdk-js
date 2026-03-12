@@ -1,4 +1,4 @@
-import { PayloadMapper, PayloadUint8, PayloadByteArray } from '@/protocol/payload-mapper';
+import { PayloadMapper, PayloadUint8, PayloadNfcUid } from '@/protocol/payload-mapper';
 import { BoksHistoryEvent } from '@/protocol/uplink/history/_BoksHistoryEventBase';
 import { BoksOpcode } from '@/protocol/constants';
 import { bytesToHex } from '@/utils/converters';
@@ -13,8 +13,8 @@ export class NfcOpeningHistoryPacket extends BoksHistoryEvent {
   @PayloadUint8(4)
   public accessor uidLength: number = 0;
 
-  @PayloadByteArray(5, 7)
-  public accessor rawUidBytes: Uint8Array = new Uint8Array(0);
+  @PayloadNfcUid(5)
+  public accessor nfcUidData: string = '';
 
   constructor(
     age: number,

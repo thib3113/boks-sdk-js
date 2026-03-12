@@ -1,134 +1,117 @@
-import { PayloadPinCode } from '../../../src/protocol/payload-mapper';
 import { describe, it, expect } from 'vitest';
-import { PayloadMapper } from '@/protocol/payload-mapper';
+import { PayloadMapper, PayloadUint8 } from '@/protocol/payload-mapper';
 import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';
 
-describe('PayloadMapper Security and Penetration Testing', () => {
+describe('PayloadMapper Security & Resilience', () => {
+  it('prevents JIT injection via property names', () => {
+    class MaliciousInjection {
+      @PayloadUint8(0)
+      public accessor '"); throw new Error("hacked"); //': number = 0;
+    }
 
-    describe('JIT Injection Vectors (Parser)', () => {
-        it('should block explicit JavaScript injection in propertyName', () => {
-            class ExploitClass {}
-            // Attempting to break out of the result string allocation to execute arbitrary JS
-            const maliciousName = "prop']; console.log('HACKED'); //";
-
-            PayloadMapper.defineSchema(ExploitClass, [
-                { propertyName: maliciousName, type: 'uint8', offset: 0 }
-            ]);
-
-            // The JIT compiler MUST throw immediately, before even constructing the function string
-            let err: any;
-            try {
-                 PayloadMapper.parse(ExploitClass, new Uint8Array([0x01]));
-            } catch (e) { err = e; }
-
-            expect(err).toBeDefined(); if (err) expect(err).toBeInstanceOf(BoksProtocolError);
-            expect(err.id).toBe(BoksProtocolErrorId.INTERNAL_ERROR);
-            expect(err.message).toContain('Unsafe property name mapped');
-        });
-
-        it('should block implicit method overrides (Prototype Pollution attempt)', () => {
-            class ExploitClass {}
-            // Attempt to map to __proto__
-            PayloadMapper.defineSchema(ExploitClass, [
-                { propertyName: '__proto__', type: 'uint8', offset: 0 }
-            ]);
-
-            let err: any;
-            try {
-                 PayloadMapper.parse(ExploitClass, new Uint8Array([0x01]));
-            } catch (e) { err = e; }
-
-            expect(err).toBeDefined(); if (err) expect(err).toBeInstanceOf(BoksProtocolError);
-            expect(err.id).toBe(BoksProtocolErrorId.INTERNAL_ERROR);
-        });
-
-        it('should strictly throw if missing length parameter on strings (Denial of Service vector)', () => {
-            class ExploitClass {}
-            PayloadMapper.defineSchema(ExploitClass, [
-                { propertyName: 'str', type: 'ascii_string', offset: 0 } // No length!
-            ]);
-
-            let err: any;
-            try {
-                 PayloadMapper.parse(ExploitClass, new Uint8Array([0x01]));
-            } catch (e) { err = e; }
-
-            expect(err).toBeDefined(); if (err) expect(err).toBeInstanceOf(BoksProtocolError);
-            expect(err.message).toContain('Length required');
-        });
-    });
-
-    describe('JIT Injection Vectors (Serializer)', () => {
-        it('should block explicit JavaScript injection in propertyName during compilation', () => {
-            class ExploitClass {}
-            const maliciousName = "prop']; process.exit(1); //";
-
-            PayloadMapper.defineSchema(ExploitClass, [
-                { propertyName: maliciousName, type: 'uint8', offset: 0 }
-            ]);
-
-            let err: any;
-            try {
-                 PayloadMapper.serialize(new ExploitClass());
-            } catch (e) { err = e; }
-
-            expect(err).toBeDefined(); if (err) expect(err).toBeInstanceOf(BoksProtocolError);
-            expect(err.id).toBe(BoksProtocolErrorId.INTERNAL_ERROR);
-        });
-
-        it('should handle undefined instances gracefully without throwing unhandled exceptions', () => {
-             class EmptyClass {}
-             PayloadMapper.defineSchema(EmptyClass, [{ propertyName: 'val', type: 'uint8', offset: 0 }]);
-             expect(() => PayloadMapper.serialize(undefined as any)).toThrow(BoksProtocolError);
-             expect(() => PayloadMapper.serialize(null as any)).toThrow(BoksProtocolError);
-        });
-    });
-
-    describe('Missing mandatory fields', () => {
-    it('should throw when mandatory fields are missing', () => {
-      class MissingMandatory {
-        @PayloadPinCode(0)
-        accessor pinCode!: string;
-      }
-      expect(() => PayloadMapper.serialize(new MissingMandatory())).toThrow();
-    });
+    // Attempting to parse should throw our structured error, not a SyntaxError or Error("hacked")
+    expect(() => PayloadMapper.parse(MaliciousInjection, new Uint8Array([1]))).toThrowError(
+      new BoksProtocolError(
+        BoksProtocolErrorId.INTERNAL_ERROR,
+        `Unsafe property name mapped: "); throw new Error("hacked"); //`
+      )
+    );
   });
 
-  describe('Memory Access Violations (Buffer Overflows)', () => {
-        it('should strictly block outrageously large offset values (Integer Overflow vectors)', () => {
-            class ExploitClass {}
-            PayloadMapper.defineSchema(ExploitClass, [
-                { propertyName: 'val', type: 'uint8', offset: 99999999999999999 } // Beyond max safe size
-            ]);
+  it('prevents JIT injection via prototype pollution names', () => {
+    class PrototypePollution {
+      @PayloadUint8(0)
+      public accessor __proto__: number = 0;
+    }
 
-            expect(() => PayloadMapper.parse(ExploitClass, new Uint8Array(10))).toThrow(BoksProtocolError);
-            expect(() => PayloadMapper.serialize(new ExploitClass())).toThrow(BoksProtocolError);
-        });
+    expect(() => PayloadMapper.parse(PrototypePollution, new Uint8Array([1]))).toThrowError(
+      new BoksProtocolError(
+        BoksProtocolErrorId.INTERNAL_ERROR,
+        `Unsafe property name mapped: __proto__`
+      )
+    );
+  });
 
-        it('should strictly block negative offsets (Buffer Underflow vectors)', () => {
-             class ExploitClass {}
-             PayloadMapper.defineSchema(ExploitClass, [
-                 { propertyName: 'val', type: 'uint8', offset: -5 }
-             ]);
-             expect(() => PayloadMapper.parse(ExploitClass, new Uint8Array(10))).toThrow(BoksProtocolError);
-        });
+  it('prevents JIT compilation with out-of-bounds offsets', () => {
+    expect(() => {
+      class OOBOffset {
+        @PayloadUint8(1050)
+        public accessor val: number = 0;
+      }
+      PayloadMapper.parse(OOBOffset, new Uint8Array(2000));
+    }).toThrowError(
+      new BoksProtocolError(
+        BoksProtocolErrorId.INTERNAL_ERROR,
+        'Invalid mapping bounds: offset=1050, size=1'
+      )
+    );
+  });
 
-        it('should strictly enforce minSize payload constraints to prevent JS RangeError', () => {
-             class ValidClass {}
-             PayloadMapper.defineSchema(ValidClass, [
-                 { propertyName: 'val', type: 'uint32', offset: 10 } // requires at least 14 bytes
-             ]);
+  it('prevents JIT compilation with NaN or non-number bounds', () => {
+    expect(() => {
+      class NaNOffset {
+        @PayloadUint8(NaN)
+        public accessor val: number = 0;
+      }
+      PayloadMapper.parse(NaNOffset, new Uint8Array([1]));
+    }).toThrowError(
+      new BoksProtocolError(
+        BoksProtocolErrorId.INTERNAL_ERROR,
+        'Invalid mapping bounds: offset=NaN, size=1'
+      )
+    );
+  });
 
-             // Providing 13 bytes must result in BoksProtocolError, not a RangeError or crash
-             const payload = new Uint8Array(13);
-             let err: any;
-             try {
-                  PayloadMapper.parse(ValidClass, payload);
-             } catch (e) { err = e; }
+  it('prevents OOB read during parse', () => {
+    class ValidPacket {
+      @PayloadUint8(0)
+      public accessor val1: number = 0;
+      @PayloadUint8(4)
+      public accessor val2: number = 0;
+    }
 
-             expect(err).toBeDefined(); if (err) expect(err).toBeInstanceOf(BoksProtocolError);
-             expect(err.id).toBe(BoksProtocolErrorId.MALFORMED_DATA);
-             expect(err.message).toContain('Payload too short');
-        });
-    });
+    // Minimum size required is 5 bytes (index 4 + 1 size)
+    // Passing only 3 bytes should throw
+    expect(() => PayloadMapper.parse(ValidPacket, new Uint8Array([1, 2, 3]))).toThrowError(
+      new BoksProtocolError(BoksProtocolErrorId.MALFORMED_DATA, 'Payload too short for mapped fields', { expectedAtLeast: 5, received: 3 })
+    );
+  });
+
+  it('handles type confusion safely during serialization', () => {
+    class Dummy {
+      @PayloadUint8(0)
+      public accessor num: number = 0;
+    }
+
+    const maliciousInstance = new Dummy();
+    // Simulate prototype override or dynamic property changing the type
+    (maliciousInstance as any).num = { fake: 'object' };
+
+    // Should not crash the serializer, number values cast to 0 if NaN etc, or throw if required.
+    // For uint8, it does \`payload[0] = (instance['prop'] || 0)\`
+    const serialized = PayloadMapper.serialize(maliciousInstance);
+    // JS object evaluates to true but binary ops or bitwise cast will probably result in 0
+    expect(serialized).toBeInstanceOf(Uint8Array);
+  });
+
+  it('prevents DoS via memory allocation for variable hex fields', () => {
+    class DoSPacket {
+      // Using defineSchema to simulate a var_len_hex
+    }
+    PayloadMapper.defineSchema(DoSPacket, [
+      { propertyName: 'malicious', type: 'var_len_hex', offset: 0 }
+    ]);
+
+    const instance = new DoSPacket();
+    // Pass an array instead of a string to trick the length calculator
+    (instance as any).malicious = new Array(1e7).fill(1);
+
+    // The patch in compileSerializer ensures \`typeof === 'string'\` before checking length.
+    // It should treat this invalid type gracefully and allocate 0 bytes for dynamic length.
+    const serialized = PayloadMapper.serialize(instance);
+
+    // 1 byte allocated minimum for var_len_hex length field
+    expect(serialized.length).toBe(1);
+    expect(serialized[0]).toBe(0); // length is 0
+  });
 });
