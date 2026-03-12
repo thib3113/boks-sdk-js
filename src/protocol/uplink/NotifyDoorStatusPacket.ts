@@ -1,5 +1,6 @@
 import { BoksRXPacket } from '@/protocol/uplink/_BoksRXPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
+import { PayloadUint8, PayloadMapper } from '@/protocol/payload-mapper';
 
 /**
  * Notification of the current door status.
@@ -7,22 +8,24 @@ import { BoksOpcode } from '@/protocol/constants';
 export class NotifyDoorStatusPacket extends BoksRXPacket {
   static readonly opcode = BoksOpcode.NOTIFY_DOOR_STATUS;
 
-  constructor(
-    public readonly isOpen: boolean,
-    rawPayload?: Uint8Array
-  ) {
+  @PayloadUint8(0)
+  public accessor inverted!: number;
+
+  @PayloadUint8(1)
+  public accessor raw!: number;
+
+  public get isOpen(): boolean {
+    return this.raw === 0x01 && this.inverted === 0x00;
+  }
+
+  constructor(inverted: number, raw: number, rawPayload?: Uint8Array) {
     super(NotifyDoorStatusPacket.opcode, rawPayload);
+    this.inverted = inverted;
+    this.raw = raw;
   }
 
   static fromPayload(payload: Uint8Array): NotifyDoorStatusPacket {
-    let isOpen = false;
-    if (payload.length >= 2) {
-      // Logic: Open if Inverted == 0x00 and Raw == 0x01
-      // Closed if Inverted == 0x01 and Raw == 0x00
-      const inverted = payload[0];
-      const raw = payload[1];
-      isOpen = raw === 0x01 && inverted === 0x00;
-    }
-    return new NotifyDoorStatusPacket(isOpen, payload);
+    const parsed = PayloadMapper.parse(NotifyDoorStatusPacket, payload);
+    return new NotifyDoorStatusPacket(parsed.inverted!, parsed.raw!, payload);
   }
 }

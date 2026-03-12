@@ -13,10 +13,8 @@ describe('NotifyCodesCountPacket', () => {
     expect(packet.otherCount).toBe(20);
   });
 
-  it('should handle short payload gracefully (defaults to 0)', () => {
+  it('should throw an error if payload is too short', () => {
     const payload = new Uint8Array(2);
-    const packet = NotifyCodesCountPacket.fromPayload(payload);
-    expect(packet.masterCount).toBe(0);
-    expect(packet.otherCount).toBe(0);
+    expect(() => NotifyCodesCountPacket.fromPayload(payload)).toThrowError();
   });
 });

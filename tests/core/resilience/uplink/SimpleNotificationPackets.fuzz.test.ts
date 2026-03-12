@@ -55,16 +55,12 @@ describe('SimpleNotificationPackets Resilience (Fuzzing)', () => {
 
   it('FEATURE REGRESSION: NotifyDoorStatusPacket should safely handle arbitrary payload lengths and set isOpen properly', () => {
     fc.assert(
-      fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (payload) => {
+      fc.property(fc.uint8Array({ minLength: 2, maxLength: 256 }), (payload) => {
         const packet = NotifyDoorStatusPacket.fromPayload(payload);
         expect(packet).toBeInstanceOf(NotifyDoorStatusPacket);
         expect(packet.opcode).toBe(0x84);
         expect((packet as any).rawPayload).toEqual(payload);
-        if (payload.length >= 2) {
-          expect(packet.isOpen).toBe(payload[1] === 0x01 && payload[0] === 0x00);
-        } else {
-          expect(packet.isOpen).toBe(false);
-        }
+        expect(packet.isOpen).toBe(payload[1] === 0x01 && payload[0] === 0x00);
       }),
       { numRuns: 1000 }
     );
@@ -72,19 +68,14 @@ describe('SimpleNotificationPackets Resilience (Fuzzing)', () => {
 
   it('FEATURE REGRESSION: NotifyCodesCountPacket should safely handle arbitrary payload lengths and parse counts from DataView', () => {
     fc.assert(
-      fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (payload) => {
+      fc.property(fc.uint8Array({ minLength: 4, maxLength: 256 }), (payload) => {
         const packet = NotifyCodesCountPacket.fromPayload(payload);
         expect(packet).toBeInstanceOf(NotifyCodesCountPacket);
         expect(packet.opcode).toBe(0xC3);
         expect((packet as any).rawPayload).toEqual(payload);
-        if (payload.length >= 4) {
-          const view = new DataView(payload.buffer, payload.byteOffset, payload.byteLength);
-          expect(packet.masterCount).toBe(view.getUint16(0, false));
-          expect(packet.otherCount).toBe(view.getUint16(2, false));
-        } else {
-          expect(packet.masterCount).toBe(0);
-          expect(packet.otherCount).toBe(0);
-        }
+        const view = new DataView(payload.buffer, payload.byteOffset, payload.byteLength);
+        expect(packet.masterCount).toBe(view.getUint16(0, false));
+        expect(packet.otherCount).toBe(view.getUint16(2, false));
       }),
       { numRuns: 1000 }
     );

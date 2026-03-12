@@ -1,6 +1,6 @@
 import { AuthPacket } from '@/protocol/downlink/_AuthPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
-import { writeConfigKeyToBuffer, hexToBytes, bytesToHex } from '@/utils/converters';
+import { PayloadMapper, PayloadVarLenHex } from '@/protocol/payload-mapper';
 
 /**
  * NFC Tag Registration.
@@ -11,32 +11,23 @@ export class NfcRegisterPacket extends AuthPacket {
     return NfcRegisterPacket.opcode;
   }
 
-  constructor(
-    configKey: string,
-    public readonly uid: string
-  ) {
+  @PayloadVarLenHex(8)
+  public accessor uid!: string;
+
+  constructor(configKey: string, uid: string) {
     super(configKey);
     this.uid = this.formatNfcUid(uid);
   }
 
   static fromPayload(payload: Uint8Array): NfcRegisterPacket {
-    const configKey = AuthPacket.extractConfigKey(payload);
-    let uid = '';
-    if (payload.length > 8) {
-      const len = payload[8];
-      if (payload.length >= 9 + len) {
-        uid = bytesToHex(payload.subarray(9, 9 + len));
-      }
+    if (payload.length < 8) {
+      return new NfcRegisterPacket('', ''); // invalid payload, let generic validation fail or construct empty
     }
-    return new NfcRegisterPacket(configKey, uid);
+    const parsed = PayloadMapper.parse(NfcRegisterPacket, payload);
+    return new NfcRegisterPacket(parsed.configKey!, parsed.uid!);
   }
 
   toPayload() {
-    const uidBytes = hexToBytes(this.uid);
-    const payload = new Uint8Array(8 + 1 + uidBytes.length);
-    writeConfigKeyToBuffer(payload, 0, this.configKey);
-    payload[8] = uidBytes.length; // UID Length (1 byte)
-    payload.set(uidBytes, 9);
-    return payload;
+    return PayloadMapper.serialize(this);
   }
 }

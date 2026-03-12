@@ -68,8 +68,19 @@ describe('NfcRegisterPacket', () => {
       const payload = new Uint8Array(8); // Only key
       payload.set(stringToBytes(validKey), 0);
 
-      // fromPayload logic: if length > 8 ... else uid = ''.
-      // Constructor calls validateNfcUid(''). Empty string is too short -> Error.
+      // fromPayload logic: if length < 8, it returns an empty packet which fails validation.
       expect(() => NfcRegisterPacket.fromPayload(payload)).toThrowError(BoksProtocolError);
+  });
+
+  it('should prove PayloadVarLenHex decorator correctly handles dynamic payload length', () => {
+      // Create a payload with a longer UID (7 bytes)
+      const payload = new Uint8Array([
+          ...stringToBytes(validKey),
+          0x07, // Length
+          0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77 // Data
+      ]);
+
+      const packet = NfcRegisterPacket.fromPayload(payload);
+      expect(packet.uid).toBe('11223344556677');
   });
 });

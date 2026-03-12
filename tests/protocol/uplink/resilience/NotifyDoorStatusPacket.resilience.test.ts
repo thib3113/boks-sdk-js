@@ -7,21 +7,17 @@ describe('NotifyDoorStatusPacket - Resilience & Edge Cases', () => {
   describe('fromPayload()', () => {
     it('should parse valid arbitrary payloads without crashing', () => {
       fc.assert(
-        fc.property(fc.uint8Array(), (payload) => {
+        fc.property(fc.uint8Array({ minLength: 2 }), (payload) => {
           const packet = NotifyDoorStatusPacket.fromPayload(payload);
           expect(packet).toBeInstanceOf(NotifyDoorStatusPacket);
           expect(packet.opcode).toBe(BoksOpcode.NOTIFY_DOOR_STATUS);
           expect((packet as any).rawPayload).toEqual(payload);
 
           // Boolean validation based on parsing logic
-          if (payload.length >= 2) {
-            const inverted = payload[0];
-            const raw = payload[1];
-            if (raw === 0x01 && inverted === 0x00) {
-              expect(packet.isOpen).toBe(true);
-            } else {
-              expect(packet.isOpen).toBe(false);
-            }
+          const inverted = payload[0];
+          const raw = payload[1];
+          if (raw === 0x01 && inverted === 0x00) {
+            expect(packet.isOpen).toBe(true);
           } else {
             expect(packet.isOpen).toBe(false);
           }

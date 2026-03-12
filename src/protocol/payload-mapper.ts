@@ -18,13 +18,16 @@ export type FieldType =
   | 'pin_code'
   | 'config_key'
   | 'boolean'
-  | 'byte_array';
+  | 'byte_array'
+  | 'var_len_hex'
+  | 'bit';
 
 export interface FieldDefinition {
   propertyName: string;
   type: FieldType;
   offset: number;
-  length?: number; // Required for strings/arrays
+  length?: number; // Optional for hex_string and byte_array to consume remaining bytes
+  bitIndex?: number; // Required for 'bit'
 }
 
 /**
@@ -165,11 +168,7 @@ export class PayloadMapper {
         /* v8 ignore next */
       } else if (field.type === 'config_key') {
         size = 8;
-      } else if (
-        field.type === 'ascii_string' ||
-        field.type === 'hex_string' ||
-        field.type === 'byte_array'
-      ) {
+      } else if (field.type === 'ascii_string') {
         if (typeof field.length !== 'number') {
           throw new BoksProtocolError(
             BoksProtocolErrorId.INTERNAL_ERROR,
@@ -177,6 +176,16 @@ export class PayloadMapper {
           );
         }
         size = field.length;
+      } else if (field.type === 'hex_string' || field.type === 'byte_array') {
+        if (typeof field.length === 'number') {
+          size = field.length;
+        } else {
+          size = 0; // Dynamic length, min size is just the offset
+        }
+      } else if (field.type === 'var_len_hex') {
+        size = 1; // At minimum we need 1 byte for length
+      } else if (field.type === 'bit') {
+        size = 1;
       }
 
       this.assertSafeBounds(field.offset, size);
@@ -250,7 +259,11 @@ export class PayloadMapper {
           fnBody += `result['${prop}'] = payload[${o}] === 0x01;\n`;
           break;
         case 'byte_array':
-          fnBody += `result['${prop}'] = payload.subarray(${o}, ${o} + ${field.length});\n`;
+          if (typeof field.length === 'number') {
+            fnBody += `result['${prop}'] = payload.subarray(${o}, ${o} + ${field.length});\n`;
+          } else {
+            fnBody += `result['${prop}'] = payload.subarray(${o});\n`;
+          }
           break;
         case 'mac_address':
           // Reverse Little Endian to Big Endian (Standard Format: XX:XX:XX:XX:XX:XX)
@@ -291,11 +304,51 @@ export class PayloadMapper {
            `;
           break;
         case 'hex_string': {
-          const hexArgs = [];
-          for (let i = 0; i < field.length!; i++) {
-            hexArgs.push(`HEX_TABLE[payload[${o + i}]]`);
+          if (typeof field.length === 'number') {
+            const hexArgs = [];
+            for (let i = 0; i < field.length; i++) {
+              hexArgs.push(`HEX_TABLE[payload[${o + i}]]`);
+            }
+            if (hexArgs.length > 0) {
+              fnBody += `result['${prop}'] = ${hexArgs.join(' + ')};\n`;
+            } else {
+              fnBody += `result['${prop}'] = '';\n`;
+            }
+          } else {
+            fnBody += `
+            {
+               let s = '';
+               for (let i = ${o}; i < payload.length; i++) {
+                 s += HEX_TABLE[payload[i]];
+               }
+               result['${prop}'] = s;
+            }
+            `;
           }
-          fnBody += `result['${prop}'] = ${hexArgs.join(' + ')};\n`;
+          break;
+        }
+        case 'var_len_hex': {
+          fnBody += `
+          {
+             const len = payload[${o}];
+             if (payload.length < ${o + 1} + len) {
+               throw new BoksProtocolError(
+                 BoksProtocolErrorId.MALFORMED_DATA,
+                 'Payload too short for variable length hex string',
+                 { length: payload.length, expected: ${o + 1} + len }
+               );
+             }
+             let s = '';
+             for (let i = 0; i < len; i++) {
+               s += HEX_TABLE[payload[${o + 1} + i]];
+             }
+             result['${prop}'] = s;
+          }
+          `;
+          break;
+        }
+        case 'bit': {
+          fnBody += `result['${prop}'] = ((payload[${o}] >> ${field.bitIndex!}) & 1) === 1;\n`;
           break;
         }
       }
@@ -388,12 +441,14 @@ export class PayloadMapper {
         /* v8 ignore next */
       } else if (field.type === 'config_key') {
         fieldSize = 8;
-      } else if (
-        field.type === 'ascii_string' ||
-        field.type === 'hex_string' ||
-        field.type === 'byte_array'
-      ) {
+      } else if (field.type === 'ascii_string') {
         fieldSize = field.length!;
+      } else if (field.type === 'hex_string' || field.type === 'byte_array') {
+        fieldSize = typeof field.length === 'number' ? field.length : 0;
+      } else if (field.type === 'var_len_hex') {
+        fieldSize = 1; // Will grow dynamically based on instance value in dynamic size calc below
+      } else if (field.type === 'bit') {
+        fieldSize = 1;
       }
 
       this.assertSafeBounds(field.offset, fieldSize);
@@ -409,7 +464,27 @@ export class PayloadMapper {
       if (!instance || typeof instance !== 'object') {
           throw new BoksProtocolError(BoksProtocolErrorId.INTERNAL_ERROR, 'Cannot serialize null or non-object instance');
       }
-      const payload = new Uint8Array(${size});
+    `;
+
+    // Calculate dynamic payload size based on actual values
+    let dynamicSizeCalc = `${size}`;
+
+    // Check if we need to add length for dynamic fields
+    for (const field of fields) {
+      const prop = field.propertyName;
+      if (field.type === 'var_len_hex') {
+        dynamicSizeCalc += ` + (instance['${prop}'] ? Math.floor(String(instance['${prop}']).length / 2) : 0)`;
+      } else if ((field.type === 'hex_string' || field.type === 'byte_array') && typeof field.length !== 'number') {
+        if (field.type === 'hex_string') {
+          dynamicSizeCalc += ` + (instance['${prop}'] ? Math.floor(String(instance['${prop}']).length / 2) : 0)`;
+        } else {
+          dynamicSizeCalc += ` + (instance['${prop}'] ? instance['${prop}'].length : 0)`;
+        }
+      }
+    }
+
+    fnBody += `
+      const payload = new Uint8Array(${dynamicSizeCalc});
     `;
 
     for (const field of fields) {
@@ -463,11 +538,19 @@ export class PayloadMapper {
           fnBody += `payload[${o}] = instance['${prop}'] ? 0x01 : 0x00;\n`;
           break;
         case 'byte_array':
-          fnBody += `
-            if (instance['${prop}'] && instance['${prop}'] instanceof Uint8Array) {
-               payload.set(instance['${prop}'].subarray(0, ${field.length}), ${o});
-            }
-          `;
+          if (typeof field.length === 'number') {
+            fnBody += `
+              if (instance['${prop}'] && instance['${prop}'] instanceof Uint8Array) {
+                 payload.set(instance['${prop}'].subarray(0, ${field.length}), ${o});
+              }
+            `;
+          } else {
+            fnBody += `
+              if (instance['${prop}'] && instance['${prop}'] instanceof Uint8Array) {
+                 payload.set(instance['${prop}'], ${o});
+              }
+            `;
+          }
           break;
         case 'mac_address':
           // Reverse Mac formatting not yet supported for serialization in POC,
@@ -484,7 +567,50 @@ export class PayloadMapper {
           }
           break;
         case 'hex_string':
-          // Convert hex string back to bytes. Not fully implemented in POC serializer yet.
+          if (typeof field.length === 'number') {
+            fnBody += `
+              if (typeof instance['${prop}'] === 'string') {
+                const s = instance['${prop}'];
+                for (let i = 0; i < ${field.length}; i++) {
+                  if (i * 2 < s.length) {
+                    payload[${o} + i] = parseInt(s.substring(i * 2, i * 2 + 2), 16) || 0;
+                  }
+                }
+              }
+            `;
+          } else {
+            fnBody += `
+              if (typeof instance['${prop}'] === 'string') {
+                const s = instance['${prop}'];
+                for (let i = 0; i < Math.floor(s.length / 2); i++) {
+                  payload[${o} + i] = parseInt(s.substring(i * 2, i * 2 + 2), 16) || 0;
+                }
+              }
+            `;
+          }
+          break;
+        case 'var_len_hex':
+          fnBody += `
+            if (typeof instance['${prop}'] === 'string') {
+              const s = instance['${prop}'];
+              const len = Math.floor(s.length / 2);
+              payload[${o}] = len;
+              for (let i = 0; i < len; i++) {
+                payload[${o} + 1 + i] = parseInt(s.substring(i * 2, i * 2 + 2), 16) || 0;
+              }
+            } else {
+              payload[${o}] = 0;
+            }
+          `;
+          break;
+        case 'bit':
+          fnBody += `
+            if (instance['${prop}']) {
+              payload[${o}] |= (1 << ${field.bitIndex!});
+            } else {
+              payload[${o}] &= ~(1 << ${field.bitIndex!});
+            }
+          `;
           break;
       }
     }
@@ -712,13 +838,60 @@ export function PayloadMacAddress(offset: number) {
   };
 }
 
-export function PayloadHexString(offset: number, length: number) {
+export function PayloadHexString(offset: number, length?: number) {
   return function <T, V>(
     target: ClassAccessorDecoratorTarget<T, V>,
     context: ClassAccessorDecoratorContext<T, V>
   ): ClassAccessorDecoratorResult<T, V> {
     const meta = getOrCreateMetadata(context);
     meta.push({ propertyName: context.name as string, type: 'hex_string', offset, length });
+
+    return {
+      get() {
+        return target.get.call(this);
+      },
+      set(val: V) {
+        target.set.call(this, val);
+      },
+      init(initialValue: V): V {
+        return initialValue;
+      }
+    };
+  };
+}
+
+export function PayloadVarLenHex(offset: number) {
+  return function <T, V>(
+    target: ClassAccessorDecoratorTarget<T, V>,
+    context: ClassAccessorDecoratorContext<T, V>
+  ): ClassAccessorDecoratorResult<T, V> {
+    const meta = getOrCreateMetadata(context);
+    meta.push({ propertyName: context.name as string, type: 'var_len_hex', offset });
+
+    return {
+      get() {
+        return target.get.call(this);
+      },
+      set(val: V) {
+        target.set.call(this, val);
+      },
+      init(initialValue: V): V {
+        return initialValue;
+      }
+    };
+  };
+}
+
+export function PayloadBit(offset: number, bitIndex: number) {
+  return function <T, V>(
+    target: ClassAccessorDecoratorTarget<T, V>,
+    context: ClassAccessorDecoratorContext<T, V>
+  ): ClassAccessorDecoratorResult<T, V> {
+    const meta = getOrCreateMetadata(context);
+    if (bitIndex < 0 || bitIndex > 7) {
+      throw new Error(`Invalid bitIndex ${bitIndex} for property ${context.name as string}`);
+    }
+    meta.push({ propertyName: context.name as string, type: 'bit', offset, bitIndex });
 
     return {
       get() {
@@ -874,7 +1047,7 @@ export function PayloadBoolean(offset: number) {
   };
 }
 
-export function PayloadByteArray(offset: number, length: number) {
+export function PayloadByteArray(offset: number, length?: number) {
   return function <T, V>(
     target: ClassAccessorDecoratorTarget<T, V>,
     context: ClassAccessorDecoratorContext<T, V>
