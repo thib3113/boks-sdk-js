@@ -237,8 +237,7 @@ export class PayloadMapper {
       currentClass = Object.getPrototypeOf(currentClass);
     }
 
-    console.log('FIELDS FOR', targetClass.name, 'ARE', allFields);
-    return allFields;
+        return allFields;
   }
 
   private static compileParser(targetClass: any): Function {
