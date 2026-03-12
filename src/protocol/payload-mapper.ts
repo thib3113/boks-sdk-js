@@ -930,6 +930,7 @@ export function PayloadPinCode(offset: number) {
       },
       set(val: V) {
         /* v8 ignore next 3 */
+        /* v8 ignore next 3 */
         if (val === undefined || val === null) {
           throw new BoksProtocolError(
             BoksProtocolErrorId.INVALID_VALUE,
