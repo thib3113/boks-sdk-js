@@ -1,3 +1,5 @@
+import { NotifyNfcTagFoundPacket } from '../../../../src/protocol/uplink/NotifyNfcTagFoundPacket';
+import { bytesToHex } from '../../../../src/utils/converters';
 import { describe, it, expect } from 'vitest';
 import fc from 'fast-check';
 import { NotifyNfcTagRegisteredPacket } from '../../../../src/protocol/uplink/NotifyNfcTagRegisteredPacket';
@@ -7,6 +9,23 @@ import { ErrorNfcTagAlreadyExistsScanPacket } from '../../../../src/protocol/upl
 import { ErrorNfcScanTimeoutPacket } from '../../../../src/protocol/uplink/ErrorNfcScanTimeoutPacket';
 
 describe('NfcNotificationPackets Resilience (Fuzzing)', () => {
+
+  it('FEATURE REGRESSION: NotifyNfcTagFoundPacket should safely handle arbitrary payload lengths and parse uid', () => {
+    fc.assert(
+      fc.property(
+        fc.uint8Array({ minLength: 0, maxLength: 256 }),
+        (payload) => {
+          const packet = NotifyNfcTagFoundPacket.fromPayload(payload);
+          expect(packet).toBeInstanceOf(NotifyNfcTagFoundPacket);
+          expect(packet.opcode).toBe(0xC5);
+          expect((packet as any).rawPayload).toEqual(payload);
+          expect(packet.uid).toBe(bytesToHex(payload));
+        }
+      ),
+      { numRuns: 1000 }
+    );
+  });
+
   it('FEATURE REGRESSION: NotifyNfcTagRegisteredPacket should safely handle arbitrary payload lengths', () => {
     fc.assert(
       fc.property(

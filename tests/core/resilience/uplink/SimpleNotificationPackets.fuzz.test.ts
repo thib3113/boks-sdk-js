@@ -1,3 +1,4 @@
+import { NotifyCodeGenerationProgressPacket } from '../../../../src/protocol/uplink/NotifyCodeGenerationProgressPacket';
 import { describe, it, expect } from 'vitest';
 import fc from 'fast-check';
 import { EndHistoryPacket } from '../../../../src/protocol/uplink/EndHistoryPacket';
@@ -17,6 +18,24 @@ import { NotifyCodesCountPacket } from '../../../../src/protocol/uplink/NotifyCo
 import { NotifyLogsCountPacket } from '../../../../src/protocol/uplink/NotifyLogsCountPacket';
 
 describe('SimpleNotificationPackets Resilience (Fuzzing)', () => {
+
+  it('FEATURE REGRESSION: NotifyCodeGenerationProgressPacket should safely handle arbitrary payload lengths and parse progress', () => {
+    fc.assert(
+      fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (payload) => {
+        const packet = NotifyCodeGenerationProgressPacket.fromPayload(payload);
+        expect(packet).toBeInstanceOf(NotifyCodeGenerationProgressPacket);
+        expect(packet.opcode).toBe(0xC2);
+        expect((packet as any).rawPayload).toEqual(payload);
+        if (payload.length > 0) {
+          expect(packet.progress).toBe(payload[0]);
+        } else {
+          expect(packet.progress).toBe(0);
+        }
+      }),
+      { numRuns: 1000 }
+    );
+  });
+
   it('FEATURE REGRESSION: AnswerDoorStatusPacket should safely handle arbitrary payload lengths and set isOpen properly', () => {
     fc.assert(
       fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (payload) => {
