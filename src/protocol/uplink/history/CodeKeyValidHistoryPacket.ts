@@ -8,7 +8,7 @@ export class CodeKeyValidHistoryPacket extends BoksHistoryEvent {
   @PayloadPinCode(3)
   public accessor code: string = '';
 
-  constructor(age: number = 0, code: string = '', rawPayload?: Uint8Array) {
+  constructor(age: number, code: string, rawPayload?: Uint8Array) {
     super(CodeKeyValidHistoryPacket.opcode, age, rawPayload);
     this.code = code;
   }

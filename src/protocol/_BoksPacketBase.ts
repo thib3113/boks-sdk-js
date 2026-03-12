@@ -64,7 +64,7 @@ export abstract class BoksPacket {
    */
   protected formatNfcUid(uid: string): string {
     validateNfcUid(uid);
-    return uid.toUpperCase();
+    return uid.replace(/:/g, '').toUpperCase();
   }
 
   /**

@@ -1,5 +1,5 @@
 import { AuthPacket } from '@/protocol/downlink/_AuthPacketBase';
-import { BoksOpcode } from '@/protocol/constants';
+import { BoksOpcode, BoksConfigType } from '@/protocol/constants';
 import { writeConfigKeyToBuffer } from '@/utils/converters';
 import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';
 
@@ -15,7 +15,7 @@ export class SetConfigurationPacket extends AuthPacket {
 
   constructor(
     configKey: string,
-    public readonly configType: number,
+    public readonly configType: BoksConfigType,
     public readonly value: boolean
   ) {
     super(configKey);

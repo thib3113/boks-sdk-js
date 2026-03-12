@@ -8,7 +8,7 @@ export class AnswerDoorStatusPacket extends BoksRXPacket {
   static readonly opcode = BoksOpcode.ANSWER_DOOR_STATUS;
 
   constructor(
-    public readonly isOpen: boolean = false,
+    public readonly isOpen: boolean,
     rawPayload?: Uint8Array
   ) {
     super(AnswerDoorStatusPacket.opcode, rawPayload);

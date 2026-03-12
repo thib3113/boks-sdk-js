@@ -13,7 +13,7 @@ describe('HistoryEraseHistoryPacket', () => {
 
   describe('HistoryEraseHistoryPacket default construction', () => {
     it('should handle constructor with default age', () => {
-      const packet = new HistoryEraseHistoryPacket();
+      const packet = new HistoryEraseHistoryPacket(0);
       expect(packet.age).toBe(0);
     });
   });

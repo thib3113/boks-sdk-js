@@ -9,7 +9,7 @@ export class NotifyScaleBondingProgressPacket extends BoksRXPacket {
   static readonly opcode = BoksOpcode.NOTIFY_SCALE_BONDING_PROGRESS;
 
   constructor(
-    public readonly progress: number = 0,
+    public readonly progress: number,
     rawPayload?: Uint8Array
   ) {
     super(NotifyScaleBondingProgressPacket.opcode, rawPayload);

@@ -9,7 +9,7 @@ export class NotifyCodeGenerationProgressPacket extends BoksRXPacket {
   static readonly opcode = BoksOpcode.NOTIFY_CODE_GENERATION_PROGRESS;
 
   constructor(
-    public readonly progress: number = 0,
+    public readonly progress: number,
     rawPayload?: Uint8Array
   ) {
     super(NotifyCodeGenerationProgressPacket.opcode, rawPayload);

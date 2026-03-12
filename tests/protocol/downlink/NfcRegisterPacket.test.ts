@@ -12,7 +12,7 @@ describe('NfcRegisterPacket', () => {
     const packet = new NfcRegisterPacket(validKey, validUid);
     expect(packet.opcode).toBe(BoksOpcode.REGISTER_NFC_TAG);
     expect(packet.configKey).toBe(validKey);
-    expect(packet.uid).toBe(validUid);
+    expect(packet.uid).toBe('01020304');
   });
 
   it('should construct with unformatted UID (no colons)', () => {
@@ -48,7 +48,7 @@ describe('NfcRegisterPacket', () => {
 
     const packet = NfcRegisterPacket.fromPayload(payload);
     expect(packet.configKey).toBe(validKey);
-    expect(packet.uid).toBe(validUid); // formatted with colons by fromPayload logic
+    expect(packet.uid).toBe('01020304'); // formatted with colons by fromPayload logic
   });
 
   it('should throw INVALID_CONFIG_KEY for invalid config key format', () => {

@@ -7,7 +7,7 @@ import { BoksOpcode } from '@/protocol/constants';
 export class KeyOpeningHistoryPacket extends BoksHistoryEvent {
   static readonly opcode = BoksOpcode.LOG_EVENT_KEY_OPENING;
 
-  constructor(age: number = 0, rawPayload?: Uint8Array) {
+  constructor(age: number, rawPayload?: Uint8Array) {
     super(KeyOpeningHistoryPacket.opcode, age, rawPayload);
   }
 

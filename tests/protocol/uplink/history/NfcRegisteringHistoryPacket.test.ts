@@ -22,7 +22,7 @@ describe('NfcRegisteringHistoryPacket', () => {
 
   describe('NfcRegisteringHistoryPacket default construction', () => {
     it('should handle constructor with default age', () => {
-      const packet = new NfcRegisteringHistoryPacket();
+      const packet = new NfcRegisteringHistoryPacket(0, new Uint8Array(0));
       expect(packet.age).toBe(0);
     });
   });

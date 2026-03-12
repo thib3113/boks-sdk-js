@@ -8,7 +8,7 @@ export class NotifyLogsCountPacket extends BoksRXPacket {
   static readonly opcode = BoksOpcode.NOTIFY_LOGS_COUNT;
 
   constructor(
-    public readonly count: number = 0,
+    public readonly count: number,
     rawPayload?: Uint8Array
   ) {
     super(NotifyLogsCountPacket.opcode, rawPayload);

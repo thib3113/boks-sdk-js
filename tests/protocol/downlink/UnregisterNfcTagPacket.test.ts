@@ -12,7 +12,7 @@ describe('UnregisterNfcTagPacket', () => {
     const packet = new UnregisterNfcTagPacket(validKey, validUid);
     expect(packet.opcode).toBe(BoksOpcode.UNREGISTER_NFC_TAG);
     expect(packet.configKey).toBe(validKey);
-    expect(packet.uid).toBe(validUid);
+    expect(packet.uid).toBe('01020304');
   });
 
   it('should encode correctly', () => {
@@ -38,7 +38,7 @@ describe('UnregisterNfcTagPacket', () => {
 
     const packet = UnregisterNfcTagPacket.fromPayload(payload);
     expect(packet.configKey).toBe(validKey);
-    expect(packet.uid).toBe(validUid);
+    expect(packet.uid).toBe('01020304');
   });
 
   it('should throw INVALID_CONFIG_KEY for invalid config key format', () => {

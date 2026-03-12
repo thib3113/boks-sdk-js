@@ -10,7 +10,7 @@ export class NotifyMacAddressBoksScalePacket extends BoksRXPacket {
   static readonly opcode = BoksOpcode.NOTIFY_MAC_ADDRESS_BOKS_SCALE;
 
   constructor(
-    public readonly macAddress: string = '',
+    public readonly macAddress: string,
     rawPayload?: Uint8Array
   ) {
     super(NotifyMacAddressBoksScalePacket.opcode, rawPayload);

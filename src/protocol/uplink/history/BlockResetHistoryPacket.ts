@@ -7,7 +7,7 @@ import { BoksOpcode } from '@/protocol/constants';
 export class BlockResetHistoryPacket extends BoksHistoryEvent {
   static readonly opcode = BoksOpcode.BLOCK_RESET;
 
-  constructor(age: number = 0, rawPayload?: Uint8Array) {
+  constructor(age: number, rawPayload?: Uint8Array) {
     super(BlockResetHistoryPacket.opcode, age, rawPayload);
   }
 

@@ -8,7 +8,7 @@ export class OperationErrorPacket extends BoksRXPacket {
   static readonly opcode = BoksOpcode.CODE_OPERATION_ERROR;
 
   constructor(
-    public readonly errorCode: number = 0,
+    public readonly errorCode: number,
     rawPayload?: Uint8Array
   ) {
     super(OperationErrorPacket.opcode, rawPayload);

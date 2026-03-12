@@ -104,11 +104,11 @@ describe('BoksController Extended Integration', () => {
     const scanPromise = controller.scanNFCTags(1000);
 
     // Trigger NFC slightly later with raw MAC address format required
-    setTimeout(() => simulator.simulateNfcScan('010203040506'), 10);
+    setTimeout(() => simulator.simulateNfcScan('01020304'), 10);
 
     const result = await scanPromise;
     // MAC address returned has length prepended
-    expect(result.tagId).toBe('06010203040506');
+    expect(result.tagId).toBe('01020304');
     expect(typeof result.register).toBe('function');
 
     // Register should work naturally

@@ -17,8 +17,8 @@ export class ScaleMeasureHistoryPacket extends BoksHistoryEvent {
   // Instead of full annotation for a dynamic suffix, we map the known part:
 
   constructor(
-    age: number = 0,
-    public readonly data: Uint8Array = EMPTY_BUFFER,
+    age: number,
+    public readonly data: Uint8Array,
     rawPayload?: Uint8Array
   ) {
     super(ScaleMeasureHistoryPacket.opcode, age, rawPayload);

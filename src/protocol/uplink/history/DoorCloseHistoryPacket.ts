@@ -8,7 +8,7 @@ export class DoorCloseHistoryPacket extends BoksHistoryEvent {
   static readonly opcode = BoksOpcode.LOG_DOOR_CLOSE;
   public readonly status = 'closed';
 
-  constructor(age: number = 0, rawPayload?: Uint8Array) {
+  constructor(age: number, rawPayload?: Uint8Array) {
     super(DoorCloseHistoryPacket.opcode, age, rawPayload);
   }
 

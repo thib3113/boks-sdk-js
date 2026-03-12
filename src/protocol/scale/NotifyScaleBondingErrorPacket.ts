@@ -9,7 +9,7 @@ export class NotifyScaleBondingErrorPacket extends BoksRXPacket {
   static readonly opcode = BoksOpcode.NOTIFY_SCALE_BONDING_ERROR;
 
   constructor(
-    public readonly errorCode: number = 0,
+    public readonly errorCode: number,
     rawPayload?: Uint8Array
   ) {
     super(NotifyScaleBondingErrorPacket.opcode, rawPayload);

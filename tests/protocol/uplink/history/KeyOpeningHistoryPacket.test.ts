@@ -13,7 +13,7 @@ describe('KeyOpeningHistoryPacket', () => {
 
   describe('KeyOpeningHistoryPacket default construction', () => {
     it('should handle constructor with default age', () => {
-      const packet = new KeyOpeningHistoryPacket();
+      const packet = new KeyOpeningHistoryPacket(0);
       expect(packet.age).toBe(0);
     });
   });
