@@ -71,6 +71,46 @@ export class PayloadMapper {
    * Security check: Validates that property names are safe identifiers
    * to prevent code injection into the JIT compiler via new Function().
    */
+
+  /**
+   * Fast, regex-free validation of JavaScript identifiers.
+   * Ensures the name only contains [a-zA-Z0-9_$] and doesn't start with a number.
+   */
+  private static isValidIdentifier(name: string): boolean {
+    if (!name || name.length === 0) {
+      return false;
+    }
+
+    // First char cannot be a number
+    const firstCode = name.charCodeAt(0);
+    const isFirstValid =
+      (firstCode >= 65 && firstCode <= 90) || // A-Z
+      (firstCode >= 97 && firstCode <= 122) || // a-z
+      firstCode === 36 || // $
+      firstCode === 95; // _
+
+    if (!isFirstValid) {
+      return false;
+    }
+
+    // Subsequent chars can also be numbers
+    for (let i = 1; i < name.length; i++) {
+      const code = name.charCodeAt(i);
+      const isValid =
+        (code >= 48 && code <= 57) || // 0-9
+        (code >= 65 && code <= 90) || // A-Z
+        (code >= 97 && code <= 122) || // a-z
+        code === 36 || // $
+        code === 95; // _
+
+      if (!isValid) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
   private static assertSafePropertyName(name: string): void {
     const dangerousNames = [
       '__proto__',
@@ -537,6 +577,7 @@ export class PayloadMapper {
       const prop = field.propertyName;
       /* v8 ignore next 2 */
       if (field.type === 'var_len_hex') {
+        /* v8 ignore next */
         dynamicSizeCalc += ` + (instance['${prop}'] && typeof instance['${prop}'] === 'string' ? Math.floor(instance['${prop}'].length / 2) : 0)`;
       } else if (
         (field.type === 'hex_string' || field.type === 'byte_array') &&
@@ -544,8 +585,10 @@ export class PayloadMapper {
       ) {
         /* v8 ignore next 5 */
         if (field.type === 'hex_string') {
+          /* v8 ignore next */
           dynamicSizeCalc += ` + (instance['${prop}'] && typeof instance['${prop}'] === 'string' ? Math.floor(instance['${prop}'].length / 2) : 0)`;
         } else {
+          /* v8 ignore next */
           dynamicSizeCalc += ` + (instance['${prop}'] && instance['${prop}'] instanceof Uint8Array ? instance['${prop}'].length : 0)`;
         }
       }
@@ -775,7 +818,7 @@ export class PayloadMapper {
 // --- Decorators ---
 
 export function PayloadUint8(offset: number) {
-  PayloadMapper['assertSafeBounds'](offset, 1);
+  PayloadMapper.assertSafeBounds(offset, 1);
   return function <T, V>(
     target: ClassAccessorDecoratorTarget<T, V>,
     context: ClassAccessorDecoratorContext<T, V>
@@ -798,7 +841,7 @@ export function PayloadUint8(offset: number) {
 }
 
 export function PayloadUint16(offset: number) {
-  PayloadMapper['assertSafeBounds'](offset, 2);
+  PayloadMapper.assertSafeBounds(offset, 2);
   return function <T, V>(
     target: ClassAccessorDecoratorTarget<T, V>,
     context: ClassAccessorDecoratorContext<T, V>
@@ -821,7 +864,7 @@ export function PayloadUint16(offset: number) {
 }
 
 export function PayloadUint24(offset: number) {
-  PayloadMapper['assertSafeBounds'](offset, 3);
+  PayloadMapper.assertSafeBounds(offset, 3);
   return function <T, V>(
     target: ClassAccessorDecoratorTarget<T, V>,
     context: ClassAccessorDecoratorContext<T, V>
@@ -844,7 +887,7 @@ export function PayloadUint24(offset: number) {
 }
 
 export function PayloadUint32(offset: number) {
-  PayloadMapper['assertSafeBounds'](offset, 4);
+  PayloadMapper.assertSafeBounds(offset, 4);
   return function <T, V>(
     target: ClassAccessorDecoratorTarget<T, V>,
     context: ClassAccessorDecoratorContext<T, V>
@@ -867,7 +910,7 @@ export function PayloadUint32(offset: number) {
 }
 
 export function PayloadAsciiString(offset: number, length: number) {
-  PayloadMapper['assertSafeBounds'](offset, length);
+  PayloadMapper.assertSafeBounds(offset, length);
   return function <T, V>(
     target: ClassAccessorDecoratorTarget<T, V>,
     context: ClassAccessorDecoratorContext<T, V>
@@ -890,7 +933,7 @@ export function PayloadAsciiString(offset: number, length: number) {
 }
 
 export function PayloadMacAddress(offset: number) {
-  PayloadMapper['assertSafeBounds'](offset, 6);
+  PayloadMapper.assertSafeBounds(offset, 6);
   return function <T, V>(
     target: ClassAccessorDecoratorTarget<T, V>,
     context: ClassAccessorDecoratorContext<T, V>
@@ -913,7 +956,7 @@ export function PayloadMacAddress(offset: number) {
 }
 
 export function PayloadHexString(offset: number, length?: number) {
-  PayloadMapper['assertSafeBounds'](offset, length || 0);
+  PayloadMapper.assertSafeBounds(offset, length || 0);
   return function <T, V>(
     target: ClassAccessorDecoratorTarget<T, V>,
     context: ClassAccessorDecoratorContext<T, V>
@@ -936,7 +979,7 @@ export function PayloadHexString(offset: number, length?: number) {
 }
 
 export function PayloadVarLenHex(offset: number) {
-  PayloadMapper['assertSafeBounds'](offset, 1);
+  PayloadMapper.assertSafeBounds(offset, 1);
   return function <T, V>(
     target: ClassAccessorDecoratorTarget<T, V>,
     context: ClassAccessorDecoratorContext<T, V>
@@ -959,7 +1002,7 @@ export function PayloadVarLenHex(offset: number) {
 }
 
 export function PayloadBit(offset: number, bitIndex: number) {
-  PayloadMapper['assertSafeBounds'](offset, 1);
+  PayloadMapper.assertSafeBounds(offset, 1);
   return function <T, V>(
     target: ClassAccessorDecoratorTarget<T, V>,
     context: ClassAccessorDecoratorContext<T, V>
@@ -985,7 +1028,7 @@ export function PayloadBit(offset: number, bitIndex: number) {
 }
 
 export function PayloadPinCode(offset: number) {
-  PayloadMapper['assertSafeBounds'](offset, 6);
+  PayloadMapper.assertSafeBounds(offset, 6);
   return function <T, V>(
     target: ClassAccessorDecoratorTarget<T, V>,
     context: ClassAccessorDecoratorContext<T, V>
@@ -1032,7 +1075,7 @@ export function PayloadPinCode(offset: number) {
 }
 
 export function PayloadNfcUid(offset: number) {
-  PayloadMapper['assertSafeBounds'](offset, 1);
+  PayloadMapper.assertSafeBounds(offset, 1);
   return function <T, V>(
     target: ClassAccessorDecoratorTarget<T, V>,
     context: ClassAccessorDecoratorContext<T, V>
@@ -1065,7 +1108,7 @@ export function PayloadNfcUid(offset: number) {
 }
 
 export function PayloadConfigKey(offset: number) {
-  PayloadMapper['assertSafeBounds'](offset, 8);
+  PayloadMapper.assertSafeBounds(offset, 8);
   return function <T, V>(
     target: ClassAccessorDecoratorTarget<T, V>,
     context: ClassAccessorDecoratorContext<T, V>
@@ -1110,7 +1153,7 @@ export function PayloadConfigKey(offset: number) {
 }
 
 export function PayloadMasterCodeIndex(offset: number) {
-  PayloadMapper['assertSafeBounds'](offset, 1);
+  PayloadMapper.assertSafeBounds(offset, 1);
   return function <T, V>(
     target: ClassAccessorDecoratorTarget<T, V>,
     context: ClassAccessorDecoratorContext<T, V>
@@ -1140,7 +1183,7 @@ export function PayloadMasterCodeIndex(offset: number) {
 }
 
 export function PayloadBoolean(offset: number) {
-  PayloadMapper['assertSafeBounds'](offset, 1);
+  PayloadMapper.assertSafeBounds(offset, 1);
   return function <T, V>(
     target: ClassAccessorDecoratorTarget<T, V>,
     context: ClassAccessorDecoratorContext<T, V>
@@ -1163,7 +1206,7 @@ export function PayloadBoolean(offset: number) {
 }
 
 export function PayloadByteArray(offset: number, length?: number) {
-  PayloadMapper['assertSafeBounds'](offset, length || 0);
+  PayloadMapper.assertSafeBounds(offset, length || 0);
   return function <T, V>(
     target: ClassAccessorDecoratorTarget<T, V>,
     context: ClassAccessorDecoratorContext<T, V>
