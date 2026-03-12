@@ -21,7 +21,7 @@ export class OpenDoorPacket extends BoksPacket {
 
   constructor(props: OpenDoorPacketProps) {
     super();
-    // BoksPacketBase's formatPin is protected, but we can do uppercase here
+
     this.pin = props.pin;
   }
 

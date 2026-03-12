@@ -1,6 +1,7 @@
 import { AuthPacket } from '@/protocol/downlink/_AuthPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
 import { writeConfigKeyToBuffer, hexToBytes, bytesToHex } from '@/utils/converters';
+import { PayloadNfcUid } from '@/protocol/payload-mapper';
 
 /**
  * Command to unregister an NFC tag.
@@ -11,12 +12,12 @@ export class UnregisterNfcTagPacket extends AuthPacket {
     return UnregisterNfcTagPacket.opcode;
   }
 
-  constructor(
-    configKey: string,
-    public readonly uid: string
-  ) {
+  @PayloadNfcUid(8)
+  public accessor uid!: string;
+
+  constructor(configKey: string, uid: string) {
     super(configKey);
-    this.uid = this.formatNfcUid(uid);
+    this.uid = uid;
   }
 
   static fromPayload(payload: Uint8Array): UnregisterNfcTagPacket {

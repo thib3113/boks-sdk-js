@@ -16,7 +16,7 @@ export class SingleToMultiCodePacket extends AuthPacket {
 
   constructor(configKey: string, pin: string) {
     super(configKey);
-    this.pin = this.formatPin(pin);
+    this.pin = pin;
   }
 
   static fromPayload(payload: Uint8Array): SingleToMultiCodePacket {

@@ -2,12 +2,7 @@ import { BoksOpcode, EMPTY_BUFFER } from '@/protocol/constants';
 import { PayloadMapper } from '@/protocol/payload-mapper';
 import { calculateChecksum, bytesToHex } from '@/utils/converters';
 import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';
-import {
-  validatePinCode,
-  validateNfcUid,
-  validateConfigKeyFormat,
-  validateSeed
-} from '@/utils/validation';
+import { validateSeed } from '@/utils/validation';
 
 /**
  * Type representing a BoksPacket constructor.
@@ -49,30 +44,6 @@ export abstract class BoksPacket {
     packet.set(payload, 2);
     packet[packet.length - 1] = calculateChecksum(packet.subarray(0, packet.length - 1));
     return packet;
-  }
-
-  /**
-   * Validates and formats a PIN code as an uppercase string.
-   */
-  protected formatPin(pin: string): string {
-    validatePinCode(pin);
-    return pin.toUpperCase();
-  }
-
-  /**
-   * Validates and formats an NFC UID as an uppercase string.
-   */
-  protected formatNfcUid(uid: string): string {
-    validateNfcUid(uid);
-    return uid.replace(/:/g, '').toUpperCase();
-  }
-
-  /**
-   * Validates and formats a Config Key as an uppercase string.
-   */
-  protected formatConfigKey(key: string): string {
-    validateConfigKeyFormat(key);
-    return key.toUpperCase();
   }
 
   /**

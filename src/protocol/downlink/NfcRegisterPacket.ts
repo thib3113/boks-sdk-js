@@ -1,6 +1,6 @@
 import { AuthPacket } from '@/protocol/downlink/_AuthPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
-import { PayloadMapper, PayloadVarLenHex } from '@/protocol/payload-mapper';
+import { PayloadMapper, PayloadNfcUid } from '@/protocol/payload-mapper';
 
 /**
  * NFC Tag Registration.
@@ -11,12 +11,12 @@ export class NfcRegisterPacket extends AuthPacket {
     return NfcRegisterPacket.opcode;
   }
 
-  @PayloadVarLenHex(8)
+  @PayloadNfcUid(8)
   public accessor uid!: string;
 
   constructor(props: { configKey: string; uid: string }) {
     super(props.configKey);
-    this.uid = this.formatNfcUid(props.uid);
+    this.uid = props.uid;
   }
 
   static fromPayload(payload: Uint8Array): NfcRegisterPacket {
