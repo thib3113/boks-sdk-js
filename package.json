@@ -27,29 +27,50 @@
   "types": "dist/types/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/types/index.d.ts",
-      "import": "./dist/esm/boks-sdk.js",
-      "require": "./dist/cjs/boks-sdk.cjs"
+      "import": {
+        "types": "./dist/types/index.d.ts",
+        "default": "./dist/esm/boks-sdk.js"
+      },
+      "require": {
+        "types": "./dist/types/index.d.cts",
+        "default": "./dist/cjs/boks-sdk.cjs"
+      }
     },
     "./core": {
-      "types": "./dist/types/core.d.ts",
-      "import": "./dist/esm/core.js",
-      "require": "./dist/cjs/core.cjs"
+      "import": {
+        "types": "./dist/types/core.d.ts",
+        "default": "./dist/esm/core.js"
+      },
+      "require": {
+        "types": "./dist/types/core.d.cts",
+        "default": "./dist/cjs/core.cjs"
+      }
     },
     "./simulator": {
-      "types": "./dist/types/simulator.d.ts",
-      "import": "./dist/esm/simulator.js",
-      "require": "./dist/cjs/simulator.cjs"
+      "import": {
+        "types": "./dist/types/simulator.d.ts",
+        "default": "./dist/esm/simulator.js"
+      },
+      "require": {
+        "types": "./dist/types/simulator.d.cts",
+        "default": "./dist/cjs/simulator.cjs"
+      }
     },
-    "./browser": "./dist/boks-sdk.js",
-    "./browser-core": "./dist/boks-core.js"
+    "./browser": {
+      "types": "./dist/types/index.d.ts",
+      "default": "./dist/boks-sdk.js"
+    },
+    "./browser-core": {
+      "types": "./dist/types/core.d.ts",
+      "default": "./dist/boks-core.js"
+    }
   },
   "unpkg": "dist/boks-sdk.js",
   "jsdelivr": "dist/boks-sdk.js",
   "scripts": {
     "check:exports": "node tests/exports/verify-exports.mjs",
-    "check:package": "publint && attw --pack",
-    "check:all": "pnpm run check:package || true; pnpm run check:exports",
+    "check:package": "publint && attw --pack --ignore-rules internal-resolution-error cjs-resolves-to-esm no-resolution",
+    "check:all": "pnpm run check:package && pnpm run check:exports",
     "build": "node build.js",
     "docs": "pnpm run docs:build && typedoc",
     "test": "vitest run",

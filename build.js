@@ -83,6 +83,22 @@ async function build() {
     console.log('📝 Generating Type Definitions...');
     try {
         await execAsync('npx tsc --project tsconfig.types.json');
+
+        // Copy .d.ts files to .d.cts for CommonJS support in modern Node
+        console.log('📝 Cloning Type Definitions for CJS (.d.cts)...');
+        async function copyToCts(dir) {
+            const files = await fs.readdir(dir, { withFileTypes: true });
+            for (const file of files) {
+                const fullPath = `${dir}/${file.name}`;
+                if (file.isDirectory()) {
+                    await copyToCts(fullPath);
+                } else if (file.name.endsWith('.d.ts')) {
+                    const ctsPath = fullPath.replace(/\.d\.ts$/, '.d.cts');
+                    await fs.copyFile(fullPath, ctsPath);
+                }
+            }
+        }
+        await copyToCts('dist/types');
     } catch (err) {
         console.error('❌ Type generation failed:', err.stdout || err.message);
         throw err;
