@@ -169,7 +169,7 @@ export class PayloadMapper {
     // Must be a valid identifier and not a reserved word or internal JIT variable
     if (
       typeof name !== 'string' ||
-      !/^[a-zA-Z_$][0-9a-zA-Z_$]*$/.test(name) ||
+      !PayloadMapper.isValidIdentifier(name) ||
       dangerousNames.includes(name)
     ) {
       throw new BoksProtocolError(
