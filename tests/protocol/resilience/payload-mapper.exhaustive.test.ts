@@ -29,11 +29,6 @@ class DummyBitPacket {
   public accessor flag!: boolean;
 }
 
-class DummyAsciiPacket {
-  @PayloadAsciiString(0, 4)
-  public accessor text!: string;
-}
-
 describe('PayloadMapper Exhaustive Deterministic Tests', () => {
   describe('Missing Decorator Coverage (Uncovered Lines)', () => {
     it('should correctly parse and serialize dynamic length hex string', () => {
