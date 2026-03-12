@@ -531,7 +531,10 @@ export class PayloadMapper {
     }
     const targetClass = instance.constructor;
     if (!targetClass) {
-      throw new BoksProtocolError(BoksProtocolErrorId.INTERNAL_ERROR, 'Cannot serialize instance without constructor');
+      throw new BoksProtocolError(
+        BoksProtocolErrorId.INTERNAL_ERROR,
+        'Cannot serialize instance without constructor'
+      );
     }
     let serializer = this.compiledSerializers.get(targetClass);
     if (!serializer) {
