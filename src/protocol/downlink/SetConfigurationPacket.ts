@@ -19,11 +19,7 @@ export class SetConfigurationPacket extends AuthPacket {
   @PayloadBoolean(9)
   public accessor value!: boolean;
 
-  constructor(
-    configKey: string,
-    configType: BoksConfigType,
-    value: boolean
-  ) {
+  constructor(configKey: string, configType: BoksConfigType, value: boolean) {
     super(configKey);
     this.configType = configType;
     this.value = value;

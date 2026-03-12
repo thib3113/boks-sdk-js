@@ -1,6 +1,5 @@
 import { BoksRXPacket } from '@/protocol/uplink/_BoksRXPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
-import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';
 import { PayloadVarLenHex, PayloadMapper } from '@/protocol/payload-mapper';
 
 /**
@@ -19,6 +18,9 @@ export class NotifyNfcTagFoundPacket extends BoksRXPacket {
   }
 
   static fromPayload(payload: Uint8Array): NotifyNfcTagFoundPacket {
-    return new NotifyNfcTagFoundPacket(PayloadMapper.parse(NotifyNfcTagFoundPacket, payload).uid!, payload);
+    return new NotifyNfcTagFoundPacket(
+      PayloadMapper.parse(NotifyNfcTagFoundPacket, payload).uid!,
+      payload
+    );
   }
 }

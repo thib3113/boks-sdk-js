@@ -474,7 +474,10 @@ export class PayloadMapper {
       const prop = field.propertyName;
       if (field.type === 'var_len_hex') {
         dynamicSizeCalc += ` + (instance['${prop}'] ? Math.floor(String(instance['${prop}']).length / 2) : 0)`;
-      } else if ((field.type === 'hex_string' || field.type === 'byte_array') && typeof field.length !== 'number') {
+      } else if (
+        (field.type === 'hex_string' || field.type === 'byte_array') &&
+        typeof field.length !== 'number'
+      ) {
         if (field.type === 'hex_string') {
           dynamicSizeCalc += ` + (instance['${prop}'] ? Math.floor(String(instance['${prop}']).length / 2) : 0)`;
         } else {
