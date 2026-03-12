@@ -66,3 +66,6 @@ jobs:
         ls -l dist/esm/boks-sdk.js
         ls -l dist/cjs/boks-sdk.cjs
         ls -l dist/types/index.d.ts
+
+    - name: Verify Exports & Package
+      run: pnpm run check:all
