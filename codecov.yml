@@ -1,2 +1,15 @@
 codecov:
   token: 93c94d99-5393-40af-994d-9e9f3fa01f28
+
+coverage:
+  status:
+    project:
+      default:
+        target: auto
+        threshold: 0%
+  ignore:
+    - "tests/**/*"
+    - "wiki/**/*"
+    - "build.js"
+    - "vitest.config.ts"
+    - "eslint.config.js"
