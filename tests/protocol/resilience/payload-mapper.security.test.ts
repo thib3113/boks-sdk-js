@@ -1,3 +1,4 @@
+import { PayloadPinCode } from '../../../src/protocol/payload-mapper';
 import { describe, it, expect } from 'vitest';
 import { PayloadMapper } from '@/protocol/payload-mapper';
 import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';
@@ -83,7 +84,17 @@ describe('PayloadMapper Security and Penetration Testing', () => {
         });
     });
 
-    describe('Memory Access Violations (Buffer Overflows)', () => {
+    describe('Missing mandatory fields', () => {
+    it('should throw when mandatory fields are missing', () => {
+      class MissingMandatory {
+        @PayloadPinCode(0)
+        accessor pinCode!: string;
+      }
+      expect(() => PayloadMapper.serialize(new MissingMandatory())).toThrow();
+    });
+  });
+
+  describe('Memory Access Violations (Buffer Overflows)', () => {
         it('should strictly block outrageously large offset values (Integer Overflow vectors)', () => {
             class ExploitClass {}
             PayloadMapper.defineSchema(ExploitClass, [
