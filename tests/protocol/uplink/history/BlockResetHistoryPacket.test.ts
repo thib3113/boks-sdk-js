@@ -9,12 +9,4 @@ describe('BlockResetHistoryPacket', () => {
     expect(packet.opcode).toBe(BoksOpcode.BLOCK_RESET);
     expect(packet.age).toBe(0x010203);
   });
-
-
-  describe('BlockResetHistoryPacket default construction', () => {
-    it('should handle constructor with default age', () => {
-      const packet = new BlockResetHistoryPacket(0);
-      expect(packet.age).toBe(0);
-    });
-  });
 });

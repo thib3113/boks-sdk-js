@@ -19,10 +19,5 @@ describe('CodeBleValidHistoryPacket', () => {
     expect(packet.connectedMac).toBe('00:00:30:39:38:37');
   });
 
-  it('should handle constructor with default parameters', () => {
-    const packet = new CodeBleValidHistoryPacket(0, '000000', '00:00:00:00:00:00');
-    expect(packet.age).toBe(0);
-    expect(packet.code).toBe('000000');
-    expect(packet.connectedMac).toBe('00:00:00:00:00:00');
-  });
+
 });

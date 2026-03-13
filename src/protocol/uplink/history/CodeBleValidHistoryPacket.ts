@@ -11,18 +11,20 @@ export class CodeBleValidHistoryPacket extends BoksHistoryEvent {
   @PayloadMacAddress(11)
   public accessor connectedMac: string = '';
 
-  constructor(age: number, code: string, connectedMac: string, rawPayload?: Uint8Array) {
-    super(CodeBleValidHistoryPacket.opcode, age, rawPayload);
-    this.code = code;
-    this.connectedMac = connectedMac;
+  constructor(props: { age: number; code: string; connectedMac: string }, rawPayload?: Uint8Array) {
+    super(CodeBleValidHistoryPacket.opcode, props.age, rawPayload);
+    this.code = props.code;
+    this.connectedMac = props.connectedMac;
   }
 
   static fromPayload(payload: Uint8Array): CodeBleValidHistoryPacket {
     const data = PayloadMapper.parse(CodeBleValidHistoryPacket, payload);
     return new CodeBleValidHistoryPacket(
-      data.age as number,
-      data.code as string,
-      data.connectedMac as string,
+      {
+        age: data.age as number,
+        code: data.code as string,
+        connectedMac: data.connectedMac as string
+      },
       payload
     );
   }

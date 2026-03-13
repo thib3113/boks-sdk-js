@@ -9,8 +9,8 @@ export class TestBatteryPacket extends BoksPacket {
   get opcode() {
     return TestBatteryPacket.opcode;
   }
-  static fromPayload(_payload: Uint8Array): TestBatteryPacket {
-    return new TestBatteryPacket();
+  static fromPayload(payload: Uint8Array): TestBatteryPacket {
+    return new TestBatteryPacket(payload);
   }
   toPayload() {
     return EMPTY_BUFFER;

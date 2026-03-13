@@ -10,8 +10,8 @@ export class ScaleMeasureWeightPacket extends BoksPacket {
   get opcode() {
     return ScaleMeasureWeightPacket.opcode;
   }
-  static fromPayload(_payload: Uint8Array): ScaleMeasureWeightPacket {
-    return new ScaleMeasureWeightPacket();
+  static fromPayload(payload: Uint8Array): ScaleMeasureWeightPacket {
+    return new ScaleMeasureWeightPacket(payload);
   }
   toPayload() {
     return EMPTY_BUFFER;

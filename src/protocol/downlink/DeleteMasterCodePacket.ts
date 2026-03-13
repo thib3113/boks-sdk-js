@@ -15,10 +15,10 @@ export class DeleteMasterCodePacket extends AuthPacket {
   @PayloadMasterCodeIndex(8)
   public accessor index!: number;
 
-  constructor(configKey: string, index: number) {
-    super(configKey);
-    validateMasterCodeIndex(index);
-    this.index = index;
+  constructor(props: { configKey: string; index: number }, rawPayload?: Uint8Array) {
+    super(props.configKey, rawPayload);
+    validateMasterCodeIndex(props.index);
+    this.index = props.index;
   }
 
   static fromPayload(payload: Uint8Array): DeleteMasterCodePacket {
@@ -28,6 +28,9 @@ export class DeleteMasterCodePacket extends AuthPacket {
       safePayload.set(payload);
     }
     const data = PayloadMapper.parse(DeleteMasterCodePacket, safePayload);
-    return new DeleteMasterCodePacket(data.configKey as string, data.index as number);
+    return new DeleteMasterCodePacket(
+      { configKey: data.configKey as string, index: data.index as number },
+      payload
+    );
   }
 }

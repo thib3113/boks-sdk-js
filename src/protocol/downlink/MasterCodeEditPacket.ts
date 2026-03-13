@@ -19,19 +19,25 @@ export class MasterCodeEditPacket extends AuthPacket {
   @PayloadPinCode(9)
   public accessor newPin!: string;
 
-  constructor(configKey: string, index: number, newPin: string) {
-    super(configKey);
-    validateMasterCodeIndex(index);
-    this.index = index;
-    this.newPin = newPin;
+  constructor(
+    props: { configKey: string; index: number; newPin: string },
+    rawPayload?: Uint8Array
+  ) {
+    super(props.configKey, rawPayload);
+    validateMasterCodeIndex(props.index);
+    this.index = props.index;
+    this.newPin = props.newPin;
   }
 
   static fromPayload(payload: Uint8Array): MasterCodeEditPacket {
     const data = PayloadMapper.parse(MasterCodeEditPacket, payload);
     return new MasterCodeEditPacket(
-      data.configKey as string,
-      data.index || 0,
-      data.newPin as string
+      {
+        configKey: data.configKey as string,
+        index: data.index || 0,
+        newPin: data.newPin as string
+      },
+      payload
     );
   }
 }

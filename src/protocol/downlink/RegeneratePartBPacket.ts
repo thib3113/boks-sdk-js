@@ -13,16 +13,16 @@ export class RegeneratePartBPacket extends AuthPacket {
     return RegeneratePartBPacket.opcode;
   }
 
-  constructor(
-    configKey: string,
-    public readonly part: Uint8Array
-  ) {
-    super(configKey);
-    if (part.length !== 16) {
+  public readonly part: Uint8Array;
+
+  constructor(props: { configKey: string; part: Uint8Array }, rawPayload?: Uint8Array) {
+    super(props.configKey, rawPayload);
+    this.part = props.part;
+    if (props.part.length !== 16) {
       throw new BoksProtocolError(BoksProtocolErrorId.INVALID_VALUE, undefined, {
-        received: part.length,
+        received: props.part.length,
         expected: 16,
-        field: 'part'
+        field: 'props.part'
       });
     }
   }
@@ -30,7 +30,7 @@ export class RegeneratePartBPacket extends AuthPacket {
   static fromPayload(payload: Uint8Array): RegeneratePartBPacket {
     const configKey = AuthPacket.extractConfigKey(payload);
     const part = payload.subarray(8, 24);
-    return new RegeneratePartBPacket(configKey, part);
+    return new RegeneratePartBPacket({ configKey: configKey, part: part }, payload);
   }
 
   toPayload() {

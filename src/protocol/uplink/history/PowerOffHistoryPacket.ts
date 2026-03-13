@@ -7,12 +7,11 @@ import { BoksOpcode } from '@/protocol/constants';
 export class PowerOffHistoryPacket extends BoksHistoryEvent {
   static readonly opcode = BoksOpcode.POWER_OFF;
 
-  constructor(
-    age: number,
-    public readonly reason: number,
-    rawPayload?: Uint8Array
-  ) {
-    super(PowerOffHistoryPacket.opcode, age, rawPayload);
+  public readonly reason: number;
+
+  constructor(props: { age: number; reason: number }, rawPayload?: Uint8Array) {
+    super(PowerOffHistoryPacket.opcode, props.age, rawPayload);
+    this.reason = props.reason;
   }
 
   static fromPayload(payload: Uint8Array): PowerOffHistoryPacket {
@@ -26,6 +25,6 @@ export class PowerOffHistoryPacket extends BoksHistoryEvent {
     if (payload.length > 3) {
       reason = payload[3];
     }
-    return new PowerOffHistoryPacket(age, reason, payload);
+    return new PowerOffHistoryPacket({ age: age as number, reason: reason as number }, payload);
   }
 }

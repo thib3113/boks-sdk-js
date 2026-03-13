@@ -10,8 +10,8 @@ export class ScaleGetRawSensorsPacket extends BoksPacket {
   get opcode() {
     return ScaleGetRawSensorsPacket.opcode;
   }
-  static fromPayload(_payload: Uint8Array): ScaleGetRawSensorsPacket {
-    return new ScaleGetRawSensorsPacket();
+  static fromPayload(payload: Uint8Array): ScaleGetRawSensorsPacket {
+    return new ScaleGetRawSensorsPacket(payload);
   }
   toPayload() {
     return EMPTY_BUFFER;

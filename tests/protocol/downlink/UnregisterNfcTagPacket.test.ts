@@ -9,14 +9,14 @@ describe('UnregisterNfcTagPacket', () => {
   const validUid = '01:02:03:04'; // 4 bytes -> 8 hex chars.
 
   it('should construct with valid parameters', () => {
-    const packet = new UnregisterNfcTagPacket(validKey, validUid);
+    const packet = new UnregisterNfcTagPacket({ configKey: validKey, uid: validUid });
     expect(packet.opcode).toBe(BoksOpcode.UNREGISTER_NFC_TAG);
     expect(packet.configKey).toBe(validKey);
     expect(packet.uid).toBe('01020304');
   });
 
   it('should encode correctly', () => {
-    const packet = new UnregisterNfcTagPacket(validKey, validUid);
+    const packet = new UnregisterNfcTagPacket({ configKey: validKey, uid: validUid });
     const encoded = packet.encode();
     // 0x19 + 13 + Key + Len + UID
     expect(encoded[0]).toBe(0x19);
@@ -42,11 +42,11 @@ describe('UnregisterNfcTagPacket', () => {
   });
 
   it('should throw INVALID_CONFIG_KEY for invalid config key format', () => {
-     expect(() => new UnregisterNfcTagPacket('invalid', validUid)).toThrowError(BoksProtocolError);
+     expect(() => new UnregisterNfcTagPacket({ configKey: 'invalid', uid: validUid })).toThrowError(BoksProtocolError);
   });
 
   it('should throw INVALID_NFC_UID_FORMAT for invalid uid', () => {
-      expect(() => new UnregisterNfcTagPacket(validKey, '01:02:03')).toThrowError(BoksProtocolError);
+      expect(() => new UnregisterNfcTagPacket({ configKey: validKey, uid: '01:02:03' })).toThrowError(BoksProtocolError);
   });
 
   it('should fail parsing if payload is malformed', () => {

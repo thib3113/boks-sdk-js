@@ -12,7 +12,7 @@ describe('RegeneratePartAPacket Resilience (Fuzzing)', () => {
         fc.uint8Array({ minLength: 0, maxLength: 256 }), // part
         (configKey, part) => {
           try {
-            const packet = new RegeneratePartAPacket(configKey, part);
+            const packet = new RegeneratePartAPacket({ configKey: configKey, part: part });
 
             // If it succeeds, the inputs MUST have matched strict validation:
             expect(configKey.length).toBe(8);

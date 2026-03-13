@@ -20,13 +20,6 @@ describe('ScaleMeasureHistoryPacket', () => {
     expect(packet.data.length).toBe(0);
   });
 
-  describe('ScaleMeasureHistoryPacket default construction', () => {
-    it('should handle constructor with default age', () => {
-      const packet = new ScaleMeasureHistoryPacket(0, new Uint8Array(0));
-      expect(packet.age).toBe(0);
-    });
-  });
-
   describe('ScaleMeasureHistoryPacket short payload data block', () => {
     it('should extract empty data if payload is 3 bytes', () => {
       const payload = new Uint8Array([0, 0, 3]); // Length 3

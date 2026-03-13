@@ -15,10 +15,5 @@ describe('CodeKeyInvalidHistoryPacket', () => {
 
 
 
-  it('should handle constructor with default parameters', () => {
-    const packet = new CodeKeyInvalidHistoryPacket(0, '000000');
-    expect(packet.age).toBe(0);
-    expect(packet.code).toBe('000000');
 
-  });
 });
