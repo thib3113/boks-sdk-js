@@ -5,7 +5,7 @@ import { BoksProtocolError, BoksProtocolErrorId } from '../../src/errors/BoksPro
 describe('BoksPacketBase', () => {
   it('should throw MALFORMED_DATA if fromPayload is not implemented', () => {
     expect(() => BoksPacket.fromPayload(new Uint8Array())).toThrowError(
-      new BoksProtocolError(BoksProtocolErrorId.MALFORMED_DATA, 'fromPayload not implemented')
+      new BoksProtocolError(BoksProtocolErrorId.MALFORMED_DATA, 'fromPayload not implemented', { expected: 'implemented function', received: 'not implemented' })
     );
   });
 });

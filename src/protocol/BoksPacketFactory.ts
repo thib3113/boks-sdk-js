@@ -93,6 +93,7 @@ import { NfcRegisteringHistoryPacket } from './uplink/history/NfcRegisteringHist
 
 import { hexToBytes, calculateChecksum } from '@/utils/converters';
 import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';
+import { BoksExpectedReason } from '@/errors/BoksExpectedReason';
 import { freeze } from '@/utils/security';
 
 /**
@@ -279,7 +280,7 @@ export class BoksPacketFactory {
       throw new BoksProtocolError(
         BoksProtocolErrorId.MALFORMED_DATA,
         'Unknown or unregistered opcode',
-        { opcode }
+        { opcode, expected: BoksExpectedReason.KNOWN_OPCODE }
       );
     }
 
