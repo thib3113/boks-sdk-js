@@ -13,7 +13,8 @@ describe('PayloadMapper Security & Resilience', () => {
     expect(() => PayloadMapper.parse(MaliciousInjection, new Uint8Array([1]))).toThrowError(
       new BoksProtocolError(
         BoksProtocolErrorId.INTERNAL_ERROR,
-        `Unsafe property name mapped: "); throw new Error("hacked"); //`
+        'Unsafe property name mapped: "); throw new Error("hacked"); //',
+        { expected: "safe identifier", received: '"); throw new Error("hacked"); //' }
       )
     );
   });
@@ -27,7 +28,8 @@ describe('PayloadMapper Security & Resilience', () => {
     expect(() => PayloadMapper.parse(PrototypePollution, new Uint8Array([1]))).toThrowError(
       new BoksProtocolError(
         BoksProtocolErrorId.INTERNAL_ERROR,
-        `Unsafe property name mapped: __proto__`
+        'Unsafe property name mapped: __proto__',
+        { expected: "safe identifier", received: '__proto__' }
       )
     );
   });
@@ -41,8 +43,9 @@ describe('PayloadMapper Security & Resilience', () => {
       PayloadMapper.parse(OOBOffset, new Uint8Array(2000));
     }).toThrowError(
       new BoksProtocolError(
-        BoksProtocolErrorId.INTERNAL_ERROR,
-        'Invalid mapping bounds: offset=1050, size=1'
+        BoksProtocolErrorId.BUFFER_OVERFLOW,
+        'Invalid mapping bounds: offset=1050, size=1',
+        { expected: "<= 1024", received: 1051 }
       )
     );
   });
@@ -56,8 +59,9 @@ describe('PayloadMapper Security & Resilience', () => {
       PayloadMapper.parse(NaNOffset, new Uint8Array([1]));
     }).toThrowError(
       new BoksProtocolError(
-        BoksProtocolErrorId.INTERNAL_ERROR,
-        'Invalid mapping bounds: offset=NaN, size=1'
+        BoksProtocolErrorId.BUFFER_OVERFLOW,
+        'Invalid mapping bounds: offset=NaN, size=1',
+        { expected: "<= 1024", received: NaN }
       )
     );
   });
@@ -73,7 +77,7 @@ describe('PayloadMapper Security & Resilience', () => {
     // Minimum size required is 5 bytes (index 4 + 1 size)
     // Passing only 3 bytes should throw
     expect(() => PayloadMapper.parse(ValidPacket, new Uint8Array([1, 2, 3]))).toThrowError(
-      new BoksProtocolError(BoksProtocolErrorId.MALFORMED_DATA, 'Payload too short for mapped fields', { expectedAtLeast: 5, received: 3 })
+      new BoksProtocolError(BoksProtocolErrorId.MALFORMED_DATA, 'Payload too short for mapped fields', { expected: 5, received: 3 })
     );
   });
 
