@@ -18,7 +18,15 @@ export type BoksPacketConstructor<T extends BoksPacket = BoksPacket> = {
  * Base class for all Boks packets
  */
 export abstract class BoksPacket {
-  protected rawPayload: Uint8Array = EMPTY_BUFFER;
+  #rawPayload?: Uint8Array;
+
+  constructor(rawPayload?: Uint8Array) {
+    this.#rawPayload = rawPayload;
+  }
+
+  get rawPayload(): Uint8Array {
+    return this.#rawPayload ?? EMPTY_BUFFER;
+  }
 
   abstract get opcode(): BoksOpcode;
   toPayload(): Uint8Array {

@@ -23,8 +23,8 @@ export class CreateMasterCodePacket extends AuthPacket {
   @PayloadMasterCodeIndex(14)
   public accessor index!: number;
 
-  constructor(props: CreateMasterCodePacketProps) {
-    super(props.configKey);
+  constructor(props: CreateMasterCodePacketProps, rawPayload?: Uint8Array) {
+    super(props.configKey, rawPayload);
     this.pin = props.pin;
     this.index = props.index;
   }

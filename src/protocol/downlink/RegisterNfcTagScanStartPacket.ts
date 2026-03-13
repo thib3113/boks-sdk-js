@@ -10,12 +10,12 @@ export class RegisterNfcTagScanStartPacket extends AuthPacket {
     return RegisterNfcTagScanStartPacket.opcode;
   }
 
-  constructor(configKey: string) {
-    super(configKey);
+  constructor(configKey: string, rawPayload?: Uint8Array) {
+    super(configKey, rawPayload);
   }
 
   static fromPayload(payload: Uint8Array): RegisterNfcTagScanStartPacket {
     const configKey = AuthPacket.extractConfigKey(payload);
-    return new RegisterNfcTagScanStartPacket(configKey);
+    return new RegisterNfcTagScanStartPacket(configKey, payload);
   }
 }

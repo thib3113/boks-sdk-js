@@ -15,9 +15,9 @@ export class UnregisterNfcTagPacket extends AuthPacket {
   @PayloadNfcUid(8)
   public accessor uid!: string;
 
-  constructor(configKey: string, uid: string) {
-    super(configKey);
-    this.uid = uid;
+  constructor(props: { configKey: string; uid: string }, rawPayload?: Uint8Array) {
+    super(props.configKey, rawPayload);
+    this.uid = props.uid;
   }
 
   static fromPayload(payload: Uint8Array): UnregisterNfcTagPacket {
@@ -29,7 +29,7 @@ export class UnregisterNfcTagPacket extends AuthPacket {
         uid = bytesToHex(payload.subarray(9, 9 + len));
       }
     }
-    return new UnregisterNfcTagPacket(configKey, uid);
+    return new UnregisterNfcTagPacket({ configKey, uid }, payload);
   }
 
   toPayload(): Uint8Array {

@@ -14,13 +14,16 @@ export class MultiToSingleCodePacket extends AuthPacket {
   @PayloadPinCode(8)
   public accessor pin!: string;
 
-  constructor(configKey: string, pin: string) {
-    super(configKey);
-    this.pin = pin;
+  constructor(props: { configKey: string; pin: string }, rawPayload?: Uint8Array) {
+    super(props.configKey, rawPayload);
+    this.pin = props.pin;
   }
 
   static fromPayload(payload: Uint8Array): MultiToSingleCodePacket {
     const data = PayloadMapper.parse(MultiToSingleCodePacket, payload);
-    return new MultiToSingleCodePacket(data.configKey as string, data.pin as string);
+    return new MultiToSingleCodePacket(
+      { configKey: data.configKey as string, pin: data.pin as string },
+      payload
+    );
   }
 }

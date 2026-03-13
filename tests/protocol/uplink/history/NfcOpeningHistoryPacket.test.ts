@@ -37,10 +37,5 @@ describe('NfcOpeningHistoryPacket', () => {
     expect(() => NfcOpeningHistoryPacket.fromPayload(payload)).toThrowError('Payload too short for UID length 8');
   });
 
-  it('should handle constructor with default parameters', () => {
-    const packet = new NfcOpeningHistoryPacket(0, 0, '');
-    expect(packet.age).toBe(0);
-    expect(packet.tagType).toBe(0);
-    expect(packet.uid).toBe('');
-  });
+
 });

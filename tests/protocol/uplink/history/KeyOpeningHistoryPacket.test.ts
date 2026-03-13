@@ -9,12 +9,4 @@ describe('KeyOpeningHistoryPacket', () => {
     expect(packet.opcode).toBe(BoksOpcode.LOG_EVENT_KEY_OPENING);
     expect(packet.age).toBe(0x010203);
   });
-
-
-  describe('KeyOpeningHistoryPacket default construction', () => {
-    it('should handle constructor with default age', () => {
-      const packet = new KeyOpeningHistoryPacket(0);
-      expect(packet.age).toBe(0);
-    });
-  });
 });

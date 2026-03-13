@@ -9,14 +9,14 @@ describe('MultiToSingleCodePacket', () => {
   const validPin = '123456';
 
   it('should construct with valid parameters', () => {
-    const packet = new MultiToSingleCodePacket(validKey, validPin);
+    const packet = new MultiToSingleCodePacket({ configKey: validKey, pin: validPin });
     expect(packet.opcode).toBe(BoksOpcode.MULTI_CODE_TO_SINGLE_USE);
     expect(packet.configKey).toBe(validKey);
     expect(packet.pin).toBe(validPin);
   });
 
   it('should encode correctly', () => {
-    const packet = new MultiToSingleCodePacket(validKey, validPin);
+    const packet = new MultiToSingleCodePacket({ configKey: validKey, pin: validPin });
     const encoded = packet.encode();
     // 0x0B
     expect(encoded[0]).toBe(0x0B);
@@ -37,11 +37,11 @@ describe('MultiToSingleCodePacket', () => {
   });
 
   it('should throw INVALID_CONFIG_KEY for invalid config key format', () => {
-     expect(() => new MultiToSingleCodePacket('invalid', validPin)).toThrowError(BoksProtocolError);
+     expect(() => new MultiToSingleCodePacket({ configKey: 'invalid', pin: validPin })).toThrowError(BoksProtocolError);
   });
 
   it('should throw INVALID_PIN_FORMAT for invalid pin', () => {
-      expect(() => new MultiToSingleCodePacket(validKey, '123')).toThrowError(BoksProtocolError);
+      expect(() => new MultiToSingleCodePacket({ configKey: validKey, pin: '123' })).toThrowError(BoksProtocolError);
   });
 
   it('should fail parsing if payload is too short', () => {

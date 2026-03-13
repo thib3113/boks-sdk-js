@@ -16,13 +16,12 @@ export class ScaleMeasureHistoryPacket extends BoksHistoryEvent {
   // We specify length=0 as a wildcard, but the decorator logic currently requires strict length.
   // Instead of full annotation for a dynamic suffix, we map the known part:
 
-  constructor(
-    age: number,
-    public readonly data: Uint8Array,
-    rawPayload?: Uint8Array
-  ) {
-    super(ScaleMeasureHistoryPacket.opcode, age, rawPayload);
-    this._age = age;
+  public readonly data: Uint8Array;
+
+  constructor(props: { age: number; data: Uint8Array }, rawPayload?: Uint8Array) {
+    super(ScaleMeasureHistoryPacket.opcode, props.age, rawPayload);
+    this._age = props.age;
+    this.data = props.data;
   }
 
   static fromPayload(payload: Uint8Array): ScaleMeasureHistoryPacket {
@@ -31,6 +30,9 @@ export class ScaleMeasureHistoryPacket extends BoksHistoryEvent {
     }
     const parsed = PayloadMapper.parse(ScaleMeasureHistoryPacket, payload);
     const data = payload.length > 3 ? (payload.subarray(3) as Uint8Array) : EMPTY_BUFFER;
-    return new ScaleMeasureHistoryPacket(parsed._age as number, data, payload);
+    return new ScaleMeasureHistoryPacket(
+      { age: parsed._age as number, data: data as Uint8Array },
+      payload
+    );
   }
 }

@@ -47,7 +47,7 @@ describe('NFC Security Validation', () => {
 
   describe('UnregisterNfcTagPacket', () => {
     it('should reject invalid UIDs', () => {
-        expect(() => new UnregisterNfcTagPacket(configKey, 'ZZZZ')).toThrowError(BoksProtocolError);
+        expect(() => new UnregisterNfcTagPacket({ configKey: configKey, uid: 'ZZZZ' })).toThrowError(BoksProtocolError);
     });
   });
 });

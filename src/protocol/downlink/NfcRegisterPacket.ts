@@ -14,14 +14,14 @@ export class NfcRegisterPacket extends AuthPacket {
   @PayloadNfcUid(8)
   public accessor uid!: string;
 
-  constructor(props: { configKey: string; uid: string }) {
-    super(props.configKey);
+  constructor(props: { configKey: string; uid: string }, rawPayload?: Uint8Array) {
+    super(props.configKey, rawPayload);
     this.uid = props.uid;
   }
 
   static fromPayload(payload: Uint8Array): NfcRegisterPacket {
     const parsed = PayloadMapper.parse(NfcRegisterPacket, payload);
-    return new NfcRegisterPacket({ configKey: parsed.configKey!, uid: parsed.uid! });
+    return new NfcRegisterPacket({ configKey: parsed.configKey!, uid: parsed.uid! }, payload);
   }
 
   toPayload() {

@@ -13,13 +13,16 @@ export class GenerateCodesSupportPacket extends BoksPacket {
     return GenerateCodesSupportPacket.opcode;
   }
 
-  constructor(public readonly seed: Uint8Array | string) {
-    super();
+  constructor(
+    public readonly seed: Uint8Array | string,
+    rawPayload?: Uint8Array
+  ) {
+    super(rawPayload);
     validateSeed(seed);
   }
 
   static fromPayload(payload: Uint8Array): GenerateCodesSupportPacket {
-    return new GenerateCodesSupportPacket(payload);
+    return new GenerateCodesSupportPacket(payload, payload);
   }
 
   toPayload(): Uint8Array {

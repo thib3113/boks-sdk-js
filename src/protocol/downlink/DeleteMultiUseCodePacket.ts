@@ -14,13 +14,16 @@ export class DeleteMultiUseCodePacket extends AuthPacket {
   @PayloadPinCode(8)
   public accessor pin!: string;
 
-  constructor(configKey: string, pin: string) {
-    super(configKey);
-    this.pin = pin;
+  constructor(props: { configKey: string; pin: string }, rawPayload?: Uint8Array) {
+    super(props.configKey, rawPayload);
+    this.pin = props.pin;
   }
 
   static fromPayload(payload: Uint8Array): DeleteMultiUseCodePacket {
     const data = PayloadMapper.parse(DeleteMultiUseCodePacket, payload);
-    return new DeleteMultiUseCodePacket(data.configKey as string, data.pin as string);
+    return new DeleteMultiUseCodePacket(
+      { configKey: data.configKey as string, pin: data.pin as string },
+      payload
+    );
   }
 }

@@ -449,7 +449,7 @@ export class BoksController {
       featureName: 'NFC Unregister'
     });
 
-    await this.#client.execute(new UnregisterNfcTagPacket(configKey, tagId), {
+    await this.#client.execute(new UnregisterNfcTagPacket({ configKey: configKey, uid: tagId }), {
       successOpcodes: [BoksOpcode.NOTIFY_NFC_TAG_UNREGISTERED]
     });
 
@@ -568,7 +568,7 @@ export class BoksController {
    */
   async createSingleUseCode(pin: string): Promise<boolean> {
     const configKey = this.getConfigKeyOrThrow();
-    return this.performOperation(new CreateSingleUseCodePacket(configKey, pin));
+    return this.performOperation(new CreateSingleUseCodePacket({ configKey: configKey, pin: pin }));
   }
 
   /**
@@ -576,7 +576,7 @@ export class BoksController {
    */
   async createMultiUseCode(pin: string): Promise<boolean> {
     const configKey = this.getConfigKeyOrThrow();
-    return this.performOperation(new CreateMultiUseCodePacket(configKey, pin));
+    return this.performOperation(new CreateMultiUseCodePacket({ configKey: configKey, pin: pin }));
   }
 
   /**
@@ -585,7 +585,9 @@ export class BoksController {
   async deleteMasterCode(index: number): Promise<boolean> {
     const configKey = this.getConfigKeyOrThrow();
     validateMasterCodeIndex(index);
-    return this.performOperation(new DeleteMasterCodePacket(configKey, index));
+    return this.performOperation(
+      new DeleteMasterCodePacket({ configKey: configKey, index: index })
+    );
   }
 
   /**
@@ -593,7 +595,7 @@ export class BoksController {
    */
   async deleteSingleUseCode(pin: string): Promise<boolean> {
     const configKey = this.getConfigKeyOrThrow();
-    return this.performOperation(new DeleteSingleUseCodePacket(configKey, pin));
+    return this.performOperation(new DeleteSingleUseCodePacket({ configKey: configKey, pin: pin }));
   }
 
   /**
@@ -601,7 +603,7 @@ export class BoksController {
    */
   async deleteMultiUseCode(pin: string): Promise<boolean> {
     const configKey = this.getConfigKeyOrThrow();
-    return this.performOperation(new DeleteMultiUseCodePacket(configKey, pin));
+    return this.performOperation(new DeleteMultiUseCodePacket({ configKey: configKey, pin: pin }));
   }
 
   /**
@@ -610,7 +612,7 @@ export class BoksController {
    */
   async reactivateCode(pin: string): Promise<boolean> {
     const configKey = this.getConfigKeyOrThrow();
-    return this.performOperation(new ReactivateCodePacket(configKey, pin));
+    return this.performOperation(new ReactivateCodePacket({ configKey: configKey, pin: pin }));
   }
 
   /**
@@ -621,7 +623,9 @@ export class BoksController {
   async editMasterCode(index: number, newPin: string): Promise<boolean> {
     const configKey = this.getConfigKeyOrThrow();
     validateMasterCodeIndex(index);
-    return this.performOperation(new MasterCodeEditPacket(configKey, index, newPin));
+    return this.performOperation(
+      new MasterCodeEditPacket({ configKey: configKey, index: index, newPin: newPin })
+    );
   }
 
   /**
@@ -647,8 +651,8 @@ export class BoksController {
 
     const packet =
       targetType === BoksCodeType.Multi
-        ? new SingleToMultiCodePacket(configKey, pin)
-        : new MultiToSingleCodePacket(configKey, pin);
+        ? new SingleToMultiCodePacket({ configKey: configKey, pin: pin })
+        : new MultiToSingleCodePacket({ configKey: configKey, pin: pin });
 
     return this.performOperation(packet);
   }
@@ -722,7 +726,7 @@ export class BoksController {
     try {
       // Part A
       const successA = await this.performOperation(
-        new RegeneratePartAPacket(configKey, partA),
+        new RegeneratePartAPacket({ configKey: configKey, part: partA }),
         BoksOpcode.CODE_OPERATION_SUCCESS,
         BoksOpcode.ERROR_UNAUTHORIZED
       );
@@ -732,7 +736,7 @@ export class BoksController {
 
       // Part B
       return await this.performOperation(
-        new RegeneratePartBPacket(configKey, partB),
+        new RegeneratePartBPacket({ configKey: configKey, part: partB }),
         BoksOpcode.NOTIFY_CODE_GENERATION_SUCCESS,
         BoksOpcode.ERROR_UNAUTHORIZED
       );

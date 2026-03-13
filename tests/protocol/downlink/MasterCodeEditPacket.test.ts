@@ -10,7 +10,7 @@ describe('MasterCodeEditPacket', () => {
   const validNewPin = '654321';
 
   it('should construct with valid parameters', () => {
-    const packet = new MasterCodeEditPacket(validKey, validIndex, validNewPin);
+    const packet = new MasterCodeEditPacket({ configKey: validKey, index: validIndex, newPin: validNewPin });
     expect(packet.opcode).toBe(BoksOpcode.MASTER_CODE_EDIT);
     expect(packet.configKey).toBe(validKey);
     expect(packet.index).toBe(validIndex);
@@ -22,7 +22,7 @@ describe('MasterCodeEditPacket', () => {
     // Key: 3132333435363738
     // Index: 02
     // Pin: 363534333231
-    const packet = new MasterCodeEditPacket(validKey, validIndex, validNewPin);
+    const packet = new MasterCodeEditPacket({ configKey: validKey, index: validIndex, newPin: validNewPin });
     const encoded = packet.encode();
     expect(encoded[0]).toBe(0x09);
     expect(encoded[1]).toBe(15);
@@ -57,15 +57,15 @@ describe('MasterCodeEditPacket', () => {
   });
 
   it('should throw INVALID_CONFIG_KEY for invalid config key format', () => {
-     expect(() => new MasterCodeEditPacket('invalid', validIndex, validNewPin)).toThrowError(BoksProtocolError);
+     expect(() => new MasterCodeEditPacket({ configKey: 'invalid', index: validIndex, newPin: validNewPin })).toThrowError(BoksProtocolError);
   });
 
   it('should throw INVALID_PIN_FORMAT for invalid pin', () => {
-      expect(() => new MasterCodeEditPacket(validKey, validIndex, '123')).toThrowError(BoksProtocolError);
+      expect(() => new MasterCodeEditPacket({ configKey: validKey, index: validIndex, newPin: '123' })).toThrowError(BoksProtocolError);
   });
 
   it('should throw INVALID_INDEX_RANGE for invalid index', () => {
-      expect(() => new MasterCodeEditPacket(validKey, 256, validNewPin)).toThrowError(BoksProtocolError);
+      expect(() => new MasterCodeEditPacket({ configKey: validKey, index: 256, newPin: validNewPin })).toThrowError(BoksProtocolError);
   });
 
   it('should fail parsing if payload is too short for pin', () => {

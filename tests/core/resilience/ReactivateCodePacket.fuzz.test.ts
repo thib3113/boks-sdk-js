@@ -12,7 +12,7 @@ describe('ReactivateCodePacket Resilience (Fuzzing)', () => {
         fc.string(), // pin
         (configKey, pin) => {
           try {
-            const packet = new ReactivateCodePacket(configKey, pin);
+            const packet = new ReactivateCodePacket({ configKey: configKey, pin: pin });
 
             // If it succeeds, the inputs MUST have matched strict validation:
             expect(configKey.length).toBe(8);

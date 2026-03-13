@@ -14,13 +14,13 @@ export class GenerateCodesPacket extends BoksPacket {
 
   public readonly seedStr: string;
 
-  constructor(seed: Uint8Array | string) {
-    super();
+  constructor(seed: Uint8Array | string, rawPayload?: Uint8Array) {
+    super(rawPayload);
     this.seedStr = this.formatSeed(seed);
   }
 
   static fromPayload(payload: Uint8Array): GenerateCodesPacket {
-    return new GenerateCodesPacket(payload);
+    return new GenerateCodesPacket(payload, payload);
   }
 
   toPayload(): Uint8Array {
