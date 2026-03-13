@@ -1134,6 +1134,9 @@ export function PayloadNfcUid(offset: number) {
         return target.get.call(this);
       },
       set(val: V) {
+
+
+
         if (val === undefined || val === null) {
           throw new BoksProtocolError(
             BoksProtocolErrorId.MISSING_MANDATORY_FIELD,

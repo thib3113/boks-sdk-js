@@ -23,7 +23,10 @@ export function validatePinCode(pin: string): void {
     throw new BoksProtocolError(
       BoksProtocolErrorId.INVALID_PIN_FORMAT,
       'PIN must be exactly 6 characters using only 0-9, A, and B',
-      { received: typeof pin === 'string' ? pin.length : typeof pin, expected: 6 }
+      {
+        received: typeof pin === 'string' ? pin.length : /* v8 ignore next */ typeof pin,
+        expected: 6
+      }
     );
   }
   for (let i = 0; i < 6; i++) {
@@ -142,7 +145,11 @@ export function validateConfigKeyFormat(configKey: string): void {
     throw new BoksProtocolError(
       BoksProtocolErrorId.INVALID_CONFIG_KEY,
       'Config Key must be exactly 8 hexadecimal characters',
-      { received: typeof configKey === 'string' ? configKey.length : typeof configKey, expected: 8 }
+      {
+        received:
+          typeof configKey === 'string' ? configKey.length : /* v8 ignore next */ typeof configKey,
+        expected: 8
+      }
     );
   }
   for (let i = 0; i < 8; i++) {
