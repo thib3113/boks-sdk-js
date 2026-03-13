@@ -150,18 +150,12 @@ describe('converters', () => {
       expect(result.length).toBe(34);
     });
   });
-  describe('bytesToMac 7-byte reverse true', () => {
-    it('formats a 7-byte MAC address with reverse=true', () => {
-      const bytes = new Uint8Array([0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77]);
-      expect(bytesToMac(bytes, true)).toBe('77:66:55:44:33:22:11');
-    });
-  });
   describe('bytesToMac explicit lengths', () => {
-    it('formats a 4-byte MAC address with reverse=true', () => {
+    it('formats a 4-byte NFC UID with reverse=true', () => {
       const bytes = new Uint8Array([0x11, 0x22, 0x33, 0x44]);
       expect(bytesToMac(bytes, true)).toBe('44:33:22:11');
     });
-    it('formats a 4-byte MAC address with reverse=false', () => {
+    it('formats a 4-byte NFC UID with reverse=false', () => {
       const bytes = new Uint8Array([0x11, 0x22, 0x33, 0x44]);
       expect(bytesToMac(bytes, false)).toBe('11:22:33:44');
     });
@@ -169,15 +163,19 @@ describe('converters', () => {
       const bytes = new Uint8Array([0x11, 0x22, 0x33, 0x44, 0x55, 0x66]);
       expect(bytesToMac(bytes, false)).toBe('11:22:33:44:55:66');
     });
-    it('formats a 7-byte MAC address with reverse=false', () => {
+    it('formats a 7-byte NFC UID with reverse=true', () => {
+      const bytes = new Uint8Array([0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77]);
+      expect(bytesToMac(bytes, true)).toBe('77:66:55:44:33:22:11');
+    });
+    it('formats a 7-byte NFC UID with reverse=false', () => {
       const bytes = new Uint8Array([0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77]);
       expect(bytesToMac(bytes, false)).toBe('11:22:33:44:55:66:77');
     });
-    it('formats a 10-byte MAC address with reverse=true', () => {
+    it('formats a 10-byte NFC UID with reverse=true', () => {
       const bytes = new Uint8Array([0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa]);
       expect(bytesToMac(bytes, true)).toBe('AA:99:88:77:66:55:44:33:22:11');
     });
-    it('formats a 10-byte MAC address with reverse=false', () => {
+    it('formats a 10-byte NFC UID with reverse=false', () => {
       const bytes = new Uint8Array([0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa]);
       expect(bytesToMac(bytes, false)).toBe('11:22:33:44:55:66:77:88:99:AA');
     });

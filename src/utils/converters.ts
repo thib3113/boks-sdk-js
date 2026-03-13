@@ -302,7 +302,7 @@ const formatMac6 = (bytes: Uint8Array, reverse: boolean): string => {
   }
 };
 
-const formatMac4 = (bytes: Uint8Array, reverse: boolean): string => {
+const formatUid4 = (bytes: Uint8Array, reverse: boolean): string => {
   if (reverse) {
     return (
       HEX_TABLE[bytes[3]] +
@@ -326,7 +326,7 @@ const formatMac4 = (bytes: Uint8Array, reverse: boolean): string => {
   }
 };
 
-const formatMac7 = (bytes: Uint8Array, reverse: boolean): string => {
+const formatUid7 = (bytes: Uint8Array, reverse: boolean): string => {
   if (reverse) {
     return (
       HEX_TABLE[bytes[6]] +
@@ -362,7 +362,7 @@ const formatMac7 = (bytes: Uint8Array, reverse: boolean): string => {
   }
 };
 
-const formatMac10 = (bytes: Uint8Array, reverse: boolean): string => {
+const formatUid10 = (bytes: Uint8Array, reverse: boolean): string => {
   if (reverse) {
     return (
       HEX_TABLE[bytes[9]] +
@@ -425,17 +425,17 @@ export const bytesToMac = (bytes: Uint8Array, reverse: boolean = true): string =
 
   // Optimization: fast path for standard 4-byte NFC UIDs.
   if (len === 4) {
-    return formatMac4(bytes, reverse);
+    return formatUid4(bytes, reverse);
   }
 
   // Optimization: fast path for standard 7-byte NFC UIDs.
   if (len === 7) {
-    return formatMac7(bytes, reverse);
+    return formatUid7(bytes, reverse);
   }
 
   // Optimization: fast path for standard 10-byte NFC UIDs.
   if (len === 10) {
-    return formatMac10(bytes, reverse);
+    return formatUid10(bytes, reverse);
   }
 
   // Slow path for non-standard lengths
