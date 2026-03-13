@@ -302,6 +302,114 @@ const formatMac6 = (bytes: Uint8Array, reverse: boolean): string => {
   }
 };
 
+const formatMac4 = (bytes: Uint8Array, reverse: boolean): string => {
+  if (reverse) {
+    return (
+      HEX_TABLE[bytes[3]] +
+      ':' +
+      HEX_TABLE[bytes[2]] +
+      ':' +
+      HEX_TABLE[bytes[1]] +
+      ':' +
+      HEX_TABLE[bytes[0]]
+    );
+  } else {
+    return (
+      HEX_TABLE[bytes[0]] +
+      ':' +
+      HEX_TABLE[bytes[1]] +
+      ':' +
+      HEX_TABLE[bytes[2]] +
+      ':' +
+      HEX_TABLE[bytes[3]]
+    );
+  }
+};
+
+const formatMac7 = (bytes: Uint8Array, reverse: boolean): string => {
+  if (reverse) {
+    return (
+      HEX_TABLE[bytes[6]] +
+      ':' +
+      HEX_TABLE[bytes[5]] +
+      ':' +
+      HEX_TABLE[bytes[4]] +
+      ':' +
+      HEX_TABLE[bytes[3]] +
+      ':' +
+      HEX_TABLE[bytes[2]] +
+      ':' +
+      HEX_TABLE[bytes[1]] +
+      ':' +
+      HEX_TABLE[bytes[0]]
+    );
+  } else {
+    return (
+      HEX_TABLE[bytes[0]] +
+      ':' +
+      HEX_TABLE[bytes[1]] +
+      ':' +
+      HEX_TABLE[bytes[2]] +
+      ':' +
+      HEX_TABLE[bytes[3]] +
+      ':' +
+      HEX_TABLE[bytes[4]] +
+      ':' +
+      HEX_TABLE[bytes[5]] +
+      ':' +
+      HEX_TABLE[bytes[6]]
+    );
+  }
+};
+
+const formatMac10 = (bytes: Uint8Array, reverse: boolean): string => {
+  if (reverse) {
+    return (
+      HEX_TABLE[bytes[9]] +
+      ':' +
+      HEX_TABLE[bytes[8]] +
+      ':' +
+      HEX_TABLE[bytes[7]] +
+      ':' +
+      HEX_TABLE[bytes[6]] +
+      ':' +
+      HEX_TABLE[bytes[5]] +
+      ':' +
+      HEX_TABLE[bytes[4]] +
+      ':' +
+      HEX_TABLE[bytes[3]] +
+      ':' +
+      HEX_TABLE[bytes[2]] +
+      ':' +
+      HEX_TABLE[bytes[1]] +
+      ':' +
+      HEX_TABLE[bytes[0]]
+    );
+  } else {
+    return (
+      HEX_TABLE[bytes[0]] +
+      ':' +
+      HEX_TABLE[bytes[1]] +
+      ':' +
+      HEX_TABLE[bytes[2]] +
+      ':' +
+      HEX_TABLE[bytes[3]] +
+      ':' +
+      HEX_TABLE[bytes[4]] +
+      ':' +
+      HEX_TABLE[bytes[5]] +
+      ':' +
+      HEX_TABLE[bytes[6]] +
+      ':' +
+      HEX_TABLE[bytes[7]] +
+      ':' +
+      HEX_TABLE[bytes[8]] +
+      ':' +
+      HEX_TABLE[bytes[9]]
+    );
+  }
+};
+
 export const bytesToMac = (bytes: Uint8Array, reverse: boolean = true): string => {
   const len = bytes.length;
   if (len === 0) {
@@ -313,6 +421,21 @@ export const bytesToMac = (bytes: Uint8Array, reverse: boolean = true): string =
   // and branching, resulting in an ~8-9x performance speedup in V8.
   if (len === 6) {
     return formatMac6(bytes, reverse);
+  }
+
+  // Optimization: fast path for standard 4-byte NFC UIDs.
+  if (len === 4) {
+    return formatMac4(bytes, reverse);
+  }
+
+  // Optimization: fast path for standard 7-byte NFC UIDs.
+  if (len === 7) {
+    return formatMac7(bytes, reverse);
+  }
+
+  // Optimization: fast path for standard 10-byte NFC UIDs.
+  if (len === 10) {
+    return formatMac10(bytes, reverse);
   }
 
   // Slow path for non-standard lengths

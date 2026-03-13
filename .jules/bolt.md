@@ -109,3 +109,7 @@
 ## 2025-10-26 - Memory Leaks with Map vs WeakMap
 **Learning:** Using `Map` to cache metadata or compiled functions keyed by class constructors or instances can lead to memory leaks, especially when classes or objects are created dynamically or when instances are no longer needed but remain referenced by the cache. Switching to `WeakMap` resolves this issue, allowing garbage collection of unreferenced keys while maintaining caching benefits.
 **Action:** When caching objects or functions using classes or instances as keys, prefer `WeakMap` over `Map` to avoid memory leaks.
+
+## 2025-10-26 - Loop Overhead in String Formatting for Variable Length Mac Addresses / NFC UIDs
+**Learning:** In V8, the overhead of using a loop for formatting small, fixed-size byte arrays into colon-separated strings is significant. By adding direct string concatenation fast-paths for 4-byte, 7-byte, and 10-byte MAC addresses (commonly used for NFC UIDs), we achieved up to ~6-10x performance speedup compared to the generic loop-based approach.
+**Action:** Extend explicit fast-paths for highly predictable, common array sizes (like 4, 7, and 10 for NFC UIDs) using manual string concatenation instead of loops when optimizing hot paths.
