@@ -225,7 +225,7 @@ export class BoksPacketFactory {
       throw new BoksProtocolError(
         BoksProtocolErrorId.INVALID_PAYLOAD_LENGTH,
         'Packet length too short (needs at least 3 bytes)',
-        { received: data.length }
+        { received: data.length, expected: 3 }
       );
     }
 
@@ -255,8 +255,8 @@ export class BoksPacketFactory {
         });
       }
       throw new BoksProtocolError(BoksProtocolErrorId.CHECKSUM_MISMATCH, 'Invalid checksum', {
-        expected: computedChecksum,
-        received: checksum
+        received: checksum,
+        expected: computedChecksum
       });
     }
 
@@ -296,9 +296,9 @@ export class BoksPacketFactory {
     const keyBytes = typeof newMasterKey === 'string' ? hexToBytes(newMasterKey) : newMasterKey;
     if (keyBytes.length !== 32) {
       throw new BoksProtocolError(BoksProtocolErrorId.INVALID_VALUE, undefined, {
+        field: 'newMasterKey',
         received: keyBytes.length,
-        expected: 32,
-        field: 'newMasterKey'
+        expected: 32
       });
     }
     return [

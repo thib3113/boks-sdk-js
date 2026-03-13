@@ -23,7 +23,7 @@ export function validatePinCode(pin: string): void {
     throw new BoksProtocolError(
       BoksProtocolErrorId.INVALID_PIN_FORMAT,
       'PIN must be exactly 6 characters using only 0-9, A, and B',
-      { received: pin }
+      { received: typeof pin === 'string' ? pin.length : typeof pin, expected: 6 }
     );
   }
   for (let i = 0; i < 6; i++) {
@@ -33,7 +33,7 @@ export function validatePinCode(pin: string): void {
       throw new BoksProtocolError(
         BoksProtocolErrorId.INVALID_PIN_FORMAT,
         'PIN must be exactly 6 characters using only 0-9, A, and B',
-        { received: pin }
+        { received: pin, expected: '6 characters (0-9, A, B)' }
       );
     }
   }
@@ -50,7 +50,7 @@ export function validateMasterCodeIndex(index: number): void {
   if (!Number.isInteger(index) || index < 0 || index > MAX_MASTER_CODE_INDEX) {
     throw new BoksProtocolError(BoksProtocolErrorId.INVALID_INDEX_RANGE, undefined, {
       received: index,
-      max: MAX_MASTER_CODE_INDEX
+      expected: `0 to ${MAX_MASTER_CODE_INDEX}`
     });
   }
 }
@@ -77,7 +77,8 @@ export function validateSeed(seed: Uint8Array | string): void {
       if (!isHexCode(seed.charCodeAt(i))) {
         throw new BoksProtocolError(
           BoksProtocolErrorId.INVALID_VALUE,
-          'Seed string must contain only valid hex characters'
+          'Seed string must contain only valid hex characters',
+          { received: seed, expected: 'Valid hex characters' }
         );
       }
     }
@@ -113,7 +114,8 @@ export function validateCredentialsKey(key: Uint8Array | string): void {
       if (!isHexCode(key.charCodeAt(i))) {
         throw new BoksProtocolError(
           BoksProtocolErrorId.INVALID_VALUE,
-          'Key string must contain only valid hex characters'
+          'Key string must contain only valid hex characters',
+          { received: key, expected: 'Valid hex characters' }
         );
       }
     }
@@ -139,14 +141,16 @@ export function validateConfigKeyFormat(configKey: string): void {
   if (typeof configKey !== 'string' || configKey.length !== 8) {
     throw new BoksProtocolError(
       BoksProtocolErrorId.INVALID_CONFIG_KEY,
-      'Config Key must be exactly 8 hexadecimal characters'
+      'Config Key must be exactly 8 hexadecimal characters',
+      { received: typeof configKey === 'string' ? configKey.length : typeof configKey, expected: 8 }
     );
   }
   for (let i = 0; i < 8; i++) {
     if (!isHexCode(configKey.charCodeAt(i))) {
       throw new BoksProtocolError(
         BoksProtocolErrorId.INVALID_CONFIG_KEY,
-        'Config Key must be exactly 8 hexadecimal characters'
+        'Config Key must be exactly 8 hexadecimal characters',
+        { received: configKey, expected: 'Valid hex characters' }
       );
     }
   }
@@ -163,7 +167,8 @@ export function validateConfigKeyFormat(configKey: string): void {
 export function validateNfcUid(uid: string): void {
   if (typeof uid !== 'string') {
     throw new BoksProtocolError(BoksProtocolErrorId.INVALID_NFC_UID_FORMAT, undefined, {
-      received: uid,
+      received: typeof uid,
+      expected: 'string',
       reason: 'NOT_HEX'
     });
   }
@@ -179,6 +184,7 @@ export function validateNfcUid(uid: string): void {
     if (!isHexCode(code)) {
       throw new BoksProtocolError(BoksProtocolErrorId.INVALID_NFC_UID_FORMAT, undefined, {
         received: uid,
+        expected: 'Valid hex characters',
         reason: 'NOT_HEX'
       });
     }
@@ -188,6 +194,7 @@ export function validateNfcUid(uid: string): void {
   if (validLength === 0) {
     throw new BoksProtocolError(BoksProtocolErrorId.INVALID_NFC_UID_FORMAT, undefined, {
       received: uid,
+      expected: 'Valid hex characters',
       reason: 'NOT_HEX'
     });
   }
@@ -195,9 +202,9 @@ export function validateNfcUid(uid: string): void {
   // Length in hex chars: 8 (4 bytes), 14 (7 bytes), 20 (10 bytes)
   if (validLength !== 8 && validLength !== 14 && validLength !== 20) {
     throw new BoksProtocolError(BoksProtocolErrorId.INVALID_NFC_UID_FORMAT, undefined, {
-      received: uid,
-      reason: 'INVALID_LENGTH',
-      expected: '4, 7, or 10 bytes'
+      received: validLength,
+      expected: '8, 14, or 20 hex chars (4, 7, or 10 bytes)',
+      reason: 'INVALID_LENGTH'
     });
   }
 }
