@@ -177,15 +177,27 @@ describe('validation utils', () => {
 
     it('should reject UIDs with invalid format', () => {
       // @ts-expect-error Testing invalid type
-      expect(() => validateNfcUid(1234)).toThrow(BoksProtocolErrorId.INVALID_NFC_UID_FORMAT);
-      expect(() => validateNfcUid('')).toThrow(BoksProtocolErrorId.INVALID_NFC_UID_FORMAT);
-      expect(() => validateNfcUid('01020G04')).toThrow(BoksProtocolErrorId.INVALID_NFC_UID_FORMAT); // Non-hex character
+      expect(() => validateNfcUid(1234)).toThrowError(
+        new BoksProtocolError(BoksProtocolErrorId.INVALID_NFC_UID_FORMAT, undefined, { received: 'number', expected: 'string', reason: 'NOT_HEX' })
+      );
+      expect(() => validateNfcUid('')).toThrowError(
+        new BoksProtocolError(BoksProtocolErrorId.INVALID_NFC_UID_FORMAT, undefined, { received: '', expected: 'Valid hex characters', reason: 'NOT_HEX' })
+      );
+      expect(() => validateNfcUid('01020G04')).toThrowError(
+        new BoksProtocolError(BoksProtocolErrorId.INVALID_NFC_UID_FORMAT, undefined, { received: '01020G04', expected: 'Valid hex characters', reason: 'NOT_HEX' })
+      ); // Non-hex character
     });
 
     it('should reject UIDs with invalid length', () => {
-      expect(() => validateNfcUid('0102030405')).toThrow(BoksProtocolErrorId.INVALID_NFC_UID_FORMAT); // 5 bytes
-      expect(() => validateNfcUid('010203040506070809')).toThrow(BoksProtocolErrorId.INVALID_NFC_UID_FORMAT); // 9 bytes
-      expect(() => validateNfcUid('0102030405060708090A0B')).toThrow(BoksProtocolErrorId.INVALID_NFC_UID_FORMAT); // 11 bytes
+      expect(() => validateNfcUid('0102030405')).toThrowError(
+        new BoksProtocolError(BoksProtocolErrorId.INVALID_NFC_UID_FORMAT, undefined, { received: 10, expected: '8, 14, or 20 hex chars (4, 7, or 10 bytes)', reason: 'INVALID_LENGTH' })
+      ); // 5 bytes
+      expect(() => validateNfcUid('010203040506070809')).toThrowError(
+        new BoksProtocolError(BoksProtocolErrorId.INVALID_NFC_UID_FORMAT, undefined, { received: 18, expected: '8, 14, or 20 hex chars (4, 7, or 10 bytes)', reason: 'INVALID_LENGTH' })
+      ); // 9 bytes
+      expect(() => validateNfcUid('0102030405060708090A0B')).toThrowError(
+        new BoksProtocolError(BoksProtocolErrorId.INVALID_NFC_UID_FORMAT, undefined, { received: 22, expected: '8, 14, or 20 hex chars (4, 7, or 10 bytes)', reason: 'INVALID_LENGTH' })
+      ); // 11 bytes
     });
   });
 });
