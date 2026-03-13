@@ -146,7 +146,7 @@ export class PayloadMapper {
     const fields = this.getFields(targetClass);
 
     if (!fields || fields.length === 0) {
-      return (payload: Uint8Array) => ({}); // No fields mapped
+      return (_payload: Uint8Array) => ({}); // No fields mapped
     }
 
     // Calculate maximum required payload size securely

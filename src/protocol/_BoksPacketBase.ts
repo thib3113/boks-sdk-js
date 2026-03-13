@@ -37,7 +37,7 @@ export abstract class BoksPacket {
    * Static factory method to create an instance from a payload.
    * This MUST be implemented by leaf classes for strict parsing.
    */
-  static fromPayload(payload: Uint8Array): BoksPacket {
+  static fromPayload(_payload: Uint8Array): BoksPacket {
     throw new BoksProtocolError(BoksProtocolErrorId.MALFORMED_DATA, 'fromPayload not implemented');
   }
 
