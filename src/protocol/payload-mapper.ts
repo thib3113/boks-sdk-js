@@ -1079,8 +1079,6 @@ export function PayloadPinCode(offset: number) {
         return target.get.call(this);
       },
       set(val: V) {
-        /* v8 ignore next 3 */
-        /* v8 ignore next 3 */
         if (val === undefined || val === null) {
           throw new BoksProtocolError(
             BoksProtocolErrorId.MISSING_MANDATORY_FIELD,
@@ -1134,9 +1132,6 @@ export function PayloadNfcUid(offset: number) {
         return target.get.call(this);
       },
       set(val: V) {
-
-
-
         if (val === undefined || val === null) {
           throw new BoksProtocolError(
             BoksProtocolErrorId.MISSING_MANDATORY_FIELD,

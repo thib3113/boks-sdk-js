@@ -148,7 +148,7 @@ describe('BoksPacketFactory', () => {
       const length = 5;
       const data = new Uint8Array([opcode, length, 0x01, 0x02]); // Missing 3 bytes of payload + checksum
       expect(() => BoksPacketFactory.createFromPayload(data)).toThrow(
-        new BoksProtocolError(BoksProtocolErrorId.INVALID_PAYLOAD_LENGTH, 'Packet length too short based on length byte', { expected: 8, received: 4 })
+        new BoksProtocolError(BoksProtocolErrorId.INVALID_PAYLOAD_LENGTH, 'Packet length too short based on length byte', { received: 4, expected: 8 })
       );
     });
 
@@ -227,5 +227,4 @@ describe('BoksPacketFactory', () => {
       }).toThrowError(/INVALID_VALUE/);
     });
   });
-}
-);
+});
