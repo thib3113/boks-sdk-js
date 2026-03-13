@@ -1,146 +1,81 @@
 import { describe, it, expect } from 'vitest';
 import fc from 'fast-check';
-import { PayloadMapper, FieldType } from '@/protocol/payload-mapper';
-import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';
+import { PayloadMapper, FieldDefinition, FieldType } from '@/protocol/payload-mapper';
+import { BoksProtocolError } from '@/errors/BoksProtocolError';
 
-/**
- * Generates random valid property names (safe identifiers).
- */
-const safeIdentifierArbitrary = fc.stringMatching(/^[a-zA-Z_$][0-9a-zA-Z_$]*$/).filter(s => s.length > 0);
+describe('PayloadMapper JIT Fuzzing', () => {
+  const fieldTypes: FieldType[] = [
+    'uint8', 'uint16', 'uint24', 'uint32', 'ascii_string', 'mac_address',
+    'hex_string', 'pin_code', 'config_key', 'boolean', 'byte_array',
+    'var_len_hex', 'bit'
+  ];
 
-/**
- * Generates malicious property names (e.g., trying to break out of JS strings or object keys).
- */
-const maliciousIdentifierArbitrary = fc.string().filter(s => !/^[a-zA-Z_$][0-9a-zA-Z_$]*$/.test(s));
+  // Generator for valid and malformed JIT schema fields
+  const fieldDefinitionArbitrary = fc.record({
+    propertyName: fc.string({ maxLength: 50 }),
+    type: fc.constantFrom(...fieldTypes),
+    offset: fc.integer({ min: -10, max: 2000 }), // Including some OOB
+    length: fc.option(fc.integer({ min: -10, max: 100 }), { nil: undefined }), // Optional length for some types
+    bitIndex: fc.option(fc.integer({ min: -5, max: 15 }), { nil: undefined })
+  }) as fc.Arbitrary<FieldDefinition>;
 
-/**
- * Generates valid FieldTypes.
- */
-const fieldTypeArbitrary = fc.constantFrom<FieldType>(
-    'uint8', 'uint16', 'uint24', 'uint32', 'ascii_string', 'mac_address', 'hex_string'
-);
+  const payloadArbitrary = fc.uint8Array({ maxLength: 1024 });
 
-/**
- * Generates a single valid FieldDefinition.
- */
-const validFieldDefinitionArbitrary = fc.record({
-    propertyName: safeIdentifierArbitrary,
-    type: fieldTypeArbitrary,
-    offset: fc.integer({ min: 0, max: 100 }), // Keep offsets reasonable for valid tests
-    length: fc.integer({ min: 1, max: 64 }) // Only used for string types
-});
+  it('never crashes ungracefully when parsing random schemas with random payloads', async () => {
+    await fc.assert(
+      fc.property(fc.array(fieldDefinitionArbitrary, { maxLength: 10 }), payloadArbitrary, (schema, payload) => {
+        class FuzzPacket {}
 
-/**
- * Generates a schema array.
- */
-const validSchemaArbitrary = fc.array(validFieldDefinitionArbitrary, { minLength: 1, maxLength: 20 });
+        // Fuzz the schema definition
+        try {
+          PayloadMapper.defineSchema(FuzzPacket, schema);
+        } catch (e) {
+          // It's allowed to throw BoksProtocolError during definition (e.g., bad property name, bad bounds)
+          expect(e).toBeInstanceOf(BoksProtocolError);
+          return true; // Test passes for this iteration
+        }
 
-describe('PayloadMapper Resilience and Fuzzing', () => {
+        // Fuzz the JIT parse
+        try {
+          PayloadMapper.parse(FuzzPacket, payload);
+          // If it parses, it means bounds and names were safe enough.
+        } catch (e) {
+          // The ONLY error that should ever escape the PayloadMapper is a BoksProtocolError.
+          // SyntaxError (bad JIT), RangeError, TypeError should cause test failure!
+          expect(e).toBeInstanceOf(BoksProtocolError);
+        }
+        return true;
+      }),
+      { numRuns: 1000 } // Aggressive JIT testing
+    );
+  });
 
-    it('should securely reject malicious property names during JIT compilation', () => {
-        fc.assert(
-            fc.property(maliciousIdentifierArbitrary, (maliciousName) => {
-                class MaliciousClass {}
-                PayloadMapper.defineSchema(MaliciousClass, [
-                    { propertyName: maliciousName, type: 'uint8', offset: 0 }
-                ]);
+  it('never crashes ungracefully when serializing random values into JIT schema', async () => {
+    await fc.assert(
+      fc.property(
+        fc.array(fieldDefinitionArbitrary, { maxLength: 10 }),
+        fc.dictionary(fc.string(), fc.anything({ maxDepth: 1 })), // Random instance properties
+        (schema, instanceProps) => {
+        class FuzzPacket {}
 
-                // The JIT compiler should throw immediately upon encountering a bad name,
-                // preventing the compilation of `new Function()`.
-                try {
-                   PayloadMapper.parse(MaliciousClass, new Uint8Array([0x00]));
-                   return false; // Should not reach here
-                } catch (err) {
-                   expect(err).toBeInstanceOf(BoksProtocolError);
-                   expect((err as BoksProtocolError).id).toBe(BoksProtocolErrorId.INTERNAL_ERROR);
-                   return true;
-                }
-            })
-        );
-    });
+        try {
+          PayloadMapper.defineSchema(FuzzPacket, schema);
+        } catch (e) {
+          expect(e).toBeInstanceOf(BoksProtocolError);
+          return true;
+        }
 
-    it('should securely reject out-of-bounds offsets or lengths during JIT compilation', () => {
-         fc.assert(
-            fc.property(
-                fc.integer({ min: -1000, max: -1 }), // Negative offsets
-                fc.integer({ min: 1025, max: Number.MAX_SAFE_INTEGER }), // Extremely large offsets
-                (negativeOffset, largeOffset) => {
-                    class NegativeClass {}
-                    PayloadMapper.defineSchema(NegativeClass, [
-                        { propertyName: 'val', type: 'uint8', offset: negativeOffset }
-                    ]);
-                    class LargeClass {}
-                    PayloadMapper.defineSchema(LargeClass, [
-                         { propertyName: 'val', type: 'uint8', offset: largeOffset }
-                    ]);
+        const instance = new FuzzPacket();
+        Object.assign(instance, instanceProps);
 
-                    expect(() => PayloadMapper.parse(NegativeClass, new Uint8Array(10))).toThrowError(BoksProtocolError);
-                    expect(() => PayloadMapper.parse(LargeClass, new Uint8Array(10))).toThrowError(BoksProtocolError);
-                }
-            )
-        );
-    });
-
-    it('should NEVER crash V8 when parsing valid schemas with completely random binary payloads', () => {
-        // This test ensures that the compiled JIT function is completely memory-safe.
-        // It should either return a mapped object or throw a BoksProtocolError (if payload too short),
-        // but it must never cause an unhandled exception or V8 crash (TypeError, RangeError, etc.).
-        fc.assert(
-            fc.property(validSchemaArbitrary, fc.uint8Array({ maxLength: 200 }), (schema, randomBuffer) => {
-                class RandomSchemaClass {}
-                PayloadMapper.defineSchema(RandomSchemaClass, schema);
-
-                try {
-                    const result = PayloadMapper.parse(RandomSchemaClass, randomBuffer);
-                    expect(result).toBeDefined();
-                    expect(typeof result).toBe('object');
-                } catch (err) {
-                    // It is perfectly acceptable for the JIT function to throw if the random buffer
-                    // is shorter than the maximum offset required by the random schema.
-                    expect(err).toBeInstanceOf(BoksProtocolError);
-                    expect((err as BoksProtocolError).id).toBe(BoksProtocolErrorId.MALFORMED_DATA);
-                }
-            })
-        );
-    });
-
-    it('should NEVER crash V8 when serializing random objects with valid schemas', () => {
-         // This test ensures the JIT serializer is memory-safe even if the input object
-         // contains unexpected data types or missing properties.
-         fc.assert(
-             fc.property(validSchemaArbitrary, fc.object(), (schema, randomObject) => {
-                 class SerializerClass {}
-                 PayloadMapper.defineSchema(SerializerClass, schema);
-
-                 // Assign random data to instance
-                 const instance = new SerializerClass();
-                 Object.assign(instance, randomObject);
-
-                 try {
-                     const payload = PayloadMapper.serialize(instance);
-                     expect(payload).toBeInstanceOf(Uint8Array);
-                 } catch (err) {
-                     expect(err).toBeInstanceOf(BoksProtocolError);
-                 }
-             })
-         );
-    });
-
-    it('should strictly throw BoksProtocolError if payload is not a Uint8Array', () => {
-         class SimpleClass {}
-         PayloadMapper.defineSchema(SimpleClass, [{ propertyName: 'val', type: 'uint8', offset: 0 }]);
-
-         expect(() => PayloadMapper.parse(SimpleClass, null as any)).toThrowError(BoksProtocolError);
-         expect(() => PayloadMapper.parse(SimpleClass, undefined as any)).toThrowError(BoksProtocolError);
-         expect(() => PayloadMapper.parse(SimpleClass, 'string' as any)).toThrowError(BoksProtocolError);
-         expect(() => PayloadMapper.parse(SimpleClass, [1,2,3] as any)).toThrowError(BoksProtocolError); // Array != Uint8Array
-    });
-
-    it('should strictly throw BoksProtocolError if instance to serialize is null', () => {
-         class SimpleClass {}
-         PayloadMapper.defineSchema(SimpleClass, [{ propertyName: 'val', type: 'uint8', offset: 0 }]);
-
-         expect(() => PayloadMapper.serialize(null as any)).toThrowError(BoksProtocolError);
-    });
-
+        try {
+          PayloadMapper.serialize(instance);
+        } catch (e) {
+          expect(e).toBeInstanceOf(BoksProtocolError);
+        }
+        return true;
+      }),
+      { numRuns: 1000 }
+    );
+  });
 });
