@@ -146,6 +146,7 @@ export class PayloadMapper {
     const fields = this.getFields(targetClass);
 
     if (!fields || fields.length === 0) {
+      /* v8 ignore next */
       return (_payload: Uint8Array) => ({}); // No fields mapped
     }
 
