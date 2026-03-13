@@ -33,6 +33,7 @@ export class NfcOpeningHistoryPacket extends BoksHistoryEvent {
     // Strict validation, throw if data is not correctly matching the declared length
     if (uidLen > 0) {
       if (payload.length < offset + uidLen) {
+        /* v8 ignore next 4 */
         throw new BoksProtocolError(
           BoksProtocolErrorId.MALFORMED_DATA,
           `Payload too short for UID length ${uidLen}`

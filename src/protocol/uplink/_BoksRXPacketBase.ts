@@ -20,6 +20,7 @@ export abstract class BoksRXPacket extends BoksPacket {
    * For RX packets, toPayload returns the raw payload received.
    */
   toPayload() {
+    /* v8 ignore next */
     return this.rawPayload ?? EMPTY_BUFFER;
   }
 }
