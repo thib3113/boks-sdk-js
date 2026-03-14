@@ -26,7 +26,10 @@ export class ScaleMeasureHistoryPacket extends BoksHistoryEvent {
 
   static fromPayload(payload: Uint8Array): ScaleMeasureHistoryPacket {
     if (payload.length < 3) {
-      throw new BoksProtocolError(BoksProtocolErrorId.MALFORMED_DATA, 'Payload too short');
+      throw new BoksProtocolError(BoksProtocolErrorId.MALFORMED_DATA, 'Payload too short', {
+        expected: 3,
+        received: payload.length
+      });
     }
     const parsed = PayloadMapper.parse(ScaleMeasureHistoryPacket, payload);
     const data = payload.length > 3 ? (payload.subarray(3) as Uint8Array) : EMPTY_BUFFER;

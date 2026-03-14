@@ -7,6 +7,7 @@ import {
   validateNfcUid
 } from '@/utils/validation';
 import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';
+import { BoksExpectedReason } from '@/errors/BoksExpectedReason';
 
 describe('validation utils', () => {
   describe('validatePinCode', () => {
@@ -33,14 +34,14 @@ describe('validation utils', () => {
 
     it('should reject PIN codes with invalid characters', () => {
       expect(() => validatePinCode('123C56')).toThrowError(
-        new BoksProtocolError(BoksProtocolErrorId.INVALID_PIN_FORMAT, 'PIN must be exactly 6 characters using only 0-9, A, and B', { received: '123C56', expected: '6 characters (0-9, A, B)' })
+        new BoksProtocolError(BoksProtocolErrorId.INVALID_PIN_FORMAT, 'PIN must be exactly 6 characters using only 0-9, A, and B', { received: '123C56', expected: BoksExpectedReason.PIN_CODE_FORMAT })
       ); // C is invalid
       //expect(() => validatePinCode('123a56')).toThrow(BoksProtocolError); // a is invalid (must be uppercase)
       expect(() => validatePinCode('123 56')).toThrowError(
-        new BoksProtocolError(BoksProtocolErrorId.INVALID_PIN_FORMAT, 'PIN must be exactly 6 characters using only 0-9, A, and B', { received: '123 56', expected: '6 characters (0-9, A, B)' })
+        new BoksProtocolError(BoksProtocolErrorId.INVALID_PIN_FORMAT, 'PIN must be exactly 6 characters using only 0-9, A, and B', { received: '123 56', expected: BoksExpectedReason.PIN_CODE_FORMAT })
       ); // space is invalid
       expect(() => validatePinCode('12-456')).toThrowError(
-        new BoksProtocolError(BoksProtocolErrorId.INVALID_PIN_FORMAT, 'PIN must be exactly 6 characters using only 0-9, A, and B', { received: '12-456', expected: '6 characters (0-9, A, B)' })
+        new BoksProtocolError(BoksProtocolErrorId.INVALID_PIN_FORMAT, 'PIN must be exactly 6 characters using only 0-9, A, and B', { received: '12-456', expected: BoksExpectedReason.PIN_CODE_FORMAT })
       ); // dash is invalid
     });
   });
@@ -88,7 +89,7 @@ describe('validation utils', () => {
     it('should reject hex string with non-hex characters', () => {
       const invalidHex = 'XX'.repeat(32);
       expect(() => validateSeed(invalidHex)).toThrowError(
-        new BoksProtocolError(BoksProtocolErrorId.INVALID_VALUE, 'Seed string must contain only valid hex characters', { received: invalidHex, expected: 'Valid hex characters' })
+        new BoksProtocolError(BoksProtocolErrorId.INVALID_VALUE, 'Seed string must contain only valid hex characters', { received: invalidHex, expected: BoksExpectedReason.VALID_HEX_CHAR })
       );
     });
 
@@ -181,10 +182,10 @@ describe('validation utils', () => {
         new BoksProtocolError(BoksProtocolErrorId.INVALID_NFC_UID_FORMAT, undefined, { received: 'number', expected: 'string', reason: 'NOT_HEX' })
       );
       expect(() => validateNfcUid('')).toThrowError(
-        new BoksProtocolError(BoksProtocolErrorId.INVALID_NFC_UID_FORMAT, undefined, { received: '', expected: 'Valid hex characters', reason: 'NOT_HEX' })
+        new BoksProtocolError(BoksProtocolErrorId.INVALID_NFC_UID_FORMAT, undefined, { received: '', expected: BoksExpectedReason.VALID_HEX_CHAR, reason: 'NOT_HEX' })
       );
       expect(() => validateNfcUid('01020G04')).toThrowError(
-        new BoksProtocolError(BoksProtocolErrorId.INVALID_NFC_UID_FORMAT, undefined, { received: '01020G04', expected: 'Valid hex characters', reason: 'NOT_HEX' })
+        new BoksProtocolError(BoksProtocolErrorId.INVALID_NFC_UID_FORMAT, undefined, { received: '01020G04', expected: BoksExpectedReason.VALID_HEX_CHAR, reason: 'NOT_HEX' })
       ); // Non-hex character
     });
 

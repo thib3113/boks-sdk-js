@@ -42,7 +42,7 @@ export class SetConfigurationPacket extends AuthPacket {
       throw new BoksProtocolError(
         BoksProtocolErrorId.INVALID_VALUE,
         'SetConfigurationPacket value must be 0x00 or 0x01',
-        { received: valueByte }
+        { received: valueByte, expected: '0x00 or 0x01' }
       );
     }
 

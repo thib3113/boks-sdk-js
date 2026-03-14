@@ -1,3 +1,5 @@
+import { BoksExpectedReason } from './BoksExpectedReason';
+
 export enum BoksProtocolErrorId {
   INVALID_PAYLOAD_LENGTH = 'INVALID_PAYLOAD_LENGTH',
   INVALID_CONFIG_KEY = 'INVALID_CONFIG_KEY',
@@ -15,6 +17,13 @@ export enum BoksProtocolErrorId {
   BUFFER_OVERFLOW = 'BUFFER_OVERFLOW'
 }
 
+export interface BoksProtocolErrorContext {
+  field?: string;
+  received?: unknown;
+  expected?: BoksExpectedReason | number | string;
+  [key: string]: unknown;
+}
+
 /**
  * Custom error for Boks Protocol (parsing, encoding, validation).
  */
@@ -22,7 +31,7 @@ export class BoksProtocolError extends Error {
   constructor(
     public readonly id: BoksProtocolErrorId,
     message?: string,
-    public readonly context?: Record<string, unknown>
+    public readonly context?: BoksProtocolErrorContext
   ) {
     super(message || id);
     this.name = 'BoksProtocolError';

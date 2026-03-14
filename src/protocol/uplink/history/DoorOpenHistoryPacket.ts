@@ -31,7 +31,8 @@ export class DoorOpenHistoryPacket extends BoksHistoryEvent {
     if (payload.length < 3) {
       throw new BoksProtocolError(
         BoksProtocolErrorId.MALFORMED_DATA,
-        'Payload too short to contain age'
+        'Payload too short to contain age',
+        { expected: 3, received: payload.length }
       );
     }
     const data = PayloadMapper.parse(DoorOpenHistoryPacket, payload);
