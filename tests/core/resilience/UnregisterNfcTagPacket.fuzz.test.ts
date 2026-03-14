@@ -12,7 +12,7 @@ describe('UnregisterNfcTagPacket Resilience (Fuzzing)', () => {
         fc.string(), // uid
         (configKey, uid) => {
           try {
-            const packet = new UnregisterNfcTagPacket(configKey, uid);
+            const packet = new UnregisterNfcTagPacket({ configKey: configKey, uid: uid });
 
             // If it succeeds, the inputs MUST have matched strict validation:
             // Config Key = 8 hex chars

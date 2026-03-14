@@ -9,8 +9,8 @@ export class GetLogsCountPacket extends BoksPacket {
   get opcode() {
     return GetLogsCountPacket.opcode;
   }
-  static fromPayload(_payload: Uint8Array): GetLogsCountPacket {
-    return new GetLogsCountPacket();
+  static fromPayload(payload: Uint8Array): GetLogsCountPacket {
+    return new GetLogsCountPacket(payload);
   }
   toPayload() {
     return EMPTY_BUFFER;

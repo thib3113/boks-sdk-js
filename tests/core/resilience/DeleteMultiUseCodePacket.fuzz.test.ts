@@ -12,7 +12,7 @@ describe('DeleteMultiUseCodePacket Resilience (Fuzzing)', () => {
         fc.string(), // pin
         (configKey, pin) => {
           try {
-            const packet = new DeleteMultiUseCodePacket(configKey, pin);
+            const packet = new DeleteMultiUseCodePacket({ configKey: configKey, pin: pin });
 
             // If it succeeds, the inputs MUST have matched the strict validation criteria:
             // Config Key = 8 hex chars, PIN = 6 authorized chars

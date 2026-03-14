@@ -12,7 +12,7 @@ describe('SingleToMultiCodePacket Resilience (Fuzzing)', () => {
         fc.string(), // pin
         (configKey, pin) => {
           try {
-            const packet = new SingleToMultiCodePacket(configKey, pin);
+            const packet = new SingleToMultiCodePacket({ configKey: configKey, pin: pin });
 
             // If it succeeds, the inputs MUST have matched strict validation:
             expect(configKey.length).toBe(8);

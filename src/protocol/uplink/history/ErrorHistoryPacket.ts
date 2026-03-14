@@ -7,12 +7,11 @@ import { BoksOpcode } from '@/protocol/constants';
 export class ErrorHistoryPacket extends BoksHistoryEvent {
   static readonly opcode = BoksOpcode.LOG_EVENT_ERROR;
 
-  constructor(
-    age: number,
-    public readonly errorCode: number,
-    rawPayload?: Uint8Array
-  ) {
-    super(ErrorHistoryPacket.opcode, age, rawPayload);
+  public readonly errorCode: number;
+
+  constructor(props: { age: number; errorCode: number }, rawPayload?: Uint8Array) {
+    super(ErrorHistoryPacket.opcode, props.age, rawPayload);
+    this.errorCode = props.errorCode;
   }
 
   static fromPayload(payload: Uint8Array): ErrorHistoryPacket {
@@ -27,6 +26,6 @@ export class ErrorHistoryPacket extends BoksHistoryEvent {
     if (payload.length > offset) {
       errorCode = payload[offset];
     }
-    return new ErrorHistoryPacket(age, errorCode, payload);
+    return new ErrorHistoryPacket({ age, errorCode }, payload);
   }
 }

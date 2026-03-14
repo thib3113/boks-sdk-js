@@ -10,8 +10,11 @@ export class ScaleTareLoadedPacket extends BoksPacket {
   get opcode() {
     return ScaleTareLoadedPacket.opcode;
   }
-  constructor(public readonly data: Uint8Array) {
-    super();
+  constructor(
+    public readonly data: Uint8Array,
+    rawPayload?: Uint8Array
+  ) {
+    super(rawPayload);
   }
   static fromPayload(payload: Uint8Array): ScaleTareLoadedPacket {
     return new ScaleTareLoadedPacket(payload);

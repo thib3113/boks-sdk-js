@@ -9,14 +9,14 @@ describe('RegeneratePartAPacket', () => {
   const validPart = new Uint8Array(16).map((_, i) => i);
 
   it('should construct with valid parameters', () => {
-    const packet = new RegeneratePartAPacket(validKey, validPart);
+    const packet = new RegeneratePartAPacket({ configKey: validKey, part: validPart });
     expect(packet.opcode).toBe(BoksOpcode.RE_GENERATE_CODES_PART1);
     expect(packet.configKey).toBe(validKey);
     expect(packet.part).toEqual(validPart);
   });
 
   it('should encode correctly', () => {
-    const packet = new RegeneratePartAPacket(validKey, validPart);
+    const packet = new RegeneratePartAPacket({ configKey: validKey, part: validPart });
     const encoded = packet.encode();
     // 0x20 + 24 (8+16) + ...
     expect(encoded[0]).toBe(0x20);
@@ -39,14 +39,14 @@ describe('RegeneratePartAPacket', () => {
   });
 
   it('should throw INVALID_CONFIG_KEY for invalid config key format', () => {
-     expect(() => new RegeneratePartAPacket('invalid', validPart)).toThrowError(BoksProtocolError);
+     expect(() => new RegeneratePartAPacket({ configKey: 'invalid', part: validPart })).toThrowError(BoksProtocolError);
   });
 
   it('should throw INVALID_VALUE for invalid part length', () => {
       const shortPart = new Uint8Array(15);
-      expect(() => new RegeneratePartAPacket(validKey, shortPart)).toThrowError(BoksProtocolError);
+      expect(() => new RegeneratePartAPacket({ configKey: validKey, part: shortPart })).toThrowError(BoksProtocolError);
       try {
-        new RegeneratePartAPacket(validKey, shortPart);
+        new RegeneratePartAPacket({ configKey: validKey, part: shortPart });
       } catch (e) {
          expect((e as BoksProtocolError).id).toBe(BoksProtocolErrorId.INVALID_VALUE);
       }

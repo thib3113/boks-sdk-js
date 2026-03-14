@@ -5,7 +5,6 @@ import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolErr
 
 export interface DoorOpenHistoryPacketProps {
   age: number;
-  rawPayload?: Uint8Array;
 }
 
 /**
@@ -23,8 +22,8 @@ export class DoorOpenHistoryPacket extends BoksHistoryEvent {
   @PayloadUint24(0)
   public accessor _age: number = 0;
 
-  constructor(props: DoorOpenHistoryPacketProps) {
-    super(DoorOpenHistoryPacket.opcode, props.age, props.rawPayload);
+  constructor(props: DoorOpenHistoryPacketProps, rawPayload?: Uint8Array) {
+    super(DoorOpenHistoryPacket.opcode, props.age, rawPayload);
     this._age = props.age;
   }
 
@@ -36,6 +35,6 @@ export class DoorOpenHistoryPacket extends BoksHistoryEvent {
       );
     }
     const data = PayloadMapper.parse(DoorOpenHistoryPacket, payload);
-    return new DoorOpenHistoryPacket({ age: data._age as number, rawPayload: payload });
+    return new DoorOpenHistoryPacket({ age: data._age as number }, payload);
   }
 }

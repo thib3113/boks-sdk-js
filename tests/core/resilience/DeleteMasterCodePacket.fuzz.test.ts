@@ -12,7 +12,7 @@ describe('DeleteMasterCodePacket Resilience (Fuzzing)', () => {
         fc.integer(), // index
         (configKey, index) => {
           try {
-            const packet = new DeleteMasterCodePacket(configKey, index);
+            const packet = new DeleteMasterCodePacket({ configKey: configKey, index: index });
 
             // If it succeeds, the inputs MUST have matched the strict validation criteria:
             // Config Key = 8 hex chars, index = 0..255

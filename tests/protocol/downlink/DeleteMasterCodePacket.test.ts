@@ -9,7 +9,7 @@ describe('DeleteMasterCodePacket', () => {
   const validIndex = 5;
 
   it('should construct with valid parameters', () => {
-    const packet = new DeleteMasterCodePacket(validKey, validIndex);
+    const packet = new DeleteMasterCodePacket({ configKey: validKey, index: validIndex });
     expect(packet.opcode).toBe(BoksOpcode.DELETE_MASTER_CODE);
     expect(packet.configKey).toBe(validKey);
     expect(packet.index).toBe(validIndex);
@@ -17,7 +17,7 @@ describe('DeleteMasterCodePacket', () => {
 
   it('should encode correctly', () => {
     // 0x0C + len(9) + key(8) + index(1) + checksum
-    const packet = new DeleteMasterCodePacket(validKey, validIndex);
+    const packet = new DeleteMasterCodePacket({ configKey: validKey, index: validIndex });
     const encoded = packet.encode();
     expect(encoded[0]).toBe(0x0C);
     expect(encoded[1]).toBe(9);
@@ -47,20 +47,20 @@ describe('DeleteMasterCodePacket', () => {
   });
 
   it('should throw INVALID_CONFIG_KEY for invalid config key format', () => {
-     expect(() => new DeleteMasterCodePacket('invalid', validIndex)).toThrowError(BoksProtocolError);
+     expect(() => new DeleteMasterCodePacket({ configKey: 'invalid', index: validIndex })).toThrowError(BoksProtocolError);
      try {
-       new DeleteMasterCodePacket('invalid', validIndex);
+       new DeleteMasterCodePacket({ configKey: 'invalid', index: validIndex });
      } catch (e) {
        expect((e as BoksProtocolError).id).toBe(BoksProtocolErrorId.INVALID_CONFIG_KEY);
      }
   });
 
   it('should throw INVALID_INDEX_RANGE for invalid index', () => {
-      expect(() => new DeleteMasterCodePacket(validKey, -1)).toThrowError(BoksProtocolError);
-      expect(() => new DeleteMasterCodePacket(validKey, 256)).toThrowError(BoksProtocolError);
+      expect(() => new DeleteMasterCodePacket({ configKey: validKey, index: -1 })).toThrowError(BoksProtocolError);
+      expect(() => new DeleteMasterCodePacket({ configKey: validKey, index: 256 })).toThrowError(BoksProtocolError);
 
       try {
-        new DeleteMasterCodePacket(validKey, 256);
+        new DeleteMasterCodePacket({ configKey: validKey, index: 256 });
       } catch (e) {
          expect((e as BoksProtocolError).id).toBe(BoksProtocolErrorId.INVALID_INDEX_RANGE);
       }

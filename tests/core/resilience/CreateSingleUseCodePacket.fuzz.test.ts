@@ -12,7 +12,7 @@ describe('CreateSingleUseCodePacket Resilience (Fuzzing)', () => {
         fc.string(), // pin
         (configKey, pin) => {
           try {
-            const packet = new CreateSingleUseCodePacket(configKey, pin);
+            const packet = new CreateSingleUseCodePacket({ configKey: configKey, pin: pin });
 
             // If it succeeds, the inputs MUST have matched the strict validation criteria:
             // Config Key = 8 hex chars, PIN = 6 authorized chars

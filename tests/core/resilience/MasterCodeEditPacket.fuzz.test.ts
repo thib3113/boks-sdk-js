@@ -13,7 +13,7 @@ describe('MasterCodeEditPacket Resilience (Fuzzing)', () => {
         fc.string(), // newPin
         (configKey, index, newPin) => {
           try {
-            const packet = new MasterCodeEditPacket(configKey, index, newPin);
+            const packet = new MasterCodeEditPacket({ configKey: configKey, index: index, newPin: newPin });
 
             // If it succeeds, the inputs MUST have matched strict validation:
             // Config Key = 8 hex chars, PIN = 6 authorized chars, Index = 0..255

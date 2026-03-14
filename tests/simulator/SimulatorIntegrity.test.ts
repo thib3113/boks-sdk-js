@@ -90,7 +90,7 @@ describe('Boks Hardware Simulator Integrity', () => {
 
     // 2. Action: Send DELETE_SINGLE_USE_CODE command
     // Payload: ConfigKey (8 bytes) + PIN (6 bytes)
-    const command = new DeleteSingleUseCodePacket('00000000', '654321').encode();
+    const command = new DeleteSingleUseCodePacket({ configKey: '00000000', pin: '654321' }).encode();
     await transport.write(command);
 
     // 3. Verification:

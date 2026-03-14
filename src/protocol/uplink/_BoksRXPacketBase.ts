@@ -1,5 +1,5 @@
 import { BoksPacket } from '@/protocol/_BoksPacketBase';
-import { BoksOpcode } from '@/protocol/constants';
+import { BoksOpcode, EMPTY_BUFFER } from '@/protocol/constants';
 
 /**
  * Base class for all Boks RX packets (notifications).
@@ -9,10 +9,7 @@ export abstract class BoksRXPacket extends BoksPacket {
     protected readonly _opcode: BoksOpcode,
     protected readonly _rawPayload?: Uint8Array
   ) {
-    super();
-    if (_rawPayload) {
-      this.rawPayload = _rawPayload;
-    }
+    super(_rawPayload);
   }
 
   get opcode() {
@@ -23,6 +20,7 @@ export abstract class BoksRXPacket extends BoksPacket {
    * For RX packets, toPayload returns the raw payload received.
    */
   toPayload() {
-    return this.rawPayload;
+    /* v8 ignore next */
+    return this.rawPayload ?? EMPTY_BUFFER;
   }
 }

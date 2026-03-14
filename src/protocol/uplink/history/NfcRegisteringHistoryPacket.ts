@@ -7,12 +7,11 @@ import { BoksOpcode, EMPTY_BUFFER } from '@/protocol/constants';
 export class NfcRegisteringHistoryPacket extends BoksHistoryEvent {
   static readonly opcode = BoksOpcode.LOG_EVENT_NFC_REGISTERING;
 
-  constructor(
-    age: number,
-    public readonly data: Uint8Array,
-    rawPayload?: Uint8Array
-  ) {
-    super(NfcRegisteringHistoryPacket.opcode, age, rawPayload);
+  public readonly data: Uint8Array;
+
+  constructor(props: { age: number; data: Uint8Array }, rawPayload?: Uint8Array) {
+    super(NfcRegisteringHistoryPacket.opcode, props.age, rawPayload);
+    this.data = props.data;
   }
 
   static fromPayload(payload: Uint8Array): NfcRegisteringHistoryPacket {
@@ -26,6 +25,9 @@ export class NfcRegisteringHistoryPacket extends BoksHistoryEvent {
     if (payload.length > 3) {
       data = payload.subarray(3) as Uint8Array;
     }
-    return new NfcRegisteringHistoryPacket(age, data, payload);
+    return new NfcRegisteringHistoryPacket(
+      { age: age as number, data: data || new Uint8Array(0) },
+      payload
+    );
   }
 }

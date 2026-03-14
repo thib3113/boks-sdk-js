@@ -14,13 +14,16 @@ export class ReactivateCodePacket extends AuthPacket {
   @PayloadPinCode(8)
   public accessor pin!: string;
 
-  constructor(configKey: string, pin: string) {
-    super(configKey);
-    this.pin = pin;
+  constructor(props: { configKey: string; pin: string }, rawPayload?: Uint8Array) {
+    super(props.configKey, rawPayload);
+    this.pin = props.pin;
   }
 
   static fromPayload(payload: Uint8Array): ReactivateCodePacket {
     const data = PayloadMapper.parse(ReactivateCodePacket, payload);
-    return new ReactivateCodePacket(data.configKey as string, data.pin as string);
+    return new ReactivateCodePacket(
+      { configKey: data.configKey as string, pin: data.pin as string },
+      payload
+    );
   }
 }

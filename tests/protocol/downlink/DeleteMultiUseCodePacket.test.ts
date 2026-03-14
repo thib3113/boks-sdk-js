@@ -9,14 +9,14 @@ describe('DeleteMultiUseCodePacket', () => {
   const validPin = '123456';
 
   it('should construct with valid parameters', () => {
-    const packet = new DeleteMultiUseCodePacket(validKey, validPin);
+    const packet = new DeleteMultiUseCodePacket({ configKey: validKey, pin: validPin });
     expect(packet.opcode).toBe(BoksOpcode.DELETE_MULTI_USE_CODE);
     expect(packet.configKey).toBe(validKey);
     expect(packet.pin).toBe(validPin);
   });
 
   it('should encode correctly', () => {
-    const packet = new DeleteMultiUseCodePacket(validKey, validPin);
+    const packet = new DeleteMultiUseCodePacket({ configKey: validKey, pin: validPin });
     const encoded = packet.encode();
     expect(encoded[0]).toBe(0x0E);
     expect(encoded[1]).toBe(14);
@@ -36,20 +36,20 @@ describe('DeleteMultiUseCodePacket', () => {
   });
 
   it('should throw INVALID_CONFIG_KEY for invalid config key format', () => {
-     expect(() => new DeleteMultiUseCodePacket('invalid', validPin)).toThrowError(BoksProtocolError);
+     expect(() => new DeleteMultiUseCodePacket({ configKey: 'invalid', pin: validPin })).toThrowError(BoksProtocolError);
      try {
-       new DeleteMultiUseCodePacket('invalid', validPin);
+       new DeleteMultiUseCodePacket({ configKey: 'invalid', pin: validPin });
      } catch (e) {
        expect((e as BoksProtocolError).id).toBe(BoksProtocolErrorId.INVALID_CONFIG_KEY);
      }
   });
 
   it('should throw INVALID_PIN_FORMAT for invalid pin', () => {
-      expect(() => new DeleteMultiUseCodePacket(validKey, '123')).toThrowError(BoksProtocolError);
-      expect(() => new DeleteMultiUseCodePacket(validKey, '12345C')).toThrowError(BoksProtocolError);
+      expect(() => new DeleteMultiUseCodePacket({ configKey: validKey, pin: '123' })).toThrowError(BoksProtocolError);
+      expect(() => new DeleteMultiUseCodePacket({ configKey: validKey, pin: '12345C' })).toThrowError(BoksProtocolError);
 
       try {
-        new DeleteMultiUseCodePacket(validKey, '12345C');
+        new DeleteMultiUseCodePacket({ configKey: validKey, pin: '12345C' });
       } catch (e) {
          expect((e as BoksProtocolError).id).toBe(BoksProtocolErrorId.INVALID_PIN_FORMAT);
       }

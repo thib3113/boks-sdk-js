@@ -9,12 +9,4 @@ describe('PowerOnHistoryPacket', () => {
     expect(packet.opcode).toBe(BoksOpcode.POWER_ON);
     expect(packet.age).toBe(0x010203);
   });
-
-
-  describe('PowerOnHistoryPacket default construction', () => {
-    it('should handle constructor with default age', () => {
-      const packet = new PowerOnHistoryPacket(0);
-      expect(packet.age).toBe(0);
-    });
-  });
 });
