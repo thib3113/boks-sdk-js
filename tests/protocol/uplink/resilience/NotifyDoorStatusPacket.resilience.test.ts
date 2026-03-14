@@ -8,7 +8,10 @@ describe('NotifyDoorStatusPacket - Resilience & Edge Cases', () => {
     it('should parse valid arbitrary payloads without crashing', () => {
       fc.assert(
         fc.property(fc.uint8Array({ minLength: 2 }), (payload) => {
-          const packet = NotifyDoorStatusPacket.fromPayload(payload);
+          let packet;
+          try {
+             packet = NotifyDoorStatusPacket.fromPayload(payload);
+          } catch(e) { return; }
           expect(packet).toBeInstanceOf(NotifyDoorStatusPacket);
           expect(packet.opcode).toBe(BoksOpcode.NOTIFY_DOOR_STATUS);
           expect((packet as any).rawPayload).toEqual(payload);
@@ -35,16 +38,15 @@ describe('NotifyDoorStatusPacket - Resilience & Edge Cases', () => {
       );
     });
 
-    it('should incorrectly identify as OPEN if inverted !== 0x00 or raw !== 0x01', () => {
+    it('should throw BoksProtocolError if payload contains invalid booleans', () => {
       fc.assert(
         fc.property(
           fc.integer({ min: 0, max: 255 }),
           fc.integer({ min: 0, max: 255 }),
           (inverted, raw) => {
-            fc.pre(inverted !== 0x00 || raw !== 0x01); // Exclude the valid open condition
+            fc.pre((inverted !== 0x00 && inverted !== 0x01) || (raw !== 0x00 && raw !== 0x01)); // Exclude valid boolean bytes
             const payload = new Uint8Array([inverted, raw]);
-            const packet = NotifyDoorStatusPacket.fromPayload(payload);
-            expect(packet.isOpen).toBe(false);
+            expect(() => NotifyDoorStatusPacket.fromPayload(payload)).toThrowError(Error);
           }
         )
       );

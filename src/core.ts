@@ -6,4 +6,3 @@ export * from './utils/validation';
 export * from './utils/security';
 export * from './errors/BoksProtocolError';
 export * from './errors/BoksExpectedReason';
-export * from './errors/BoksExpectedReason';

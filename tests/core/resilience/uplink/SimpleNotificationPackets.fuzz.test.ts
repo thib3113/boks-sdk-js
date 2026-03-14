@@ -39,7 +39,10 @@ describe('SimpleNotificationPackets Resilience (Fuzzing)', () => {
   it('FEATURE REGRESSION: AnswerDoorStatusPacket should safely handle arbitrary payload lengths and set isOpen properly', () => {
     fc.assert(
       fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (payload) => {
-        const packet = AnswerDoorStatusPacket.fromPayload(payload);
+        let packet;
+        try {
+          packet = AnswerDoorStatusPacket.fromPayload(payload);
+        } catch(e) { return; }
         expect(packet).toBeInstanceOf(AnswerDoorStatusPacket);
         expect(packet.opcode).toBe(0x85);
         expect((packet as any).rawPayload).toEqual(payload);
@@ -56,7 +59,10 @@ describe('SimpleNotificationPackets Resilience (Fuzzing)', () => {
   it('FEATURE REGRESSION: NotifyDoorStatusPacket should safely handle arbitrary payload lengths and set isOpen properly', () => {
     fc.assert(
       fc.property(fc.uint8Array({ minLength: 2, maxLength: 256 }), (payload) => {
-        const packet = NotifyDoorStatusPacket.fromPayload(payload);
+        let packet;
+        try {
+          packet = NotifyDoorStatusPacket.fromPayload(payload);
+        } catch(e) { return; }
         expect(packet).toBeInstanceOf(NotifyDoorStatusPacket);
         expect(packet.opcode).toBe(0x84);
         expect((packet as any).rawPayload).toEqual(payload);

@@ -364,7 +364,16 @@ export class PayloadMapper {
           break;
         }
         case 'boolean':
-          fnBody += `result['${prop}'] = payload[${o}] === 0x01;\n`;
+          fnBody += `
+               if (payload[${o}] !== 0x00 && payload[${o}] !== 0x01) {
+                  throw new BoksProtocolError(
+                    BoksProtocolErrorId.INVALID_VALUE,
+                    'Boolean field must be 0x00 or 0x01',
+                    { field: '${prop}', received: payload[${o}], expected: BoksExpectedReason.UINT8 }
+                  );
+               }
+               result['${prop}'] = payload[${o}] === 0x01;
+          `;
           break;
         case 'byte_array':
           if (typeof field.length === 'number') {
