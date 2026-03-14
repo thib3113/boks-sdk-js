@@ -6,10 +6,10 @@ export class CodeBleInvalidHistoryPacket extends BoksHistoryEvent {
   static readonly opcode = BoksOpcode.LOG_CODE_BLE_INVALID;
 
   @PayloadPinCode(3)
-  public accessor code: string = '';
+  public accessor code!: string;
 
   @PayloadMacAddress(11)
-  public accessor connectedMac: string = '';
+  public accessor connectedMac!: string;
 
   constructor(props: { age: number; code: string; connectedMac: string }, rawPayload?: Uint8Array) {
     super(CodeBleInvalidHistoryPacket.opcode, props.age, rawPayload);

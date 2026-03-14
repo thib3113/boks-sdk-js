@@ -6,7 +6,7 @@ export class CodeKeyValidHistoryPacket extends BoksHistoryEvent {
   static readonly opcode = BoksOpcode.LOG_CODE_KEY_VALID;
 
   @PayloadPinCode(3)
-  public accessor code: string = '';
+  public accessor code!: string;
 
   constructor(props: { age: number; code: string }, rawPayload?: Uint8Array) {
     super(CodeKeyValidHistoryPacket.opcode, props.age, rawPayload);

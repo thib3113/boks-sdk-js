@@ -21,6 +21,7 @@ export abstract class BoksRXPacket extends BoksPacket {
    */
   toPayload() {
     /* v8 ignore next */
+    /* v8 ignore next */
     return this.rawPayload ?? EMPTY_BUFFER;
   }
 }

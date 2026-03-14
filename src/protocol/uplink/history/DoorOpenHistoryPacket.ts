@@ -19,12 +19,8 @@ export class DoorOpenHistoryPacket extends BoksHistoryEvent {
   // In `BoksHistoryEvent`, `age` is a `public readonly age: number`.
   // We cannot override `readonly` with `accessor` gracefully in this V8/TS build context without shadowing errors.
   // Instead, we leave it as _age, or map it using a dummy property and assign it to the base.
-  @PayloadUint24(0)
-  public accessor _age: number = 0;
-
-  constructor(props: DoorOpenHistoryPacketProps, rawPayload?: Uint8Array) {
+    constructor(props: DoorOpenHistoryPacketProps, rawPayload?: Uint8Array) {
     super(DoorOpenHistoryPacket.opcode, props.age, rawPayload);
-    this._age = props.age;
   }
 
   static fromPayload(payload: Uint8Array): DoorOpenHistoryPacket {
@@ -35,6 +31,6 @@ export class DoorOpenHistoryPacket extends BoksHistoryEvent {
       );
     }
     const data = PayloadMapper.parse(DoorOpenHistoryPacket, payload);
-    return new DoorOpenHistoryPacket({ age: data._age as number }, payload);
+    return new DoorOpenHistoryPacket({ age: data.age as number }, payload);
   }
 }
