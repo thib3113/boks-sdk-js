@@ -149,34 +149,31 @@ export const writeConfigKeyToBuffer = (payload: Uint8Array, offset: number, key:
  * and loop overhead, yielding a ~5x performance speedup in V8.
  */
 export const readPinFromBuffer = (payload: Uint8Array, offset: number): string => {
-  // If the protocol padded with null bytes (0x00), skip them
-  let s = '';
-  let c;
-  c = payload[offset];
-  if (c) {
-    s += String.fromCharCode(c);
+  const c0 = payload[offset];
+  if (c0 === 0) {
+    return '';
   }
-  c = payload[offset + 1];
-  if (c) {
-    s += String.fromCharCode(c);
+  const c1 = payload[offset + 1];
+  if (c1 === 0) {
+    return String.fromCharCode(c0);
   }
-  c = payload[offset + 2];
-  if (c) {
-    s += String.fromCharCode(c);
+  const c2 = payload[offset + 2];
+  if (c2 === 0) {
+    return String.fromCharCode(c0, c1);
   }
-  c = payload[offset + 3];
-  if (c) {
-    s += String.fromCharCode(c);
+  const c3 = payload[offset + 3];
+  if (c3 === 0) {
+    return String.fromCharCode(c0, c1, c2);
   }
-  c = payload[offset + 4];
-  if (c) {
-    s += String.fromCharCode(c);
+  const c4 = payload[offset + 4];
+  if (c4 === 0) {
+    return String.fromCharCode(c0, c1, c2, c3);
   }
-  c = payload[offset + 5];
-  if (c) {
-    s += String.fromCharCode(c);
+  const c5 = payload[offset + 5];
+  if (c5 === 0) {
+    return String.fromCharCode(c0, c1, c2, c3, c4);
   }
-  return s;
+  return String.fromCharCode(c0, c1, c2, c3, c4, c5);
 };
 
 /**
@@ -185,42 +182,39 @@ export const readPinFromBuffer = (payload: Uint8Array, offset: number): string =
  * and loop overhead, yielding a ~5x performance speedup in V8.
  */
 export const readConfigKeyFromBuffer = (payload: Uint8Array, offset: number): string => {
-  // If the protocol padded with null bytes (0x00), skip them
-  let s = '';
-  let c;
-  c = payload[offset];
-  if (c) {
-    s += String.fromCharCode(c);
+  const c0 = payload[offset];
+  if (c0 === 0) {
+    return '';
   }
-  c = payload[offset + 1];
-  if (c) {
-    s += String.fromCharCode(c);
+  const c1 = payload[offset + 1];
+  if (c1 === 0) {
+    return String.fromCharCode(c0);
   }
-  c = payload[offset + 2];
-  if (c) {
-    s += String.fromCharCode(c);
+  const c2 = payload[offset + 2];
+  if (c2 === 0) {
+    return String.fromCharCode(c0, c1);
   }
-  c = payload[offset + 3];
-  if (c) {
-    s += String.fromCharCode(c);
+  const c3 = payload[offset + 3];
+  if (c3 === 0) {
+    return String.fromCharCode(c0, c1, c2);
   }
-  c = payload[offset + 4];
-  if (c) {
-    s += String.fromCharCode(c);
+  const c4 = payload[offset + 4];
+  if (c4 === 0) {
+    return String.fromCharCode(c0, c1, c2, c3);
   }
-  c = payload[offset + 5];
-  if (c) {
-    s += String.fromCharCode(c);
+  const c5 = payload[offset + 5];
+  if (c5 === 0) {
+    return String.fromCharCode(c0, c1, c2, c3, c4);
   }
-  c = payload[offset + 6];
-  if (c) {
-    s += String.fromCharCode(c);
+  const c6 = payload[offset + 6];
+  if (c6 === 0) {
+    return String.fromCharCode(c0, c1, c2, c3, c4, c5);
   }
-  c = payload[offset + 7];
-  if (c) {
-    s += String.fromCharCode(c);
+  const c7 = payload[offset + 7];
+  if (c7 === 0) {
+    return String.fromCharCode(c0, c1, c2, c3, c4, c5, c6);
   }
-  return s;
+  return String.fromCharCode(c0, c1, c2, c3, c4, c5, c6, c7);
 };
 
 export const stringToBytes = (str: string): Uint8Array => {

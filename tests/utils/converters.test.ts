@@ -81,12 +81,32 @@ describe('converters', () => {
       const buffer = new Uint8Array([0, 1, 65, 66, 67, 68, 69, 70, 48, 49, 255]); // 'ABCDEF01'
       expect(readConfigKeyFromBuffer(buffer, 2)).toBe('ABCDEF01');
     });
+
+    it('should handle early returns for null bytes at different positions', () => {
+      expect(readConfigKeyFromBuffer(new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0]), 0)).toBe('');
+      expect(readConfigKeyFromBuffer(new Uint8Array([65, 0, 0, 0, 0, 0, 0, 0]), 0)).toBe('A');
+      expect(readConfigKeyFromBuffer(new Uint8Array([65, 66, 0, 0, 0, 0, 0, 0]), 0)).toBe('AB');
+      expect(readConfigKeyFromBuffer(new Uint8Array([65, 66, 67, 0, 0, 0, 0, 0]), 0)).toBe('ABC');
+      expect(readConfigKeyFromBuffer(new Uint8Array([65, 66, 67, 68, 0, 0, 0, 0]), 0)).toBe('ABCD');
+      expect(readConfigKeyFromBuffer(new Uint8Array([65, 66, 67, 68, 69, 0, 0, 0]), 0)).toBe('ABCDE');
+      expect(readConfigKeyFromBuffer(new Uint8Array([65, 66, 67, 68, 69, 70, 0, 0]), 0)).toBe('ABCDEF');
+      expect(readConfigKeyFromBuffer(new Uint8Array([65, 66, 67, 68, 69, 70, 71, 0]), 0)).toBe('ABCDEFG');
+    });
   });
 
   describe('readPinFromBuffer', () => {
     it('should read exactly 6 characters from buffer at offset', () => {
       const buffer = new Uint8Array([255, 49, 50, 51, 52, 53, 54, 0]); // '123456'
       expect(readPinFromBuffer(buffer, 1)).toBe('123456');
+    });
+
+    it('should handle early returns for null bytes at different positions', () => {
+      expect(readPinFromBuffer(new Uint8Array([0, 0, 0, 0, 0, 0]), 0)).toBe('');
+      expect(readPinFromBuffer(new Uint8Array([49, 0, 0, 0, 0, 0]), 0)).toBe('1');
+      expect(readPinFromBuffer(new Uint8Array([49, 50, 0, 0, 0, 0]), 0)).toBe('12');
+      expect(readPinFromBuffer(new Uint8Array([49, 50, 51, 0, 0, 0]), 0)).toBe('123');
+      expect(readPinFromBuffer(new Uint8Array([49, 50, 51, 52, 0, 0]), 0)).toBe('1234');
+      expect(readPinFromBuffer(new Uint8Array([49, 50, 51, 52, 53, 0]), 0)).toBe('12345');
     });
   });
 
