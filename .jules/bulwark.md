@@ -60,3 +60,4 @@
 ## 2026-03-10 - [Core] **Hardened:** src/utils/validation.ts **Edge-Cases Covered:** String parsing bounds, malformed data typing for validateMacAddress, validatePinCode, validateConfigKeyFormat, validateNfcUid, arbitrary index validation limits.
 ## 2026-03-10 - [Core] **Hardened:** src/utils/battery.ts **Edge-Cases Covered:** parseBatteryLevel bounds checking, parseBatteryStats format lengths and out of bounds buffer parsing.
 ## 2026-03-10 - [Core] **Hardened:** src/utils/security.ts **Edge-Cases Covered:** Fuzzed Object.seal and Object.freeze without crashes.
+## 2026-03-10 - [Client] **Hardened:** src/client/WebBluetoothTransport.ts **Edge-Cases Covered:** [Arbitrary payload lengths from 0 to 512 bytes ensuring parsing safety, graceful BoksClientError wrapping on Web Bluetooth failures]
