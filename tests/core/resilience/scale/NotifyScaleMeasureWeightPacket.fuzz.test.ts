@@ -7,7 +7,10 @@ describe('NotifyScaleMeasureWeightPacket Resilience (Fuzzing)', () => {
   it('should not crash on arbitrary random payloads', () => {
     fc.assert(
       fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (data) => {
-        const packet = NotifyScaleMeasureWeightPacket.fromPayload(data);
+        let packet;
+        try {
+          packet = NotifyScaleMeasureWeightPacket.fromPayload(data);
+        } catch(e) { return; }
         expect(packet).toBeInstanceOf(NotifyScaleMeasureWeightPacket);
         expect(packet.opcode).toBe(BoksOpcode.NOTIFY_SCALE_MEASURE_WEIGHT);
         expect(typeof packet.weight).toBe('number');

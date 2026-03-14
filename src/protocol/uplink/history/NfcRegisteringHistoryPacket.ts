@@ -1,5 +1,6 @@
 import { BoksHistoryEvent } from '@/protocol/uplink/history/_BoksHistoryEventBase';
 import { BoksOpcode, EMPTY_BUFFER } from '@/protocol/constants';
+import { PayloadUint24, PayloadMapper } from '@/protocol/payload-mapper';
 
 /**
  * Log: NFC Tag registering scan event.
@@ -7,27 +8,20 @@ import { BoksOpcode, EMPTY_BUFFER } from '@/protocol/constants';
 export class NfcRegisteringHistoryPacket extends BoksHistoryEvent {
   static readonly opcode = BoksOpcode.LOG_EVENT_NFC_REGISTERING;
 
+  @PayloadUint24(0)
+  public accessor _age: number = 0;
+
   public readonly data: Uint8Array;
 
   constructor(props: { age: number; data: Uint8Array }, rawPayload?: Uint8Array) {
     super(NfcRegisteringHistoryPacket.opcode, props.age, rawPayload);
+    this._age = props.age;
     this.data = props.data;
   }
 
   static fromPayload(payload: Uint8Array): NfcRegisteringHistoryPacket {
-    let age = 0;
-    let data: Uint8Array = EMPTY_BUFFER;
-
-    if (payload.length >= 3) {
-      age = (payload[0] << 16) | (payload[1] << 8) | payload[2];
-    }
-
-    if (payload.length > 3) {
-      data = payload.subarray(3) as Uint8Array;
-    }
-    return new NfcRegisteringHistoryPacket(
-      { age: age as number, data: data || new Uint8Array(0) },
-      payload
-    );
+    const data = PayloadMapper.parse(NfcRegisteringHistoryPacket, payload);
+    const nfcData = payload.length > 3 ? payload.subarray(3) : EMPTY_BUFFER;
+    return new NfcRegisteringHistoryPacket({ age: data._age as number, data: nfcData }, payload);
   }
 }

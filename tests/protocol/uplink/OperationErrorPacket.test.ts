@@ -10,8 +10,7 @@ describe('OperationErrorPacket', () => {
     expect(packet.errorCode).toBe(0x55);
   });
 
-  it('should default to error code 0 if payload is empty', () => {
-    const packet = OperationErrorPacket.fromPayload(new Uint8Array(0));
-    expect(packet.errorCode).toBe(0);
+  it('should throw error if payload is empty', () => {
+    expect(() => OperationErrorPacket.fromPayload(new Uint8Array(0))).toThrowError();
   });
 });

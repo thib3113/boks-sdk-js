@@ -1,5 +1,6 @@
 import { BoksRXPacket } from '@/protocol/uplink/_BoksRXPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
+import { PayloadUint16, PayloadMapper } from '@/protocol/payload-mapper';
 
 /**
  * Notification of the current number of logs stored.
@@ -7,19 +8,16 @@ import { BoksOpcode } from '@/protocol/constants';
 export class NotifyLogsCountPacket extends BoksRXPacket {
   static readonly opcode = BoksOpcode.NOTIFY_LOGS_COUNT;
 
-  constructor(
-    public readonly count: number,
-    rawPayload?: Uint8Array
-  ) {
+  @PayloadUint16(0)
+  public accessor count: number = 0;
+
+  constructor(count: number, rawPayload?: Uint8Array) {
     super(NotifyLogsCountPacket.opcode, rawPayload);
+    this.count = count;
   }
 
   static fromPayload(payload: Uint8Array): NotifyLogsCountPacket {
-    let count = 0;
-    if (payload.length >= 2) {
-      const view = new DataView(payload.buffer, payload.byteOffset, payload.byteLength);
-      count = view.getUint16(0, false); // Big Endian
-    }
-    return new NotifyLogsCountPacket(count, payload);
+    const data = PayloadMapper.parse(NotifyLogsCountPacket, payload);
+    return new NotifyLogsCountPacket(data.count as number, payload);
   }
 }

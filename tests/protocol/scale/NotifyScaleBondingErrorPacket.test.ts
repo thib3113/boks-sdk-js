@@ -10,9 +10,8 @@ describe('NotifyScaleBondingErrorPacket', () => {
     expect(packet.errorCode).toBe(5);
   });
 
-  it('should handle missing error code (default 0)', () => {
+  it('should throw error on missing error code', () => {
     const payload = new Uint8Array(0);
-    const packet = NotifyScaleBondingErrorPacket.fromPayload(payload);
-    expect(packet.errorCode).toBe(0);
+    expect(() => NotifyScaleBondingErrorPacket.fromPayload(payload)).toThrowError();
   });
 });

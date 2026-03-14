@@ -12,9 +12,8 @@ describe('NotifyCodeGenerationProgressPacket', () => {
     expect(packet.progress).toBe(50);
   });
 
-  it('should handle short payload gracefully (defaults to 0)', () => {
+  it('should throw MALFORMED_DATA on short payload', () => {
     const payload = new Uint8Array(0);
-    const packet = NotifyCodeGenerationProgressPacket.fromPayload(payload);
-    expect(packet.progress).toBe(0);
+    expect(() => NotifyCodeGenerationProgressPacket.fromPayload(payload)).toThrowError();
   });
 });

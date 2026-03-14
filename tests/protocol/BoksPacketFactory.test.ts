@@ -56,7 +56,7 @@ describe('BoksPacketFactory', () => {
 
       // Scale Notifications
       { name: 'NotifyScaleBondingSuccessPacket', class: Packets.NotifyScaleBondingSuccessPacket, payload: new Uint8Array(0) },
-      { name: 'NotifyScaleBondingErrorPacket', class: Packets.NotifyScaleBondingErrorPacket, payload: new Uint8Array(0) },
+      { name: 'NotifyScaleBondingErrorPacket', class: Packets.NotifyScaleBondingErrorPacket, payload: new Uint8Array([0x01]) },
       { name: 'NotifyMacAddressBoksScalePacket', class: Packets.NotifyMacAddressBoksScalePacket, payload: new Uint8Array([1, 2, 3, 4, 5, 6]) },
       { name: 'NotifyScaleBondingForgetSuccessPacket', class: Packets.NotifyScaleBondingForgetSuccessPacket, payload: new Uint8Array(0) },
       { name: 'NotifyScaleBondingProgressPacket', class: Packets.NotifyScaleBondingProgressPacket, payload: new Uint8Array([25]) },

@@ -10,9 +10,8 @@ describe('NotifyScaleBondingProgressPacket', () => {
     expect(packet.progress).toBe(50);
   });
 
-  it('should handle missing progress (default 0)', () => {
+  it('should throw error on missing progress', () => {
     const payload = new Uint8Array(0);
-    const packet = NotifyScaleBondingProgressPacket.fromPayload(payload);
-    expect(packet.progress).toBe(0);
+    expect(() => NotifyScaleBondingProgressPacket.fromPayload(payload)).toThrowError();
   });
 });

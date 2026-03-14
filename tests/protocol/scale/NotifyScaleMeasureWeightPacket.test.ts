@@ -18,9 +18,8 @@ describe('NotifyScaleMeasureWeightPacket', () => {
     expect(packet.weight).toBe(-1000);
   });
 
-  it('should handle short payload (default 0)', () => {
+  it('should throw error on short payload', () => {
     const payload = new Uint8Array(2);
-    const packet = NotifyScaleMeasureWeightPacket.fromPayload(payload);
-    expect(packet.weight).toBe(0);
+    expect(() => NotifyScaleMeasureWeightPacket.fromPayload(payload)).toThrowError();
   });
 });

@@ -1,5 +1,6 @@
 import { BoksHistoryEvent } from '@/protocol/uplink/history/_BoksHistoryEventBase';
 import { BoksOpcode } from '@/protocol/constants';
+import { PayloadUint24, PayloadMapper } from '@/protocol/payload-mapper';
 
 /**
  * Log: Power On event.
@@ -8,15 +9,16 @@ import { BoksOpcode } from '@/protocol/constants';
 export class PowerOnHistoryPacket extends BoksHistoryEvent {
   static readonly opcode = BoksOpcode.POWER_ON;
 
+  @PayloadUint24(0)
+  public accessor _age: number = 0;
+
   constructor(age: number, rawPayload?: Uint8Array) {
     super(PowerOnHistoryPacket.opcode, age, rawPayload);
+    this._age = age;
   }
 
   static fromPayload(payload: Uint8Array): PowerOnHistoryPacket {
-    let age = 0;
-    if (payload.length >= 3) {
-      age = (payload[0] << 16) | (payload[1] << 8) | payload[2];
-    }
-    return new PowerOnHistoryPacket(age, payload);
+    const data = PayloadMapper.parse(PowerOnHistoryPacket, payload);
+    return new PowerOnHistoryPacket(data._age as number, payload);
   }
 }
