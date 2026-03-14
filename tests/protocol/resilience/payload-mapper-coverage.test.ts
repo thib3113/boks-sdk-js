@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { PayloadMapper, PayloadConfigKey } from '@/protocol/payload-mapper';
+import { PayloadMapper, PayloadConfigKey, PayloadMasterCodeIndex, PayloadByteArray, PayloadVarLenHex } from '@/protocol/payload-mapper';
 import { BoksProtocolError } from '@/errors/BoksProtocolError';
 
 class TestConfigKeyPacket {
@@ -57,5 +57,26 @@ describe('PayloadMapper Coverage additions', () => {
           PayloadMapper.validate(inst); // triggers uncached validation flow
           PayloadMapper.validate(inst); // triggers cached validation flow
       });
+  });
+
+  describe('Decorator Safety Bounds', () => {
+    class BoksErrorMockPacket {
+      @PayloadMasterCodeIndex(0)
+      public accessor index!: number;
+
+      @PayloadByteArray(1, 16)
+      public accessor bytes!: Uint8Array;
+
+      @PayloadVarLenHex(17)
+      public accessor varHex!: string;
+    }
+
+    it('should successfully validate standard assignments', () => {
+      const packet = new BoksErrorMockPacket();
+      packet.index = 1;
+      packet.bytes = new Uint8Array(16);
+      packet.varHex = 'FF';
+      expect(packet.index).toBe(1);
+    });
   });
 });

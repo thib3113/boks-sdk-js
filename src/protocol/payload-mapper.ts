@@ -114,7 +114,6 @@ export class PayloadMapper {
       currentClass !== Object.prototype
     ) {
       let symMetadata: symbol | undefined = Symbol.metadata;
-      /* v8 ignore next 4 */
       if (!symMetadata) {
         const symbols = Object.getOwnPropertySymbols(currentClass);
         symMetadata = symbols.find((s) => s.toString() === 'Symbol(Symbol.metadata)');
@@ -146,7 +145,6 @@ export class PayloadMapper {
     const fields = this.getFields(targetClass);
 
     if (!fields || fields.length === 0) {
-      /* v8 ignore next */
       return (_payload: Uint8Array) => ({}); // No fields mapped
     }
 
@@ -166,12 +164,10 @@ export class PayloadMapper {
         size = 6;
       } else if (field.type === 'pin_code') {
         size = 6;
-        /* v8 ignore next */
       } else if (field.type === 'config_key') {
         size = 8;
       } else if (field.type === 'ascii_string') {
-        /* v8 ignore next 5 */
-        if (typeof field.length !== 'number') {
+                if (typeof field.length !== 'number') {
           throw new BoksProtocolError(
             BoksProtocolErrorId.INTERNAL_ERROR,
             `Length required for string type: ${field.type} on property ${field.propertyName}`
@@ -264,8 +260,7 @@ export class PayloadMapper {
           if (typeof field.length === 'number') {
             fnBody += `result['${prop}'] = payload.subarray(${o}, ${o} + ${field.length});\n`;
           } else {
-            /* v8 ignore next 3 */
-            fnBody += `result['${prop}'] = payload.subarray(${o});\n`;
+                        fnBody += `result['${prop}'] = payload.subarray(${o});\n`;
           }
           break;
         case 'mac_address':
@@ -298,7 +293,6 @@ export class PayloadMapper {
              for(let i=0; i<8; i++) {
                const c = payload[${o} + i];
                // '0'-'9' (48-57), 'A'-'F' (65-70), 'a'-'f' (97-102)
-               /* v8 ignore next */
           if ((c < 48 || c > 57) && (c < 65 || c > 70) && (c < 97 || c > 102)) {
                   throw new BoksProtocolError(BoksProtocolErrorId.INVALID_CONFIG_KEY, 'Invalid Config Key character inline');
                }
@@ -315,12 +309,10 @@ export class PayloadMapper {
             if (hexArgs.length > 0) {
               fnBody += `result['${prop}'] = ${hexArgs.join(' + ')};\n`;
             } else {
-              /* v8 ignore next 3 */
-              fnBody += `result['${prop}'] = '';\n`;
+                            fnBody += `result['${prop}'] = '';\n`;
             }
           } else {
-            /* v8 ignore next 11 */
-            fnBody += `
+                        fnBody += `
             {
                let s = '';
                for (let i = ${o}; i < payload.length; i++) {
@@ -399,7 +391,6 @@ export class PayloadMapper {
               }
            }
          `;
-        /* v8 ignore next */
       } else if (field.type === 'config_key') {
         fnBody += `
            if (typeof ${val} !== 'string' || ${val}.length !== 8) {
@@ -421,8 +412,6 @@ export class PayloadMapper {
 
   private static compileSerializer(targetClass: any): Function {
     const fields = this.getFields(targetClass);
-
-    /* v8 ignore next */
     if (!fields || fields.length === 0) {
       return (_instance: any) => new Uint8Array(0); // No fields mapped
     }
@@ -443,7 +432,6 @@ export class PayloadMapper {
         fieldSize = 6;
       } else if (field.type === 'pin_code') {
         fieldSize = 6;
-        /* v8 ignore next */
       } else if (field.type === 'config_key') {
         fieldSize = 8;
       } else if (field.type === 'ascii_string') {
@@ -477,15 +465,13 @@ export class PayloadMapper {
     // Check if we need to add length for dynamic fields
     for (const field of fields) {
       const prop = field.propertyName;
-      /* v8 ignore next 2 */
-      if (field.type === 'var_len_hex') {
+            if (field.type === 'var_len_hex') {
         dynamicSizeCalc += ` + (instance['${prop}'] ? Math.floor(String(instance['${prop}']).length / 2) : 0)`;
       } else if (
         (field.type === 'hex_string' || field.type === 'byte_array') &&
         /* v8 ignore next */ typeof field.length !== 'number'
       ) {
-        /* v8 ignore next 5 */
-        if (field.type === 'hex_string') {
+                if (field.type === 'hex_string') {
           dynamicSizeCalc += ` + (instance['${prop}'] ? Math.floor(String(instance['${prop}']).length / 2) : 0)`;
         } else {
           dynamicSizeCalc += ` + (instance['${prop}'] ? instance['${prop}'].length : 0)`;
@@ -690,7 +676,6 @@ export class PayloadMapper {
   public static validate(instance: any): void {
     const targetClass = instance.constructor;
     let validator = this.compiledValidators.get(targetClass);
-    /* v8 ignore next */
     if (!validator) {
       validator = this.compileValidator(targetClass);
       this.compiledValidators.set(targetClass, validator);
@@ -699,8 +684,7 @@ export class PayloadMapper {
   }
 
   public static defineSchema(targetClass: any, schema: FieldDefinition[]): void {
-    /* v8 ignore next 5 */
-    if (targetClass[Symbol.metadata]) {
+        if (targetClass[Symbol.metadata]) {
       targetClass[Symbol.metadata][METADATA_KEY] = schema;
     } else {
       targetClass[METADATA_KEY] = schema;
@@ -930,9 +914,7 @@ export function PayloadPinCode(offset: number) {
         return target.get.call(this);
       },
       set(val: V) {
-        /* v8 ignore next 3 */
-        /* v8 ignore next 3 */
-        if (val === undefined || val === null) {
+                        if (val === undefined || val === null) {
           throw new BoksProtocolError(
             BoksProtocolErrorId.INVALID_VALUE,
             'Required field cannot be undefined'
