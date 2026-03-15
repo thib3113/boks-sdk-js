@@ -26,7 +26,7 @@ export class OpenDoorPacket extends BoksPacket {
   }
 
   static fromPayload(payload: Uint8Array): OpenDoorPacket {
-    const data = PayloadMapper.parse(OpenDoorPacket, payload);
-    return new OpenDoorPacket({ pin: data.pin as string }, payload);
+    const data = PayloadMapper.parse<OpenDoorPacketProps>(OpenDoorPacket, payload);
+    return new OpenDoorPacket(data, payload);
   }
 }

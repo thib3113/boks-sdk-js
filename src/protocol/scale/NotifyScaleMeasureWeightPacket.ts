@@ -1,6 +1,6 @@
+import { PayloadMapper, PayloadBoolean, PayloadUint24 } from '@/protocol/payload-mapper';
 import { BoksRXPacket } from '@/protocol/uplink/_BoksRXPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
-import { PayloadUint24, PayloadBoolean, PayloadMapper } from '@/protocol/payload-mapper';
 
 /** ⚠️ This packet is theoretical; it has never been tested in real-world conditions. */
 /**
@@ -27,8 +27,9 @@ export class NotifyScaleMeasureWeightPacket extends BoksRXPacket {
 
   static fromPayload(payload: Uint8Array): NotifyScaleMeasureWeightPacket {
     const data = PayloadMapper.parse(NotifyScaleMeasureWeightPacket, payload);
-    const sign = data.signNegative ? -1 : 1;
-    const val = data.absWeight as number;
-    return new NotifyScaleMeasureWeightPacket(sign * val, payload);
+    return new NotifyScaleMeasureWeightPacket(
+      (data.signNegative ? -1 : 1) * (data.absWeight as number),
+      payload
+    );
   }
 }

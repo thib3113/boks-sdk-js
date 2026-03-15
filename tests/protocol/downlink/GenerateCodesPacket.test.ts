@@ -56,10 +56,8 @@ describe('GenerateCodesPacket', () => {
       const packet = new GenerateCodesPacket(validSeedStr);
 
       // Forcefully alter the internal seed string directly to bypass constructor validation
-      (packet as any).seedStr = '00112233445566778899AABBCCDDEEFF';
+      expect(() => { packet.seedStr = '00112233445566778899AABBCCDDEEFF'; }).toThrowError(BoksProtocolError);
 
-      expect(() => {
-        packet.toPayload();
-      }).toThrowError('Seed must be exactly 32 bytes');
+
     });
   });

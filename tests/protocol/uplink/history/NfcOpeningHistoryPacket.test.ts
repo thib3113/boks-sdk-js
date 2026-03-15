@@ -34,7 +34,7 @@ describe('NfcOpeningHistoryPacket', () => {
     const payload = new Uint8Array([0, 0, 10, 1, 8, 1, 2, 3, 4, 5, 6, 7]); // 12 bytes length
     // uidLength is at index 4, which is 8.
 
-    expect(() => NfcOpeningHistoryPacket.fromPayload(payload)).toThrowError('Payload too short for UID length 8');
+    expect(() => NfcOpeningHistoryPacket.fromPayload(payload)).toThrowError(BoksProtocolError);
   });
 
 

@@ -1,6 +1,6 @@
+import { PayloadMapper, PayloadUint8 } from '@/protocol/payload-mapper';
 import { BoksRXPacket } from '@/protocol/uplink/_BoksRXPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
-import { PayloadUint8, PayloadMapper } from '@/protocol/payload-mapper';
 
 /** ⚠️ This packet is theoretical; it has never been tested in real-world conditions. */
 /**
@@ -10,7 +10,7 @@ export class NotifyScaleBondingProgressPacket extends BoksRXPacket {
   static readonly opcode = BoksOpcode.NOTIFY_SCALE_BONDING_PROGRESS;
 
   @PayloadUint8(0)
-  public accessor progress: number = 0;
+  public accessor progress!: number;
 
   constructor(progress: number, rawPayload?: Uint8Array) {
     super(NotifyScaleBondingProgressPacket.opcode, rawPayload);

@@ -1,10 +1,14 @@
-import { AuthPacket } from '@/protocol/downlink/_AuthPacketBase';
+import { AuthPacket, AuthPacketProps } from '@/protocol/downlink/_AuthPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
 import { PayloadMapper, PayloadNfcUid } from '@/protocol/payload-mapper';
 
 /**
  * NFC Tag Registration.
  */
+export interface NfcRegisterPacketProps extends AuthPacketProps {
+  uid: string;
+}
+
 export class NfcRegisterPacket extends AuthPacket {
   static readonly opcode = BoksOpcode.REGISTER_NFC_TAG;
   get opcode() {
@@ -14,14 +18,14 @@ export class NfcRegisterPacket extends AuthPacket {
   @PayloadNfcUid(8)
   public accessor uid!: string;
 
-  constructor(props: { configKey: string; uid: string }, rawPayload?: Uint8Array) {
-    super(props.configKey, rawPayload);
+  constructor(props: NfcRegisterPacketProps, rawPayload?: Uint8Array) {
+    super(props, rawPayload);
     this.uid = props.uid;
   }
 
   static fromPayload(payload: Uint8Array): NfcRegisterPacket {
-    const parsed = PayloadMapper.parse(NfcRegisterPacket, payload);
-    return new NfcRegisterPacket({ configKey: parsed.configKey!, uid: parsed.uid! }, payload);
+    const data = PayloadMapper.parse<NfcRegisterPacketProps>(NfcRegisterPacket, payload);
+    return new NfcRegisterPacket(data, payload);
   }
 
   toPayload() {

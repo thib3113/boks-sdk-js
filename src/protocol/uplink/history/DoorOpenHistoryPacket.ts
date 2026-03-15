@@ -1,10 +1,9 @@
-import { BoksHistoryEvent } from '@/protocol/uplink/history/_BoksHistoryEventBase';
+import {
+  BoksHistoryEvent,
+  BoksHistoryEventProps
+} from '@/protocol/uplink/history/_BoksHistoryEventBase';
 import { BoksOpcode } from '@/protocol/constants';
-import { PayloadMapper, PayloadUint24 } from '@/protocol/payload-mapper';
-
-export interface DoorOpenHistoryPacketProps {
-  age: number;
-}
+import { PayloadMapper } from '@/protocol/payload-mapper';
 
 /**
  * Log: Door Open event.
@@ -18,16 +17,12 @@ export class DoorOpenHistoryPacket extends BoksHistoryEvent {
   // In `BoksHistoryEvent`, `age` is a `public readonly age: number`.
   // We cannot override `readonly` with `accessor` gracefully in this V8/TS build context without shadowing errors.
   // Instead, we leave it as _age, or map it using a dummy property and assign it to the base.
-  @PayloadUint24(0)
-  public accessor _age: number = 0;
-
-  constructor(props: DoorOpenHistoryPacketProps, rawPayload?: Uint8Array) {
-    super(DoorOpenHistoryPacket.opcode, props.age, rawPayload);
-    this._age = props.age;
+  constructor(props: BoksHistoryEventProps, rawPayload?: Uint8Array) {
+    super(DoorOpenHistoryPacket.opcode, props, rawPayload);
   }
 
   static fromPayload(payload: Uint8Array): DoorOpenHistoryPacket {
     const data = PayloadMapper.parse(DoorOpenHistoryPacket, payload);
-    return new DoorOpenHistoryPacket({ age: data._age as number }, payload);
+    return new DoorOpenHistoryPacket(data, payload);
   }
 }

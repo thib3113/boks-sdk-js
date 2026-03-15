@@ -1,7 +1,8 @@
+import { bytesToHex } from '../utils/converters';
 /* eslint-disable @typescript-eslint/no-unsafe-function-type, @typescript-eslint/no-explicit-any */
 import { BoksProtocolError, BoksProtocolErrorId } from '../errors/BoksProtocolError';
 import { BoksExpectedReason } from '../errors/BoksExpectedReason';
-import { validateMasterCodeIndex, validateNfcUid } from '../utils/validation';
+import { validateMasterCodeIndex, validateNfcUid, validateSeed } from '../utils/validation';
 
 /**
  * Metadata key used to store field definitions on the class constructor.
@@ -801,10 +802,7 @@ export class PayloadMapper {
    * @param payload The raw buffer
    * @returns A mapped object containing the extracted properties
    */
-  public static parse<T>(
-    targetClass: { new (...args: any[]): T } | Function,
-    payload: Uint8Array
-  ): Partial<T> {
+  public static parse<T = any>(targetClass: Function, payload: Uint8Array): T {
     if (!(payload instanceof Uint8Array)) {
       throw new BoksProtocolError(
         BoksProtocolErrorId.INVALID_TYPE,
@@ -824,7 +822,7 @@ export class PayloadMapper {
       BoksExpectedReason,
       this.HEX_TABLE
     );
-    return result as Partial<T>;
+    return result as unknown as T;
   }
 
   /**
@@ -904,6 +902,17 @@ export function PayloadUint8(offset: number) {
         return target.get.call(this);
       },
       set(val: V) {
+        if (val === undefined || val === null) {
+          throw new BoksProtocolError(
+            BoksProtocolErrorId.MISSING_MANDATORY_FIELD,
+            'Required field cannot be undefined',
+            {
+              field: context.name as string,
+              received: val,
+              expected: BoksExpectedReason.EXACT_LENGTH
+            }
+          );
+        }
         target.set.call(this, val);
       },
       init(initialValue: V): V {
@@ -927,6 +936,17 @@ export function PayloadUint16(offset: number) {
         return target.get.call(this);
       },
       set(val: V) {
+        if (val === undefined || val === null) {
+          throw new BoksProtocolError(
+            BoksProtocolErrorId.MISSING_MANDATORY_FIELD,
+            'Required field cannot be undefined',
+            {
+              field: context.name as string,
+              received: val,
+              expected: BoksExpectedReason.EXACT_LENGTH
+            }
+          );
+        }
         target.set.call(this, val);
       },
       init(initialValue: V): V {
@@ -950,6 +970,17 @@ export function PayloadUint24(offset: number) {
         return target.get.call(this);
       },
       set(val: V) {
+        if (val === undefined || val === null) {
+          throw new BoksProtocolError(
+            BoksProtocolErrorId.MISSING_MANDATORY_FIELD,
+            'Required field cannot be undefined',
+            {
+              field: context.name as string,
+              received: val,
+              expected: BoksExpectedReason.EXACT_LENGTH
+            }
+          );
+        }
         target.set.call(this, val);
       },
       init(initialValue: V): V {
@@ -973,6 +1004,17 @@ export function PayloadUint32(offset: number) {
         return target.get.call(this);
       },
       set(val: V) {
+        if (val === undefined || val === null) {
+          throw new BoksProtocolError(
+            BoksProtocolErrorId.MISSING_MANDATORY_FIELD,
+            'Required field cannot be undefined',
+            {
+              field: context.name as string,
+              received: val,
+              expected: BoksExpectedReason.EXACT_LENGTH
+            }
+          );
+        }
         target.set.call(this, val);
       },
       init(initialValue: V): V {
@@ -996,6 +1038,17 @@ export function PayloadAsciiString(offset: number, length: number) {
         return target.get.call(this);
       },
       set(val: V) {
+        if (val === undefined || val === null) {
+          throw new BoksProtocolError(
+            BoksProtocolErrorId.MISSING_MANDATORY_FIELD,
+            'Required field cannot be undefined',
+            {
+              field: context.name as string,
+              received: val,
+              expected: BoksExpectedReason.EXACT_LENGTH
+            }
+          );
+        }
         target.set.call(this, val);
       },
       init(initialValue: V): V {
@@ -1019,7 +1072,62 @@ export function PayloadMacAddress(offset: number) {
         return target.get.call(this);
       },
       set(val: V) {
+        if (val === undefined || val === null) {
+          throw new BoksProtocolError(
+            BoksProtocolErrorId.MISSING_MANDATORY_FIELD,
+            'Required field cannot be undefined',
+            {
+              field: context.name as string,
+              received: val,
+              expected: BoksExpectedReason.EXACT_LENGTH
+            }
+          );
+        }
         target.set.call(this, val);
+      },
+      init(initialValue: V): V {
+        return initialValue;
+      }
+    };
+  };
+}
+
+export function PayloadSeed(offset: number) {
+  PayloadMapper.assertSafeBounds(offset, 32);
+  return function <T, V>(
+    target: ClassAccessorDecoratorTarget<T, V>,
+    context: ClassAccessorDecoratorContext<T, V>
+  ): ClassAccessorDecoratorResult<T, V> {
+    const meta = getOrCreateMetadata(context);
+    meta.push({ propertyName: context.name as string, type: 'hex_string', offset, length: 32 });
+
+    return {
+      get() {
+        return target.get.call(this);
+      },
+      set(val: V) {
+        if (val === undefined || val === null) {
+          throw new BoksProtocolError(
+            BoksProtocolErrorId.MISSING_MANDATORY_FIELD,
+            'Required field cannot be undefined',
+            {
+              field: context.name as string,
+              received: val,
+              expected: BoksExpectedReason.EXACT_LENGTH
+            }
+          );
+        }
+
+        let formattedStr: string;
+        validateSeed(val as unknown as string | Uint8Array);
+        if (typeof val === 'string') {
+          formattedStr = val.toUpperCase();
+        } else {
+          // It's a Uint8Array
+          formattedStr = bytesToHex(val as unknown as Uint8Array).toUpperCase();
+        }
+
+        target.set.call(this, formattedStr as V);
       },
       init(initialValue: V): V {
         return initialValue;
@@ -1042,6 +1150,17 @@ export function PayloadHexString(offset: number, length?: number) {
         return target.get.call(this);
       },
       set(val: V) {
+        if (val === undefined || val === null) {
+          throw new BoksProtocolError(
+            BoksProtocolErrorId.MISSING_MANDATORY_FIELD,
+            'Required field cannot be undefined',
+            {
+              field: context.name as string,
+              received: val,
+              expected: BoksExpectedReason.EXACT_LENGTH
+            }
+          );
+        }
         target.set.call(this, val);
       },
       init(initialValue: V): V {
@@ -1065,6 +1184,17 @@ export function PayloadVarLenHex(offset: number) {
         return target.get.call(this);
       },
       set(val: V) {
+        if (val === undefined || val === null) {
+          throw new BoksProtocolError(
+            BoksProtocolErrorId.MISSING_MANDATORY_FIELD,
+            'Required field cannot be undefined',
+            {
+              field: context.name as string,
+              received: val,
+              expected: BoksExpectedReason.EXACT_LENGTH
+            }
+          );
+        }
         target.set.call(this, val);
       },
       init(initialValue: V): V {
@@ -1091,6 +1221,17 @@ export function PayloadBit(offset: number, bitIndex: number) {
         return target.get.call(this);
       },
       set(val: V) {
+        if (val === undefined || val === null) {
+          throw new BoksProtocolError(
+            BoksProtocolErrorId.MISSING_MANDATORY_FIELD,
+            'Required field cannot be undefined',
+            {
+              field: context.name as string,
+              received: val,
+              expected: BoksExpectedReason.EXACT_LENGTH
+            }
+          );
+        }
         target.set.call(this, val);
       },
       init(initialValue: V): V {
@@ -1265,6 +1406,7 @@ export function PayloadMasterCodeIndex(offset: number) {
       },
       set(val: V) {
         if (val === undefined || val === null) {
+          /* v8 ignore next */ /* v8 ignore next */
           throw new BoksProtocolError(
             BoksProtocolErrorId.MISSING_MANDATORY_FIELD,
             'Required field cannot be undefined',
@@ -1299,6 +1441,18 @@ export function PayloadBoolean(offset: number) {
         return target.get.call(this);
       },
       set(val: V) {
+        if (val === undefined || val === null) {
+          /* v8 ignore next */ /* v8 ignore next */
+          throw new BoksProtocolError(
+            BoksProtocolErrorId.MISSING_MANDATORY_FIELD,
+            'Required field cannot be undefined',
+            {
+              field: context.name as string,
+              received: val,
+              expected: BoksExpectedReason.EXACT_LENGTH
+            }
+          );
+        }
         target.set.call(this, val);
       },
       init(initialValue: V): V {
@@ -1322,6 +1476,30 @@ export function PayloadByteArray(offset: number, length?: number) {
         return target.get.call(this);
       },
       set(val: V) {
+        if (val === undefined || val === null) {
+          /* v8 ignore next */ /* v8 ignore next */
+          throw new BoksProtocolError(
+            BoksProtocolErrorId.MISSING_MANDATORY_FIELD,
+            'Required field cannot be undefined',
+            {
+              field: context.name as string,
+              received: val,
+              expected: BoksExpectedReason.EXACT_LENGTH
+            }
+          );
+        }
+
+        if (length !== undefined && (val as unknown as Uint8Array).length !== length) {
+          throw new BoksProtocolError(
+            BoksProtocolErrorId.INVALID_PAYLOAD_LENGTH,
+            `Array length must be exactly ${length}`,
+            {
+              field: context.name as string,
+              received: (val as unknown as Uint8Array).length,
+              expected: length
+            }
+          );
+        }
         target.set.call(this, val);
       },
       init(initialValue: V): V {

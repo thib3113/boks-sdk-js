@@ -1,30 +1,30 @@
-import { BoksHistoryEvent } from '@/protocol/uplink/history/_BoksHistoryEventBase';
+import { PayloadMapper, PayloadUint8 } from '@/protocol/payload-mapper';
+import {
+  BoksHistoryEvent,
+  BoksHistoryEventProps
+} from '@/protocol/uplink/history/_BoksHistoryEventBase';
 import { BoksOpcode } from '@/protocol/constants';
-import { PayloadUint24, PayloadUint8, PayloadMapper } from '@/protocol/payload-mapper';
 
 /**
  * Log: System Error event.
  */
+export interface ErrorHistoryPacketProps extends BoksHistoryEventProps {
+  errorCode: number;
+}
+
 export class ErrorHistoryPacket extends BoksHistoryEvent {
   static readonly opcode = BoksOpcode.LOG_EVENT_ERROR;
 
-  @PayloadUint24(0)
-  public accessor _age: number = 0;
-
   @PayloadUint8(3)
-  public accessor errorCode: number = 0;
+  public accessor errorCode!: number;
 
-  constructor(props: { age: number; errorCode: number }, rawPayload?: Uint8Array) {
-    super(ErrorHistoryPacket.opcode, props.age, rawPayload);
-    this._age = props.age;
+  constructor(props: ErrorHistoryPacketProps, rawPayload?: Uint8Array) {
+    super(ErrorHistoryPacket.opcode, props, rawPayload);
     this.errorCode = props.errorCode;
   }
 
   static fromPayload(payload: Uint8Array): ErrorHistoryPacket {
-    const data = PayloadMapper.parse(ErrorHistoryPacket, payload);
-    return new ErrorHistoryPacket(
-      { age: data._age as number, errorCode: data.errorCode as number },
-      payload
-    );
+    const data = PayloadMapper.parse<ErrorHistoryPacketProps>(ErrorHistoryPacket, payload);
+    return new ErrorHistoryPacket(data, payload);
   }
 }

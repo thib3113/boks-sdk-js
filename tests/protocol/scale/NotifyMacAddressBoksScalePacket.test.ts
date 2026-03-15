@@ -1,3 +1,4 @@
+import { BoksProtocolError } from '@/errors/BoksProtocolError';
 import { describe, it, expect } from 'vitest';
 import { NotifyMacAddressBoksScalePacket } from '@/protocol/scale/NotifyMacAddressBoksScalePacket';
 import { BoksOpcode } from '@/protocol/constants';
@@ -9,12 +10,11 @@ describe('NotifyMacAddressBoksScalePacket', () => {
     const packet = NotifyMacAddressBoksScalePacket.fromPayload(payload);
 
     expect(packet.opcode).toBe(BoksOpcode.NOTIFY_MAC_ADDRESS_BOKS_SCALE);
-    expect(packet.macAddress).toBe('AA:BB:CC:DD:EE:FF');
+    expect(packet.macAddress).toBe('FF:EE:DD:CC:BB:AA');
   });
 
   it('should handle empty payload', () => {
     const payload = new Uint8Array(0);
-    const packet = NotifyMacAddressBoksScalePacket.fromPayload(payload);
-    expect(packet.macAddress).toBe('');
+    expect(() => NotifyMacAddressBoksScalePacket.fromPayload(payload)).toThrowError(BoksProtocolError);
   });
 });

@@ -1,19 +1,23 @@
-import { BoksPacket } from '@/protocol/_BoksPacketBase';
 import { sealed } from '@/utils/security';
+import { BoksPacket } from '@/protocol/_BoksPacketBase';
 import { readConfigKeyFromBuffer } from '@/utils/converters';
 import { PayloadConfigKey } from '@/protocol/payload-mapper';
 
 /**
  * Base for packets requiring authentication (Config Key)
  */
+export interface AuthPacketProps {
+  configKey: string;
+}
+
 @sealed
 export abstract class AuthPacket extends BoksPacket {
   @PayloadConfigKey(0)
   public accessor configKey!: string;
 
-  constructor(configKey: string, rawPayload?: Uint8Array) {
+  constructor(props: AuthPacketProps, rawPayload?: Uint8Array) {
     super(rawPayload);
-    this.configKey = configKey;
+    this.configKey = props.configKey;
   }
 
   /**

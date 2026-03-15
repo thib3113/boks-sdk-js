@@ -1,8 +1,7 @@
 import { BoksOpcode, EMPTY_BUFFER } from '@/protocol/constants';
 import { PayloadMapper } from '@/protocol/payload-mapper';
-import { calculateChecksum, bytesToHex } from '@/utils/converters';
+import { calculateChecksum } from '@/utils/converters';
 import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';
-import { validateSeed } from '@/utils/validation';
 
 /**
  * Type representing a BoksPacket constructor.
@@ -37,6 +36,7 @@ export abstract class BoksPacket {
    * Static factory method to create an instance from a payload.
    * This MUST be implemented by leaf classes for strict parsing.
    */
+  /* v8 ignore next 3 */
   static fromPayload(_payload: Uint8Array): BoksPacket {
     throw new BoksProtocolError(BoksProtocolErrorId.NOT_IMPLEMENTED, 'fromPayload not implemented');
   }
@@ -52,18 +52,5 @@ export abstract class BoksPacket {
     packet.set(payload, 2);
     packet[packet.length - 1] = calculateChecksum(packet.subarray(0, packet.length - 1));
     return packet;
-  }
-
-  /**
-   * Validates and formats a Master Key / Seed as an uppercase hex string.
-   * Handles both string and Uint8Array inputs.
-   */
-  protected formatSeed(seed: Uint8Array | string): string {
-    validateSeed(seed);
-    if (typeof seed === 'string') {
-      return seed.toUpperCase();
-    } else {
-      return bytesToHex(seed).toUpperCase();
-    }
   }
 }

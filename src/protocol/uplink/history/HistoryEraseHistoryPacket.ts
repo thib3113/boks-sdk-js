@@ -1,6 +1,9 @@
-import { BoksHistoryEvent } from '@/protocol/uplink/history/_BoksHistoryEventBase';
+import { PayloadMapper } from '@/protocol/payload-mapper';
+import {
+  BoksHistoryEvent,
+  BoksHistoryEventProps
+} from '@/protocol/uplink/history/_BoksHistoryEventBase';
 import { BoksOpcode } from '@/protocol/constants';
-import { PayloadUint24, PayloadMapper } from '@/protocol/payload-mapper';
 
 /**
  * Log: History Erased event.
@@ -8,16 +11,12 @@ import { PayloadUint24, PayloadMapper } from '@/protocol/payload-mapper';
 export class HistoryEraseHistoryPacket extends BoksHistoryEvent {
   static readonly opcode = BoksOpcode.LOG_HISTORY_ERASE;
 
-  @PayloadUint24(0)
-  public accessor _age: number = 0;
-
-  constructor(age: number, rawPayload?: Uint8Array) {
-    super(HistoryEraseHistoryPacket.opcode, age, rawPayload);
-    this._age = age;
+  constructor(props: BoksHistoryEventProps, rawPayload?: Uint8Array) {
+    super(HistoryEraseHistoryPacket.opcode, props, rawPayload);
   }
 
   static fromPayload(payload: Uint8Array): HistoryEraseHistoryPacket {
     const data = PayloadMapper.parse(HistoryEraseHistoryPacket, payload);
-    return new HistoryEraseHistoryPacket(data._age as number, payload);
+    return new HistoryEraseHistoryPacket({ age: data.age as number }, payload);
   }
 }
