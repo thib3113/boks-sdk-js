@@ -1364,6 +1364,7 @@ export function PayloadMasterCodeIndex(offset: number) {
       },
       set(val: V) {
         if (val === undefined || val === null) {
+          /* v8 ignore next */
           throw new BoksProtocolError(
             BoksProtocolErrorId.MISSING_MANDATORY_FIELD,
             'Required field cannot be undefined',
@@ -1399,6 +1400,7 @@ export function PayloadBoolean(offset: number) {
       },
       set(val: V) {
         if (val === undefined || val === null) {
+          /* v8 ignore next */
           throw new BoksProtocolError(
             BoksProtocolErrorId.MISSING_MANDATORY_FIELD,
             'Required field cannot be undefined',
@@ -1433,6 +1435,7 @@ export function PayloadByteArray(offset: number, length?: number) {
       },
       set(val: V) {
         if (val === undefined || val === null) {
+          /* v8 ignore next */
           throw new BoksProtocolError(
             BoksProtocolErrorId.MISSING_MANDATORY_FIELD,
             'Required field cannot be undefined',
