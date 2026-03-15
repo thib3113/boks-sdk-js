@@ -328,17 +328,11 @@ export const bytesToMac = (bytes: Uint8Array, reverse: boolean = true): string =
 
 export const calculateChecksum = (data: Uint8Array): number => {
   let sum = 0;
-  let i = 0;
   const len = data.length;
 
-  // Optimization: Unroll loop to process 4 bytes per iteration
-  // This reduces loop overhead, yielding a ~1.5x - 1.7x speedup in V8
-  for (; i <= len - 4; i += 4) {
-    sum += data[i] + data[i + 1] + data[i + 2] + data[i + 3];
-  }
-
-  // Handle remaining bytes
-  for (; i < len; i++) {
+  // Optimization: V8 heavily optimizes simple loops on Typed Arrays.
+  // Manual unrolling is actually slower in modern V8 than a simple loop.
+  for (let i = 0; i < len; i++) {
     sum += data[i];
   }
 

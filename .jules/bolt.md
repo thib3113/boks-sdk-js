@@ -109,3 +109,7 @@
 ## 2025-10-26 - Memory Leaks with Map vs WeakMap
 **Learning:** Using `Map` to cache metadata or compiled functions keyed by class constructors or instances can lead to memory leaks, especially when classes or objects are created dynamically or when instances are no longer needed but remain referenced by the cache. Switching to `WeakMap` resolves this issue, allowing garbage collection of unreferenced keys while maintaining caching benefits.
 **Action:** When caching objects or functions using classes or instances as keys, prefer `WeakMap` over `Map` to avoid memory leaks.
+
+## 2024-05-18 - Loop Unrolling in V8 Array Processing
+**Learning:** Manual loop unrolling (processing e.g., 4 array elements per iteration) is surprisingly a DE-OPTIMIZATION in modern V8. While historically faster, V8's TurboFan now heavily optimizes simple, single-element `for` loops on Typed Arrays, and manual unrolling defeats these optimizations. Tests show a simple `for(let i=0; i<len; i++)` is ~20% faster than processing 4 bytes at a time for calculating checksums.
+**Action:** Remove manual loop unrolling for array traversals in V8, sticking to idiomatic `for` loops.
