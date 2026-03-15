@@ -1,4 +1,4 @@
-import { PayloadMapper, PayloadHexString } from '@/protocol/payload-mapper';
+import { PayloadMapper, PayloadSeed } from '@/protocol/payload-mapper';
 import { BoksPacket } from '@/protocol/_BoksPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
 import { hexToBytes } from '@/utils/converters';
@@ -13,12 +13,12 @@ export class GenerateCodesSupportPacket extends BoksPacket {
     return GenerateCodesSupportPacket.opcode;
   }
 
-  @PayloadHexString(0, 32)
+  @PayloadSeed(0)
   public accessor seed!: string;
 
   constructor(seed: Uint8Array | string, rawPayload?: Uint8Array) {
     super(rawPayload);
-    this.seed = this.formatSeed(seed);
+    this.seed = seed as unknown as string;
   }
 
   static fromPayload(payload: Uint8Array): GenerateCodesSupportPacket {
@@ -28,9 +28,7 @@ export class GenerateCodesSupportPacket extends BoksPacket {
 
   toPayload(): Uint8Array {
     const seedBytes = typeof this.seed === 'string' ? hexToBytes(this.seed) : this.seed;
-    if (seedBytes.length !== 32) {
-      throw new Error('Seed must be exactly 32 bytes');
-    }
+
     return seedBytes;
   }
 }
