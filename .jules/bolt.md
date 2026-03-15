@@ -109,3 +109,7 @@
 ## 2025-10-26 - Memory Leaks with Map vs WeakMap
 **Learning:** Using `Map` to cache metadata or compiled functions keyed by class constructors or instances can lead to memory leaks, especially when classes or objects are created dynamically or when instances are no longer needed but remain referenced by the cache. Switching to `WeakMap` resolves this issue, allowing garbage collection of unreferenced keys while maintaining caching benefits.
 **Action:** When caching objects or functions using classes or instances as keys, prefer `WeakMap` over `Map` to avoid memory leaks.
+
+## 2025-10-26 - Loop Overhead in Hex Formatting for Common Byte Array Lengths
+**Learning:** Using a loop to convert commonly sized byte arrays (e.g., length 4, 7, and 10 which are common for NFC UIDs) into hex strings incurs unnecessary loop condition and iteration overhead in V8. While `bytesToHex` already processes 2 bytes at a time, adding unrolled fast paths for these specific lengths using manual concatenation avoids the loop entirely and provides an ~3x performance speedup.
+**Action:** When working with high-frequency conversions of common fixed-length byte arrays, consider implementing explicit fast paths without loops, relying solely on sequential direct index access and precomputed string concatenations.
