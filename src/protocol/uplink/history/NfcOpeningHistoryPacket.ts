@@ -36,7 +36,8 @@ export class NfcOpeningHistoryPacket extends BoksHistoryEvent {
         /* v8 ignore next 4 */
         throw new BoksProtocolError(
           BoksProtocolErrorId.MALFORMED_DATA,
-          `Payload too short for UID length ${uidLen}`
+          `Payload too short for UID length ${uidLen}`,
+          { expected: offset + uidLen, received: payload.length }
         );
       }
       uid = bytesToHex(payload.subarray(offset, offset + uidLen));

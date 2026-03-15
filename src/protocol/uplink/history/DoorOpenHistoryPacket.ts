@@ -1,7 +1,6 @@
 import { BoksHistoryEvent } from '@/protocol/uplink/history/_BoksHistoryEventBase';
 import { BoksOpcode } from '@/protocol/constants';
 import { PayloadMapper, PayloadUint24 } from '@/protocol/payload-mapper';
-import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';
 
 export interface DoorOpenHistoryPacketProps {
   age: number;
@@ -28,12 +27,6 @@ export class DoorOpenHistoryPacket extends BoksHistoryEvent {
   }
 
   static fromPayload(payload: Uint8Array): DoorOpenHistoryPacket {
-    if (payload.length < 3) {
-      throw new BoksProtocolError(
-        BoksProtocolErrorId.MALFORMED_DATA,
-        'Payload too short to contain age'
-      );
-    }
     const data = PayloadMapper.parse(DoorOpenHistoryPacket, payload);
     return new DoorOpenHistoryPacket({ age: data._age as number }, payload);
   }

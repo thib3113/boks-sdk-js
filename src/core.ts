@@ -5,3 +5,4 @@ export * from './utils/battery';
 export * from './utils/validation';
 export * from './utils/security';
 export * from './errors/BoksProtocolError';
+export * from './errors/BoksExpectedReason';

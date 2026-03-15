@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { PayloadMapper, PayloadUint8 } from '@/protocol/payload-mapper';
 import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';
+import { BoksExpectedReason } from '@/errors/BoksExpectedReason';
 
 describe('PayloadMapper Security & Resilience', () => {
   it('prevents JIT injection via property names', () => {
@@ -14,7 +15,7 @@ describe('PayloadMapper Security & Resilience', () => {
       new BoksProtocolError(
         BoksProtocolErrorId.INTERNAL_ERROR,
         'Unsafe property name mapped: "); throw new Error("hacked"); //',
-        { expected: "safe identifier", received: '"); throw new Error("hacked"); //' }
+        { expected: BoksExpectedReason.VALID_HEX_CHAR, received: '"); throw new Error("hacked"); //' }
       )
     );
   });
@@ -29,7 +30,7 @@ describe('PayloadMapper Security & Resilience', () => {
       new BoksProtocolError(
         BoksProtocolErrorId.INTERNAL_ERROR,
         'Unsafe property name mapped: __proto__',
-        { expected: "safe identifier", received: '__proto__' }
+        { expected: BoksExpectedReason.VALID_HEX_CHAR, received: '__proto__' }
       )
     );
   });
@@ -45,7 +46,7 @@ describe('PayloadMapper Security & Resilience', () => {
       new BoksProtocolError(
         BoksProtocolErrorId.BUFFER_OVERFLOW,
         'Invalid mapping bounds: offset=1050, size=1',
-        { expected: "<= 1024", received: 1051 }
+        { expected: 1024, received: 1051 }
       )
     );
   });
@@ -61,7 +62,7 @@ describe('PayloadMapper Security & Resilience', () => {
       new BoksProtocolError(
         BoksProtocolErrorId.BUFFER_OVERFLOW,
         'Invalid mapping bounds: offset=NaN, size=1',
-        { expected: "<= 1024", received: NaN }
+        { expected: 1024, received: NaN }
       )
     );
   });

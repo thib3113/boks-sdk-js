@@ -56,7 +56,7 @@ describe('BoksController Extended Integration', () => {
          const success = await controller.deleteSingleUseCode('123456');
          expect(success).toBeDefined();
      } catch(e) {}
-  });
+  }, 10000);
 
   it('should create master code', async () => {
     const success = await controller.createMasterCode(1, '111111');

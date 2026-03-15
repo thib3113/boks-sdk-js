@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-function-type, @typescript-eslint/no-explicit-any */
 import { BoksProtocolError, BoksProtocolErrorId } from '../errors/BoksProtocolError';
+import { BoksExpectedReason } from '../errors/BoksExpectedReason';
 import { validateMasterCodeIndex, validateNfcUid } from '../utils/validation';
 
 /**
@@ -175,7 +176,7 @@ export class PayloadMapper {
       throw new BoksProtocolError(
         BoksProtocolErrorId.INTERNAL_ERROR,
         `Unsafe property name mapped: ${name}`,
-        { received: name, expected: 'safe identifier' }
+        { received: name, expected: BoksExpectedReason.VALID_HEX_CHAR }
       );
     }
   }
@@ -197,7 +198,7 @@ export class PayloadMapper {
       throw new BoksProtocolError(
         BoksProtocolErrorId.BUFFER_OVERFLOW,
         `Invalid mapping bounds: offset=${offset}, size=${size}`,
-        { received: offset + size, expected: '<= 1024' }
+        { received: offset + size, expected: 1024 }
       );
     }
   }
@@ -363,7 +364,16 @@ export class PayloadMapper {
           break;
         }
         case 'boolean':
-          fnBody += `result['${prop}'] = payload[${o}] === 0x01;\n`;
+          fnBody += `
+               if (payload[${o}] !== 0x00 && payload[${o}] !== 0x01) {
+                  throw new BoksProtocolError(
+                    BoksProtocolErrorId.INVALID_VALUE,
+                    'Boolean field must be 0x00 or 0x01',
+                    { field: '${prop}', received: payload[${o}], expected: BoksExpectedReason.UINT8 }
+                  );
+               }
+               result['${prop}'] = payload[${o}] === 0x01;
+          `;
           break;
         case 'byte_array':
           if (typeof field.length === 'number') {
@@ -394,7 +404,7 @@ export class PayloadMapper {
                   throw new BoksProtocolError(
                     BoksProtocolErrorId.INVALID_PIN_FORMAT,
                     'Invalid PIN character inline',
-                    { field: '${prop}', received: c, expected: '0-9, A, B' }
+                    { field: '${prop}', received: c, expected: BoksExpectedReason.VALID_HEX_CHAR }
                   );
                }
              }
@@ -412,7 +422,7 @@ export class PayloadMapper {
                   throw new BoksProtocolError(
                     BoksProtocolErrorId.INVALID_CONFIG_KEY,
                     'Invalid Config Key character inline',
-                    { field: '${prop}', received: c, expected: 'Valid hex character' }
+                    { field: '${prop}', received: c, expected: BoksExpectedReason.VALID_HEX_CHAR }
                   );
                }
              }
@@ -475,7 +485,14 @@ export class PayloadMapper {
     fnBody += `return result;\n`;
 
     // Compile the function, injecting external dependencies into the closure scope.
-    return new Function('payload', 'BoksProtocolError', 'BoksProtocolErrorId', 'HEX_TABLE', fnBody);
+    return new Function(
+      'payload',
+      'BoksProtocolError',
+      'BoksProtocolErrorId',
+      'BoksExpectedReason',
+      'HEX_TABLE',
+      fnBody
+    );
   }
 
   /**
@@ -515,7 +532,7 @@ export class PayloadMapper {
                  throw new BoksProtocolError(
                    BoksProtocolErrorId.INVALID_PIN_FORMAT,
                    'PIN must contain only 0-9, A, B',
-                   { field: '${prop}', received: ${val}, expected: '6 characters (0-9, A, B)' }
+                   { field: '${prop}', received: ${val}, expected: BoksExpectedReason.PIN_CODE_FORMAT }
                  );
               }
            }
@@ -536,7 +553,7 @@ export class PayloadMapper {
                  throw new BoksProtocolError(
                    BoksProtocolErrorId.INVALID_CONFIG_KEY,
                    'Config Key must contain only hex characters',
-                   { field: '${prop}', received: ${val}, expected: 'Valid hex characters' }
+                   { field: '${prop}', received: ${val}, expected: BoksExpectedReason.VALID_HEX_CHAR }
                  );
               }
            }
@@ -545,7 +562,13 @@ export class PayloadMapper {
       // Other types (uint8, etc.) could have type/bounds checks here if needed
     }
 
-    return new Function('instance', 'BoksProtocolError', 'BoksProtocolErrorId', fnBody);
+    return new Function(
+      'instance',
+      'BoksProtocolError',
+      'BoksProtocolErrorId',
+      'BoksExpectedReason',
+      fnBody
+    );
   }
 
   private static compileSerializer(targetClass: any): Function {
@@ -645,7 +668,7 @@ export class PayloadMapper {
             throw new BoksProtocolError(
               BoksProtocolErrorId.MISSING_MANDATORY_FIELD,
               'Missing mandatory field: ${prop}',
-              { field: '${prop}', received: instance['${prop}'], expected: 'mandatory' }
+              { field: '${prop}', received: instance['${prop}'], expected: BoksExpectedReason.EXACT_LENGTH }
             );
           }
         `;
@@ -762,7 +785,13 @@ export class PayloadMapper {
     }
 
     fnBody += `return payload;\n`;
-    return new Function('instance', 'BoksProtocolError', 'BoksProtocolErrorId', fnBody);
+    return new Function(
+      'instance',
+      'BoksProtocolError',
+      'BoksProtocolErrorId',
+      'BoksExpectedReason',
+      fnBody
+    );
   }
 
   /**
@@ -788,7 +817,13 @@ export class PayloadMapper {
       parser = this.compileParser(targetClass);
       this.compiledParsers.set(targetClass, parser);
     }
-    const result = parser(payload, BoksProtocolError, BoksProtocolErrorId, this.HEX_TABLE);
+    const result = parser(
+      payload,
+      BoksProtocolError,
+      BoksProtocolErrorId,
+      BoksExpectedReason,
+      this.HEX_TABLE
+    );
     return result as Partial<T>;
   }
 
@@ -816,7 +851,7 @@ export class PayloadMapper {
       serializer = this.compileSerializer(targetClass);
       this.compiledSerializers.set(targetClass, serializer);
     }
-    return serializer(instance, BoksProtocolError, BoksProtocolErrorId);
+    return serializer(instance, BoksProtocolError, BoksProtocolErrorId, BoksExpectedReason);
   }
 
   /**
@@ -834,7 +869,7 @@ export class PayloadMapper {
       validator = this.compileValidator(targetClass);
       this.compiledValidators.set(targetClass, validator);
     }
-    validator(instance, BoksProtocolError, BoksProtocolErrorId);
+    validator(instance, BoksProtocolError, BoksProtocolErrorId, BoksExpectedReason);
   }
 
   public static defineSchema(targetClass: any, schema: FieldDefinition[]): void {
@@ -1083,7 +1118,11 @@ export function PayloadPinCode(offset: number) {
           throw new BoksProtocolError(
             BoksProtocolErrorId.MISSING_MANDATORY_FIELD,
             'Required field cannot be undefined',
-            { field: context.name as string, received: val, expected: 'mandatory' }
+            {
+              field: context.name as string,
+              received: val,
+              expected: BoksExpectedReason.EXACT_LENGTH
+            }
           );
         }
         const formatted = typeof val === 'string' ? val.toUpperCase() : String(val).toUpperCase();
@@ -1103,7 +1142,7 @@ export function PayloadPinCode(offset: number) {
               {
                 field: context.name as string,
                 received: formatted,
-                expected: '6 characters (0-9, A, B)'
+                expected: BoksExpectedReason.PIN_CODE_FORMAT
               }
             );
           }
@@ -1136,7 +1175,11 @@ export function PayloadNfcUid(offset: number) {
           throw new BoksProtocolError(
             BoksProtocolErrorId.MISSING_MANDATORY_FIELD,
             'Required field cannot be undefined',
-            { field: context.name as string, received: val, expected: 'mandatory' }
+            {
+              field: context.name as string,
+              received: val,
+              expected: BoksExpectedReason.EXACT_LENGTH
+            }
           );
         }
         const strVal = String(val);
@@ -1169,7 +1212,11 @@ export function PayloadConfigKey(offset: number) {
           throw new BoksProtocolError(
             BoksProtocolErrorId.MISSING_MANDATORY_FIELD,
             'Required field cannot be undefined',
-            { field: context.name as string, received: val, expected: 'mandatory' }
+            {
+              field: context.name as string,
+              received: val,
+              expected: BoksExpectedReason.EXACT_LENGTH
+            }
           );
         }
         const formatted = typeof val === 'string' ? val.toUpperCase() : String(val).toUpperCase();
@@ -1189,7 +1236,7 @@ export function PayloadConfigKey(offset: number) {
               {
                 field: context.name as string,
                 received: formatted,
-                expected: 'Valid hex characters'
+                expected: BoksExpectedReason.VALID_HEX_CHAR
               }
             );
           }
@@ -1221,7 +1268,11 @@ export function PayloadMasterCodeIndex(offset: number) {
           throw new BoksProtocolError(
             BoksProtocolErrorId.MISSING_MANDATORY_FIELD,
             'Required field cannot be undefined',
-            { field: context.name as string, received: val, expected: 'mandatory' }
+            {
+              field: context.name as string,
+              received: val,
+              expected: BoksExpectedReason.EXACT_LENGTH
+            }
           );
         }
         validateMasterCodeIndex(val as number);

@@ -7,7 +7,7 @@ describe('NotifyLogsCountPacket - Resilience & Edge Cases', () => {
   describe('fromPayload()', () => {
     it('should parse valid arbitrary payloads without crashing', () => {
       fc.assert(
-        fc.property(fc.uint8Array(), (payload) => {
+        fc.property(fc.uint8Array({ minLength: 2 }), (payload) => {
           const packet = NotifyLogsCountPacket.fromPayload(payload);
           expect(packet).toBeInstanceOf(NotifyLogsCountPacket);
           expect(packet.opcode).toBe(BoksOpcode.NOTIFY_LOGS_COUNT);
@@ -23,11 +23,10 @@ describe('NotifyLogsCountPacket - Resilience & Edge Cases', () => {
       );
     });
 
-    it('should handle missing trailing bytes cleanly (defaults to 0)', () => {
+    it('should throw MALFORMED_DATA on short payload', () => {
       fc.assert(
         fc.property(fc.uint8Array({ maxLength: 1 }), (shortPayload) => {
-          const packet = NotifyLogsCountPacket.fromPayload(shortPayload);
-          expect(packet.count).toBe(0);
+          expect(() => NotifyLogsCountPacket.fromPayload(shortPayload)).toThrowError(Error);
         })
       );
     });

@@ -38,7 +38,7 @@ export abstract class BoksPacket {
    * This MUST be implemented by leaf classes for strict parsing.
    */
   static fromPayload(_payload: Uint8Array): BoksPacket {
-    throw new BoksProtocolError(BoksProtocolErrorId.MALFORMED_DATA, 'fromPayload not implemented');
+    throw new BoksProtocolError(BoksProtocolErrorId.NOT_IMPLEMENTED, 'fromPayload not implemented');
   }
 
   /**

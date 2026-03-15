@@ -13,9 +13,8 @@ describe('PowerOffHistoryPacket', () => {
     expect(packet.reason).toBe(1);
   });
 
-  it('should handle missing reason', () => {
+  it('should throw error on missing reason', () => {
     const payload = new Uint8Array([0x00, 0x00, 0x0A]);
-    const packet = PowerOffHistoryPacket.fromPayload(payload);
-    expect(packet.reason).toBe(0);
+    expect(() => PowerOffHistoryPacket.fromPayload(payload)).toThrowError();
   });
 });

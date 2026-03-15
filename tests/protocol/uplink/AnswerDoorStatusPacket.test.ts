@@ -1,3 +1,4 @@
+import { BoksProtocolError } from '@/errors/BoksProtocolError';
 import { describe, it, expect } from 'vitest';
 import { AnswerDoorStatusPacket } from '@/protocol/uplink/AnswerDoorStatusPacket';
 import { BoksOpcode } from '@/protocol/constants';
@@ -16,9 +17,8 @@ describe('AnswerDoorStatusPacket', () => {
     expect(packet.isOpen).toBe(false);
   });
 
-  it('should default to CLOSED if payload too short', () => {
+  it('should throw BoksProtocolError if payload too short', () => {
     const payload = new Uint8Array(1);
-    const packet = AnswerDoorStatusPacket.fromPayload(payload);
-    expect(packet.isOpen).toBe(false);
+    expect(() => AnswerDoorStatusPacket.fromPayload(payload)).toThrowError(BoksProtocolError);
   });
 });

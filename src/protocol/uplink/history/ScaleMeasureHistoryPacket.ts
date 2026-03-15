@@ -1,7 +1,6 @@
 import { BoksHistoryEvent } from '@/protocol/uplink/history/_BoksHistoryEventBase';
 import { BoksOpcode, EMPTY_BUFFER } from '@/protocol/constants';
 import { PayloadMapper, PayloadUint24 } from '@/protocol/payload-mapper';
-import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';
 
 /** ⚠️ This packet is theoretical; it has never been tested in real-world conditions. */
 /**
@@ -25,9 +24,6 @@ export class ScaleMeasureHistoryPacket extends BoksHistoryEvent {
   }
 
   static fromPayload(payload: Uint8Array): ScaleMeasureHistoryPacket {
-    if (payload.length < 3) {
-      throw new BoksProtocolError(BoksProtocolErrorId.MALFORMED_DATA, 'Payload too short');
-    }
     const parsed = PayloadMapper.parse(ScaleMeasureHistoryPacket, payload);
     const data = payload.length > 3 ? (payload.subarray(3) as Uint8Array) : EMPTY_BUFFER;
     return new ScaleMeasureHistoryPacket(

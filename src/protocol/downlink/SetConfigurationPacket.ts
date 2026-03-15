@@ -37,15 +37,6 @@ export class SetConfigurationPacket extends AuthPacket {
       );
     }
 
-    const valueByte = payload[9];
-    if (valueByte !== 0x00 && valueByte !== 0x01) {
-      throw new BoksProtocolError(
-        BoksProtocolErrorId.INVALID_VALUE,
-        'SetConfigurationPacket value must be 0x00 or 0x01',
-        { received: valueByte }
-      );
-    }
-
     const parsed = PayloadMapper.parse(SetConfigurationPacket, payload);
     return new SetConfigurationPacket({
       configKey: parsed.configKey!,

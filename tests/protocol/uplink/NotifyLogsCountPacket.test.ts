@@ -12,9 +12,8 @@ describe('NotifyLogsCountPacket', () => {
     expect(packet.count).toBe(256);
   });
 
-  it('should handle short payload gracefully (defaults to 0)', () => {
+  it('should throw error on short payload', () => {
     const payload = new Uint8Array(1);
-    const packet = NotifyLogsCountPacket.fromPayload(payload);
-    expect(packet.count).toBe(0);
+    expect(() => NotifyLogsCountPacket.fromPayload(payload)).toThrowError();
   });
 });

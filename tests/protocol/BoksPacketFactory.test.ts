@@ -18,7 +18,7 @@ describe('BoksPacketFactory', () => {
       { name: 'NotifyLogsCountPacket', class: Packets.NotifyLogsCountPacket, payload: new Uint8Array([0x00, 0x05]) },
       { name: 'NotifyCodesCountPacket', class: Packets.NotifyCodesCountPacket, payload: new Uint8Array([0x00, 0x01, 0x00, 0x0A]) },
       { name: 'NotifyDoorStatusPacket', class: Packets.NotifyDoorStatusPacket, payload: new Uint8Array([0x01, 0x00]) },
-      { name: 'AnswerDoorStatusPacket', class: Packets.AnswerDoorStatusPacket, payload: new Uint8Array([0x00]) },
+      { name: 'AnswerDoorStatusPacket', class: Packets.AnswerDoorStatusPacket, payload: new Uint8Array([0x00, 0x01]) },
       { name: 'ValidOpenCodePacket', class: Packets.ValidOpenCodePacket, payload: new Uint8Array(0) },
       { name: 'InvalidOpenCodePacket', class: Packets.InvalidOpenCodePacket, payload: new Uint8Array(0) },
       { name: 'NotifyNfcTagFoundPacket', class: Packets.NotifyNfcTagFoundPacket, payload: new Uint8Array([0x04, 0x01, 0x02, 0x03, 0x04]) },
@@ -56,7 +56,7 @@ describe('BoksPacketFactory', () => {
 
       // Scale Notifications
       { name: 'NotifyScaleBondingSuccessPacket', class: Packets.NotifyScaleBondingSuccessPacket, payload: new Uint8Array(0) },
-      { name: 'NotifyScaleBondingErrorPacket', class: Packets.NotifyScaleBondingErrorPacket, payload: new Uint8Array(0) },
+      { name: 'NotifyScaleBondingErrorPacket', class: Packets.NotifyScaleBondingErrorPacket, payload: new Uint8Array([0x01]) },
       { name: 'NotifyMacAddressBoksScalePacket', class: Packets.NotifyMacAddressBoksScalePacket, payload: new Uint8Array([1, 2, 3, 4, 5, 6]) },
       { name: 'NotifyScaleBondingForgetSuccessPacket', class: Packets.NotifyScaleBondingForgetSuccessPacket, payload: new Uint8Array(0) },
       { name: 'NotifyScaleBondingProgressPacket', class: Packets.NotifyScaleBondingProgressPacket, payload: new Uint8Array([25]) },

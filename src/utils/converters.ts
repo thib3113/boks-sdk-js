@@ -1,5 +1,6 @@
 import { CHECKSUM_MASK } from '../protocol/constants';
 import { BoksProtocolError, BoksProtocolErrorId } from '../errors/BoksProtocolError';
+import { BoksExpectedReason } from '../errors/BoksExpectedReason';
 
 /**
  * Utility functions for Boks SDK
@@ -84,7 +85,7 @@ export const hexToBytes = (hex: string): Uint8Array => {
     if (val === 255 || val === undefined) {
       throw new BoksProtocolError(BoksProtocolErrorId.INVALID_VALUE, undefined, {
         received: hex[i],
-        reason: 'INVALID_HEX_CHAR'
+        expected: BoksExpectedReason.VALID_HEX_CHAR
       });
     }
 

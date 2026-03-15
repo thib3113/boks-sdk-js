@@ -12,9 +12,8 @@ describe('BleRebootHistoryPacket', () => {
     expect(packet.age).toBe(0x010203);
   });
 
-  it('should handle short payload (age 0)', () => {
+  it('should throw error on short payload', () => {
     const payload = new Uint8Array(2);
-    const packet = BleRebootHistoryPacket.fromPayload(payload);
-    expect(packet.age).toBe(0);
+    expect(() => BleRebootHistoryPacket.fromPayload(payload)).toThrowError();
   });
 });

@@ -4,6 +4,7 @@
 
 import { PIN_ALGO_CONFIG } from '../protocol/constants';
 import { BoksProtocolError, BoksProtocolErrorId } from '../errors/BoksProtocolError';
+import { BoksExpectedReason } from '../errors/BoksExpectedReason';
 
 const encoder = new TextEncoder();
 const BOKS_CHAR_MAP = '0123456789AB';
@@ -140,6 +141,7 @@ const processMessageBlock = (h: Uint32Array, typePrefix: string, index: number):
         {
           received: offset + digits,
           limit: blockBuffer.length,
+          expected: blockBuffer.length,
           reason: 'MESSAGE_TOO_LONG'
         }
       );
@@ -243,7 +245,8 @@ export const generateBoksPinFromContext = (
       `Invalid index: must be a non-negative integer, got ${index}`,
       {
         received: index,
-        field: 'index'
+        field: 'index',
+        expected: BoksExpectedReason.POSITIVE_INTEGER
       }
     );
   }
@@ -254,7 +257,7 @@ export const generateBoksPinFromContext = (
       {
         received: typePrefix,
         allowed: ALLOWED_PREFIXES,
-        reason: 'INVALID_PREFIX'
+        expected: ALLOWED_PREFIXES.join(', ')
       }
     );
   }
@@ -296,7 +299,8 @@ export const generateBoksPin = (key: Uint8Array, typePrefix: string, index: numb
       `Invalid index: must be a non-negative integer, got ${index}`,
       {
         received: index,
-        field: 'index'
+        field: 'index',
+        expected: BoksExpectedReason.POSITIVE_INTEGER
       }
     );
   }
@@ -308,7 +312,7 @@ export const generateBoksPin = (key: Uint8Array, typePrefix: string, index: numb
       {
         received: typePrefix,
         allowed: ALLOWED_PREFIXES,
-        reason: 'INVALID_PREFIX'
+        expected: ALLOWED_PREFIXES.join(', ')
       }
     );
   }

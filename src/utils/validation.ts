@@ -1,4 +1,5 @@
 import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';
+import { BoksExpectedReason } from '@/errors/BoksExpectedReason';
 import { MAX_MASTER_CODE_INDEX } from '@/protocol/constants';
 
 /**
@@ -36,7 +37,7 @@ export function validatePinCode(pin: string): void {
       throw new BoksProtocolError(
         BoksProtocolErrorId.INVALID_PIN_FORMAT,
         'PIN must be exactly 6 characters using only 0-9, A, and B',
-        { received: pin, expected: '6 characters (0-9, A, B)' }
+        { received: pin, expected: BoksExpectedReason.PIN_CODE_FORMAT }
       );
     }
   }
@@ -81,7 +82,7 @@ export function validateSeed(seed: Uint8Array | string): void {
         throw new BoksProtocolError(
           BoksProtocolErrorId.INVALID_VALUE,
           'Seed string must contain only valid hex characters',
-          { received: seed, expected: 'Valid hex characters' }
+          { received: seed, expected: BoksExpectedReason.VALID_HEX_CHAR }
         );
       }
     }
@@ -118,7 +119,7 @@ export function validateCredentialsKey(key: Uint8Array | string): void {
         throw new BoksProtocolError(
           BoksProtocolErrorId.INVALID_VALUE,
           'Key string must contain only valid hex characters',
-          { received: key, expected: 'Valid hex characters' }
+          { received: key, expected: BoksExpectedReason.VALID_HEX_CHAR }
         );
       }
     }
@@ -157,7 +158,7 @@ export function validateConfigKeyFormat(configKey: string): void {
       throw new BoksProtocolError(
         BoksProtocolErrorId.INVALID_CONFIG_KEY,
         'Config Key must be exactly 8 hexadecimal characters',
-        { received: configKey, expected: 'Valid hex characters' }
+        { received: configKey, expected: BoksExpectedReason.VALID_HEX_CHAR }
       );
     }
   }
@@ -191,7 +192,7 @@ export function validateNfcUid(uid: string): void {
     if (!isHexCode(code)) {
       throw new BoksProtocolError(BoksProtocolErrorId.INVALID_NFC_UID_FORMAT, undefined, {
         received: uid,
-        expected: 'Valid hex characters',
+        expected: BoksExpectedReason.VALID_HEX_CHAR,
         reason: 'NOT_HEX'
       });
     }
@@ -201,7 +202,7 @@ export function validateNfcUid(uid: string): void {
   if (validLength === 0) {
     throw new BoksProtocolError(BoksProtocolErrorId.INVALID_NFC_UID_FORMAT, undefined, {
       received: uid,
-      expected: 'Valid hex characters',
+      expected: BoksExpectedReason.VALID_HEX_CHAR,
       reason: 'NOT_HEX'
     });
   }
