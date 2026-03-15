@@ -35,7 +35,7 @@ export class NfcOpeningHistoryPacket extends BoksHistoryEvent {
       {
         age: data.age as number,
         tagType: data.tagType as number,
-        uid: (data as any).nfcUidData as string
+        uid: (data as unknown as { nfcUidData: string }).nfcUidData as string
       },
       payload
     );
