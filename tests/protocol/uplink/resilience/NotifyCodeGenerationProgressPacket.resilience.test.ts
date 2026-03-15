@@ -9,7 +9,8 @@ describe('NotifyCodeGenerationProgressPacket - Resilience & Edge Cases', () => {
       fc.assert(
         fc.property(fc.uint8Array(), (payload) => {
           let packet;
-          try {
+        // TODO, crashing with invalid data is normal, but we need to check the error, no catch without tests . Need to rewrite this test
+        try {
              packet = NotifyCodeGenerationProgressPacket.fromPayload(payload);
           } catch(e) { return; }
           expect(packet).toBeInstanceOf(NotifyCodeGenerationProgressPacket);

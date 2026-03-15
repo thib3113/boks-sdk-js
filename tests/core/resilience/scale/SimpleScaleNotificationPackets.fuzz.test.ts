@@ -19,6 +19,7 @@ describe('SimpleScaleNotificationPackets Resilience (Fuzzing)', () => {
     fc.assert(
       fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (payload) => {
         let packet;
+        // TODO, crashing with invalid data is normal, but we need to check the error, no catch without tests . Need to rewrite this test
         try {
           packet = NotifyScaleBondingErrorPacket.fromPayload(payload);
         } catch(e) { return; }
@@ -47,6 +48,7 @@ describe('SimpleScaleNotificationPackets Resilience (Fuzzing)', () => {
     fc.assert(
       fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (payload) => {
         let packet;
+        // TODO, crashing with invalid data is normal, but we need to check the error, no catch without tests . Need to rewrite this test
         try {
           packet = NotifyScaleBondingProgressPacket.fromPayload(payload);
         } catch(e) { return; }
