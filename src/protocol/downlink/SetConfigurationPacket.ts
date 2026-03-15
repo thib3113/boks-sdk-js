@@ -49,8 +49,4 @@ export class SetConfigurationPacket extends AuthPacket {
       value: parsed.value!
     });
   }
-
-  toPayload() {
-    return PayloadMapper.serialize(this);
-  }
 }

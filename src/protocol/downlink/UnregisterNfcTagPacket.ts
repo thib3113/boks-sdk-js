@@ -1,7 +1,6 @@
 import { PayloadMapper } from '@/protocol/payload-mapper';
 import { AuthPacket, AuthPacketProps } from '@/protocol/downlink/_AuthPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
-import { writeConfigKeyToBuffer, hexToBytes } from '@/utils/converters';
 import { PayloadNfcUid } from '@/protocol/payload-mapper';
 
 /**
@@ -28,14 +27,5 @@ export class UnregisterNfcTagPacket extends AuthPacket {
   static fromPayload(payload: Uint8Array): UnregisterNfcTagPacket {
     const data = PayloadMapper.parse<UnregisterNfcTagPacketProps>(UnregisterNfcTagPacket, payload);
     return new UnregisterNfcTagPacket(data, payload);
-  }
-
-  toPayload(): Uint8Array {
-    const uidBytes = hexToBytes(this.uid);
-    const payload = new Uint8Array(8 + 1 + uidBytes.length);
-    writeConfigKeyToBuffer(payload, 0, this.configKey);
-    payload[8] = uidBytes.length; // From protocol.md: UID_Length (1 octet)
-    payload.set(uidBytes, 9);
-    return payload;
   }
 }

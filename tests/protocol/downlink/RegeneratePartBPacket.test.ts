@@ -46,7 +46,7 @@ describe('RegeneratePartBPacket', () => {
       try {
         new RegeneratePartBPacket({ configKey: validKey, part: shortPart });
       } catch (e) {
-         expect((e as BoksProtocolError).id).toBe(BoksProtocolErrorId.INVALID_VALUE);
+         expect((e as BoksProtocolError).id).toBe(BoksProtocolErrorId.INVALID_PAYLOAD_LENGTH);
       }
   });
 

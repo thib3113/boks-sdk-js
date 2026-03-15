@@ -1488,6 +1488,18 @@ export function PayloadByteArray(offset: number, length?: number) {
             }
           );
         }
+
+        if (length !== undefined && (val as unknown as Uint8Array).length !== length) {
+          throw new BoksProtocolError(
+            BoksProtocolErrorId.INVALID_PAYLOAD_LENGTH,
+            `Array length must be exactly ${length}`,
+            {
+              field: context.name as string,
+              received: (val as unknown as Uint8Array).length,
+              expected: length
+            }
+          );
+        }
         target.set.call(this, val);
       },
       init(initialValue: V): V {
