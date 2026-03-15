@@ -61,3 +61,4 @@
 ## 2026-03-10 - [Core] **Hardened:** src/utils/battery.ts **Edge-Cases Covered:** parseBatteryLevel bounds checking, parseBatteryStats format lengths and out of bounds buffer parsing.
 ## 2026-03-10 - [Core] **Hardened:** src/utils/security.ts **Edge-Cases Covered:** Fuzzed Object.seal and Object.freeze without crashes.
 ## 2026-03-10 - [Client] **Hardened:** src/client/WebBluetoothTransport.ts **Edge-Cases Covered:** [Arbitrary payload lengths from 0 to 512 bytes ensuring parsing safety, graceful BoksClientError wrapping on Web Bluetooth failures]
+## 2026-03-10 - [Core] **Hardened:** tests/core/resilience/uplink/SimpleNotificationPackets.fuzz.test.ts **Edge-Cases Covered:** [Explicit error assertions for BoksProtocolError, splitting tests for valid and invalid short payloads to prevent silent error suppression]
