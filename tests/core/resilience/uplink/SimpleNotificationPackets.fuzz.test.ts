@@ -82,6 +82,7 @@ describe('SimpleNotificationPackets Resilience (Fuzzing)', () => {
     fc.assert(
       fc.property(fc.uint8Array({ minLength: 4, maxLength: 256 }), (payload) => {
         let packet;
+        // TODO, crashing with invalid data is normal, but we need to check the error, no catch without tests . Need to rewrite this test
         try {
           packet = NotifyCodesCountPacket.fromPayload(payload);
         } catch(e) { return; }
