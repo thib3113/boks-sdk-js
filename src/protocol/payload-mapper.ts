@@ -904,6 +904,17 @@ export function PayloadUint8(offset: number) {
         return target.get.call(this);
       },
       set(val: V) {
+        if (val === undefined || val === null) {
+          throw new BoksProtocolError(
+            BoksProtocolErrorId.MISSING_MANDATORY_FIELD,
+            'Required field cannot be undefined',
+            {
+              field: context.name as string,
+              received: val,
+              expected: BoksExpectedReason.EXACT_LENGTH
+            }
+          );
+        }
         target.set.call(this, val);
       },
       init(initialValue: V): V {
@@ -927,6 +938,17 @@ export function PayloadUint16(offset: number) {
         return target.get.call(this);
       },
       set(val: V) {
+        if (val === undefined || val === null) {
+          throw new BoksProtocolError(
+            BoksProtocolErrorId.MISSING_MANDATORY_FIELD,
+            'Required field cannot be undefined',
+            {
+              field: context.name as string,
+              received: val,
+              expected: BoksExpectedReason.EXACT_LENGTH
+            }
+          );
+        }
         target.set.call(this, val);
       },
       init(initialValue: V): V {
@@ -950,6 +972,17 @@ export function PayloadUint24(offset: number) {
         return target.get.call(this);
       },
       set(val: V) {
+        if (val === undefined || val === null) {
+          throw new BoksProtocolError(
+            BoksProtocolErrorId.MISSING_MANDATORY_FIELD,
+            'Required field cannot be undefined',
+            {
+              field: context.name as string,
+              received: val,
+              expected: BoksExpectedReason.EXACT_LENGTH
+            }
+          );
+        }
         target.set.call(this, val);
       },
       init(initialValue: V): V {
@@ -973,6 +1006,17 @@ export function PayloadUint32(offset: number) {
         return target.get.call(this);
       },
       set(val: V) {
+        if (val === undefined || val === null) {
+          throw new BoksProtocolError(
+            BoksProtocolErrorId.MISSING_MANDATORY_FIELD,
+            'Required field cannot be undefined',
+            {
+              field: context.name as string,
+              received: val,
+              expected: BoksExpectedReason.EXACT_LENGTH
+            }
+          );
+        }
         target.set.call(this, val);
       },
       init(initialValue: V): V {
@@ -996,6 +1040,17 @@ export function PayloadAsciiString(offset: number, length: number) {
         return target.get.call(this);
       },
       set(val: V) {
+        if (val === undefined || val === null) {
+          throw new BoksProtocolError(
+            BoksProtocolErrorId.MISSING_MANDATORY_FIELD,
+            'Required field cannot be undefined',
+            {
+              field: context.name as string,
+              received: val,
+              expected: BoksExpectedReason.EXACT_LENGTH
+            }
+          );
+        }
         target.set.call(this, val);
       },
       init(initialValue: V): V {
@@ -1019,6 +1074,17 @@ export function PayloadMacAddress(offset: number) {
         return target.get.call(this);
       },
       set(val: V) {
+        if (val === undefined || val === null) {
+          throw new BoksProtocolError(
+            BoksProtocolErrorId.MISSING_MANDATORY_FIELD,
+            'Required field cannot be undefined',
+            {
+              field: context.name as string,
+              received: val,
+              expected: BoksExpectedReason.EXACT_LENGTH
+            }
+          );
+        }
         target.set.call(this, val);
       },
       init(initialValue: V): V {
@@ -1042,6 +1108,17 @@ export function PayloadHexString(offset: number, length?: number) {
         return target.get.call(this);
       },
       set(val: V) {
+        if (val === undefined || val === null) {
+          throw new BoksProtocolError(
+            BoksProtocolErrorId.MISSING_MANDATORY_FIELD,
+            'Required field cannot be undefined',
+            {
+              field: context.name as string,
+              received: val,
+              expected: BoksExpectedReason.EXACT_LENGTH
+            }
+          );
+        }
         target.set.call(this, val);
       },
       init(initialValue: V): V {
@@ -1065,6 +1142,17 @@ export function PayloadVarLenHex(offset: number) {
         return target.get.call(this);
       },
       set(val: V) {
+        if (val === undefined || val === null) {
+          throw new BoksProtocolError(
+            BoksProtocolErrorId.MISSING_MANDATORY_FIELD,
+            'Required field cannot be undefined',
+            {
+              field: context.name as string,
+              received: val,
+              expected: BoksExpectedReason.EXACT_LENGTH
+            }
+          );
+        }
         target.set.call(this, val);
       },
       init(initialValue: V): V {
@@ -1091,6 +1179,17 @@ export function PayloadBit(offset: number, bitIndex: number) {
         return target.get.call(this);
       },
       set(val: V) {
+        if (val === undefined || val === null) {
+          throw new BoksProtocolError(
+            BoksProtocolErrorId.MISSING_MANDATORY_FIELD,
+            'Required field cannot be undefined',
+            {
+              field: context.name as string,
+              received: val,
+              expected: BoksExpectedReason.EXACT_LENGTH
+            }
+          );
+        }
         target.set.call(this, val);
       },
       init(initialValue: V): V {
@@ -1299,6 +1398,17 @@ export function PayloadBoolean(offset: number) {
         return target.get.call(this);
       },
       set(val: V) {
+        if (val === undefined || val === null) {
+          throw new BoksProtocolError(
+            BoksProtocolErrorId.MISSING_MANDATORY_FIELD,
+            'Required field cannot be undefined',
+            {
+              field: context.name as string,
+              received: val,
+              expected: BoksExpectedReason.EXACT_LENGTH
+            }
+          );
+        }
         target.set.call(this, val);
       },
       init(initialValue: V): V {
@@ -1322,6 +1432,17 @@ export function PayloadByteArray(offset: number, length?: number) {
         return target.get.call(this);
       },
       set(val: V) {
+        if (val === undefined || val === null) {
+          throw new BoksProtocolError(
+            BoksProtocolErrorId.MISSING_MANDATORY_FIELD,
+            'Required field cannot be undefined',
+            {
+              field: context.name as string,
+              received: val,
+              expected: BoksExpectedReason.EXACT_LENGTH
+            }
+          );
+        }
         target.set.call(this, val);
       },
       init(initialValue: V): V {

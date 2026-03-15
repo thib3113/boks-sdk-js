@@ -1,10 +1,14 @@
-import { AuthPacket } from '@/protocol/downlink/_AuthPacketBase';
+import { AuthPacket, AuthPacketProps } from '@/protocol/downlink/_AuthPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
 import { PayloadMapper, PayloadPinCode } from '@/protocol/payload-mapper';
 
 /**
  * Command to create a multi-use code.
  */
+export interface CreateMultiUseCodePacketProps extends AuthPacketProps {
+  pin: string;
+}
+
 export class CreateMultiUseCodePacket extends AuthPacket {
   static readonly opcode = BoksOpcode.CREATE_MULTI_USE_CODE;
   get opcode() {
@@ -14,16 +18,13 @@ export class CreateMultiUseCodePacket extends AuthPacket {
   @PayloadPinCode(8)
   public accessor pin!: string;
 
-  constructor(props: { configKey: string; pin: string }, rawPayload?: Uint8Array) {
-    super(props.configKey, rawPayload);
+  constructor(props: CreateMultiUseCodePacketProps, rawPayload?: Uint8Array) {
+    super(props, rawPayload);
     this.pin = props.pin;
   }
 
   static fromPayload(payload: Uint8Array): CreateMultiUseCodePacket {
     const data = PayloadMapper.parse(CreateMultiUseCodePacket, payload);
-    return new CreateMultiUseCodePacket(
-      { configKey: data.configKey as string, pin: data.pin as string },
-      payload
-    );
+    return new CreateMultiUseCodePacket(data as unknown as CreateMultiUseCodePacketProps, payload);
   }
 }

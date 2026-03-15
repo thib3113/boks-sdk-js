@@ -1,11 +1,16 @@
-import { AuthPacket } from '@/protocol/downlink/_AuthPacketBase';
+import { PayloadMapper, PayloadUint8, PayloadBoolean } from '@/protocol/payload-mapper';
+import { AuthPacket, AuthPacketProps } from '@/protocol/downlink/_AuthPacketBase';
 import { BoksOpcode, BoksConfigType } from '@/protocol/constants';
 import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';
-import { PayloadUint8, PayloadBoolean, PayloadMapper } from '@/protocol/payload-mapper';
 
 /**
  * Set configuration (e.g. La Poste NFC).
  */
+export interface SetConfigurationPacketProps extends AuthPacketProps {
+  configType: BoksConfigType;
+  value: boolean;
+}
+
 export class SetConfigurationPacket extends AuthPacket {
   static readonly opcode = BoksOpcode.SET_CONFIGURATION;
 
@@ -19,11 +24,8 @@ export class SetConfigurationPacket extends AuthPacket {
   @PayloadBoolean(9)
   public accessor value!: boolean;
 
-  constructor(
-    props: { configKey: string; configType: BoksConfigType; value: boolean },
-    rawPayload?: Uint8Array
-  ) {
-    super(props.configKey, rawPayload);
+  constructor(props: SetConfigurationPacketProps, rawPayload?: Uint8Array) {
+    super(props, rawPayload);
     this.configType = props.configType;
     this.value = props.value;
   }

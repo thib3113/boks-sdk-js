@@ -37,13 +37,11 @@ describe('DeleteMasterCodePacket', () => {
     expect(packet.index).toBe(validIndex);
   });
 
-  it('should parse with default index 0 if payload is short', () => {
+  it('should fail to parse if payload is short', () => {
     const payload = new Uint8Array(8);
     payload.set(stringToBytes(validKey), 0);
 
-    const packet = DeleteMasterCodePacket.fromPayload(payload);
-    expect(packet.configKey).toBe(validKey);
-    expect(packet.index).toBe(0);
+    expect(() => DeleteMasterCodePacket.fromPayload(payload)).toThrowError(BoksProtocolError);
   });
 
   it('should throw INVALID_CONFIG_KEY for invalid config key format', () => {

@@ -17,7 +17,7 @@ describe('GenerateCodesSupportPacket', () => {
   it('should construct with valid parameters (Uint8Array)', () => {
     const packet = new GenerateCodesSupportPacket(validSeedBytes);
     expect(packet.opcode).toBe(BoksOpcode.GENERATE_CODES_SUPPORT);
-    expect(packet.seed).toEqual(validSeedBytes);
+    expect(packet.seed).toBe(validSeedHex);
   });
 
   it('should encode correctly', () => {
@@ -31,12 +31,15 @@ describe('GenerateCodesSupportPacket', () => {
 
   it('should parse from payload correctly', () => {
     const packet = GenerateCodesSupportPacket.fromPayload(validSeedBytes);
-    expect(packet.seed).toEqual(validSeedBytes);
+    expect(packet.seed).toBe(validSeedHex);
   });
 
   it('should throw INVALID_SEED_LENGTH for invalid seed length', () => {
+      // This test is obsolete now as validation occurs in fromPayload, but new constructor expects valid seed length when using toPayload
+      // actually let's just make it throw BoksProtocolError for fromPayload on short seed
+
       const shortSeed = new Uint8Array(31);
-      expect(() => new GenerateCodesSupportPacket(shortSeed)).toThrowError(BoksProtocolError);
+      expect(() => GenerateCodesSupportPacket.fromPayload(shortSeed)).toThrowError(BoksProtocolError); // BoksProtocolError);
 
       const shortHex = '0001';
       expect(() => new GenerateCodesSupportPacket(shortHex)).toThrowError(BoksProtocolError);

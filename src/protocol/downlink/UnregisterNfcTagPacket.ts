@@ -1,11 +1,16 @@
-import { AuthPacket } from '@/protocol/downlink/_AuthPacketBase';
+import { PayloadMapper } from '@/protocol/payload-mapper';
+import { AuthPacket, AuthPacketProps } from '@/protocol/downlink/_AuthPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
-import { writeConfigKeyToBuffer, hexToBytes, bytesToHex } from '@/utils/converters';
+import { writeConfigKeyToBuffer, hexToBytes } from '@/utils/converters';
 import { PayloadNfcUid } from '@/protocol/payload-mapper';
 
 /**
  * Command to unregister an NFC tag.
  */
+export interface UnregisterNfcTagPacketProps extends AuthPacketProps {
+  uid: string;
+}
+
 export class UnregisterNfcTagPacket extends AuthPacket {
   static readonly opcode = BoksOpcode.UNREGISTER_NFC_TAG;
   get opcode() {
@@ -15,21 +20,14 @@ export class UnregisterNfcTagPacket extends AuthPacket {
   @PayloadNfcUid(8)
   public accessor uid!: string;
 
-  constructor(props: { configKey: string; uid: string }, rawPayload?: Uint8Array) {
-    super(props.configKey, rawPayload);
+  constructor(props: UnregisterNfcTagPacketProps, rawPayload?: Uint8Array) {
+    super(props, rawPayload);
     this.uid = props.uid;
   }
 
   static fromPayload(payload: Uint8Array): UnregisterNfcTagPacket {
-    const configKey = AuthPacket.extractConfigKey(payload);
-    let uid = '';
-    if (payload.length > 8) {
-      const len = payload[8];
-      if (payload.length >= 9 + len) {
-        uid = bytesToHex(payload.subarray(9, 9 + len));
-      }
-    }
-    return new UnregisterNfcTagPacket({ configKey, uid }, payload);
+    const data = PayloadMapper.parse(UnregisterNfcTagPacket, payload);
+    return new UnregisterNfcTagPacket(data as unknown as UnregisterNfcTagPacketProps, payload);
   }
 
   toPayload(): Uint8Array {

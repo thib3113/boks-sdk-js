@@ -1,10 +1,14 @@
-import { AuthPacket } from '@/protocol/downlink/_AuthPacketBase';
+import { AuthPacket, AuthPacketProps } from '@/protocol/downlink/_AuthPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
 import { PayloadMapper, PayloadPinCode } from '@/protocol/payload-mapper';
 
 /**
  * Command to delete a multi-use code.
  */
+export interface DeleteMultiUseCodePacketProps extends AuthPacketProps {
+  pin: string;
+}
+
 export class DeleteMultiUseCodePacket extends AuthPacket {
   static readonly opcode = BoksOpcode.DELETE_MULTI_USE_CODE;
   get opcode() {
@@ -14,16 +18,13 @@ export class DeleteMultiUseCodePacket extends AuthPacket {
   @PayloadPinCode(8)
   public accessor pin!: string;
 
-  constructor(props: { configKey: string; pin: string }, rawPayload?: Uint8Array) {
-    super(props.configKey, rawPayload);
+  constructor(props: DeleteMultiUseCodePacketProps, rawPayload?: Uint8Array) {
+    super(props, rawPayload);
     this.pin = props.pin;
   }
 
   static fromPayload(payload: Uint8Array): DeleteMultiUseCodePacket {
     const data = PayloadMapper.parse(DeleteMultiUseCodePacket, payload);
-    return new DeleteMultiUseCodePacket(
-      { configKey: data.configKey as string, pin: data.pin as string },
-      payload
-    );
+    return new DeleteMultiUseCodePacket(data as unknown as DeleteMultiUseCodePacketProps, payload);
   }
 }

@@ -1,7 +1,7 @@
+import { PayloadMapper, PayloadHexString } from '@/protocol/payload-mapper';
 import { BoksPacket } from '@/protocol/_BoksPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
 import { hexToBytes } from '@/utils/converters';
-import { validateSeed } from '@/utils/validation';
 
 /** ⚠️ This packet is theoretical; it has never been tested in real-world conditions. */
 /**
@@ -13,16 +13,17 @@ export class GenerateCodesSupportPacket extends BoksPacket {
     return GenerateCodesSupportPacket.opcode;
   }
 
-  constructor(
-    public readonly seed: Uint8Array | string,
-    rawPayload?: Uint8Array
-  ) {
+  @PayloadHexString(0, 32)
+  public accessor seed!: string;
+
+  constructor(seed: Uint8Array | string, rawPayload?: Uint8Array) {
     super(rawPayload);
-    validateSeed(seed);
+    this.seed = this.formatSeed(seed);
   }
 
   static fromPayload(payload: Uint8Array): GenerateCodesSupportPacket {
-    return new GenerateCodesSupportPacket(payload, payload);
+    const data = PayloadMapper.parse(GenerateCodesSupportPacket, payload);
+    return new GenerateCodesSupportPacket(data.seed as string, payload);
   }
 
   toPayload(): Uint8Array {

@@ -1,3 +1,4 @@
+import { PayloadMapper, PayloadByteArray } from '@/protocol/payload-mapper';
 import { BoksRXPacket } from '@/protocol/uplink/_BoksRXPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
 
@@ -8,14 +9,16 @@ import { BoksOpcode } from '@/protocol/constants';
 export class NotifyScaleRawSensorsPacket extends BoksRXPacket {
   static readonly opcode = BoksOpcode.NOTIFY_SCALE_RAW_SENSORS;
 
-  constructor(
-    public readonly data: Uint8Array,
-    rawPayload?: Uint8Array
-  ) {
+  @PayloadByteArray(0)
+  public accessor data!: Uint8Array;
+
+  constructor(data: Uint8Array, rawPayload?: Uint8Array) {
     super(NotifyScaleRawSensorsPacket.opcode, rawPayload);
+    this.data = data;
   }
 
   static fromPayload(payload: Uint8Array): NotifyScaleRawSensorsPacket {
-    return new NotifyScaleRawSensorsPacket(payload, payload);
+    const data = PayloadMapper.parse(NotifyScaleRawSensorsPacket, payload);
+    return new NotifyScaleRawSensorsPacket(data.data as Uint8Array, payload);
   }
 }

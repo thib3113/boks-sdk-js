@@ -1,3 +1,4 @@
+import { PayloadMapper, PayloadHexString } from '@/protocol/payload-mapper';
 import { BoksPacket } from '@/protocol/_BoksPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
 import { hexToBytes } from '@/utils/converters';
@@ -12,7 +13,8 @@ export class GenerateCodesPacket extends BoksPacket {
     return GenerateCodesPacket.opcode;
   }
 
-  public readonly seedStr: string;
+  @PayloadHexString(0, 32)
+  public accessor seedStr!: string;
 
   constructor(seed: Uint8Array | string, rawPayload?: Uint8Array) {
     super(rawPayload);
@@ -20,7 +22,8 @@ export class GenerateCodesPacket extends BoksPacket {
   }
 
   static fromPayload(payload: Uint8Array): GenerateCodesPacket {
-    return new GenerateCodesPacket(payload, payload);
+    const data = PayloadMapper.parse(GenerateCodesPacket, payload);
+    return new GenerateCodesPacket(data.seedStr as string, payload);
   }
 
   toPayload(): Uint8Array {

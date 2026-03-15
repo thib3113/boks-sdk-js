@@ -1,10 +1,15 @@
+import { PayloadMapper, PayloadBoolean } from '@/protocol/payload-mapper';
 import { BoksRXPacket } from '@/protocol/uplink/_BoksRXPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
-import { PayloadBoolean, PayloadMapper } from '@/protocol/payload-mapper';
 
 /**
  * Notification of the current door status.
  */
+export interface NotifyDoorStatusPacketProps {
+  inverted: boolean;
+  raw: boolean;
+}
+
 export class NotifyDoorStatusPacket extends BoksRXPacket {
   static readonly opcode = BoksOpcode.NOTIFY_DOOR_STATUS;
 
@@ -18,7 +23,7 @@ export class NotifyDoorStatusPacket extends BoksRXPacket {
     return this.raw === true && this.inverted === false;
   }
 
-  constructor(props: { inverted: boolean; raw: boolean }, rawPayload?: Uint8Array) {
+  constructor(props: NotifyDoorStatusPacketProps, rawPayload?: Uint8Array) {
     super(NotifyDoorStatusPacket.opcode, rawPayload);
     this.inverted = props.inverted;
     this.raw = props.raw;

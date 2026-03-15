@@ -1,9 +1,8 @@
-import { AuthPacket } from '@/protocol/downlink/_AuthPacketBase';
+import { AuthPacket, AuthPacketProps } from '@/protocol/downlink/_AuthPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
 import { PayloadMapper, PayloadPinCode, PayloadMasterCodeIndex } from '@/protocol/payload-mapper';
 
-export interface CreateMasterCodePacketProps {
-  configKey: string;
+export interface CreateMasterCodePacketProps extends AuthPacketProps {
   index: number;
   pin: string;
 }
@@ -24,7 +23,7 @@ export class CreateMasterCodePacket extends AuthPacket {
   public accessor index!: number;
 
   constructor(props: CreateMasterCodePacketProps, rawPayload?: Uint8Array) {
-    super(props.configKey, rawPayload);
+    super(props, rawPayload);
     this.pin = props.pin;
     this.index = props.index;
   }

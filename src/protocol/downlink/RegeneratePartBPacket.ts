@@ -1,4 +1,5 @@
-import { AuthPacket } from '@/protocol/downlink/_AuthPacketBase';
+import { PayloadMapper, PayloadByteArray } from '@/protocol/payload-mapper';
+import { AuthPacket, AuthPacketProps } from '@/protocol/downlink/_AuthPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
 import { writeConfigKeyToBuffer } from '@/utils/converters';
 import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';
@@ -7,18 +8,23 @@ import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolErr
 /**
  * Provisioning / Regeneration part B (0x21).
  */
+export interface RegeneratePartBPacketProps extends AuthPacketProps {
+  part: Uint8Array;
+}
+
 export class RegeneratePartBPacket extends AuthPacket {
   static readonly opcode = BoksOpcode.RE_GENERATE_CODES_PART2;
   get opcode() {
     return RegeneratePartBPacket.opcode;
   }
 
-  public readonly part: Uint8Array;
+  @PayloadByteArray(8, 16)
+  public accessor part!: Uint8Array;
 
-  constructor(props: { configKey: string; part: Uint8Array }, rawPayload?: Uint8Array) {
-    super(props.configKey, rawPayload);
+  constructor(props: RegeneratePartBPacketProps, rawPayload?: Uint8Array) {
+    super(props, rawPayload);
     this.part = props.part;
-    if (props.part.length !== 16) {
+    if (!props.part || props.part.length !== 16) {
       throw new BoksProtocolError(BoksProtocolErrorId.INVALID_VALUE, undefined, {
         received: props.part.length,
         expected: 16,
@@ -28,9 +34,8 @@ export class RegeneratePartBPacket extends AuthPacket {
   }
 
   static fromPayload(payload: Uint8Array): RegeneratePartBPacket {
-    const configKey = AuthPacket.extractConfigKey(payload);
-    const part = payload.subarray(8, 24);
-    return new RegeneratePartBPacket({ configKey: configKey, part: part }, payload);
+    const data = PayloadMapper.parse(RegeneratePartBPacket, payload);
+    return new RegeneratePartBPacket(data as unknown as RegeneratePartBPacketProps, payload);
   }
 
   toPayload() {

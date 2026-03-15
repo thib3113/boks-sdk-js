@@ -1,6 +1,6 @@
+import { PayloadMapper, PayloadUint8 } from '@/protocol/payload-mapper';
 import { BoksRXPacket } from '@/protocol/uplink/_BoksRXPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
-import { PayloadUint8, PayloadMapper } from '@/protocol/payload-mapper';
 
 /**
  * Notification of a code operation error.
@@ -9,7 +9,7 @@ export class OperationErrorPacket extends BoksRXPacket {
   static readonly opcode = BoksOpcode.CODE_OPERATION_ERROR;
 
   @PayloadUint8(0)
-  public accessor errorCode: number = 0;
+  public accessor errorCode!: number;
 
   constructor(errorCode: number, rawPayload?: Uint8Array) {
     super(OperationErrorPacket.opcode, rawPayload);
