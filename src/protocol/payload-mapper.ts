@@ -48,7 +48,7 @@ function getOrCreateMetadata(context: ClassAccessorDecoratorContext<any, any>): 
     }
     return context.metadata[METADATA_KEY] as FieldDefinition[];
   }
-  return /* v8 ignore next */ [];
+  return [];
 }
 
 /**
@@ -217,15 +217,14 @@ export class PayloadMapper {
       currentClass !== Object.prototype
     ) {
       let symMetadata: symbol | undefined = Symbol.metadata;
-      /* v8 ignore next 4 */
       if (!symMetadata) {
         const symbols = Object.getOwnPropertySymbols(currentClass);
         symMetadata = symbols.find((s) => s.toString() === 'Symbol(Symbol.metadata)');
       }
       const fields =
-        /* v8 ignore next */ (symMetadata && currentClass[symMetadata as any]?.[METADATA_KEY]) ||
+        (symMetadata && currentClass[symMetadata as any]?.[METADATA_KEY]) ||
         /* v8 ignore next */ currentClass[Symbol.metadata as any]?.[METADATA_KEY] ||
-        /* v8 ignore next */ currentClass.constructor?.[Symbol.metadata as any]?.[METADATA_KEY] ||
+        currentClass.constructor?.[Symbol.metadata as any]?.[METADATA_KEY] ||
         legacyMetadataMap.get(currentClass) ||
         /* v8 ignore next */ currentClass[METADATA_KEY] ||
         /* v8 ignore next */ currentClass.constructor?.[METADATA_KEY];
@@ -248,7 +247,6 @@ export class PayloadMapper {
     const fields = this.getFields(targetClass);
 
     if (!fields || fields.length === 0) {
-      /* v8 ignore next */
       return (_payload: Uint8Array) => ({}); // No fields mapped
     }
 
@@ -268,11 +266,9 @@ export class PayloadMapper {
         size = 6;
       } else if (field.type === 'pin_code') {
         size = 6;
-        /* v8 ignore next */
       } else if (field.type === 'config_key') {
         size = 8;
       } else if (field.type === 'ascii_string') {
-        /* v8 ignore next 5 */
         if (typeof field.length !== 'number') {
           throw new BoksProtocolError(
             BoksProtocolErrorId.INTERNAL_ERROR,
@@ -418,8 +414,7 @@ export class PayloadMapper {
              for(let i=0; i<8; i++) {
                const c = payload[${o} + i];
                // '0'-'9' (48-57), 'A'-'F' (65-70), 'a'-'f' (97-102)
-               /* v8 ignore next */
-          if ((c < 48 || c > 57) && (c < 65 || c > 70) && (c < 97 || c > 102)) {
+               if ((c < 48 || c > 57) && (c < 65 || c > 70) && (c < 97 || c > 102)) {
                   throw new BoksProtocolError(
                     BoksProtocolErrorId.INVALID_CONFIG_KEY,
                     'Invalid Config Key character inline',
@@ -538,7 +533,6 @@ export class PayloadMapper {
               }
            }
          `;
-        /* v8 ignore next */
       } else if (field.type === 'config_key') {
         fnBody += `
            if (typeof ${val} !== 'string' || ${val}.length !== 8) {
@@ -575,7 +569,6 @@ export class PayloadMapper {
   private static compileSerializer(targetClass: any): Function {
     const fields = this.getFields(targetClass);
 
-    /* v8 ignore next */
     if (!fields || fields.length === 0) {
       return (_instance: any) => new Uint8Array(0); // No fields mapped
     }
@@ -596,7 +589,6 @@ export class PayloadMapper {
         fieldSize = 6;
       } else if (field.type === 'pin_code') {
         fieldSize = 6;
-        /* v8 ignore next */
       } else if (field.type === 'config_key') {
         fieldSize = 8;
       } else if (field.type === 'ascii_string') {
@@ -630,17 +622,13 @@ export class PayloadMapper {
     // Check if we need to add length for dynamic fields
     for (const field of fields) {
       const prop = field.propertyName;
-      /* v8 ignore next 2 */
       if (field.type === 'var_len_hex') {
-        /* v8 ignore next */
         dynamicSizeCalc += ` + (instance['${prop}'] && typeof instance['${prop}'] === 'string' ? Math.floor(instance['${prop}'].length / 2) : 0)`;
       } else if (
         (field.type === 'hex_string' || field.type === 'byte_array') &&
-        /* v8 ignore next */ typeof field.length !== 'number'
+        typeof field.length !== 'number'
       ) {
-        /* v8 ignore next 5 */
         if (field.type === 'hex_string') {
-          /* v8 ignore next */
           dynamicSizeCalc += ` + (instance['${prop}'] && typeof instance['${prop}'] === 'string' ? Math.floor(instance['${prop}'].length / 2) : 0)`;
         } else {
           /* v8 ignore next */
@@ -862,7 +850,6 @@ export class PayloadMapper {
   public static validate(instance: any): void {
     const targetClass = instance.constructor;
     let validator = this.compiledValidators.get(targetClass);
-    /* v8 ignore next */
     if (!validator) {
       validator = this.compileValidator(targetClass);
       this.compiledValidators.set(targetClass, validator);
