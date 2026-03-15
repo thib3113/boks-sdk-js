@@ -27,7 +27,10 @@ export class ScaleMeasureHistoryPacket extends BoksHistoryEvent {
   }
 
   static fromPayload(payload: Uint8Array): ScaleMeasureHistoryPacket {
-    const data = PayloadMapper.parse(ScaleMeasureHistoryPacket, payload);
+    const data = PayloadMapper.parse<ScaleMeasureHistoryPacketProps>(
+      ScaleMeasureHistoryPacket,
+      payload
+    );
     return new ScaleMeasureHistoryPacket(
       {
         age: data.age as number,

@@ -24,7 +24,10 @@ export class MultiToSingleCodePacket extends AuthPacket {
   }
 
   static fromPayload(payload: Uint8Array): MultiToSingleCodePacket {
-    const data = PayloadMapper.parse(MultiToSingleCodePacket, payload);
-    return new MultiToSingleCodePacket(data as unknown as MultiToSingleCodePacketProps, payload);
+    const data = PayloadMapper.parse<MultiToSingleCodePacketProps>(
+      MultiToSingleCodePacket,
+      payload
+    );
+    return new MultiToSingleCodePacket(data, payload);
   }
 }

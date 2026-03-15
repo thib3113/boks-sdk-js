@@ -15,7 +15,7 @@ export abstract class AuthPacket extends BoksPacket {
   @PayloadConfigKey(0)
   public accessor configKey!: string;
 
-  constructor(props: AuthPacketProps | string, rawPayload?: Uint8Array) {
+  constructor(props: AuthPacketProps, rawPayload?: Uint8Array) {
     super(rawPayload);
     this.configKey = typeof props === 'string' ? props : props.configKey;
   }

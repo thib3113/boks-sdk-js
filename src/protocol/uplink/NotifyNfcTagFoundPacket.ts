@@ -24,7 +24,8 @@ export class NotifyNfcTagFoundPacket extends BoksRXPacket {
   static fromPayload(payload: Uint8Array): NotifyNfcTagFoundPacket {
     const packet = new NotifyNfcTagFoundPacket(
       {
-        uid: PayloadMapper.parse(NotifyNfcTagFoundPacket, payload).uid!
+        uid: PayloadMapper.parse<NotifyNfcTagFoundPacketProps>(NotifyNfcTagFoundPacket, payload)
+          .uid!
       },
       payload
     );

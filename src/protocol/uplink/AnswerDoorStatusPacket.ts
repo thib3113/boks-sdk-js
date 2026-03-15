@@ -30,7 +30,7 @@ export class AnswerDoorStatusPacket extends BoksRXPacket {
   }
 
   static fromPayload(payload: Uint8Array): AnswerDoorStatusPacket {
-    const data = PayloadMapper.parse(AnswerDoorStatusPacket, payload);
-    return new AnswerDoorStatusPacket(data as unknown as AnswerDoorStatusPacketProps, payload);
+    const data = PayloadMapper.parse<AnswerDoorStatusPacketProps>(AnswerDoorStatusPacket, payload);
+    return new AnswerDoorStatusPacket(data, payload);
   }
 }

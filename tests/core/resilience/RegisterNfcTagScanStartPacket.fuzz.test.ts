@@ -11,7 +11,7 @@ describe('RegisterNfcTagScanStartPacket Resilience (Fuzzing)', () => {
         fc.string(), // configKey
         (configKey) => {
           try {
-            const packet = new RegisterNfcTagScanStartPacket(configKey);
+            const packet = new RegisterNfcTagScanStartPacket({ configKey });
 
             // If it succeeds, the inputs MUST have matched the strict validation criteria:
             // Config Key = 8 hex chars

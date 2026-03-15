@@ -26,8 +26,8 @@ export class UnregisterNfcTagPacket extends AuthPacket {
   }
 
   static fromPayload(payload: Uint8Array): UnregisterNfcTagPacket {
-    const data = PayloadMapper.parse(UnregisterNfcTagPacket, payload);
-    return new UnregisterNfcTagPacket(data as unknown as UnregisterNfcTagPacketProps, payload);
+    const data = PayloadMapper.parse<UnregisterNfcTagPacketProps>(UnregisterNfcTagPacket, payload);
+    return new UnregisterNfcTagPacket(data, payload);
   }
 
   toPayload(): Uint8Array {

@@ -24,8 +24,8 @@ export class NfcRegisterPacket extends AuthPacket {
   }
 
   static fromPayload(payload: Uint8Array): NfcRegisterPacket {
-    const data = PayloadMapper.parse(NfcRegisterPacket, payload);
-    return new NfcRegisterPacket(data as unknown as NfcRegisterPacketProps, payload);
+    const data = PayloadMapper.parse<NfcRegisterPacketProps>(NfcRegisterPacket, payload);
+    return new NfcRegisterPacket(data, payload);
   }
 
   toPayload() {

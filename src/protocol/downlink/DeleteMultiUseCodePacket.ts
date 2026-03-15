@@ -24,7 +24,10 @@ export class DeleteMultiUseCodePacket extends AuthPacket {
   }
 
   static fromPayload(payload: Uint8Array): DeleteMultiUseCodePacket {
-    const data = PayloadMapper.parse(DeleteMultiUseCodePacket, payload);
-    return new DeleteMultiUseCodePacket(data as unknown as DeleteMultiUseCodePacketProps, payload);
+    const data = PayloadMapper.parse<DeleteMultiUseCodePacketProps>(
+      DeleteMultiUseCodePacket,
+      payload
+    );
+    return new DeleteMultiUseCodePacket(data, payload);
   }
 }

@@ -1,5 +1,8 @@
 import { PayloadMapper } from '@/protocol/payload-mapper';
-import { BoksHistoryEvent } from '@/protocol/uplink/history/_BoksHistoryEventBase';
+import {
+  BoksHistoryEvent,
+  BoksHistoryEventProps
+} from '@/protocol/uplink/history/_BoksHistoryEventBase';
 import { BoksOpcode } from '@/protocol/constants';
 
 /**
@@ -8,12 +11,12 @@ import { BoksOpcode } from '@/protocol/constants';
 export class KeyOpeningHistoryPacket extends BoksHistoryEvent {
   static readonly opcode = BoksOpcode.LOG_EVENT_KEY_OPENING;
 
-  constructor(age: number, rawPayload?: Uint8Array) {
-    super(KeyOpeningHistoryPacket.opcode, age, rawPayload);
+  constructor(props: BoksHistoryEventProps, rawPayload?: Uint8Array) {
+    super(KeyOpeningHistoryPacket.opcode, props, rawPayload);
   }
 
   static fromPayload(payload: Uint8Array): KeyOpeningHistoryPacket {
     const data = PayloadMapper.parse(KeyOpeningHistoryPacket, payload);
-    return new KeyOpeningHistoryPacket(data.age as number, payload);
+    return new KeyOpeningHistoryPacket({ age: data.age as number }, payload);
   }
 }

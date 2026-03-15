@@ -34,8 +34,8 @@ export class RegeneratePartAPacket extends AuthPacket {
   }
 
   static fromPayload(payload: Uint8Array): RegeneratePartAPacket {
-    const data = PayloadMapper.parse(RegeneratePartAPacket, payload);
-    return new RegeneratePartAPacket(data as unknown as RegeneratePartAPacketProps, payload);
+    const data = PayloadMapper.parse<RegeneratePartAPacketProps>(RegeneratePartAPacket, payload);
+    return new RegeneratePartAPacket(data, payload);
   }
 
   toPayload() {

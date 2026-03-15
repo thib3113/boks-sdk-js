@@ -24,10 +24,10 @@ export class DeleteSingleUseCodePacket extends AuthPacket {
   }
 
   static fromPayload(payload: Uint8Array): DeleteSingleUseCodePacket {
-    const data = PayloadMapper.parse(DeleteSingleUseCodePacket, payload);
-    return new DeleteSingleUseCodePacket(
-      data as unknown as DeleteSingleUseCodePacketProps,
+    const data = PayloadMapper.parse<DeleteSingleUseCodePacketProps>(
+      DeleteSingleUseCodePacket,
       payload
     );
+    return new DeleteSingleUseCodePacket(data, payload);
   }
 }

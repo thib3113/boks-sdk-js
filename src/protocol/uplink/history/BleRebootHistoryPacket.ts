@@ -1,5 +1,8 @@
 import { PayloadMapper } from '@/protocol/payload-mapper';
-import { BoksHistoryEvent } from '@/protocol/uplink/history/_BoksHistoryEventBase';
+import {
+  BoksHistoryEvent,
+  BoksHistoryEventProps
+} from '@/protocol/uplink/history/_BoksHistoryEventBase';
 import { BoksOpcode } from '@/protocol/constants';
 
 /**
@@ -8,12 +11,12 @@ import { BoksOpcode } from '@/protocol/constants';
 export class BleRebootHistoryPacket extends BoksHistoryEvent {
   static readonly opcode = BoksOpcode.BLE_REBOOT;
 
-  constructor(age: number, rawPayload?: Uint8Array) {
-    super(BleRebootHistoryPacket.opcode, age, rawPayload);
+  constructor(props: BoksHistoryEventProps, rawPayload?: Uint8Array) {
+    super(BleRebootHistoryPacket.opcode, props, rawPayload);
   }
 
   static fromPayload(payload: Uint8Array): BleRebootHistoryPacket {
     const data = PayloadMapper.parse(BleRebootHistoryPacket, payload);
-    return new BleRebootHistoryPacket(data.age as number, payload);
+    return new BleRebootHistoryPacket({ age: data.age as number }, payload);
   }
 }

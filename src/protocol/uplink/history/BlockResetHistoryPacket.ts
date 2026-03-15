@@ -1,5 +1,8 @@
 import { PayloadMapper } from '@/protocol/payload-mapper';
-import { BoksHistoryEvent } from '@/protocol/uplink/history/_BoksHistoryEventBase';
+import {
+  BoksHistoryEvent,
+  BoksHistoryEventProps
+} from '@/protocol/uplink/history/_BoksHistoryEventBase';
 import { BoksOpcode } from '@/protocol/constants';
 
 /**
@@ -8,12 +11,12 @@ import { BoksOpcode } from '@/protocol/constants';
 export class BlockResetHistoryPacket extends BoksHistoryEvent {
   static readonly opcode = BoksOpcode.BLOCK_RESET;
 
-  constructor(age: number, rawPayload?: Uint8Array) {
-    super(BlockResetHistoryPacket.opcode, age, rawPayload);
+  constructor(props: BoksHistoryEventProps, rawPayload?: Uint8Array) {
+    super(BlockResetHistoryPacket.opcode, props, rawPayload);
   }
 
   static fromPayload(payload: Uint8Array): BlockResetHistoryPacket {
     const data = PayloadMapper.parse(BlockResetHistoryPacket, payload);
-    return new BlockResetHistoryPacket(data.age as number, payload);
+    return new BlockResetHistoryPacket({ age: data.age as number }, payload);
   }
 }

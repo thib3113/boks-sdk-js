@@ -24,7 +24,7 @@ export class ReactivateCodePacket extends AuthPacket {
   }
 
   static fromPayload(payload: Uint8Array): ReactivateCodePacket {
-    const data = PayloadMapper.parse(ReactivateCodePacket, payload);
-    return new ReactivateCodePacket(data as unknown as ReactivateCodePacketProps, payload);
+    const data = PayloadMapper.parse<ReactivateCodePacketProps>(ReactivateCodePacket, payload);
+    return new ReactivateCodePacket(data, payload);
   }
 }

@@ -801,10 +801,7 @@ export class PayloadMapper {
    * @param payload The raw buffer
    * @returns A mapped object containing the extracted properties
    */
-  public static parse<T>(
-    targetClass: { new (...args: any[]): T } | Function,
-    payload: Uint8Array
-  ): Partial<T> {
+  public static parse<T = any>(targetClass: Function, payload: Uint8Array): T {
     if (!(payload instanceof Uint8Array)) {
       throw new BoksProtocolError(
         BoksProtocolErrorId.INVALID_TYPE,
@@ -824,7 +821,7 @@ export class PayloadMapper {
       BoksExpectedReason,
       this.HEX_TABLE
     );
-    return result as Partial<T>;
+    return result as unknown as T;
   }
 
   /**

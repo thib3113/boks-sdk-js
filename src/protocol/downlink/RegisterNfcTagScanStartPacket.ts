@@ -1,5 +1,5 @@
 import { PayloadMapper } from '@/protocol/payload-mapper';
-import { AuthPacket } from '@/protocol/downlink/_AuthPacketBase';
+import { AuthPacket, AuthPacketProps } from '@/protocol/downlink/_AuthPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
 
 /**
@@ -11,12 +11,12 @@ export class RegisterNfcTagScanStartPacket extends AuthPacket {
     return RegisterNfcTagScanStartPacket.opcode;
   }
 
-  constructor(configKey: string, rawPayload?: Uint8Array) {
-    super(configKey, rawPayload);
+  constructor(props: AuthPacketProps, rawPayload?: Uint8Array) {
+    super(props, rawPayload);
   }
 
   static fromPayload(payload: Uint8Array): RegisterNfcTagScanStartPacket {
     const data = PayloadMapper.parse(RegisterNfcTagScanStartPacket, payload);
-    return new RegisterNfcTagScanStartPacket(data.configKey as string, payload);
+    return new RegisterNfcTagScanStartPacket({ configKey: data.configKey as string }, payload);
   }
 }

@@ -30,7 +30,7 @@ export class MasterCodeEditPacket extends AuthPacket {
   }
 
   static fromPayload(payload: Uint8Array): MasterCodeEditPacket {
-    const data = PayloadMapper.parse(MasterCodeEditPacket, payload);
-    return new MasterCodeEditPacket(data as unknown as MasterCodeEditPacketProps, payload);
+    const data = PayloadMapper.parse<MasterCodeEditPacketProps>(MasterCodeEditPacket, payload);
+    return new MasterCodeEditPacket(data, payload);
   }
 }

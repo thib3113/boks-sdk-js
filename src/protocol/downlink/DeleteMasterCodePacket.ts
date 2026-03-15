@@ -24,7 +24,7 @@ export class DeleteMasterCodePacket extends AuthPacket {
   }
 
   static fromPayload(payload: Uint8Array): DeleteMasterCodePacket {
-    const data = PayloadMapper.parse(DeleteMasterCodePacket, payload);
-    return new DeleteMasterCodePacket(data as unknown as DeleteMasterCodePacketProps, payload);
+    const data = PayloadMapper.parse<DeleteMasterCodePacketProps>(DeleteMasterCodePacket, payload);
+    return new DeleteMasterCodePacket(data, payload);
   }
 }

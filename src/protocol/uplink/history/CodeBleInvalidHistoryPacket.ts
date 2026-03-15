@@ -26,10 +26,10 @@ export class CodeBleInvalidHistoryPacket extends BoksHistoryEvent {
   }
 
   static fromPayload(payload: Uint8Array): CodeBleInvalidHistoryPacket {
-    const data = PayloadMapper.parse(CodeBleInvalidHistoryPacket, payload);
-    return new CodeBleInvalidHistoryPacket(
-      data as unknown as CodeBleInvalidHistoryPacketProps,
+    const data = PayloadMapper.parse<CodeBleInvalidHistoryPacketProps>(
+      CodeBleInvalidHistoryPacket,
       payload
     );
+    return new CodeBleInvalidHistoryPacket(data, payload);
   }
 }

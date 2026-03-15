@@ -24,7 +24,7 @@ export class ErrorHistoryPacket extends BoksHistoryEvent {
   }
 
   static fromPayload(payload: Uint8Array): ErrorHistoryPacket {
-    const data = PayloadMapper.parse(ErrorHistoryPacket, payload);
-    return new ErrorHistoryPacket(data as unknown as ErrorHistoryPacketProps, payload);
+    const data = PayloadMapper.parse<ErrorHistoryPacketProps>(ErrorHistoryPacket, payload);
+    return new ErrorHistoryPacket(data, payload);
   }
 }

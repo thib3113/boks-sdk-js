@@ -39,7 +39,10 @@ export class SetConfigurationPacket extends AuthPacket {
       );
     }
 
-    const parsed = PayloadMapper.parse(SetConfigurationPacket, payload);
+    const parsed = PayloadMapper.parse<SetConfigurationPacketProps>(
+      SetConfigurationPacket,
+      payload
+    );
     return new SetConfigurationPacket({
       configKey: parsed.configKey!,
       configType: parsed.configType!,

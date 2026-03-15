@@ -24,10 +24,10 @@ export class CreateSingleUseCodePacket extends AuthPacket {
   }
 
   static fromPayload(payload: Uint8Array): CreateSingleUseCodePacket {
-    const data = PayloadMapper.parse(CreateSingleUseCodePacket, payload);
-    return new CreateSingleUseCodePacket(
-      data as unknown as CreateSingleUseCodePacketProps,
+    const data = PayloadMapper.parse<CreateSingleUseCodePacketProps>(
+      CreateSingleUseCodePacket,
       payload
     );
+    return new CreateSingleUseCodePacket(data, payload);
   }
 }

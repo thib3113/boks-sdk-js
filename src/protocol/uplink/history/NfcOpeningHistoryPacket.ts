@@ -27,12 +27,15 @@ export class NfcOpeningHistoryPacket extends BoksHistoryEvent {
   }
 
   static fromPayload(payload: Uint8Array): NfcOpeningHistoryPacket {
-    const data = PayloadMapper.parse(NfcOpeningHistoryPacket, payload);
+    const data = PayloadMapper.parse<NfcOpeningHistoryPacketProps>(
+      NfcOpeningHistoryPacket,
+      payload
+    );
     return new NfcOpeningHistoryPacket(
       {
         age: data.age as number,
         tagType: data.tagType as number,
-        uid: data.nfcUidData as string
+        uid: (data as any).nfcUidData as string
       },
       payload
     );

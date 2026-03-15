@@ -24,7 +24,10 @@ export class CreateMultiUseCodePacket extends AuthPacket {
   }
 
   static fromPayload(payload: Uint8Array): CreateMultiUseCodePacket {
-    const data = PayloadMapper.parse(CreateMultiUseCodePacket, payload);
-    return new CreateMultiUseCodePacket(data as unknown as CreateMultiUseCodePacketProps, payload);
+    const data = PayloadMapper.parse<CreateMultiUseCodePacketProps>(
+      CreateMultiUseCodePacket,
+      payload
+    );
+    return new CreateMultiUseCodePacket(data, payload);
   }
 }
