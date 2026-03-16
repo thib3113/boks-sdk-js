@@ -66,4 +66,37 @@ describe('BoksTransaction', () => {
     expect(tx.intermediates).toEqual([log1, log2]);
     expect(tx.allPackets).toEqual([req, log1, log2, res]);
   });
+
+  it('should correctly report isSuccess for all states', () => {
+    const req = new MockPacket(BoksOpcode.OPEN_DOOR);
+    const res = new MockPacket(BoksOpcode.VALID_OPEN_CODE);
+    const tx = new BoksTransaction(req);
+
+    // Pending
+    expect(tx.status).toBe(BoksTransactionStatus.Pending);
+    expect(tx.isSuccess).toBe(false);
+
+    // Success
+    tx.complete(res);
+    expect(tx.status).toBe(BoksTransactionStatus.Success);
+    expect(tx.isSuccess).toBe(true);
+
+    // Error
+    const txError = new BoksTransaction(req);
+    txError.fail(new Error('fail'));
+    expect(txError.status).toBe(BoksTransactionStatus.Error);
+    expect(txError.isSuccess).toBe(false);
+
+    // Timeout
+    const txTimeout = new BoksTransaction(req);
+    txTimeout.timeout();
+    expect(txTimeout.status).toBe(BoksTransactionStatus.Timeout);
+    expect(txTimeout.isSuccess).toBe(false);
+
+    // Success but null response (edge case)
+    const txNullRes = new BoksTransaction(req);
+    txNullRes.status = BoksTransactionStatus.Success;
+    expect(txNullRes.response).toBeNull();
+    expect(txNullRes.isSuccess).toBe(false);
+  });
 });
