@@ -37,7 +37,7 @@ describe('BoksClient with Simulator', () => {
   });
 
   it('should gracefully handle invalid packets triggering BoksClientError in handleNotification', async () => {
-    const invalidPayload = new Uint8Array([0xff, 0x01, 0x02, 0x03]); // Completely arbitrary bad payload
+    const invalidPayload = new Uint8Array([0xFF, 0x01, 0x02, 0x03]); // Completely arbitrary bad payload
 
     const loggerMock = vi.fn();
     // @ts-expect-error accessing private

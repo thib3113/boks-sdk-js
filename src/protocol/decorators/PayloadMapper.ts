@@ -209,7 +209,7 @@ export class PayloadMapper {
    * Compiles the JIT parsing function for a class.
    */
 
-  private static getFields(targetClass: PayloadConstructor | any): FieldDefinition[] {
+  private static getFields(targetClass: PayloadConstructor | unknown): FieldDefinition[] {
     const allFields: FieldDefinition[] = [];
     let currentClass = targetClass;
     while (
@@ -224,12 +224,12 @@ export class PayloadMapper {
         symMetadata = symbols.find((s) => s.toString() === 'Symbol(Symbol.metadata)');
       }
       const fields =
-        (symMetadata && currentClass[symMetadata as any]?.[METADATA_KEY]) ||
-        currentClass[Symbol.metadata as any]?.[METADATA_KEY] ||
-        currentClass.constructor?.[Symbol.metadata as any]?.[METADATA_KEY] ||
+        (symMetadata && (currentClass as Record<PropertyKey, unknown>)[symMetadata as symbol]?.[METADATA_KEY]) ||
+        (currentClass as Record<PropertyKey, unknown>)[Symbol.metadata as symbol]?.[METADATA_KEY] ||
+        (currentClass.constructor as Record<PropertyKey, unknown>)?.[Symbol.metadata as symbol]?.[METADATA_KEY] ||
         legacyMetadataMap.get(currentClass) ||
-        currentClass[METADATA_KEY] ||
-        currentClass.constructor?.[METADATA_KEY];
+        (currentClass as Record<PropertyKey, unknown>)[METADATA_KEY] ||
+        (currentClass.constructor as Record<PropertyKey, unknown>)?.[METADATA_KEY];
 
       if (fields && Array.isArray(fields)) {
         // Add fields that aren't already mapped
@@ -790,7 +790,7 @@ export class PayloadMapper {
    * @param payload The raw buffer
    * @returns A mapped object containing the extracted properties
    */
-  public static parse<T = any>(targetClass: Function, payload: Uint8Array): T {
+  public static parse<T = any>(targetClass: PayloadConstructor, payload: Uint8Array): T {
     if (typeof payload === 'string') {
       throw new BoksProtocolError(
         BoksProtocolErrorId.INVALID_TYPE,
@@ -828,7 +828,7 @@ export class PayloadMapper {
   /**
    * Serializes an instance into a Uint8Array payload using the JIT compiled function.
    */
-  public static serialize(instance: any): Uint8Array {
+  public static serialize(instance: unknown): Uint8Array {
     if (!instance || typeof instance !== 'object')
       throw new BoksProtocolError(BoksProtocolErrorId.INTERNAL_ERROR, 'Invalid instance', {
         received: typeof instance,
@@ -841,7 +841,7 @@ export class PayloadMapper {
         { received: typeof instance, expected: 'object' }
       );
     }
-    const targetClass = instance.constructor;
+    const targetClass = (instance as { constructor: PayloadConstructor }).constructor;
     if (!targetClass) {
       throw new BoksProtocolError(
         BoksProtocolErrorId.INTERNAL_ERROR,
@@ -864,8 +864,8 @@ export class PayloadMapper {
   /**
    * Validates an instance's properties based on its decorator schema.
    */
-  public static validate(instance: any): void {
-    const targetClass = instance.constructor;
+  public static validate(instance: unknown): void {
+    const targetClass = (instance as { constructor: PayloadConstructor }).constructor;
     let validator = this.compiledValidators.get(targetClass as PayloadConstructor);
 
     if (!validator) {

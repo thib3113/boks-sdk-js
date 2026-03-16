@@ -26,7 +26,7 @@ describe('NotifyNfcTagFoundPacket', () => {
   it('should parse 10-byte UID correctly', () => {
     // 01 02 03 04 05 06 07 08 09 0A -> "0102030405060708090A"
     const payload = new Uint8Array([
-      0x0a, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a
+      0x0A, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A
     ]);
     const packet = NotifyNfcTagFoundPacket.fromPayload(payload);
 
@@ -38,7 +38,7 @@ describe('NotifyNfcTagFoundPacket', () => {
   it('should parse cleanly if UID length is greater than 10', () => {
     // We removed manual length validation from fromPayload, relying entirely on the payload mapper bounds checking
     const payload = new Uint8Array([
-      0x0b, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b
+      0x0B, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B
     ]);
     const packet = NotifyNfcTagFoundPacket.fromPayload(payload);
     expect(packet.uid).toBe('0102030405060708090A0B');

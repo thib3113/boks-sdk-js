@@ -18,7 +18,7 @@ describe('DeleteMultiUseCodePacket', () => {
   it('should encode correctly', () => {
     const packet = new DeleteMultiUseCodePacket({ configKey: validKey, pin: validPin });
     const encoded = packet.encode();
-    expect(encoded[0]).toBe(0x0e);
+    expect(encoded[0]).toBe(0x0E);
     expect(encoded[1]).toBe(14);
 
     const expectedPayload = '4142434445463132313233343536';

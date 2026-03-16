@@ -18,15 +18,15 @@ describe('RegisterNfcTagScanStartPacket', () => {
     const encoded = packet.encode();
     // 0x17 + 8 + Key
     expect(encoded[0]).toBe(0x17);
-    expect(encoded[1]).toBe(9);
+    expect(encoded[1]).toBe(8);
 
     // Key "12345678" -> 3132333435363738
     const expectedPayload = '3132333435363738';
-    expect(bytesToHex(encoded.subarray(3, 11))).toBe(expectedPayload);
+    expect(bytesToHex(encoded.subarray(2, 10))).toBe(expectedPayload);
   });
 
   it('should parse from payload correctly', () => {
-    const payload = new Uint8Array([0, ...stringToBytes(validKey)]);
+    const payload = stringToBytes(validKey);
     const packet = RegisterNfcTagScanStartPacket.fromPayload(payload);
     expect(packet.configKey).toBe(validKey);
   });

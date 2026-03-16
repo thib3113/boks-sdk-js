@@ -18,7 +18,7 @@ export class NotifyScaleFaultyPacket extends BoksRXPacket {
   }
 
   static fromPayload(payload: Uint8Array): NotifyScaleFaultyPacket {
-    const data = PayloadMapper.parse(NotifyScaleFaultyPacket, payload);
+    const data = PayloadMapper.parse<Record<string, unknown>>(NotifyScaleFaultyPacket, payload);
     return new NotifyScaleFaultyPacket(data.data, payload);
   }
 }

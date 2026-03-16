@@ -22,7 +22,7 @@ export class DoorOpenHistoryPacket extends BoksHistoryEvent {
   }
 
   static fromPayload(payload: Uint8Array): DoorOpenHistoryPacket {
-    const data = PayloadMapper.parse<BoksHistoryEventProps & { _age: number }>(DoorOpenHistoryPacket, payload);
-    return new DoorOpenHistoryPacket({ ...data, age: data._age } , payload);
+    const data = PayloadMapper.parse<BoksHistoryEventProps>(DoorOpenHistoryPacket, payload);
+    return new DoorOpenHistoryPacket(data, payload);
   }
 }

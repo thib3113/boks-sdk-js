@@ -17,7 +17,7 @@ export function PayloadSeed(offset: number) {
       get() {
         return target.get.call(this);
       },
-      set(val: V | Uint8Array | any) {
+      set(val: V) {
         if (val === undefined || val === null) {
           throw new BoksProtocolError(
             BoksProtocolErrorId.MISSING_MANDATORY_FIELD,

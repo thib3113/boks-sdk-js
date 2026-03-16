@@ -18,7 +18,7 @@ describe('GetLogsCountPacket', () => {
   });
 
   it('should handle extra payload bytes gracefully (ignore them)', () => {
-    const packet = GetLogsCountPacket.fromPayload(new Uint8Array([0xff]));
+    const packet = GetLogsCountPacket.fromPayload(new Uint8Array([0xFF]));
     expect(packet).toBeInstanceOf(GetLogsCountPacket);
   });
 });

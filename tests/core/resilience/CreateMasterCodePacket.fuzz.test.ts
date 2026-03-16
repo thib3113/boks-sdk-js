@@ -21,7 +21,7 @@ describe('CreateMasterCodePacket Resilience (Fuzzing)', () => {
             expect(pin.length).toBe(6);
             expect(index).toBeGreaterThanOrEqual(0);
             expect(index).toBeLessThanOrEqual(255);
-            expect(packet.opcode).toBe(0x0e); // CreateMasterCodePacket opcode
+            expect(packet.opcode).toBe(0x0E); // CreateMasterCodePacket opcode
           } catch (e) {
             // It is an intended FEATURE that validation throws a BoksProtocolError.
             // It should NEVER crash with TypeError, RangeError, etc.

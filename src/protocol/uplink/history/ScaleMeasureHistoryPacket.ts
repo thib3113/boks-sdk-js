@@ -34,7 +34,7 @@ export class ScaleMeasureHistoryPacket extends BoksHistoryEvent {
     );
     return new ScaleMeasureHistoryPacket(
       {
-        age: data._age,
+        age: data.age,
         data: payload.length > 3 ? payload.subarray(3) : new Uint8Array(0)
       },
       payload

@@ -18,7 +18,10 @@ export class NotifyMacAddressBoksScalePacket extends BoksRXPacket {
   }
 
   static fromPayload(payload: Uint8Array): NotifyMacAddressBoksScalePacket {
-    const data = PayloadMapper.parse(NotifyMacAddressBoksScalePacket, payload);
+    const data = PayloadMapper.parse<Record<string, unknown>>(
+      NotifyMacAddressBoksScalePacket,
+      payload
+    );
     return new NotifyMacAddressBoksScalePacket(data.macAddress, payload);
   }
 }

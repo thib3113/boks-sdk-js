@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { generateBoksPin } from '../../src/crypto/pin-algorithm';
 
 describe('PIN Algorithm - Statistical Sanity Check', () => {
-  const TEST_KEY = new Uint8Array(32).fill(0xaa);
+  const TEST_KEY = new Uint8Array(32).fill(0xAA);
   const NUM_SAMPLES = 10000;
 
   it('should have a uniform character distribution', () => {

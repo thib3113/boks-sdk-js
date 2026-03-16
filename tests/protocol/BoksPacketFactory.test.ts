@@ -31,7 +31,7 @@ describe('BoksPacketFactory', () => {
       {
         name: 'NotifyCodesCountPacket',
         class: Packets.NotifyCodesCountPacket,
-        payload: new Uint8Array([0x00, 0x01, 0x00, 0x0a])
+        payload: new Uint8Array([0x00, 0x01, 0x00, 0x0A])
       },
       {
         name: 'NotifyDoorStatusPacket',
@@ -237,7 +237,7 @@ describe('BoksPacketFactory', () => {
       {
         name: 'NotifyScaleMeasureWeightPacket',
         class: Packets.NotifyScaleMeasureWeightPacket,
-        payload: new Uint8Array([0, 0, 0x03, 0xe8])
+        payload: new Uint8Array([0, 0, 0x03, 0xE8])
       },
       {
         name: 'NotifyScaleDisconnectedPacket',
@@ -390,7 +390,7 @@ describe('BoksPacketFactory', () => {
     });
 
     it('should throw if checksum is invalid', () => {
-      const invalidData = new Uint8Array([0x01, 0x01, 0x00, 0xff]); // Invalid checksum
+      const invalidData = new Uint8Array([0x01, 0x01, 0x00, 0xFF]); // Invalid checksum
       expect(() => BoksPacketFactory.createFromPayload(invalidData)).toThrow(
         new BoksProtocolError(BoksProtocolErrorId.CHECKSUM_MISMATCH, 'Invalid checksum', {
           expected: 2,
@@ -400,7 +400,7 @@ describe('BoksPacketFactory', () => {
     });
 
     it('should call logger and throw if checksum is invalid', () => {
-      const invalidData = new Uint8Array([0x01, 0x01, 0x00, 0xff]); // Invalid checksum
+      const invalidData = new Uint8Array([0x01, 0x01, 0x00, 0xFF]); // Invalid checksum
       const loggerMock = vi.fn();
       expect(() => BoksPacketFactory.createFromPayload(invalidData, loggerMock)).toThrow(
         new BoksProtocolError(BoksProtocolErrorId.CHECKSUM_MISMATCH, 'Invalid checksum', {
@@ -429,7 +429,7 @@ describe('BoksPacketFactory', () => {
     it('should throw if checksum is invalid', () => {
       const opcode = 0x77;
       const length = 0;
-      const invalidChecksum = 0xff;
+      const invalidChecksum = 0xFF;
       const data = new Uint8Array([opcode, length, invalidChecksum]);
 
       expect(() => BoksPacketFactory.createFromPayload(data)).toThrow(
@@ -461,7 +461,7 @@ describe('BoksPacketFactory', () => {
     });
 
     it('should throw BoksProtocolError for unknown opcode', () => {
-      const unknownOpcode = 0xff; // Assuming 0xFF is not used
+      const unknownOpcode = 0xFF; // Assuming 0xFF is not used
       const length = 0;
       const data = new Uint8Array([unknownOpcode, length]);
       const checksum = calculateChecksum(data);

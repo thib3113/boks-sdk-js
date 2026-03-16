@@ -5,7 +5,7 @@ import { BoksOpcode } from '@/protocol/constants';
 describe('PowerOffHistoryPacket', () => {
   it('should parse correctly with age and reason', () => {
     // 0x01 Reason
-    const payload = new Uint8Array([0x00, 0x00, 0x0a, 0x01]);
+    const payload = new Uint8Array([0x00, 0x00, 0x0A, 0x01]);
     const packet = PowerOffHistoryPacket.fromPayload(payload);
 
     expect(packet.opcode).toBe(BoksOpcode.POWER_OFF);
@@ -14,7 +14,7 @@ describe('PowerOffHistoryPacket', () => {
   });
 
   it('should throw error on missing reason', () => {
-    const payload = new Uint8Array([0x00, 0x00, 0x0a]);
+    const payload = new Uint8Array([0x00, 0x00, 0x0A]);
     expect(() => PowerOffHistoryPacket.fromPayload(payload)).toThrowError();
   });
 });

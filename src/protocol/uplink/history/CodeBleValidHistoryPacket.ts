@@ -30,6 +30,6 @@ export class CodeBleValidHistoryPacket extends BoksHistoryEvent {
       CodeBleValidHistoryPacket,
       payload
     );
-    return new CodeBleValidHistoryPacket({ ...data, age: data._age } , payload);
+    return new CodeBleValidHistoryPacket(data, payload);
   }
 }

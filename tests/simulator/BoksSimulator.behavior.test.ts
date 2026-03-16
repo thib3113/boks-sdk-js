@@ -143,7 +143,7 @@ describe('BoksHardwareSimulator', () => {
       const loggerMock = vi.fn();
       const simWithLogger = new BoksHardwareSimulator({ logger: loggerMock });
 
-      const data = new Uint8Array([BoksOpcode.ASK_DOOR_STATUS, 0, 0xff]); // bad checksum
+      const data = new Uint8Array([BoksOpcode.ASK_DOOR_STATUS, 0, 0xFF]); // bad checksum
       await simWithLogger.handlePacket(data);
 
       expect(loggerMock).toHaveBeenCalledWith('warn', 'checksum_error', expect.any(Object));

@@ -18,7 +18,7 @@ export class NotifyScaleRawSensorsPacket extends BoksRXPacket {
   }
 
   static fromPayload(payload: Uint8Array): NotifyScaleRawSensorsPacket {
-    const data = PayloadMapper.parse(NotifyScaleRawSensorsPacket, payload);
+    const data = PayloadMapper.parse<Record<string, unknown>>(NotifyScaleRawSensorsPacket, payload);
     return new NotifyScaleRawSensorsPacket(data.data, payload);
   }
 }

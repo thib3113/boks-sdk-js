@@ -5,7 +5,7 @@ import { BoksOpcode } from '@/protocol/constants';
 describe('NotifyCodesCountPacket', () => {
   it('should parse correctly', () => {
     // 0x000A (10) master, 0x0014 (20) other
-    const payload = new Uint8Array([0x00, 0x0a, 0x00, 0x14]);
+    const payload = new Uint8Array([0x00, 0x0A, 0x00, 0x14]);
     const packet = NotifyCodesCountPacket.fromPayload(payload);
 
     expect(packet.opcode).toBe(BoksOpcode.NOTIFY_CODES_COUNT);

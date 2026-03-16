@@ -16,7 +16,7 @@ describe('NfcNotificationPackets Resilience (Fuzzing)', () => {
         try {
           const packet = NotifyNfcTagFoundPacket.fromPayload(payload);
           expect(packet).toBeInstanceOf(NotifyNfcTagFoundPacket);
-          expect(packet.opcode).toBe(0xc5);
+          expect(packet.opcode).toBe(0xC5);
           expect((packet as any).rawPayload).toEqual(payload);
           const uidLength = payload[0];
           expect(packet.uid).toBe(bytesToHex(payload.subarray(1, 1 + uidLength)));
@@ -33,7 +33,7 @@ describe('NfcNotificationPackets Resilience (Fuzzing)', () => {
       fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (payload) => {
         const packet = NotifyNfcTagRegisteredPacket.fromPayload(payload);
         expect(packet).toBeInstanceOf(NotifyNfcTagRegisteredPacket);
-        expect(packet.opcode).toBe(0xc8);
+        expect(packet.opcode).toBe(0xC8);
         expect((packet as any).rawPayload).toEqual(payload);
       }),
       { numRuns: 1000 }
@@ -45,7 +45,7 @@ describe('NfcNotificationPackets Resilience (Fuzzing)', () => {
       fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (payload) => {
         const packet = NotifyNfcTagRegisteredErrorAlreadyExistsPacket.fromPayload(payload);
         expect(packet).toBeInstanceOf(NotifyNfcTagRegisteredErrorAlreadyExistsPacket);
-        expect(packet.opcode).toBe(0xc9);
+        expect(packet.opcode).toBe(0xC9);
         expect((packet as any).rawPayload).toEqual(payload);
       }),
       { numRuns: 1000 }
@@ -57,7 +57,7 @@ describe('NfcNotificationPackets Resilience (Fuzzing)', () => {
       fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (payload) => {
         const packet = NotifyNfcTagUnregisteredPacket.fromPayload(payload);
         expect(packet).toBeInstanceOf(NotifyNfcTagUnregisteredPacket);
-        expect(packet.opcode).toBe(0xca);
+        expect(packet.opcode).toBe(0xCA);
         expect((packet as any).rawPayload).toEqual(payload);
       }),
       { numRuns: 1000 }
@@ -69,7 +69,7 @@ describe('NfcNotificationPackets Resilience (Fuzzing)', () => {
       fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (payload) => {
         const packet = ErrorNfcTagAlreadyExistsScanPacket.fromPayload(payload);
         expect(packet).toBeInstanceOf(ErrorNfcTagAlreadyExistsScanPacket);
-        expect(packet.opcode).toBe(0xc6);
+        expect(packet.opcode).toBe(0xC6);
         expect((packet as any).rawPayload).toEqual(payload);
       }),
       { numRuns: 1000 }
@@ -81,7 +81,7 @@ describe('NfcNotificationPackets Resilience (Fuzzing)', () => {
       fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (payload) => {
         const packet = ErrorNfcScanTimeoutPacket.fromPayload(payload);
         expect(packet).toBeInstanceOf(ErrorNfcScanTimeoutPacket);
-        expect(packet.opcode).toBe(0xc7);
+        expect(packet.opcode).toBe(0xC7);
         expect((packet as any).rawPayload).toEqual(payload);
       }),
       { numRuns: 1000 }

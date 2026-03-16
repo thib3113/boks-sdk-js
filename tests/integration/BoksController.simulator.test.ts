@@ -8,7 +8,7 @@ describe('BoksController Extended Integration', () => {
   let simulator: BoksHardwareSimulator;
   let transport: SimulatorTransport;
   let controller: BoksController;
-  const TEST_SEED = new Uint8Array(32).fill(0xdd);
+  const TEST_SEED = new Uint8Array(32).fill(0xDD);
 
   beforeEach(async () => {
     simulator = new BoksHardwareSimulator();
@@ -92,10 +92,10 @@ describe('BoksController Extended Integration', () => {
   it('should return false on regenerateMasterKey part A failure if credentials mismatch', async () => {
     const badController = new BoksController({ transport });
     await badController.connect();
-    const BAD_SEED = new Uint8Array(32).fill(0xee);
+    const BAD_SEED = new Uint8Array(32).fill(0xEE);
     badController.setCredentials(BAD_SEED);
 
-    const success = await badController.regenerateMasterKey(new Uint8Array(32).fill(0xff));
+    const success = await badController.regenerateMasterKey(new Uint8Array(32).fill(0xFF));
     expect(success).toBe(false);
     await badController.disconnect();
   });
