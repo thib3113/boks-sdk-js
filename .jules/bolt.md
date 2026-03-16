@@ -113,3 +113,7 @@
 ## 2025-10-26 - Loop Overhead in Hex Formatting for Common Byte Array Lengths
 **Learning:** Using a loop to convert commonly sized byte arrays (e.g., length 4, 7, and 10 which are common for NFC UIDs) into hex strings incurs unnecessary loop condition and iteration overhead in V8. While `bytesToHex` already processes 2 bytes at a time, adding unrolled fast paths for these specific lengths using manual concatenation avoids the loop entirely and provides an ~3x performance speedup.
 **Action:** When working with high-frequency conversions of common fixed-length byte arrays, consider implementing explicit fast paths without loops, relying solely on sequential direct index access and precomputed string concatenations.
+
+## 2025-10-26 - Uint8Array Array.from(payload).every() Overhead
+**Learning:** Using `Array.from(uint8Array).every()` to check buffer contents creates unnecessary array allocations and callback overhead. A simple `for` loop is significantly faster. Benchmarking showed that replacing `Array.from(payload).every((b) => b === INVALID_BYTE)` with a manual `for` loop provided a ~21x speedup in V8 (~25ms vs ~540ms for 1,000,000 iterations).
+**Action:** Always use manual `for` loops for basic validation or value checks over `Uint8Array`s instead of array conversion and higher-order functions like `every()`.
