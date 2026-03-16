@@ -1,9 +1,0 @@
---- src/utils/validation.ts
-+++ src/utils/validation.ts
-@@ -10,6 +10,7 @@
-  * Helper to check if a character code represents a case-insensitive hexadecimal character
-  */
- function isHexCode(code: number): boolean {
-+  /* v8 ignore next */
-   return IS_HEX_TABLE[code] === 1;
- }

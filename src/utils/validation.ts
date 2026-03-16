@@ -15,7 +15,6 @@ for (let i = 0; i < 256; i++) {
  * Helper to check if a character code represents a case-insensitive hexadecimal character
  */
 function isHexCode(code: number): boolean {
-  /* v8 ignore next */
   return IS_HEX_TABLE[code] === 1;
 }
 

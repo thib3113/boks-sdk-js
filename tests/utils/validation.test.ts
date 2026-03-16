@@ -202,3 +202,17 @@ describe('validation utils', () => {
     });
   });
 });
+
+  describe('isHexCode', () => {
+    it('should validate hex codes correctly', () => {
+      // test indirect via validateNfcUid
+      expect(() => validateNfcUid('01020304')).not.toThrow();
+      expect(() => validateNfcUid('a1b2c3d4')).not.toThrow();
+      expect(() => validateNfcUid('A1B2C3D4')).not.toThrow();
+
+      // non-hex
+      expect(() => validateNfcUid('01020G04')).toThrowError();
+      expect(() => validateNfcUid('01020g04')).toThrowError();
+      expect(() => validateNfcUid('01 02 03 04')).toThrowError();
+    });
+  });
