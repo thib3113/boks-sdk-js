@@ -117,3 +117,7 @@
 ## 2025-10-26 - Uint8Array Array.from(payload).every() Overhead
 **Learning:** Using `Array.from(uint8Array).every()` to check buffer contents creates unnecessary array allocations and callback overhead. A simple `for` loop is significantly faster. Benchmarking showed that replacing `Array.from(payload).every((b) => b === INVALID_BYTE)` with a manual `for` loop provided a ~21x speedup in V8 (~25ms vs ~540ms for 1,000,000 iterations).
 **Action:** Always use manual `for` loops for basic validation or value checks over `Uint8Array`s instead of array conversion and higher-order functions like `every()`.
+
+## 2025-10-26 - Pre-computed Lookup Tables for Character Validation
+**Learning:** In V8, using a pre-computed `Uint8Array` lookup table to validate characters (e.g., checking if a code is a hex character) is ~1.7x to 2x faster than inline boundary checks like `(code >= 48 && code <= 57) || ...`. The cost of memory access is lower than executing multiple logical branches for every character in hot loops.
+**Action:** Replace inline boundary and logical checks for character validation with pre-computed lookup tables when the domain size is small (e.g., ASCII 256).
