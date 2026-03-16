@@ -30,7 +30,7 @@ export class NfcRegisteringHistoryPacket extends BoksHistoryEvent {
     );
     return new NfcRegisteringHistoryPacket(
       {
-        age: (data as any)._age,
+        age: data._age,
         data: payload.length > 3 ? payload.subarray(3) : new Uint8Array(0)
       },
       payload

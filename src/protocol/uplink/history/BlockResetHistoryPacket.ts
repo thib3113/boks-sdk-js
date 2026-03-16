@@ -16,7 +16,7 @@ export class BlockResetHistoryPacket extends BoksHistoryEvent {
   }
 
   static fromPayload(payload: Uint8Array): BlockResetHistoryPacket {
-    const data = PayloadMapper.parse<BoksHistoryEventProps>(BlockResetHistoryPacket, payload);
-    return new BlockResetHistoryPacket({ age: (data as any)._age }, payload);
+    const data = PayloadMapper.parse<BoksHistoryEventProps & { _age: number }>(BlockResetHistoryPacket, payload);
+    return new BlockResetHistoryPacket({ age: data._age }, payload);
   }
 }

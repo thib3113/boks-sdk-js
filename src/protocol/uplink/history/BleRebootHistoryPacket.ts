@@ -16,7 +16,7 @@ export class BleRebootHistoryPacket extends BoksHistoryEvent {
   }
 
   static fromPayload(payload: Uint8Array): BleRebootHistoryPacket {
-    const data = PayloadMapper.parse<BoksHistoryEventProps>(BleRebootHistoryPacket, payload);
-    return new BleRebootHistoryPacket({ age: (data as any)._age }, payload);
+    const data = PayloadMapper.parse<BoksHistoryEventProps & { _age: number }>(BleRebootHistoryPacket, payload);
+    return new BleRebootHistoryPacket({ age: data._age }, payload);
   }
 }

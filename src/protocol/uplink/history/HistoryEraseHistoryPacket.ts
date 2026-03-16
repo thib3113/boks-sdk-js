@@ -16,7 +16,7 @@ export class HistoryEraseHistoryPacket extends BoksHistoryEvent {
   }
 
   static fromPayload(payload: Uint8Array): HistoryEraseHistoryPacket {
-    const data = PayloadMapper.parse<BoksHistoryEventProps>(HistoryEraseHistoryPacket, payload);
-    return new HistoryEraseHistoryPacket({ age: (data as any)._age }, payload);
+    const data = PayloadMapper.parse<BoksHistoryEventProps & { _age: number }>(HistoryEraseHistoryPacket, payload);
+    return new HistoryEraseHistoryPacket({ age: data._age }, payload);
   }
 }

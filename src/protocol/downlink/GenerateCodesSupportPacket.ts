@@ -22,6 +22,6 @@ export class GenerateCodesSupportPacket extends BoksPacket {
 
   static fromPayload(payload: Uint8Array): GenerateCodesSupportPacket {
     const data = PayloadMapper.parse(GenerateCodesSupportPacket, payload);
-    return new GenerateCodesSupportPacket((data as any).seedStr, payload);
+    return new GenerateCodesSupportPacket(data.seedStr, payload);
   }
 }
