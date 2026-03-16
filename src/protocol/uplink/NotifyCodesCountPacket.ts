@@ -1,4 +1,4 @@
-import { PayloadMapper, PayloadUint16 } from '@/protocol/payload-mapper';
+import { PayloadMapper, PayloadUint16 } from '@/protocol/decorators';
 import { BoksRXPacket } from '@/protocol/uplink/_BoksRXPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
 

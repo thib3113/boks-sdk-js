@@ -1,7 +1,7 @@
 import { sealed } from '@/utils/security';
 import { BoksPacket } from '@/protocol/_BoksPacketBase';
 import { readConfigKeyFromBuffer } from '@/utils/converters';
-import { PayloadConfigKey } from '@/protocol/payload-mapper';
+import { PayloadConfigKey } from '@/protocol/decorators';
 
 /**
  * Base for packets requiring authentication (Config Key)

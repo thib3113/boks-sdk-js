@@ -1,4 +1,4 @@
-import { PayloadMapper, PayloadPinCode } from '@/protocol/payload-mapper';
+import { PayloadMapper, PayloadPinCode } from '@/protocol/decorators';
 import {
   BoksHistoryEvent,
   BoksHistoryEventProps
@@ -25,6 +25,6 @@ export class CodeKeyValidHistoryPacket extends BoksHistoryEvent {
       CodeKeyValidHistoryPacket,
       payload
     );
-    return new CodeKeyValidHistoryPacket(data, payload);
+    return new CodeKeyValidHistoryPacket({ ...data, age: (data as any)._age } as any, payload);
   }
 }

@@ -1,4 +1,4 @@
-import { PayloadMapper, PayloadUint8 } from '@/protocol/payload-mapper';
+import { PayloadMapper, PayloadUint8 } from '@/protocol/decorators';
 import {
   BoksHistoryEvent,
   BoksHistoryEventProps
@@ -25,6 +25,6 @@ export class PowerOffHistoryPacket extends BoksHistoryEvent {
 
   static fromPayload(payload: Uint8Array): PowerOffHistoryPacket {
     const data = PayloadMapper.parse<PowerOffHistoryPacketProps>(PowerOffHistoryPacket, payload);
-    return new PowerOffHistoryPacket(data, payload);
+    return new PowerOffHistoryPacket({ ...data, age: (data as any)._age } as any, payload);
   }
 }

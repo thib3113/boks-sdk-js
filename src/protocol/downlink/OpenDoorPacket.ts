@@ -1,6 +1,6 @@
 import { BoksPacket } from '@/protocol/_BoksPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
-import { PayloadMapper, PayloadPinCode } from '@/protocol/payload-mapper';
+import { PayloadMapper, PayloadPinCode } from '@/protocol/decorators';
 
 export interface OpenDoorPacketProps {
   pin: string;

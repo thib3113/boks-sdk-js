@@ -1,4 +1,4 @@
-import { PayloadMapper, PayloadUint8 } from '@/protocol/payload-mapper';
+import { PayloadMapper, PayloadUint8 } from '@/protocol/decorators';
 import {
   BoksHistoryEvent,
   BoksHistoryEventProps
@@ -25,6 +25,6 @@ export class ErrorHistoryPacket extends BoksHistoryEvent {
 
   static fromPayload(payload: Uint8Array): ErrorHistoryPacket {
     const data = PayloadMapper.parse<ErrorHistoryPacketProps>(ErrorHistoryPacket, payload);
-    return new ErrorHistoryPacket(data, payload);
+    return new ErrorHistoryPacket({ ...data, age: (data as any)._age } as any, payload);
   }
 }

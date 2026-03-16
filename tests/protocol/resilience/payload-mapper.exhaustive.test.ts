@@ -6,7 +6,7 @@ import {
   PayloadVarLenHex,
   PayloadBit,
   PayloadAsciiString
-} from '@/protocol/payload-mapper';
+} from '@/protocol/decorators';
 import { BoksProtocolError } from '@/errors/BoksProtocolError';
 
 class DummyDynamicLengthPacket {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { PayloadMapper, PayloadConfigKey } from '@/protocol/payload-mapper';
+import { PayloadMapper, PayloadConfigKey } from '@/protocol/decorators';
 import { BoksProtocolError } from '@/errors/BoksProtocolError';
 
 class TestConfigKeyPacket {

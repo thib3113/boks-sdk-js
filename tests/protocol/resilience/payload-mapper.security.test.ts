@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { PayloadMapper, PayloadUint8 } from '@/protocol/payload-mapper';
+import { PayloadMapper, PayloadUint8 } from '@/protocol/decorators';
 import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';
 import { BoksExpectedReason } from '@/errors/BoksExpectedReason';
 

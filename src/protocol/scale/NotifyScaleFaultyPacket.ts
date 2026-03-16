@@ -1,4 +1,4 @@
-import { PayloadMapper, PayloadByteArray } from '@/protocol/payload-mapper';
+import { PayloadMapper, PayloadByteArray } from '@/protocol/decorators';
 import { BoksRXPacket } from '@/protocol/uplink/_BoksRXPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
 
@@ -19,6 +19,6 @@ export class NotifyScaleFaultyPacket extends BoksRXPacket {
 
   static fromPayload(payload: Uint8Array): NotifyScaleFaultyPacket {
     const data = PayloadMapper.parse(NotifyScaleFaultyPacket, payload);
-    return new NotifyScaleFaultyPacket(data.data as Uint8Array, payload);
+    return new NotifyScaleFaultyPacket(data.data, payload);
   }
 }

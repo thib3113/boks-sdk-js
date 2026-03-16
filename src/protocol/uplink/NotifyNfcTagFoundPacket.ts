@@ -1,4 +1,4 @@
-import { PayloadMapper, PayloadVarLenHex } from '@/protocol/payload-mapper';
+import { PayloadMapper, PayloadVarLenHex } from '@/protocol/decorators';
 import { BoksRXPacket } from '@/protocol/uplink/_BoksRXPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
 

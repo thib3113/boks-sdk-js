@@ -11,13 +11,13 @@ describe('GenerateCodesSupportPacket', () => {
   it('should construct with valid parameters (hex string)', () => {
     const packet = new GenerateCodesSupportPacket(validSeedHex);
     expect(packet.opcode).toBe(BoksOpcode.GENERATE_CODES_SUPPORT);
-    expect(packet.seed).toBe(validSeedHex);
+    expect(packet.seedStr).toBe(validSeedHex);
   });
 
   it('should construct with valid parameters (Uint8Array)', () => {
     const packet = new GenerateCodesSupportPacket(validSeedBytes);
     expect(packet.opcode).toBe(BoksOpcode.GENERATE_CODES_SUPPORT);
-    expect(packet.seed).toBe(validSeedHex);
+    expect(packet.seedStr).toBe(validSeedHex);
   });
 
   it('should encode correctly', () => {
@@ -31,7 +31,7 @@ describe('GenerateCodesSupportPacket', () => {
 
   it('should parse from payload correctly', () => {
     const packet = GenerateCodesSupportPacket.fromPayload(validSeedBytes);
-    expect(packet.seed).toBe(validSeedHex);
+    expect(packet.seedStr).toBe(validSeedHex);
   });
 
   it('should throw INVALID_SEED_LENGTH for invalid seed length', () => {
@@ -56,7 +56,7 @@ describe('GenerateCodesSupportPacket', () => {
     it('should throw Error if seed length is not exactly 32 bytes in toPayload (Uint8Array path)', () => {
       const validSeedBytes = new Uint8Array(32).fill(0x11);
       const packet = new GenerateCodesSupportPacket(validSeedBytes);
-      expect(() => { packet.seed = new Uint8Array(16).fill(0x11) as unknown as string; }).toThrowError(BoksProtocolError);
+      expect(() => { packet.seedStr = new Uint8Array(16).fill(0x11) as unknown as string; }).toThrowError(BoksProtocolError);
 
 
     });
@@ -64,7 +64,7 @@ describe('GenerateCodesSupportPacket', () => {
     it('should throw Error if seed length is not exactly 32 bytes in toPayload (String path)', () => {
       const validSeedBytes = new Uint8Array(32).fill(0x11);
       const packet = new GenerateCodesSupportPacket(validSeedBytes);
-      expect(() => { packet.seed = '00112233445566778899AABBCCDDEEFF'; }).toThrowError(BoksProtocolError);
+      expect(() => { packet.seedStr = '00112233445566778899AABBCCDDEEFF'; }).toThrowError(BoksProtocolError);
 
 
     });
