@@ -11,7 +11,9 @@ describe('NotifyScaleMeasureWeightPacket Resilience (Fuzzing)', () => {
         // TODO, crashing with invalid data is normal, but we need to check the error, no catch without tests . Need to rewrite this test
         try {
           packet = NotifyScaleMeasureWeightPacket.fromPayload(data);
-        } catch(e) { return; }
+        } catch (e) {
+          return;
+        }
         expect(packet).toBeInstanceOf(NotifyScaleMeasureWeightPacket);
         expect(packet.opcode).toBe(BoksOpcode.NOTIFY_SCALE_MEASURE_WEIGHT);
         expect(typeof packet.weight).toBe('number');

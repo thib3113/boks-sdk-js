@@ -18,7 +18,7 @@ describe('DeleteMultiUseCodePacket', () => {
   it('should encode correctly', () => {
     const packet = new DeleteMultiUseCodePacket({ configKey: validKey, pin: validPin });
     const encoded = packet.encode();
-    expect(encoded[0]).toBe(0x0E);
+    expect(encoded[0]).toBe(0x0e);
     expect(encoded[1]).toBe(14);
 
     const expectedPayload = '4142434445463132313233343536';
@@ -36,27 +36,35 @@ describe('DeleteMultiUseCodePacket', () => {
   });
 
   it('should throw INVALID_CONFIG_KEY for invalid config key format', () => {
-     expect(() => new DeleteMultiUseCodePacket({ configKey: 'invalid', pin: validPin })).toThrowError(BoksProtocolError);
-     try {
-       new DeleteMultiUseCodePacket({ configKey: 'invalid', pin: validPin });
-     } catch (e) {
-       expect((e as BoksProtocolError).id).toBe(BoksProtocolErrorId.INVALID_CONFIG_KEY);
-     }
+    expect(
+      () => new DeleteMultiUseCodePacket({ configKey: 'invalid', pin: validPin })
+    ).toThrowError(BoksProtocolError);
+    try {
+      new DeleteMultiUseCodePacket({ configKey: 'invalid', pin: validPin });
+    } catch (e) {
+      expect((e as BoksProtocolError).id).toBe(BoksProtocolErrorId.INVALID_CONFIG_KEY);
+    }
   });
 
   it('should throw INVALID_PIN_FORMAT for invalid pin', () => {
-      expect(() => new DeleteMultiUseCodePacket({ configKey: validKey, pin: '123' })).toThrowError(BoksProtocolError);
-      expect(() => new DeleteMultiUseCodePacket({ configKey: validKey, pin: '12345C' })).toThrowError(BoksProtocolError);
+    expect(() => new DeleteMultiUseCodePacket({ configKey: validKey, pin: '123' })).toThrowError(
+      BoksProtocolError
+    );
+    expect(() => new DeleteMultiUseCodePacket({ configKey: validKey, pin: '12345C' })).toThrowError(
+      BoksProtocolError
+    );
 
-      try {
-        new DeleteMultiUseCodePacket({ configKey: validKey, pin: '12345C' });
-      } catch (e) {
-         expect((e as BoksProtocolError).id).toBe(BoksProtocolErrorId.INVALID_PIN_FORMAT);
-      }
+    try {
+      new DeleteMultiUseCodePacket({ configKey: validKey, pin: '12345C' });
+    } catch (e) {
+      expect((e as BoksProtocolError).id).toBe(BoksProtocolErrorId.INVALID_PIN_FORMAT);
+    }
   });
 
   it('should fail parsing if payload is too short', () => {
-      const shortPayload = new Uint8Array(10);
-      expect(() => DeleteMultiUseCodePacket.fromPayload(shortPayload)).toThrowError(BoksProtocolError);
+    const shortPayload = new Uint8Array(10);
+    expect(() => DeleteMultiUseCodePacket.fromPayload(shortPayload)).toThrowError(
+      BoksProtocolError
+    );
   });
 });

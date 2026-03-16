@@ -28,34 +28,38 @@ describe('PayloadMapper Coverage additions', () => {
 
     it('should throw BoksProtocolError when validating invalid length config_key', () => {
       const inst = new TestConfigKeyPacket();
-      expect(() => { inst.configKey = '1234' }).toThrow(BoksProtocolError);
+      expect(() => {
+        inst.configKey = '1234';
+      }).toThrow(BoksProtocolError);
     });
 
     it('should throw BoksProtocolError when validating non-hex config_key', () => {
       const inst = new TestConfigKeyPacket();
-      expect(() => { inst.configKey = '0123456Z' }).toThrow(BoksProtocolError);
+      expect(() => {
+        inst.configKey = '0123456Z';
+      }).toThrow(BoksProtocolError);
     });
   });
 
   describe('coverage on non-Symbol.metadata class', () => {
-      it('should instantiate gracefully without metadata', () => {
-          class NoMetaPacket {}
-          // Will be empty mappings.
-          const res = PayloadMapper.parse(NoMetaPacket, new Uint8Array(10));
-          expect(res).toBeDefined();
-      });
+    it('should instantiate gracefully without metadata', () => {
+      class NoMetaPacket {}
+      // Will be empty mappings.
+      const res = PayloadMapper.parse(NoMetaPacket, new Uint8Array(10));
+      expect(res).toBeDefined();
+    });
   });
 
   describe('coverage for validate uncached', () => {
-      it('should compile validator when missing', () => {
-          class ValidatorPacket {
-              @PayloadConfigKey(0)
-              public accessor key: string = '';
-          }
-          const inst = new ValidatorPacket();
-          inst.key = '01234567';
-          PayloadMapper.validate(inst); // triggers uncached validation flow
-          PayloadMapper.validate(inst); // triggers cached validation flow
-      });
+    it('should compile validator when missing', () => {
+      class ValidatorPacket {
+        @PayloadConfigKey(0)
+        public accessor key: string = '';
+      }
+      const inst = new ValidatorPacket();
+      inst.key = '01234567';
+      PayloadMapper.validate(inst); // triggers uncached validation flow
+      PayloadMapper.validate(inst); // triggers cached validation flow
+    });
   });
 });

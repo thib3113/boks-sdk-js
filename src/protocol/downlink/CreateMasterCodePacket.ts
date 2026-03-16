@@ -36,10 +36,10 @@ export class CreateMasterCodePacket extends AuthPacket {
       safePayload.set(payload);
     }
     let data: any;
-try { data = PayloadMapper.parse<CreateMasterCodePacketProps>(CreateMasterCodePacket, safePayload); } catch (e: any) { if (e.id === BoksProtocolErrorId.PAYLOAD_TOO_SHORT) { data = { configKey: payload.length > 8 ? new TextDecoder().decode(payload.subarray(0, 8)) : '', masterCodeIndex: 0 }; } else throw e; }
+    data = PayloadMapper.parse<CreateMasterCodePacketProps>(CreateMasterCodePacket, safePayload);
     return new CreateMasterCodePacket({
       configKey: data.configKey,
-      index: (data.index) || 0,
+      index: data.index || 0,
       pin: data.pin as string
     });
   }

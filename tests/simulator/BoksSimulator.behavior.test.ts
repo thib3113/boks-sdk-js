@@ -47,7 +47,9 @@ describe('BoksHardwareSimulator', () => {
       const newSim = new BoksHardwareSimulator({ storage });
 
       newSim.setMasterKey('0011223344556677889900112233445566778899001122334455667788990011');
-      expect(storage.get('masterKey')).toBe('0011223344556677889900112233445566778899001122334455667788990011');
+      expect(storage.get('masterKey')).toBe(
+        '0011223344556677889900112233445566778899001122334455667788990011'
+      );
       newSim.destroy();
     });
   });
@@ -78,21 +80,21 @@ describe('BoksHardwareSimulator', () => {
       expect(simulator.getInternalState().pinCodes.has(singleUsePin)).toBe(false);
 
       const logs = simulator.getInternalState().logs;
-      expect(logs.find(l => l.opcode === BoksOpcode.LOG_CODE_BLE_VALID)).toBeDefined();
+      expect(logs.find((l) => l.opcode === BoksOpcode.LOG_CODE_BLE_VALID)).toBeDefined();
     });
 
     it('should trigger keypad open', () => {
       simulator.triggerKeypadOpen('112233');
       expect(simulator.getInternalState().isOpen).toBe(true);
       const logs = simulator.getInternalState().logs;
-      expect(logs.find(l => l.opcode === BoksOpcode.LOG_CODE_KEY_VALID)).toBeDefined();
+      expect(logs.find((l) => l.opcode === BoksOpcode.LOG_CODE_KEY_VALID)).toBeDefined();
     });
 
     it('should trigger physical key open', () => {
       simulator.triggerPhysicalKeyOpen();
       expect(simulator.getInternalState().isOpen).toBe(true);
       const logs = simulator.getInternalState().logs;
-      expect(logs.find(l => l.opcode === BoksOpcode.LOG_EVENT_KEY_OPENING)).toBeDefined();
+      expect(logs.find((l) => l.opcode === BoksOpcode.LOG_EVENT_KEY_OPENING)).toBeDefined();
     });
 
     it('should set and notify battery level', () => {
@@ -114,7 +116,6 @@ describe('BoksHardwareSimulator', () => {
 
       // Attempt to send a packet
 
-
       // Bypass by testing emit directly via internal triggers
       simulator.setDoorStatus(true); // would trigger emit
 
@@ -133,7 +134,7 @@ describe('BoksHardwareSimulator', () => {
       data[2] = calculateChecksum(data.subarray(0, 2));
 
       await simulator.handlePacket(data);
-      await new Promise(r => setTimeout(r, 0)); // await emit
+      await new Promise((r) => setTimeout(r, 0)); // await emit
 
       expect(mockCb).toHaveBeenCalledWith(new Uint8Array([0x99, 0x00, 0x99]));
     });
@@ -142,7 +143,7 @@ describe('BoksHardwareSimulator', () => {
       const loggerMock = vi.fn();
       const simWithLogger = new BoksHardwareSimulator({ logger: loggerMock });
 
-      const data = new Uint8Array([BoksOpcode.ASK_DOOR_STATUS, 0, 0xFF]); // bad checksum
+      const data = new Uint8Array([BoksOpcode.ASK_DOOR_STATUS, 0, 0xff]); // bad checksum
       await simWithLogger.handlePacket(data);
 
       expect(loggerMock).toHaveBeenCalledWith('warn', 'checksum_error', expect.any(Object));
@@ -205,7 +206,7 @@ describe('BoksHardwareSimulator', () => {
 
       // 3. Process the packet
       await simulator.handlePacket(data);
-      await new Promise(r => setTimeout(r, 10)); // wait for response callback
+      await new Promise((r) => setTimeout(r, 10)); // wait for response callback
 
       // 4. Assert the bug is reproduced: hardware returns CODE_OPERATION_ERROR (0x78)
       expect(receivedOpcode).toBe(BoksOpcode.CODE_OPERATION_ERROR);

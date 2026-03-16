@@ -84,7 +84,11 @@ describe('BoksController Resilience (Fuzzing)', () => {
     it('should correctly set 64-char hex string as Master Key and derive Config Key', () => {
       fc.assert(
         fc.property(
-          fc.uint8Array({ minLength: 32, maxLength: 32 }).map(arr => Array.from(arr).map(b => b.toString(16).padStart(2, '0')).join('')),
+          fc.uint8Array({ minLength: 32, maxLength: 32 }).map((arr) =>
+            Array.from(arr)
+              .map((b) => b.toString(16).padStart(2, '0'))
+              .join('')
+          ),
           (hexKey) => {
             controller.setCredentials(hexKey);
             expect(controller.masterKey).toBe(hexKey.toUpperCase());
@@ -99,7 +103,11 @@ describe('BoksController Resilience (Fuzzing)', () => {
     it('should correctly set 8-char hex string as Config Key and nullify Master Key', () => {
       fc.assert(
         fc.property(
-          fc.uint8Array({ minLength: 4, maxLength: 4 }).map(arr => Array.from(arr).map(b => b.toString(16).padStart(2, '0')).join('')),
+          fc.uint8Array({ minLength: 4, maxLength: 4 }).map((arr) =>
+            Array.from(arr)
+              .map((b) => b.toString(16).padStart(2, '0'))
+              .join('')
+          ),
           (hexKey) => {
             controller.setCredentials(hexKey);
             expect(controller.masterKey).toBeNull();
@@ -149,7 +157,7 @@ describe('BoksController Resilience (Fuzzing)', () => {
     it('should throw validation error on non-hex characters (length 8 or 64)', () => {
       fc.assert(
         fc.property(
-          fc.string({ minLength: 8, maxLength: 8 }).filter(s => !/^[0-9a-fA-F]+$/.test(s)),
+          fc.string({ minLength: 8, maxLength: 8 }).filter((s) => !/^[0-9a-fA-F]+$/.test(s)),
           (invalidStr) => {
             expect(() => controller.setCredentials(invalidStr)).toThrow();
           }

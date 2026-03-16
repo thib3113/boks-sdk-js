@@ -2,7 +2,6 @@ import { PayloadMapper, getOrCreateMetadata } from './PayloadMapper';
 import { BoksProtocolError, BoksProtocolErrorId } from '../../errors/BoksProtocolError';
 import { BoksExpectedReason } from '../../errors/BoksExpectedReason';
 
-
 export function PayloadByteArray(offset: number, length?: number) {
   PayloadMapper.assertSafeBounds(offset, length || 0);
   return function <T, V>(
@@ -18,7 +17,6 @@ export function PayloadByteArray(offset: number, length?: number) {
       },
       set(val: V) {
         if (val === undefined || val === null) {
-
           throw new BoksProtocolError(
             BoksProtocolErrorId.MISSING_MANDATORY_FIELD,
             'Required field cannot be undefined',

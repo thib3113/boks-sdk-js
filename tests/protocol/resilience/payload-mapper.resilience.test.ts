@@ -1,5 +1,23 @@
 import { describe, expect, it } from 'vitest';
-import { PayloadMapper, PayloadUint8, PayloadAsciiString, PayloadBit, PayloadBoolean, PayloadByteArray, PayloadConfigKey, PayloadHexString, PayloadMacAddress, PayloadMasterCodeIndex, PayloadNfcUid, PayloadPinCode, PayloadSeed, PayloadUint16, PayloadUint24, PayloadUint32, PayloadVarLenHex, getOrCreateMetadata } from '@/protocol/decorators';
+import {
+  PayloadMapper,
+  PayloadUint8,
+  PayloadAsciiString,
+  PayloadBit,
+  PayloadBoolean,
+  PayloadByteArray,
+  PayloadConfigKey,
+  PayloadHexString,
+  PayloadMacAddress,
+  PayloadMasterCodeIndex,
+  PayloadNfcUid,
+  PayloadPinCode,
+  PayloadSeed,
+  PayloadUint16,
+  PayloadUint24,
+  PayloadUint32,
+  PayloadVarLenHex
+} from '@/protocol/decorators';
 import { BoksProtocolError } from '@/errors/BoksProtocolError';
 
 class DummyPacket {
@@ -27,51 +45,44 @@ class EmptyPacket {}
 
 describe('PayloadMapper Resilience Exhaustive', () => {
   it('should throw BoksProtocolError when parsing invalid object types', () => {
-    // @ts-expect-error testing invalid arguments
     expect(() => PayloadMapper.parse(null, new Uint8Array(2))).toThrow(BoksProtocolError);
-    // @ts-expect-error testing invalid arguments
     expect(() => PayloadMapper.parse(undefined, new Uint8Array(2))).toThrow(BoksProtocolError);
-    // @ts-expect-error testing invalid arguments
     expect(() => PayloadMapper.parse(123 as any, new Uint8Array(2))).toThrow(BoksProtocolError);
-    // @ts-expect-error testing invalid arguments
-    expect(() => PayloadMapper.parse('string' as any, new Uint8Array(2))).toThrow(BoksProtocolError);
+    expect(() => PayloadMapper.parse('string' as any, new Uint8Array(2))).toThrow(
+      BoksProtocolError
+    );
 
-    // @ts-expect-error testing invalid payload type
     expect(() => PayloadMapper.parse(EmptyPacket, 'string' as any)).toThrow(BoksProtocolError);
   });
 
   it('should throw BoksProtocolError when serializing invalid instances', () => {
-    // @ts-expect-error testing invalid arguments
     expect(() => PayloadMapper.serialize(null)).toThrow(BoksProtocolError);
-    // @ts-expect-error testing invalid arguments
     expect(() => PayloadMapper.serialize(undefined)).toThrow(BoksProtocolError);
-    // @ts-expect-error testing invalid arguments
     expect(() => PayloadMapper.serialize(123 as any)).toThrow(BoksProtocolError);
-    // @ts-expect-error testing invalid arguments
     expect(() => PayloadMapper.serialize('string' as any)).toThrow(BoksProtocolError);
   });
 
   it('should initialize properties on accessors', () => {
-      const obj = new DummyPacket();
-      expect(obj.valUint8).toBeUndefined();
+    const obj = new DummyPacket();
+    expect(obj.valUint8).toBeUndefined();
 
-      // Assigning invalid values to test setter throws
-      // The decorators throw BoksProtocolError on undefined/null
-      expect(() => obj.valUint8 = undefined as any).toThrow(BoksProtocolError);
-      expect(() => obj.valAscii = null as any).toThrow(BoksProtocolError);
-      expect(() => obj.valBit = null as any).toThrow(BoksProtocolError);
-      expect(() => obj.valBool = null as any).toThrow(BoksProtocolError);
-      expect(() => obj.valBytes = null as any).toThrow(BoksProtocolError);
-      expect(() => obj.valConfigKey = null as any).toThrow(BoksProtocolError);
-      expect(() => obj.valHex = null as any).toThrow(BoksProtocolError);
-      expect(() => obj.valMac = null as any).toThrow(BoksProtocolError);
-      expect(() => obj.valMaster = null as any).toThrow(BoksProtocolError);
-      expect(() => obj.valNfc = null as any).toThrow(BoksProtocolError);
-      expect(() => obj.valPin = null as any).toThrow(BoksProtocolError);
-      expect(() => obj.valSeed = null as any).toThrow(BoksProtocolError);
-      expect(() => obj.valUint16 = null as any).toThrow(BoksProtocolError);
-      expect(() => obj.valUint24 = null as any).toThrow(BoksProtocolError);
-      expect(() => obj.valUint32 = null as any).toThrow(BoksProtocolError);
-      expect(() => obj.valVarLenHex = null as any).toThrow(BoksProtocolError);
+    // Assigning invalid values to test setter throws
+    // The decorators throw BoksProtocolError on undefined/null
+    expect(() => (obj.valUint8 = undefined as any)).toThrow(BoksProtocolError);
+    expect(() => (obj.valAscii = null as any)).toThrow(BoksProtocolError);
+    expect(() => (obj.valBit = null as any)).toThrow(BoksProtocolError);
+    expect(() => (obj.valBool = null as any)).toThrow(BoksProtocolError);
+    expect(() => (obj.valBytes = null as any)).toThrow(BoksProtocolError);
+    expect(() => (obj.valConfigKey = null as any)).toThrow(BoksProtocolError);
+    expect(() => (obj.valHex = null as any)).toThrow(BoksProtocolError);
+    expect(() => (obj.valMac = null as any)).toThrow(BoksProtocolError);
+    expect(() => (obj.valMaster = null as any)).toThrow(BoksProtocolError);
+    expect(() => (obj.valNfc = null as any)).toThrow(BoksProtocolError);
+    expect(() => (obj.valPin = null as any)).toThrow(BoksProtocolError);
+    expect(() => (obj.valSeed = null as any)).toThrow(BoksProtocolError);
+    expect(() => (obj.valUint16 = null as any)).toThrow(BoksProtocolError);
+    expect(() => (obj.valUint24 = null as any)).toThrow(BoksProtocolError);
+    expect(() => (obj.valUint32 = null as any)).toThrow(BoksProtocolError);
+    expect(() => (obj.valVarLenHex = null as any)).toThrow(BoksProtocolError);
   });
 });

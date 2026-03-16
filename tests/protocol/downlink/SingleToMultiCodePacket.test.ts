@@ -19,7 +19,7 @@ describe('SingleToMultiCodePacket', () => {
     const packet = new SingleToMultiCodePacket({ configKey: validKey, pin: validPin });
     const encoded = packet.encode();
     // 0x0A + 14 + Key + Pin
-    expect(encoded[0]).toBe(0x0A);
+    expect(encoded[0]).toBe(0x0a);
     expect(encoded[1]).toBe(14);
 
     // Key "ABCDEF12" -> 4142434445463132
@@ -39,15 +39,19 @@ describe('SingleToMultiCodePacket', () => {
   });
 
   it('should throw INVALID_CONFIG_KEY for invalid config key format', () => {
-     expect(() => new SingleToMultiCodePacket({ configKey: 'invalid', pin: validPin })).toThrowError(BoksProtocolError);
+    expect(() => new SingleToMultiCodePacket({ configKey: 'invalid', pin: validPin })).toThrowError(
+      BoksProtocolError
+    );
   });
 
   it('should throw INVALID_PIN_FORMAT for invalid pin', () => {
-      expect(() => new SingleToMultiCodePacket({ configKey: validKey, pin: '123' })).toThrowError(BoksProtocolError);
+    expect(() => new SingleToMultiCodePacket({ configKey: validKey, pin: '123' })).toThrowError(
+      BoksProtocolError
+    );
   });
 
   it('should fail parsing if payload is too short', () => {
-      const shortPayload = new Uint8Array(10);
-      expect(() => SingleToMultiCodePacket.fromPayload(shortPayload)).toThrowError(BoksProtocolError);
+    const shortPayload = new Uint8Array(10);
+    expect(() => SingleToMultiCodePacket.fromPayload(shortPayload)).toThrowError(BoksProtocolError);
   });
 });

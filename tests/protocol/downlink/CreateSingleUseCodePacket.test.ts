@@ -38,27 +38,35 @@ describe('CreateSingleUseCodePacket', () => {
   });
 
   it('should throw INVALID_CONFIG_KEY for invalid config key format', () => {
-     expect(() => new CreateSingleUseCodePacket({ configKey: 'invalid', pin: validPin })).toThrowError(BoksProtocolError);
-     try {
-       new CreateSingleUseCodePacket({ configKey: 'invalid', pin: validPin });
-     } catch (e) {
-       expect((e as BoksProtocolError).id).toBe(BoksProtocolErrorId.INVALID_CONFIG_KEY);
-     }
+    expect(
+      () => new CreateSingleUseCodePacket({ configKey: 'invalid', pin: validPin })
+    ).toThrowError(BoksProtocolError);
+    try {
+      new CreateSingleUseCodePacket({ configKey: 'invalid', pin: validPin });
+    } catch (e) {
+      expect((e as BoksProtocolError).id).toBe(BoksProtocolErrorId.INVALID_CONFIG_KEY);
+    }
   });
 
   it('should throw INVALID_PIN_FORMAT for invalid pin', () => {
-      expect(() => new CreateSingleUseCodePacket({ configKey: validKey, pin: '123' })).toThrowError(BoksProtocolError);
-      expect(() => new CreateSingleUseCodePacket({ configKey: validKey, pin: '12345C' })).toThrowError(BoksProtocolError);
+    expect(() => new CreateSingleUseCodePacket({ configKey: validKey, pin: '123' })).toThrowError(
+      BoksProtocolError
+    );
+    expect(
+      () => new CreateSingleUseCodePacket({ configKey: validKey, pin: '12345C' })
+    ).toThrowError(BoksProtocolError);
 
-      try {
-        new CreateSingleUseCodePacket({ configKey: validKey, pin: '12345C' });
-      } catch (e) {
-         expect((e as BoksProtocolError).id).toBe(BoksProtocolErrorId.INVALID_PIN_FORMAT);
-      }
+    try {
+      new CreateSingleUseCodePacket({ configKey: validKey, pin: '12345C' });
+    } catch (e) {
+      expect((e as BoksProtocolError).id).toBe(BoksProtocolErrorId.INVALID_PIN_FORMAT);
+    }
   });
 
   it('should fail parsing if payload is too short', () => {
-      const shortPayload = new Uint8Array(10);
-      expect(() => CreateSingleUseCodePacket.fromPayload(shortPayload)).toThrowError(BoksProtocolError);
+    const shortPayload = new Uint8Array(10);
+    expect(() => CreateSingleUseCodePacket.fromPayload(shortPayload)).toThrowError(
+      BoksProtocolError
+    );
   });
 });

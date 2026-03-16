@@ -6,7 +6,7 @@ describe('CodeBleInvalidHistoryPacket', () => {
   it('should parse correctly with age and code', () => {
     const payload = new Uint8Array([0, 0, 10, 49, 50, 51, 52, 53, 54, 0, 0, 0, 0, 0, 0, 0, 0]);
     const packet = CodeBleInvalidHistoryPacket.fromPayload(payload);
-    
+
     expect(packet.opcode).toBe(BoksOpcode.LOG_CODE_BLE_INVALID);
     expect(packet.age).toBe(10);
     expect(packet.code).toBe('123456');
@@ -18,6 +18,4 @@ describe('CodeBleInvalidHistoryPacket', () => {
     const packet = CodeBleInvalidHistoryPacket.fromPayload(payload);
     expect(packet.connectedMac).toBe('00:00:30:39:38:37');
   });
-
-
 });

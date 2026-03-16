@@ -16,8 +16,14 @@ describe('Simple Notification Packets - Resilience & Edge Cases', () => {
     { packetClass: InvalidOpenCodePacket, opcode: BoksOpcode.INVALID_OPEN_CODE },
     { packetClass: NotifyNfcTagRegisteredPacket, opcode: BoksOpcode.NOTIFY_NFC_TAG_REGISTERED },
     { packetClass: NotifyNfcTagUnregisteredPacket, opcode: BoksOpcode.NOTIFY_NFC_TAG_UNREGISTERED },
-    { packetClass: NotifyNfcTagRegisteredErrorAlreadyExistsPacket, opcode: BoksOpcode.NOTIFY_NFC_TAG_REGISTERED_ERROR_ALREADY_EXISTS },
-    { packetClass: NotifySetConfigurationSuccessPacket, opcode: BoksOpcode.NOTIFY_SET_CONFIGURATION_SUCCESS },
+    {
+      packetClass: NotifyNfcTagRegisteredErrorAlreadyExistsPacket,
+      opcode: BoksOpcode.NOTIFY_NFC_TAG_REGISTERED_ERROR_ALREADY_EXISTS
+    },
+    {
+      packetClass: NotifySetConfigurationSuccessPacket,
+      opcode: BoksOpcode.NOTIFY_SET_CONFIGURATION_SUCCESS
+    },
     { packetClass: OperationSuccessPacket, opcode: BoksOpcode.CODE_OPERATION_SUCCESS }
   ];
 
@@ -48,10 +54,12 @@ describe('Simple Notification Packets - Resilience & Edge Cases', () => {
         fc.assert(
           fc.property(fc.uint8Array(), (payload) => {
             let packet;
-        // TODO, crashing with invalid data is normal, but we need to check the error, no catch without tests . Need to rewrite this test
-        try {
-               packet = OperationErrorPacket.fromPayload(payload);
-            } catch(e) { return; }
+            // TODO, crashing with invalid data is normal, but we need to check the error, no catch without tests . Need to rewrite this test
+            try {
+              packet = OperationErrorPacket.fromPayload(payload);
+            } catch (e) {
+              return;
+            }
             expect(packet).toBeInstanceOf(OperationErrorPacket);
             expect(packet.opcode).toBe(BoksOpcode.CODE_OPERATION_ERROR);
             expect((packet as any).rawPayload).toEqual(payload);
@@ -72,11 +80,15 @@ describe('Simple Notification Packets - Resilience & Edge Cases', () => {
 
       it('should safely capture errorCode when trailing bytes exist', () => {
         fc.assert(
-          fc.property(fc.integer({ min: 0, max: 255 }), fc.uint8Array(), (errorCode, trailingBytes) => {
-            const payload = new Uint8Array([errorCode, ...trailingBytes]);
-            const packet = OperationErrorPacket.fromPayload(payload);
-            expect(packet.errorCode).toBe(errorCode);
-          })
+          fc.property(
+            fc.integer({ min: 0, max: 255 }),
+            fc.uint8Array(),
+            (errorCode, trailingBytes) => {
+              const payload = new Uint8Array([errorCode, ...trailingBytes]);
+              const packet = OperationErrorPacket.fromPayload(payload);
+              expect(packet.errorCode).toBe(errorCode);
+            }
+          )
         );
       });
     });

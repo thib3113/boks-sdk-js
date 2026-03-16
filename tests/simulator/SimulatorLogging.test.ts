@@ -39,7 +39,7 @@ describe('Boks Hardware Simulator Logging', () => {
     );
 
     // Give some time for the response
-    await new Promise(resolve => setTimeout(resolve, 10));
+    await new Promise((resolve) => setTimeout(resolve, 10));
 
     expect(logger).toHaveBeenCalledWith(
       'debug',
@@ -53,7 +53,7 @@ describe('Boks Hardware Simulator Logging', () => {
     const simulator = new BoksHardwareSimulator({ logger });
 
     // Invalid Checksum: 0x02 0x00 0xFF
-    const packet = new Uint8Array([BoksOpcode.ASK_DOOR_STATUS, 0, 0xFF]);
+    const packet = new Uint8Array([BoksOpcode.ASK_DOOR_STATUS, 0, 0xff]);
     await simulator.handlePacket(packet);
 
     expect(logger).toHaveBeenCalledWith(
@@ -61,7 +61,7 @@ describe('Boks Hardware Simulator Logging', () => {
       'checksum_error',
       expect.objectContaining({
         opcode: BoksOpcode.ASK_DOOR_STATUS,
-        received: 0xFF
+        received: 0xff
       })
     );
   });

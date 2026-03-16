@@ -17,9 +17,9 @@ describe('AskDoorStatusPacket', () => {
   });
 
   it('should handle extra payload bytes gracefully (ignore them)', () => {
-      // Though toPayload() returns empty, if fromPayload is called with extra bytes, it currently ignores them.
-      // The base class ensures opcode is correct.
-      const packet = AskDoorStatusPacket.fromPayload(new Uint8Array([0x01, 0x02]));
-      expect(packet).toBeInstanceOf(AskDoorStatusPacket);
+    // Though toPayload() returns empty, if fromPayload is called with extra bytes, it currently ignores them.
+    // The base class ensures opcode is correct.
+    const packet = AskDoorStatusPacket.fromPayload(new Uint8Array([0x01, 0x02]));
+    expect(packet).toBeInstanceOf(AskDoorStatusPacket);
   });
 });

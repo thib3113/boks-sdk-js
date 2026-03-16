@@ -37,7 +37,9 @@ export interface FieldDefinition {
 
 const legacyMetadataMap = new WeakMap<PayloadConstructor, FieldDefinition[]>();
 
-export function getOrCreateMetadata(context: ClassAccessorDecoratorContext<any, any>): FieldDefinition[] {
+export function getOrCreateMetadata(
+  context: ClassAccessorDecoratorContext<any, any>
+): FieldDefinition[] {
   if (context.metadata) {
     if (!context.metadata[METADATA_KEY]) {
       context.metadata[METADATA_KEY] = [];
@@ -47,7 +49,7 @@ export function getOrCreateMetadata(context: ClassAccessorDecoratorContext<any, 
     }
     return context.metadata[METADATA_KEY] as FieldDefinition[];
   }
-  return  [];
+  return [];
 }
 
 /**
@@ -222,12 +224,12 @@ export class PayloadMapper {
         symMetadata = symbols.find((s) => s.toString() === 'Symbol(Symbol.metadata)');
       }
       const fields =
-         (symMetadata && currentClass[symMetadata as any]?.[METADATA_KEY]) ||
-         currentClass[Symbol.metadata as any]?.[METADATA_KEY] ||
-         currentClass.constructor?.[Symbol.metadata as any]?.[METADATA_KEY] ||
+        (symMetadata && currentClass[symMetadata as any]?.[METADATA_KEY]) ||
+        currentClass[Symbol.metadata as any]?.[METADATA_KEY] ||
+        currentClass.constructor?.[Symbol.metadata as any]?.[METADATA_KEY] ||
         legacyMetadataMap.get(currentClass) ||
-         currentClass[METADATA_KEY] ||
-         currentClass.constructor?.[METADATA_KEY];
+        currentClass[METADATA_KEY] ||
+        currentClass.constructor?.[METADATA_KEY];
 
       if (fields && Array.isArray(fields)) {
         // Add fields that aren't already mapped
@@ -247,7 +249,6 @@ export class PayloadMapper {
     const fields = this.getFields(targetClass);
 
     if (!fields || fields.length === 0) {
-
       return (_payload: Uint8Array) => ({}); // No fields mapped
     }
 
@@ -267,11 +268,9 @@ export class PayloadMapper {
         size = 6;
       } else if (field.type === 'pin_code') {
         size = 6;
-
       } else if (field.type === 'config_key') {
         size = 8;
       } else if (field.type === 'ascii_string') {
-
         if (typeof field.length !== 'number') {
           throw new BoksProtocolError(
             BoksProtocolErrorId.INTERNAL_ERROR,
@@ -379,7 +378,6 @@ export class PayloadMapper {
           if (typeof field.length === 'number') {
             fnBody += `result['${prop}'] = payload.subarray(${o}, ${o} + ${field.length});\n`;
           } else {
-
             fnBody += `result['${prop}'] = payload.subarray(${o});\n`;
           }
           break;
@@ -438,11 +436,9 @@ export class PayloadMapper {
             if (hexArgs.length > 0) {
               fnBody += `result['${prop}'] = ${hexArgs.join(' + ')};\n`;
             } else {
-
               fnBody += `result['${prop}'] = '';\n`;
             }
           } else {
-
             fnBody += `
             {
                let s = '';
@@ -483,7 +479,6 @@ export class PayloadMapper {
     }
 
     fnBody += `return result;\n`;
-
 
     // Compile the function, injecting external dependencies into the closure scope.
     return new Function(
@@ -538,7 +533,6 @@ export class PayloadMapper {
               }
            }
          `;
-
       } else if (field.type === 'config_key') {
         fnBody += `
            if (typeof ${val} !== 'string' || ${val}.length !== 8) {
@@ -575,7 +569,6 @@ export class PayloadMapper {
   private static compileSerializer(targetClass: PayloadConstructor): (...args: any[]) => any {
     const fields = this.getFields(targetClass);
 
-
     if (!fields || fields.length === 0) {
       return (_instance: any) => new Uint8Array(0); // No fields mapped
     }
@@ -596,7 +589,6 @@ export class PayloadMapper {
         fieldSize = 6;
       } else if (field.type === 'pin_code') {
         fieldSize = 6;
-
       } else if (field.type === 'config_key') {
         fieldSize = 8;
       } else if (field.type === 'ascii_string') {
@@ -632,18 +624,14 @@ export class PayloadMapper {
       const prop = field.propertyName;
 
       if (field.type === 'var_len_hex') {
-
         dynamicSizeCalc += ` + (instance['${prop}'] && typeof instance['${prop}'] === 'string' ? Math.floor(instance['${prop}'].length / 2) : 0)`;
       } else if (
         (field.type === 'hex_string' || field.type === 'byte_array') &&
-         typeof field.length !== 'number'
+        typeof field.length !== 'number'
       ) {
-
         if (field.type === 'hex_string') {
-
           dynamicSizeCalc += ` + (instance['${prop}'] && typeof instance['${prop}'] === 'string' ? Math.floor(instance['${prop}'].length / 2) : 0)`;
         } else {
-
           dynamicSizeCalc += ` + (instance['${prop}'] && instance['${prop}'] instanceof Uint8Array ? instance['${prop}'].length : 0)`;
         }
       }
@@ -803,8 +791,18 @@ export class PayloadMapper {
    * @returns A mapped object containing the extracted properties
    */
   public static parse<T = any>(targetClass: Function, payload: Uint8Array): T {
-    if (typeof payload === 'string') { throw new BoksProtocolError(BoksProtocolErrorId.INVALID_TYPE, 'Payload must be a Uint8Array', { received: 'string', expected: 'Uint8Array' }); }
-    if (!targetClass || typeof targetClass !== 'function') throw new BoksProtocolError(BoksProtocolErrorId.INVALID_TYPE, 'Invalid targetClass', { received: typeof targetClass, expected: 'function' });
+    if (typeof payload === 'string') {
+      throw new BoksProtocolError(
+        BoksProtocolErrorId.INVALID_TYPE,
+        'Payload must be a Uint8Array',
+        { received: 'string', expected: 'Uint8Array' }
+      );
+    }
+    if (!targetClass || typeof targetClass !== 'function')
+      throw new BoksProtocolError(BoksProtocolErrorId.INVALID_TYPE, 'Invalid targetClass', {
+        received: typeof targetClass,
+        expected: 'function'
+      });
     if (!(payload instanceof Uint8Array)) {
       throw new BoksProtocolError(
         BoksProtocolErrorId.INVALID_TYPE,
@@ -831,7 +829,11 @@ export class PayloadMapper {
    * Serializes an instance into a Uint8Array payload using the JIT compiled function.
    */
   public static serialize(instance: any): Uint8Array {
-    if (!instance || typeof instance !== 'object') throw new BoksProtocolError(BoksProtocolErrorId.INTERNAL_ERROR, 'Invalid instance', { received: typeof instance, expected: 'object' });
+    if (!instance || typeof instance !== 'object')
+      throw new BoksProtocolError(BoksProtocolErrorId.INTERNAL_ERROR, 'Invalid instance', {
+        received: typeof instance,
+        expected: 'object'
+      });
     if (!instance || typeof instance !== 'object') {
       throw new BoksProtocolError(
         BoksProtocolErrorId.INVALID_TYPE,
@@ -874,7 +876,6 @@ export class PayloadMapper {
   }
 
   public static defineSchema(targetClass: any, schema: FieldDefinition[]): void {
-
     if (targetClass[Symbol.metadata]) {
       targetClass[Symbol.metadata][METADATA_KEY] = schema;
     } else {

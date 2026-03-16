@@ -46,7 +46,7 @@ describe('converters Resilience (Fuzzing)', () => {
         const mac = bytesToMac(bytes, reverse);
         expect(typeof mac).toBe('string');
         if (bytes.length === 0) {
-            expect(mac).toBe('');
+          expect(mac).toBe('');
         }
       }),
       { numRuns: 1000 }
@@ -89,7 +89,7 @@ describe('converters Resilience (Fuzzing)', () => {
           writeConfigKeyToBuffer(buffer, offset, key);
 
           if (offset + 8 <= buffer.length) {
-              expect(readConfigKeyFromBuffer(buffer, offset)).toBe(key);
+            expect(readConfigKeyFromBuffer(buffer, offset)).toBe(key);
           }
         }
       ),

@@ -5,9 +5,19 @@ import { BoksProtocolError } from '@/errors/BoksProtocolError';
 
 describe('PayloadMapper JIT Fuzzing', () => {
   const fieldTypes: FieldType[] = [
-    'uint8', 'uint16', 'uint24', 'uint32', 'ascii_string', 'mac_address',
-    'hex_string', 'pin_code', 'config_key', 'boolean', 'byte_array',
-    'var_len_hex', 'bit'
+    'uint8',
+    'uint16',
+    'uint24',
+    'uint32',
+    'ascii_string',
+    'mac_address',
+    'hex_string',
+    'pin_code',
+    'config_key',
+    'boolean',
+    'byte_array',
+    'var_len_hex',
+    'bit'
   ];
 
   // Generator for valid and malformed JIT schema fields
@@ -23,29 +33,33 @@ describe('PayloadMapper JIT Fuzzing', () => {
 
   it('never crashes ungracefully when parsing random schemas with random payloads', async () => {
     await fc.assert(
-      fc.property(fc.array(fieldDefinitionArbitrary, { maxLength: 10 }), payloadArbitrary, (schema, payload) => {
-        class FuzzPacket {}
+      fc.property(
+        fc.array(fieldDefinitionArbitrary, { maxLength: 10 }),
+        payloadArbitrary,
+        (schema, payload) => {
+          class FuzzPacket {}
 
-        // Fuzz the schema definition
-        try {
-          PayloadMapper.defineSchema(FuzzPacket, schema);
-        } catch (e) {
-          // It's allowed to throw BoksProtocolError during definition (e.g., bad property name, bad bounds)
-          expect(e).toBeInstanceOf(BoksProtocolError);
-          return true; // Test passes for this iteration
-        }
+          // Fuzz the schema definition
+          try {
+            PayloadMapper.defineSchema(FuzzPacket, schema);
+          } catch (e) {
+            // It's allowed to throw BoksProtocolError during definition (e.g., bad property name, bad bounds)
+            expect(e).toBeInstanceOf(BoksProtocolError);
+            return true; // Test passes for this iteration
+          }
 
-        // Fuzz the JIT parse
-        try {
-          PayloadMapper.parse(FuzzPacket, payload);
-          // If it parses, it means bounds and names were safe enough.
-        } catch (e) {
-          // The ONLY error that should ever escape the PayloadMapper is a BoksProtocolError.
-          // SyntaxError (bad JIT), RangeError, TypeError should cause test failure!
-          expect(e).toBeInstanceOf(BoksProtocolError);
+          // Fuzz the JIT parse
+          try {
+            PayloadMapper.parse(FuzzPacket, payload);
+            // If it parses, it means bounds and names were safe enough.
+          } catch (e) {
+            // The ONLY error that should ever escape the PayloadMapper is a BoksProtocolError.
+            // SyntaxError (bad JIT), RangeError, TypeError should cause test failure!
+            expect(e).toBeInstanceOf(BoksProtocolError);
+          }
+          return true;
         }
-        return true;
-      }),
+      ),
       { numRuns: 1000 } // Aggressive JIT testing
     );
   });
@@ -56,25 +70,26 @@ describe('PayloadMapper JIT Fuzzing', () => {
         fc.array(fieldDefinitionArbitrary, { maxLength: 10 }),
         fc.dictionary(fc.string(), fc.anything({ maxDepth: 1 })), // Random instance properties
         (schema, instanceProps) => {
-        class FuzzPacket {}
+          class FuzzPacket {}
 
-        try {
-          PayloadMapper.defineSchema(FuzzPacket, schema);
-        } catch (e) {
-          expect(e).toBeInstanceOf(BoksProtocolError);
+          try {
+            PayloadMapper.defineSchema(FuzzPacket, schema);
+          } catch (e) {
+            expect(e).toBeInstanceOf(BoksProtocolError);
+            return true;
+          }
+
+          const instance = new FuzzPacket();
+          Object.assign(instance, instanceProps);
+
+          try {
+            PayloadMapper.serialize(instance);
+          } catch (e) {
+            expect(e).toBeInstanceOf(BoksProtocolError);
+          }
           return true;
         }
-
-        const instance = new FuzzPacket();
-        Object.assign(instance, instanceProps);
-
-        try {
-          PayloadMapper.serialize(instance);
-        } catch (e) {
-          expect(e).toBeInstanceOf(BoksProtocolError);
-        }
-        return true;
-      }),
+      ),
       { numRuns: 1000 }
     );
   });

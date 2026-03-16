@@ -79,8 +79,8 @@ describe('WebBluetoothTransport Resilience (Fuzzing)', () => {
   beforeEach(() => {
     vi.stubGlobal('navigator', {
       bluetooth: {
-        requestDevice: vi.fn().mockResolvedValue(new MockBluetoothDevice()),
-      },
+        requestDevice: vi.fn().mockResolvedValue(new MockBluetoothDevice())
+      }
     });
   });
 
@@ -151,29 +151,29 @@ describe('WebBluetoothTransport Resilience (Fuzzing)', () => {
   });
 
   it('FEATURE REGRESSION: should handle notification events safely when value is undefined', async () => {
-     const transport = new WebBluetoothTransport();
-     await transport.connect();
+    const transport = new WebBluetoothTransport();
+    await transport.connect();
 
-     let receivedData: Uint8Array | null = null;
-     const callback = (data: Uint8Array) => {
-       receivedData = data;
-     };
+    let receivedData: Uint8Array | null = null;
+    const callback = (data: Uint8Array) => {
+      receivedData = data;
+    };
 
-     await transport.subscribe(callback);
+    await transport.subscribe(callback);
 
-     const notifyChar = (transport as any).notifyChar;
-     // Mock the Event and target, but omit 'value'
-     const event = {
-       type: 'characteristicvaluechanged',
-       target: {
-         // value is undefined
-       }
-     };
+    const notifyChar = (transport as any).notifyChar;
+    // Mock the Event and target, but omit 'value'
+    const event = {
+      type: 'characteristicvaluechanged',
+      target: {
+        // value is undefined
+      }
+    };
 
-     expect(() => {
-       notifyChar.dispatchEvent(event as any);
-     }).not.toThrow();
+    expect(() => {
+      notifyChar.dispatchEvent(event as any);
+    }).not.toThrow();
 
-     expect(receivedData).toBeNull();
+    expect(receivedData).toBeNull();
   });
 });

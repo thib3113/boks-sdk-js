@@ -18,7 +18,7 @@ describe('ReactivateCodePacket', () => {
   it('should encode correctly', () => {
     const packet = new ReactivateCodePacket({ configKey: validKey, pin: validPin });
     const encoded = packet.encode();
-    expect(encoded[0]).toBe(0x0F);
+    expect(encoded[0]).toBe(0x0f);
     expect(encoded[1]).toBe(14);
 
     // Key "ABCDEF12" -> 4142434445463132
@@ -38,16 +38,22 @@ describe('ReactivateCodePacket', () => {
   });
 
   it('should throw INVALID_CONFIG_KEY for invalid config key format', () => {
-     expect(() => new ReactivateCodePacket({ configKey: 'invalid', pin: validPin })).toThrowError(BoksProtocolError);
+    expect(() => new ReactivateCodePacket({ configKey: 'invalid', pin: validPin })).toThrowError(
+      BoksProtocolError
+    );
   });
 
   it('should throw INVALID_PIN_FORMAT for invalid pin', () => {
-      expect(() => new ReactivateCodePacket({ configKey: validKey, pin: '123' })).toThrowError(BoksProtocolError);
-      expect(() => new ReactivateCodePacket({ configKey: validKey, pin: '12345C' })).toThrowError(BoksProtocolError);
+    expect(() => new ReactivateCodePacket({ configKey: validKey, pin: '123' })).toThrowError(
+      BoksProtocolError
+    );
+    expect(() => new ReactivateCodePacket({ configKey: validKey, pin: '12345C' })).toThrowError(
+      BoksProtocolError
+    );
   });
 
   it('should fail parsing if payload is too short', () => {
-      const shortPayload = new Uint8Array(10);
-      expect(() => ReactivateCodePacket.fromPayload(shortPayload)).toThrowError(BoksProtocolError);
+    const shortPayload = new Uint8Array(10);
+    expect(() => ReactivateCodePacket.fromPayload(shortPayload)).toThrowError(BoksProtocolError);
   });
 });

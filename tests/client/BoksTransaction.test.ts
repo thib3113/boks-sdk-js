@@ -4,10 +4,15 @@ import { BoksPacket, BoksOpcode } from '@/protocol';
 
 // Mock concrete implementation of BoksPacket for testing
 class MockPacket extends BoksPacket {
-  constructor(public opcode: BoksOpcode, private payload: Uint8Array = new Uint8Array(0)) {
+  constructor(
+    public opcode: BoksOpcode,
+    private payload: Uint8Array = new Uint8Array(0)
+  ) {
     super();
   }
-  toPayload() { return this.payload; }
+  toPayload() {
+    return this.payload;
+  }
 }
 
 describe('BoksTransaction', () => {

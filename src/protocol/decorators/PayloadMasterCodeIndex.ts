@@ -3,7 +3,6 @@ import { PayloadMapper, getOrCreateMetadata } from './PayloadMapper';
 import { BoksProtocolError, BoksProtocolErrorId } from '../../errors/BoksProtocolError';
 import { BoksExpectedReason } from '../../errors/BoksExpectedReason';
 
-
 export function PayloadMasterCodeIndex(offset: number) {
   PayloadMapper.assertSafeBounds(offset, 1);
   return function <T, V>(
@@ -19,7 +18,6 @@ export function PayloadMasterCodeIndex(offset: number) {
       },
       set(val: V) {
         if (val === undefined || val === null) {
-
           throw new BoksProtocolError(
             BoksProtocolErrorId.MISSING_MANDATORY_FIELD,
             'Required field cannot be undefined',

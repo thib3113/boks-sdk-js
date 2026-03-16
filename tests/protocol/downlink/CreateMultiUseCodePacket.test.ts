@@ -39,28 +39,36 @@ describe('CreateMultiUseCodePacket', () => {
   });
 
   it('should throw INVALID_CONFIG_KEY for invalid config key format', () => {
-     expect(() => new CreateMultiUseCodePacket({ configKey: 'invalid', pin: validPin })).toThrowError(BoksProtocolError);
-     try {
-       new CreateMultiUseCodePacket({ configKey: 'invalid', pin: validPin });
-     } catch (e) {
-       expect((e as BoksProtocolError).id).toBe(BoksProtocolErrorId.INVALID_CONFIG_KEY);
-     }
+    expect(
+      () => new CreateMultiUseCodePacket({ configKey: 'invalid', pin: validPin })
+    ).toThrowError(BoksProtocolError);
+    try {
+      new CreateMultiUseCodePacket({ configKey: 'invalid', pin: validPin });
+    } catch (e) {
+      expect((e as BoksProtocolError).id).toBe(BoksProtocolErrorId.INVALID_CONFIG_KEY);
+    }
   });
 
   it('should throw INVALID_PIN_FORMAT for invalid pin', () => {
-      expect(() => new CreateMultiUseCodePacket({ configKey: validKey, pin: '123' })).toThrowError(BoksProtocolError);
-      expect(() => new CreateMultiUseCodePacket({ configKey: validKey, pin: '12345C' })).toThrowError(BoksProtocolError);
+    expect(() => new CreateMultiUseCodePacket({ configKey: validKey, pin: '123' })).toThrowError(
+      BoksProtocolError
+    );
+    expect(() => new CreateMultiUseCodePacket({ configKey: validKey, pin: '12345C' })).toThrowError(
+      BoksProtocolError
+    );
 
-      try {
-        new CreateMultiUseCodePacket({ configKey: validKey, pin: '12345C' });
-      } catch (e) {
-         expect((e as BoksProtocolError).id).toBe(BoksProtocolErrorId.INVALID_PIN_FORMAT);
-      }
+    try {
+      new CreateMultiUseCodePacket({ configKey: validKey, pin: '12345C' });
+    } catch (e) {
+      expect((e as BoksProtocolError).id).toBe(BoksProtocolErrorId.INVALID_PIN_FORMAT);
+    }
   });
 
   it('should fail parsing if payload is too short', () => {
-      // Short payload leads to short pin or key extraction, which constructor validates.
-      const shortPayload = new Uint8Array(10);
-      expect(() => CreateMultiUseCodePacket.fromPayload(shortPayload)).toThrowError(BoksProtocolError);
+    // Short payload leads to short pin or key extraction, which constructor validates.
+    const shortPayload = new Uint8Array(10);
+    expect(() => CreateMultiUseCodePacket.fromPayload(shortPayload)).toThrowError(
+      BoksProtocolError
+    );
   });
 });

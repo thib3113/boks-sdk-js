@@ -42,16 +42,20 @@ describe('UnregisterNfcTagPacket', () => {
   });
 
   it('should throw INVALID_CONFIG_KEY for invalid config key format', () => {
-     expect(() => new UnregisterNfcTagPacket({ configKey: 'invalid', uid: validUid })).toThrowError(BoksProtocolError);
+    expect(() => new UnregisterNfcTagPacket({ configKey: 'invalid', uid: validUid })).toThrowError(
+      BoksProtocolError
+    );
   });
 
   it('should throw INVALID_NFC_UID_FORMAT for invalid uid', () => {
-      expect(() => new UnregisterNfcTagPacket({ configKey: validKey, uid: '01:02:03' })).toThrowError(BoksProtocolError);
+    expect(() => new UnregisterNfcTagPacket({ configKey: validKey, uid: '01:02:03' })).toThrowError(
+      BoksProtocolError
+    );
   });
 
   it('should fail parsing if payload is malformed', () => {
-      const payload = new Uint8Array(8);
-      payload.set(stringToBytes(validKey), 0);
-      expect(() => UnregisterNfcTagPacket.fromPayload(payload)).toThrowError(BoksProtocolError);
+    const payload = new Uint8Array(8);
+    payload.set(stringToBytes(validKey), 0);
+    expect(() => UnregisterNfcTagPacket.fromPayload(payload)).toThrowError(BoksProtocolError);
   });
 });

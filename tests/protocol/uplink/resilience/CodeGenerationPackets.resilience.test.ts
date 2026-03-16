@@ -6,8 +6,14 @@ import { BoksOpcode } from '@/protocol/constants';
 
 describe('CodeGenerationPackets - Resilience & Edge Cases', () => {
   const PACKETS = [
-    { packetClass: NotifyCodeGenerationErrorPacket, opcode: BoksOpcode.NOTIFY_CODE_GENERATION_ERROR },
-    { packetClass: NotifyCodeGenerationSuccessPacket, opcode: BoksOpcode.NOTIFY_CODE_GENERATION_SUCCESS }
+    {
+      packetClass: NotifyCodeGenerationErrorPacket,
+      opcode: BoksOpcode.NOTIFY_CODE_GENERATION_ERROR
+    },
+    {
+      packetClass: NotifyCodeGenerationSuccessPacket,
+      opcode: BoksOpcode.NOTIFY_CODE_GENERATION_SUCCESS
+    }
   ];
 
   describe.each(PACKETS)('$packetClass.name', ({ packetClass, opcode }) => {

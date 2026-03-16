@@ -17,7 +17,7 @@ describe('MultiToSingleCodePacket Resilience (Fuzzing)', () => {
             // If it succeeds, the inputs MUST have matched strict validation:
             expect(configKey.length).toBe(8);
             expect(pin.length).toBe(6);
-            expect(packet.opcode).toBe(0x0D); // MultiToSingleCodePacket opcode
+            expect(packet.opcode).toBe(0x0d); // MultiToSingleCodePacket opcode
           } catch (e) {
             // It is an intended FEATURE that validation throws a BoksProtocolError.
             // It should NEVER crash with TypeError, RangeError, etc.
@@ -32,17 +32,14 @@ describe('MultiToSingleCodePacket Resilience (Fuzzing)', () => {
   it('FEATURE REGRESSION: should securely reject malformed binary payloads in fromPayload with BoksProtocolError', () => {
     // Fuzz the binary parser
     fc.assert(
-      fc.property(
-        fc.uint8Array({ minLength: 0, maxLength: 256 }),
-        (payload) => {
-          try {
-            const packet = MultiToSingleCodePacket.fromPayload(payload);
-            expect(packet).toBeInstanceOf(MultiToSingleCodePacket);
-          } catch (e) {
-            expect(e).toBeInstanceOf(BoksProtocolError);
-          }
+      fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (payload) => {
+        try {
+          const packet = MultiToSingleCodePacket.fromPayload(payload);
+          expect(packet).toBeInstanceOf(MultiToSingleCodePacket);
+        } catch (e) {
+          expect(e).toBeInstanceOf(BoksProtocolError);
         }
-      ),
+      }),
       { numRuns: 1000 }
     );
   });

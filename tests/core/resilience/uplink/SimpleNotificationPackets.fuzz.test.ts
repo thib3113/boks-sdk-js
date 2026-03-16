@@ -18,14 +18,13 @@ import { NotifyCodesCountPacket } from '../../../../src/protocol/uplink/NotifyCo
 import { NotifyLogsCountPacket } from '../../../../src/protocol/uplink/NotifyLogsCountPacket';
 
 describe('SimpleNotificationPackets Resilience (Fuzzing)', () => {
-
   describe('NotifyCodeGenerationProgressPacket', () => {
     it('FEATURE REGRESSION: should parse progress correctly for valid payloads', () => {
       fc.assert(
         fc.property(fc.uint8Array({ minLength: 1, maxLength: 256 }), (payload) => {
           const packet = NotifyCodeGenerationProgressPacket.fromPayload(payload);
           expect(packet).toBeInstanceOf(NotifyCodeGenerationProgressPacket);
-          expect(packet.opcode).toBe(0xC2);
+          expect(packet.opcode).toBe(0xc2);
           expect((packet as any).rawPayload).toEqual(payload);
           expect(packet.progress).toBe(payload[0]);
         }),
@@ -137,7 +136,7 @@ describe('SimpleNotificationPackets Resilience (Fuzzing)', () => {
         fc.property(fc.uint8Array({ minLength: 4, maxLength: 256 }), (payload) => {
           const packet = NotifyCodesCountPacket.fromPayload(payload);
           expect(packet).toBeInstanceOf(NotifyCodesCountPacket);
-          expect(packet.opcode).toBe(0xC3);
+          expect(packet.opcode).toBe(0xc3);
           expect((packet as any).rawPayload).toEqual(payload);
           const view = new DataView(payload.buffer, payload.byteOffset, payload.byteLength);
           expect(packet.masterCount).toBe(view.getUint16(0, false));
@@ -214,7 +213,7 @@ describe('SimpleNotificationPackets Resilience (Fuzzing)', () => {
       fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (payload) => {
         const packet = ErrorBadRequestPacket.fromPayload(payload);
         expect(packet).toBeInstanceOf(ErrorBadRequestPacket);
-        expect(packet.opcode).toBe(0xE2);
+        expect(packet.opcode).toBe(0xe2);
         expect((packet as any).rawPayload).toEqual(payload);
       }),
       { numRuns: 1000 }
@@ -226,7 +225,7 @@ describe('SimpleNotificationPackets Resilience (Fuzzing)', () => {
       fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (payload) => {
         const packet = ErrorCrcPacket.fromPayload(payload);
         expect(packet).toBeInstanceOf(ErrorCrcPacket);
-        expect(packet.opcode).toBe(0xE0);
+        expect(packet.opcode).toBe(0xe0);
         expect((packet as any).rawPayload).toEqual(payload);
       }),
       { numRuns: 1000 }
@@ -238,7 +237,7 @@ describe('SimpleNotificationPackets Resilience (Fuzzing)', () => {
       fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (payload) => {
         const packet = ErrorUnauthorizedPacket.fromPayload(payload);
         expect(packet).toBeInstanceOf(ErrorUnauthorizedPacket);
-        expect(packet.opcode).toBe(0xE1);
+        expect(packet.opcode).toBe(0xe1);
         expect((packet as any).rawPayload).toEqual(payload);
       }),
       { numRuns: 1000 }
@@ -262,7 +261,7 @@ describe('SimpleNotificationPackets Resilience (Fuzzing)', () => {
       fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (payload) => {
         const packet = NotifyCodeGenerationErrorPacket.fromPayload(payload);
         expect(packet).toBeInstanceOf(NotifyCodeGenerationErrorPacket);
-        expect(packet.opcode).toBe(0xC1);
+        expect(packet.opcode).toBe(0xc1);
         expect((packet as any).rawPayload).toEqual(payload);
       }),
       { numRuns: 1000 }
@@ -274,7 +273,7 @@ describe('SimpleNotificationPackets Resilience (Fuzzing)', () => {
       fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (payload) => {
         const packet = NotifyCodeGenerationSuccessPacket.fromPayload(payload);
         expect(packet).toBeInstanceOf(NotifyCodeGenerationSuccessPacket);
-        expect(packet.opcode).toBe(0xC0);
+        expect(packet.opcode).toBe(0xc0);
         expect((packet as any).rawPayload).toEqual(payload);
       }),
       { numRuns: 1000 }
@@ -286,7 +285,7 @@ describe('SimpleNotificationPackets Resilience (Fuzzing)', () => {
       fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (payload) => {
         const packet = NotifySetConfigurationSuccessPacket.fromPayload(payload);
         expect(packet).toBeInstanceOf(NotifySetConfigurationSuccessPacket);
-        expect(packet.opcode).toBe(0xC4);
+        expect(packet.opcode).toBe(0xc4);
         expect((packet as any).rawPayload).toEqual(payload);
       }),
       { numRuns: 1000 }

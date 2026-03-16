@@ -1,10 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { BoksClient } from '@/client/BoksClient';
 import { BoksTransport } from '@/client/transport';
-import {
-  BoksOpcode,
-  DoorOpenHistoryPacket
-} from '@/protocol';
+import { BoksOpcode, DoorOpenHistoryPacket } from '@/protocol';
 import { BoksClientErrorId } from '@/errors/BoksClientError';
 import { calculateChecksum } from '@/utils/converters';
 
@@ -14,7 +11,10 @@ describe('BoksClient fetchHistory', () => {
   let notificationCallback: ((data: Uint8Array) => void) | undefined;
 
   // Helper to create valid packet buffer
-  const createPacketBuffer = (opcode: number, payload: Uint8Array = new Uint8Array(0)): Uint8Array => {
+  const createPacketBuffer = (
+    opcode: number,
+    payload: Uint8Array = new Uint8Array(0)
+  ): Uint8Array => {
     const buffer = new Uint8Array(payload.length + 3);
     buffer[0] = opcode;
     buffer[1] = payload.length;
@@ -34,7 +34,7 @@ describe('BoksClient fetchHistory', () => {
         notificationCallback = cb;
         return Promise.resolve();
       }),
-      subscribeTo: vi.fn().mockResolvedValue(undefined),
+      subscribeTo: vi.fn().mockResolvedValue(undefined)
     };
 
     client = new BoksClient({ transport: mockTransport });
@@ -48,7 +48,7 @@ describe('BoksClient fetchHistory', () => {
     const historyPromise = client.fetchHistory(1000);
 
     // Wait for the async send operation (command queue) to process
-    await new Promise(resolve => setTimeout(resolve, 0));
+    await new Promise((resolve) => setTimeout(resolve, 0));
 
     // Verify RequestLogsPacket was sent (0x03)
     expect(mockTransport.write).toHaveBeenCalled();
@@ -89,7 +89,9 @@ describe('BoksClient fetchHistory', () => {
     const historyPromise = client.fetchHistory(100);
 
     // Create the assertion promise immediately to catch rejection
-    const assertion = expect(historyPromise).rejects.toThrowError(expect.objectContaining({ id: BoksClientErrorId.TIMEOUT }));
+    const assertion = expect(historyPromise).rejects.toThrowError(
+      expect.objectContaining({ id: BoksClientErrorId.TIMEOUT })
+    );
 
     // Wait for send to likely happen
     await vi.advanceTimersByTimeAsync(1);

@@ -2,7 +2,6 @@ import { PayloadMapper, getOrCreateMetadata } from './PayloadMapper';
 import { BoksProtocolError, BoksProtocolErrorId } from '../../errors/BoksProtocolError';
 import { BoksExpectedReason } from '../../errors/BoksExpectedReason';
 
-
 export function PayloadUint24(offset: number) {
   PayloadMapper.assertSafeBounds(offset, 3);
   return function <T, V>(

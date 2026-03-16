@@ -10,7 +10,11 @@ describe('MasterCodeEditPacket', () => {
   const validNewPin = '654321';
 
   it('should construct with valid parameters', () => {
-    const packet = new MasterCodeEditPacket({ configKey: validKey, index: validIndex, newPin: validNewPin });
+    const packet = new MasterCodeEditPacket({
+      configKey: validKey,
+      index: validIndex,
+      newPin: validNewPin
+    });
     expect(packet.opcode).toBe(BoksOpcode.MASTER_CODE_EDIT);
     expect(packet.configKey).toBe(validKey);
     expect(packet.index).toBe(validIndex);
@@ -22,7 +26,11 @@ describe('MasterCodeEditPacket', () => {
     // Key: 3132333435363738
     // Index: 02
     // Pin: 363534333231
-    const packet = new MasterCodeEditPacket({ configKey: validKey, index: validIndex, newPin: validNewPin });
+    const packet = new MasterCodeEditPacket({
+      configKey: validKey,
+      index: validIndex,
+      newPin: validNewPin
+    });
     const encoded = packet.encode();
     expect(encoded[0]).toBe(0x09);
     expect(encoded[1]).toBe(15);
@@ -44,36 +52,41 @@ describe('MasterCodeEditPacket', () => {
   });
 
   it('should parse with default index 0 if payload is short', () => {
-      // If index byte missing, it defaults to 0.
-      // But we need pin bytes too.
-      // If we provide just key, index defaults to 0, pin defaults to empty string -> error.
-      // So this test case is tricky because constructor validation runs.
-
-      // If we provide key + enough bytes for pin but at wrong offset?
-      // fromPayload logic: index = payload[8]. newPin = slice(9, 15).
-
-      // If payload is length 15 (correct), index is at 8.
-      // If payload is length 8, index defaults to 0. Pin is empty -> Error.
+    // If index byte missing, it defaults to 0.
+    // But we need pin bytes too.
+    // If we provide just key, index defaults to 0, pin defaults to empty string -> error.
+    // So this test case is tricky because constructor validation runs.
+    // If we provide key + enough bytes for pin but at wrong offset?
+    // fromPayload logic: index = payload[8]. newPin = slice(9, 15).
+    // If payload is length 15 (correct), index is at 8.
+    // If payload is length 8, index defaults to 0. Pin is empty -> Error.
   });
 
   it('should throw INVALID_CONFIG_KEY for invalid config key format', () => {
-     expect(() => new MasterCodeEditPacket({ configKey: 'invalid', index: validIndex, newPin: validNewPin })).toThrowError(BoksProtocolError);
+    expect(
+      () =>
+        new MasterCodeEditPacket({ configKey: 'invalid', index: validIndex, newPin: validNewPin })
+    ).toThrowError(BoksProtocolError);
   });
 
   it('should throw INVALID_PIN_FORMAT for invalid pin', () => {
-      expect(() => new MasterCodeEditPacket({ configKey: validKey, index: validIndex, newPin: '123' })).toThrowError(BoksProtocolError);
+    expect(
+      () => new MasterCodeEditPacket({ configKey: validKey, index: validIndex, newPin: '123' })
+    ).toThrowError(BoksProtocolError);
   });
 
   it('should throw INVALID_INDEX_RANGE for invalid index', () => {
-      expect(() => new MasterCodeEditPacket({ configKey: validKey, index: 256, newPin: validNewPin })).toThrowError(BoksProtocolError);
+    expect(
+      () => new MasterCodeEditPacket({ configKey: validKey, index: 256, newPin: validNewPin })
+    ).toThrowError(BoksProtocolError);
   });
 
   it('should fail parsing if payload is too short for pin', () => {
-      // Providing only key
-      const payload = new Uint8Array(8);
-      payload.set(stringToBytes(validKey), 0);
+    // Providing only key
+    const payload = new Uint8Array(8);
+    payload.set(stringToBytes(validKey), 0);
 
-      expect(() => MasterCodeEditPacket.fromPayload(payload)).toThrowError(BoksProtocolError);
-      // because pin will be empty string
+    expect(() => MasterCodeEditPacket.fromPayload(payload)).toThrowError(BoksProtocolError);
+    // because pin will be empty string
   });
 });

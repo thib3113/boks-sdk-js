@@ -3,14 +3,13 @@ import * as fc from 'fast-check';
 import { generateBoksPin } from '../../src/crypto/pin-algorithm';
 
 describe('PIN Algorithm - Property Based Testing', () => {
-  
   // Invariant 1: Le résultat fait toujours 6 caractères
   it('should always return a 6-character string', () => {
     fc.assert(
       fc.property(
         fc.uint8Array({ minLength: 32, maxLength: 32 }), // Clé de 32 octets
         fc.constantFrom('single-use', 'multi-use', 'master'), // Préfixe valide uniquement
-        fc.nat(),                                        // Index positif
+        fc.nat(), // Index positif
         (key, prefix, index) => {
           const pin = generateBoksPin(key, prefix, index);
           return pin.length === 6;
@@ -78,23 +77,27 @@ describe('PIN Algorithm - Property Based Testing', () => {
   it('should yield the same result regardless of previous calls', () => {
     const key1 = new Uint8Array(32).fill(0x11);
     const key2 = new Uint8Array(32).fill(0x22);
-    
+
     // Calcul de référence
     const ref1 = generateBoksPin(key1, 'single-use', 1);
     const ref2 = generateBoksPin(key2, 'single-use', 2);
 
     // On alterne les appels massivement
     for (let i = 0; i < 1000; i++) {
-        // Use try-catch for junk calls as they are expected to fail now
-        try { generateBoksPin(key1, 'junk', i); } catch {}
+      // Use try-catch for junk calls as they are expected to fail now
+      try {
+        generateBoksPin(key1, 'junk', i);
+      } catch {}
 
-        const check2 = generateBoksPin(key2, 'single-use', 2);
-        expect(check2).toBe(ref2);
+      const check2 = generateBoksPin(key2, 'single-use', 2);
+      expect(check2).toBe(ref2);
 
-        try { generateBoksPin(key2, 'junk', i); } catch {}
+      try {
+        generateBoksPin(key2, 'junk', i);
+      } catch {}
 
-        const check1 = generateBoksPin(key1, 'single-use', 1);
-        expect(check1).toBe(ref1);
+      const check1 = generateBoksPin(key1, 'single-use', 1);
+      expect(check1).toBe(ref1);
     }
   });
 
@@ -108,12 +111,12 @@ describe('PIN Algorithm - Property Based Testing', () => {
         fc.integer({ min: 0, max: 31 }), // Octet à modifier
         (key, prefix, index, byteToFlip) => {
           const pin1 = generateBoksPin(key, prefix, index);
-          
+
           const key2 = new Uint8Array(key);
           key2[byteToFlip] ^= 0x01; // On change 1 bit
-          
+
           const pin2 = generateBoksPin(key2, prefix, index);
-          
+
           return pin1 !== pin2; // On s'attend à ce que le PIN change (très haute probabilité)
         }
       ),

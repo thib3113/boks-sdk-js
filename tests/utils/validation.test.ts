@@ -22,26 +22,50 @@ describe('validation utils', () => {
 
     it('should reject PIN codes with invalid length', () => {
       expect(() => validatePinCode('12345')).toThrowError(
-        new BoksProtocolError(BoksProtocolErrorId.INVALID_PIN_FORMAT, 'PIN must be exactly 6 characters using only 0-9, A, and B', { received: 5, expected: 6 })
+        new BoksProtocolError(
+          BoksProtocolErrorId.INVALID_PIN_FORMAT,
+          'PIN must be exactly 6 characters using only 0-9, A, and B',
+          { received: 5, expected: 6 }
+        )
       );
       expect(() => validatePinCode('1234567')).toThrowError(
-        new BoksProtocolError(BoksProtocolErrorId.INVALID_PIN_FORMAT, 'PIN must be exactly 6 characters using only 0-9, A, and B', { received: 7, expected: 6 })
+        new BoksProtocolError(
+          BoksProtocolErrorId.INVALID_PIN_FORMAT,
+          'PIN must be exactly 6 characters using only 0-9, A, and B',
+          { received: 7, expected: 6 }
+        )
       );
       expect(() => validatePinCode('')).toThrowError(
-        new BoksProtocolError(BoksProtocolErrorId.INVALID_PIN_FORMAT, 'PIN must be exactly 6 characters using only 0-9, A, and B', { received: 0, expected: 6 })
+        new BoksProtocolError(
+          BoksProtocolErrorId.INVALID_PIN_FORMAT,
+          'PIN must be exactly 6 characters using only 0-9, A, and B',
+          { received: 0, expected: 6 }
+        )
       );
     });
 
     it('should reject PIN codes with invalid characters', () => {
       expect(() => validatePinCode('123C56')).toThrowError(
-        new BoksProtocolError(BoksProtocolErrorId.INVALID_PIN_FORMAT, 'PIN must be exactly 6 characters using only 0-9, A, and B', { received: '123C56', expected: BoksExpectedReason.PIN_CODE_FORMAT })
+        new BoksProtocolError(
+          BoksProtocolErrorId.INVALID_PIN_FORMAT,
+          'PIN must be exactly 6 characters using only 0-9, A, and B',
+          { received: '123C56', expected: BoksExpectedReason.PIN_CODE_FORMAT }
+        )
       ); // C is invalid
       //expect(() => validatePinCode('123a56')).toThrow(BoksProtocolError); // a is invalid (must be uppercase)
       expect(() => validatePinCode('123 56')).toThrowError(
-        new BoksProtocolError(BoksProtocolErrorId.INVALID_PIN_FORMAT, 'PIN must be exactly 6 characters using only 0-9, A, and B', { received: '123 56', expected: BoksExpectedReason.PIN_CODE_FORMAT })
+        new BoksProtocolError(
+          BoksProtocolErrorId.INVALID_PIN_FORMAT,
+          'PIN must be exactly 6 characters using only 0-9, A, and B',
+          { received: '123 56', expected: BoksExpectedReason.PIN_CODE_FORMAT }
+        )
       ); // space is invalid
       expect(() => validatePinCode('12-456')).toThrowError(
-        new BoksProtocolError(BoksProtocolErrorId.INVALID_PIN_FORMAT, 'PIN must be exactly 6 characters using only 0-9, A, and B', { received: '12-456', expected: BoksExpectedReason.PIN_CODE_FORMAT })
+        new BoksProtocolError(
+          BoksProtocolErrorId.INVALID_PIN_FORMAT,
+          'PIN must be exactly 6 characters using only 0-9, A, and B',
+          { received: '12-456', expected: BoksExpectedReason.PIN_CODE_FORMAT }
+        )
       ); // dash is invalid
     });
   });
@@ -55,22 +79,34 @@ describe('validation utils', () => {
 
     it('should reject negative indices', () => {
       expect(() => validateMasterCodeIndex(-1)).toThrowError(
-        new BoksProtocolError(BoksProtocolErrorId.INVALID_INDEX_RANGE, undefined, { received: -1, expected: '0 to 255' })
+        new BoksProtocolError(BoksProtocolErrorId.INVALID_INDEX_RANGE, undefined, {
+          received: -1,
+          expected: '0 to 255'
+        })
       );
     });
 
     it('should reject indices out of range', () => {
       expect(() => validateMasterCodeIndex(256)).toThrowError(
-        new BoksProtocolError(BoksProtocolErrorId.INVALID_INDEX_RANGE, undefined, { received: 256, expected: '0 to 255' })
+        new BoksProtocolError(BoksProtocolErrorId.INVALID_INDEX_RANGE, undefined, {
+          received: 256,
+          expected: '0 to 255'
+        })
       );
       expect(() => validateMasterCodeIndex(300)).toThrowError(
-        new BoksProtocolError(BoksProtocolErrorId.INVALID_INDEX_RANGE, undefined, { received: 300, expected: '0 to 255' })
+        new BoksProtocolError(BoksProtocolErrorId.INVALID_INDEX_RANGE, undefined, {
+          received: 300,
+          expected: '0 to 255'
+        })
       );
     });
 
     it('should reject non-integer indices', () => {
       expect(() => validateMasterCodeIndex(1.5)).toThrowError(
-        new BoksProtocolError(BoksProtocolErrorId.INVALID_INDEX_RANGE, undefined, { received: 1.5, expected: '0 to 255' })
+        new BoksProtocolError(BoksProtocolErrorId.INVALID_INDEX_RANGE, undefined, {
+          received: 1.5,
+          expected: '0 to 255'
+        })
       );
     });
   });
@@ -89,34 +125,59 @@ describe('validation utils', () => {
     it('should reject hex string with non-hex characters', () => {
       const invalidHex = 'XX'.repeat(32);
       expect(() => validateSeed(invalidHex)).toThrowError(
-        new BoksProtocolError(BoksProtocolErrorId.INVALID_VALUE, 'Seed string must contain only valid hex characters', { received: invalidHex, expected: BoksExpectedReason.VALID_HEX_CHAR })
+        new BoksProtocolError(
+          BoksProtocolErrorId.INVALID_VALUE,
+          'Seed string must contain only valid hex characters',
+          { received: invalidHex, expected: BoksExpectedReason.VALID_HEX_CHAR }
+        )
       );
     });
 
     it('should reject Uint8Array with invalid length', () => {
       expect(() => validateSeed(new Uint8Array(31))).toThrowError(
-        new BoksProtocolError(BoksProtocolErrorId.INVALID_SEED_LENGTH, undefined, { received: 31, expected: 32 })
+        new BoksProtocolError(BoksProtocolErrorId.INVALID_SEED_LENGTH, undefined, {
+          received: 31,
+          expected: 32
+        })
       );
       expect(() => validateSeed(new Uint8Array(33))).toThrowError(
-        new BoksProtocolError(BoksProtocolErrorId.INVALID_SEED_LENGTH, undefined, { received: 33, expected: 32 })
+        new BoksProtocolError(BoksProtocolErrorId.INVALID_SEED_LENGTH, undefined, {
+          received: 33,
+          expected: 32
+        })
       );
     });
 
     it('should reject hex string with invalid length', () => {
       expect(() => validateSeed('AA'.repeat(31))).toThrowError(
-        new BoksProtocolError(BoksProtocolErrorId.INVALID_SEED_LENGTH, 'Seed string must be exactly 64 hex characters', { received: 62, expected: 64 })
+        new BoksProtocolError(
+          BoksProtocolErrorId.INVALID_SEED_LENGTH,
+          'Seed string must be exactly 64 hex characters',
+          { received: 62, expected: 64 }
+        )
       );
       expect(() => validateSeed('AA'.repeat(33))).toThrowError(
-        new BoksProtocolError(BoksProtocolErrorId.INVALID_SEED_LENGTH, 'Seed string must be exactly 64 hex characters', { received: 66, expected: 64 })
+        new BoksProtocolError(
+          BoksProtocolErrorId.INVALID_SEED_LENGTH,
+          'Seed string must be exactly 64 hex characters',
+          { received: 66, expected: 64 }
+        )
       );
     });
 
     it('should reject empty string and empty Uint8Array', () => {
       expect(() => validateSeed('')).toThrowError(
-        new BoksProtocolError(BoksProtocolErrorId.INVALID_SEED_LENGTH, 'Seed string must be exactly 64 hex characters', { received: 0, expected: 64 })
+        new BoksProtocolError(
+          BoksProtocolErrorId.INVALID_SEED_LENGTH,
+          'Seed string must be exactly 64 hex characters',
+          { received: 0, expected: 64 }
+        )
       );
       expect(() => validateSeed(new Uint8Array(0))).toThrowError(
-        new BoksProtocolError(BoksProtocolErrorId.INVALID_SEED_LENGTH, undefined, { received: 0, expected: 32 })
+        new BoksProtocolError(BoksProtocolErrorId.INVALID_SEED_LENGTH, undefined, {
+          received: 0,
+          expected: 32
+        })
       );
     });
   });
@@ -124,7 +185,10 @@ describe('validation utils', () => {
   describe('validateCredentialsKey', () => {
     describe.each([
       { type: 'Master Key (Uint8Array)', key: new Uint8Array(32) },
-      { type: 'Master Key (hex string)', key: '0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF' },
+      {
+        type: 'Master Key (hex string)',
+        key: '0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF'
+      },
       { type: 'Config Key (Uint8Array)', key: new Uint8Array(4) },
       { type: 'Config Key (hex string)', key: '01234567' }
     ])('valid keys: $type', ({ key }) => {
@@ -134,17 +198,72 @@ describe('validation utils', () => {
     });
 
     describe.each([
-      { type: 'Empty string', key: '', received: 0, errorId: BoksProtocolErrorId.INVALID_SEED_LENGTH },
-      { type: 'String with only non-hex chars', key: 'xxxxxxxx', received: 8, errorId: BoksProtocolErrorId.INVALID_VALUE },
-      { type: 'String with spaces', key: '0123 567', received: 8, errorId: BoksProtocolErrorId.INVALID_VALUE },
-      { type: 'String with dashes', key: '0123-567', received: 8, errorId: BoksProtocolErrorId.INVALID_VALUE },
-      { type: '1-byte hex string', key: '12', received: 2, errorId: BoksProtocolErrorId.INVALID_SEED_LENGTH },
-      { type: '16-byte hex string', key: '0123456789ABCDEF0123456789ABCDEF', received: 32, errorId: BoksProtocolErrorId.INVALID_SEED_LENGTH },
-      { type: '64-byte hex string', key: '0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF', received: 128, errorId: BoksProtocolErrorId.INVALID_SEED_LENGTH },
-      { type: 'Empty Uint8Array', key: new Uint8Array(0), received: 0, errorId: BoksProtocolErrorId.INVALID_SEED_LENGTH },
-      { type: '1-byte Uint8Array', key: new Uint8Array(1), received: 1, errorId: BoksProtocolErrorId.INVALID_SEED_LENGTH },
-      { type: '16-byte Uint8Array', key: new Uint8Array(16), received: 16, errorId: BoksProtocolErrorId.INVALID_SEED_LENGTH },
-      { type: '64-byte Uint8Array', key: new Uint8Array(64), received: 64, errorId: BoksProtocolErrorId.INVALID_SEED_LENGTH }
+      {
+        type: 'Empty string',
+        key: '',
+        received: 0,
+        errorId: BoksProtocolErrorId.INVALID_SEED_LENGTH
+      },
+      {
+        type: 'String with only non-hex chars',
+        key: 'xxxxxxxx',
+        received: 8,
+        errorId: BoksProtocolErrorId.INVALID_VALUE
+      },
+      {
+        type: 'String with spaces',
+        key: '0123 567',
+        received: 8,
+        errorId: BoksProtocolErrorId.INVALID_VALUE
+      },
+      {
+        type: 'String with dashes',
+        key: '0123-567',
+        received: 8,
+        errorId: BoksProtocolErrorId.INVALID_VALUE
+      },
+      {
+        type: '1-byte hex string',
+        key: '12',
+        received: 2,
+        errorId: BoksProtocolErrorId.INVALID_SEED_LENGTH
+      },
+      {
+        type: '16-byte hex string',
+        key: '0123456789ABCDEF0123456789ABCDEF',
+        received: 32,
+        errorId: BoksProtocolErrorId.INVALID_SEED_LENGTH
+      },
+      {
+        type: '64-byte hex string',
+        key: '0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF',
+        received: 128,
+        errorId: BoksProtocolErrorId.INVALID_SEED_LENGTH
+      },
+      {
+        type: 'Empty Uint8Array',
+        key: new Uint8Array(0),
+        received: 0,
+        errorId: BoksProtocolErrorId.INVALID_SEED_LENGTH
+      },
+      {
+        type: '1-byte Uint8Array',
+        key: new Uint8Array(1),
+        received: 1,
+        errorId: BoksProtocolErrorId.INVALID_SEED_LENGTH
+      },
+      {
+        type: '16-byte Uint8Array',
+        key: new Uint8Array(16),
+        received: 16,
+        errorId: BoksProtocolErrorId.INVALID_SEED_LENGTH
+      },
+      {
+        type: '64-byte Uint8Array',
+        key: new Uint8Array(64),
+        received: 64,
+        errorId: BoksProtocolErrorId.INVALID_SEED_LENGTH
+      }
     ])('invalid keys: $type', ({ key, received, errorId }) => {
       it('should reject invalid key and throw BoksProtocolError', () => {
         let error: unknown;
@@ -160,7 +279,9 @@ describe('validation utils', () => {
         if (errorId === BoksProtocolErrorId.INVALID_SEED_LENGTH) {
           expect(protocolError.context).toBeDefined();
           expect(protocolError.context?.received).toBe(received);
-          expect(protocolError.context?.expected).toBe(typeof key === 'string' ? '8 or 64' : '32 or 4');
+          expect(protocolError.context?.expected).toBe(
+            typeof key === 'string' ? '8 or 64' : '32 or 4'
+          );
         }
       });
     });
@@ -179,25 +300,49 @@ describe('validation utils', () => {
     it('should reject UIDs with invalid format', () => {
       // @ts-expect-error Testing invalid type
       expect(() => validateNfcUid(1234)).toThrowError(
-        new BoksProtocolError(BoksProtocolErrorId.INVALID_NFC_UID_FORMAT, undefined, { received: 'number', expected: 'string', reason: 'NOT_HEX' })
+        new BoksProtocolError(BoksProtocolErrorId.INVALID_NFC_UID_FORMAT, undefined, {
+          received: 'number',
+          expected: 'string',
+          reason: 'NOT_HEX'
+        })
       );
       expect(() => validateNfcUid('')).toThrowError(
-        new BoksProtocolError(BoksProtocolErrorId.INVALID_NFC_UID_FORMAT, undefined, { received: '', expected: BoksExpectedReason.VALID_HEX_CHAR, reason: 'NOT_HEX' })
+        new BoksProtocolError(BoksProtocolErrorId.INVALID_NFC_UID_FORMAT, undefined, {
+          received: '',
+          expected: BoksExpectedReason.VALID_HEX_CHAR,
+          reason: 'NOT_HEX'
+        })
       );
       expect(() => validateNfcUid('01020G04')).toThrowError(
-        new BoksProtocolError(BoksProtocolErrorId.INVALID_NFC_UID_FORMAT, undefined, { received: '01020G04', expected: BoksExpectedReason.VALID_HEX_CHAR, reason: 'NOT_HEX' })
+        new BoksProtocolError(BoksProtocolErrorId.INVALID_NFC_UID_FORMAT, undefined, {
+          received: '01020G04',
+          expected: BoksExpectedReason.VALID_HEX_CHAR,
+          reason: 'NOT_HEX'
+        })
       ); // Non-hex character
     });
 
     it('should reject UIDs with invalid length', () => {
       expect(() => validateNfcUid('0102030405')).toThrowError(
-        new BoksProtocolError(BoksProtocolErrorId.INVALID_NFC_UID_FORMAT, undefined, { received: 10, expected: '8, 14, or 20 hex chars (4, 7, or 10 bytes)', reason: 'INVALID_LENGTH' })
+        new BoksProtocolError(BoksProtocolErrorId.INVALID_NFC_UID_FORMAT, undefined, {
+          received: 10,
+          expected: '8, 14, or 20 hex chars (4, 7, or 10 bytes)',
+          reason: 'INVALID_LENGTH'
+        })
       ); // 5 bytes
       expect(() => validateNfcUid('010203040506070809')).toThrowError(
-        new BoksProtocolError(BoksProtocolErrorId.INVALID_NFC_UID_FORMAT, undefined, { received: 18, expected: '8, 14, or 20 hex chars (4, 7, or 10 bytes)', reason: 'INVALID_LENGTH' })
+        new BoksProtocolError(BoksProtocolErrorId.INVALID_NFC_UID_FORMAT, undefined, {
+          received: 18,
+          expected: '8, 14, or 20 hex chars (4, 7, or 10 bytes)',
+          reason: 'INVALID_LENGTH'
+        })
       ); // 9 bytes
       expect(() => validateNfcUid('0102030405060708090A0B')).toThrowError(
-        new BoksProtocolError(BoksProtocolErrorId.INVALID_NFC_UID_FORMAT, undefined, { received: 22, expected: '8, 14, or 20 hex chars (4, 7, or 10 bytes)', reason: 'INVALID_LENGTH' })
+        new BoksProtocolError(BoksProtocolErrorId.INVALID_NFC_UID_FORMAT, undefined, {
+          received: 22,
+          expected: '8, 14, or 20 hex chars (4, 7, or 10 bytes)',
+          reason: 'INVALID_LENGTH'
+        })
       ); // 11 bytes
     });
   });

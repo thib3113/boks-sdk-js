@@ -44,7 +44,7 @@ describe('BoksClient Constructor', () => {
       disconnect: vi.fn(),
       write: vi.fn(),
       read: vi.fn(),
-      subscribe: vi.fn(),
+      subscribe: vi.fn()
     };
     // @ts-ignore
     const client = new BoksClient({ transport: mockTransport });
@@ -59,6 +59,8 @@ describe('BoksClient Constructor', () => {
   it('should throw an error when initialized without options and Web Bluetooth is not supported', () => {
     // Override the mocked navigator.bluetooth to be undefined
     vi.stubGlobal('navigator', { bluetooth: undefined });
-    expect(() => new BoksClient()).toThrow('No transport provided and Web Bluetooth is not supported.');
+    expect(() => new BoksClient()).toThrow(
+      'No transport provided and Web Bluetooth is not supported.'
+    );
   });
 });

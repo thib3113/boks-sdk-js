@@ -31,12 +31,12 @@ describe('OpenDoorPacket', () => {
   });
 
   it('should throw INVALID_PIN_FORMAT for invalid pin', () => {
-      expect(() => new OpenDoorPacket({ pin: '123' })).toThrowError(BoksProtocolError);
-      expect(() => new OpenDoorPacket({ pin: '12345C' })).toThrowError(BoksProtocolError);
+    expect(() => new OpenDoorPacket({ pin: '123' })).toThrowError(BoksProtocolError);
+    expect(() => new OpenDoorPacket({ pin: '12345C' })).toThrowError(BoksProtocolError);
   });
 
   it('should fail parsing if payload is too short', () => {
-      const shortPayload = new Uint8Array(5);
-      expect(() => OpenDoorPacket.fromPayload(shortPayload)).toThrowError(BoksProtocolError);
+    const shortPayload = new Uint8Array(5);
+    expect(() => OpenDoorPacket.fromPayload(shortPayload)).toThrowError(BoksProtocolError);
   });
 });

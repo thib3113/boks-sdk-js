@@ -32,12 +32,18 @@ describe('RegisterNfcTagScanStartPacket', () => {
   });
 
   it('should throw INVALID_CONFIG_KEY for invalid config key format', () => {
-     expect(() => new RegisterNfcTagScanStartPacket({ configKey: 'invalid' })).toThrowError(BoksProtocolError);
-     expect(() => new RegisterNfcTagScanStartPacket({ configKey: '' })).toThrowError(BoksProtocolError);
+    expect(() => new RegisterNfcTagScanStartPacket({ configKey: 'invalid' })).toThrowError(
+      BoksProtocolError
+    );
+    expect(() => new RegisterNfcTagScanStartPacket({ configKey: '' })).toThrowError(
+      BoksProtocolError
+    );
   });
 
   it('should fail parsing if payload is too short (bad key)', () => {
-      const payload = new Uint8Array(5);
-      expect(() => RegisterNfcTagScanStartPacket.fromPayload(payload)).toThrowError(BoksProtocolError);
+    const payload = new Uint8Array(5);
+    expect(() => RegisterNfcTagScanStartPacket.fromPayload(payload)).toThrowError(
+      BoksProtocolError
+    );
   });
 });

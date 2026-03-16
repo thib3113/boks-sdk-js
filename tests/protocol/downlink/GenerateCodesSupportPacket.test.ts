@@ -35,37 +35,37 @@ describe('GenerateCodesSupportPacket', () => {
   });
 
   it('should throw INVALID_SEED_LENGTH for invalid seed length', () => {
-      // This test is obsolete now as validation occurs in fromPayload, but new constructor expects valid seed length when using toPayload
-      // actually let's just make it throw BoksProtocolError for fromPayload on short seed
+    // This test is obsolete now as validation occurs in fromPayload, but new constructor expects valid seed length when using toPayload
+    // actually let's just make it throw BoksProtocolError for fromPayload on short seed
 
-      const shortSeed = new Uint8Array(31);
-      expect(() => GenerateCodesSupportPacket.fromPayload(shortSeed)).toThrowError(BoksProtocolError); // BoksProtocolError);
+    const shortSeed = new Uint8Array(31);
+    expect(() => GenerateCodesSupportPacket.fromPayload(shortSeed)).toThrowError(BoksProtocolError); // BoksProtocolError);
 
-      const shortHex = '0001';
-      expect(() => new GenerateCodesSupportPacket(shortHex)).toThrowError(BoksProtocolError);
+    const shortHex = '0001';
+    expect(() => new GenerateCodesSupportPacket(shortHex)).toThrowError(BoksProtocolError);
 
-      try {
-        new GenerateCodesSupportPacket(shortSeed);
-      } catch (e) {
-         expect((e as BoksProtocolError).id).toBe(BoksProtocolErrorId.INVALID_SEED_LENGTH);
-      }
+    try {
+      new GenerateCodesSupportPacket(shortSeed);
+    } catch (e) {
+      expect((e as BoksProtocolError).id).toBe(BoksProtocolErrorId.INVALID_SEED_LENGTH);
+    }
   });
 });
 
-  describe('error handling', () => {
-    it('should throw Error if seed length is not exactly 32 bytes in toPayload (Uint8Array path)', () => {
-      const validSeedBytes = new Uint8Array(32).fill(0x11);
-      const packet = new GenerateCodesSupportPacket(validSeedBytes);
-      expect(() => { packet.seedStr = new Uint8Array(16).fill(0x11) as unknown as string; }).toThrowError(BoksProtocolError);
-
-
-    });
-
-    it('should throw Error if seed length is not exactly 32 bytes in toPayload (String path)', () => {
-      const validSeedBytes = new Uint8Array(32).fill(0x11);
-      const packet = new GenerateCodesSupportPacket(validSeedBytes);
-      expect(() => { packet.seedStr = '00112233445566778899AABBCCDDEEFF'; }).toThrowError(BoksProtocolError);
-
-
-    });
+describe('error handling', () => {
+  it('should throw Error if seed length is not exactly 32 bytes in toPayload (Uint8Array path)', () => {
+    const validSeedBytes = new Uint8Array(32).fill(0x11);
+    const packet = new GenerateCodesSupportPacket(validSeedBytes);
+    expect(() => {
+      packet.seedStr = new Uint8Array(16).fill(0x11) as unknown as string;
+    }).toThrowError(BoksProtocolError);
   });
+
+  it('should throw Error if seed length is not exactly 32 bytes in toPayload (String path)', () => {
+    const validSeedBytes = new Uint8Array(32).fill(0x11);
+    const packet = new GenerateCodesSupportPacket(validSeedBytes);
+    expect(() => {
+      packet.seedStr = '00112233445566778899AABBCCDDEEFF';
+    }).toThrowError(BoksProtocolError);
+  });
+});

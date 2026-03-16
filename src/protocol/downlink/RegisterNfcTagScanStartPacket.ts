@@ -37,7 +37,10 @@ export class RegisterNfcTagScanStartPacket extends BoksPacket {
       parsePayload = new Uint8Array([0, ...payload]);
     }
 
-    const data = PayloadMapper.parse<RegisterNfcTagScanStartPacketProps>(RegisterNfcTagScanStartPacket, parsePayload) as any;
+    const data = PayloadMapper.parse<RegisterNfcTagScanStartPacketProps>(
+      RegisterNfcTagScanStartPacket,
+      parsePayload
+    ) as any;
     return new RegisterNfcTagScanStartPacket({ configKey: data._configKeyMapper }, payload);
   }
 }

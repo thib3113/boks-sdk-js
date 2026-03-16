@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { generateBoksPin } from '../../src/crypto/pin-algorithm';
 
 describe('PIN Algorithm - Statistical Sanity Check', () => {
-  const TEST_KEY = new Uint8Array(32).fill(0xAA);
+  const TEST_KEY = new Uint8Array(32).fill(0xaa);
   const NUM_SAMPLES = 10000;
 
   it('should have a uniform character distribution', () => {
@@ -19,16 +19,18 @@ describe('PIN Algorithm - Statistical Sanity Check', () => {
 
     const totalChars = NUM_SAMPLES * 6;
     const expectedPerChar = totalChars / 12;
-    
-    // On autorise une déviation de 10% par rapport à l'uniformité parfaite
-    const tolerance = 0.10; 
 
-    console.log("Character Distribution:");
+    // On autorise une déviation de 10% par rapport à l'uniformité parfaite
+    const tolerance = 0.1;
+
+    console.log('Character Distribution:');
     for (const char of BOKS_CHARS) {
       const frequency = counts[char] / totalChars;
       const deviation = Math.abs(counts[char] - expectedPerChar) / expectedPerChar;
-      console.log(`  '${char}': ${counts[char]} instances (${(frequency * 100).toFixed(2)}%, dev: ${(deviation * 100).toFixed(2)}%)`);
-      
+      console.log(
+        `  '${char}': ${counts[char]} instances (${(frequency * 100).toFixed(2)}%, dev: ${(deviation * 100).toFixed(2)}%)`
+      );
+
       expect(deviation).toBeLessThan(tolerance);
     }
   });
@@ -46,7 +48,9 @@ describe('PIN Algorithm - Statistical Sanity Check', () => {
     }
 
     const collisionRate = (collisions / NUM_SAMPLES) * 100;
-    console.log(`Collisions found in ${NUM_SAMPLES} samples: ${collisions} (${collisionRate.toFixed(4)}%)`);
+    console.log(
+      `Collisions found in ${NUM_SAMPLES} samples: ${collisions} (${collisionRate.toFixed(4)}%)`
+    );
 
     // Probabilité théorique de collision (Paradoxe des anniversaires simplifié)
     // Pour 10 000 échantillons sur 2.9M de combinaisons, on s'attend à environ 16-20 collisions.

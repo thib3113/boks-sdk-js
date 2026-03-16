@@ -35,29 +35,29 @@ describe('GenerateCodesPacket', () => {
   });
 
   it('should throw INVALID_SEED_LENGTH for invalid seed length', () => {
-      const shortSeed = new Uint8Array(31);
-      expect(() => new GenerateCodesPacket(shortSeed)).toThrowError(BoksProtocolError);
+    const shortSeed = new Uint8Array(31);
+    expect(() => new GenerateCodesPacket(shortSeed)).toThrowError(BoksProtocolError);
 
-      const shortHex = '0001';
-      expect(() => new GenerateCodesPacket(shortHex)).toThrowError(BoksProtocolError);
+    const shortHex = '0001';
+    expect(() => new GenerateCodesPacket(shortHex)).toThrowError(BoksProtocolError);
 
-      try {
-        new GenerateCodesPacket(shortSeed);
-      } catch (e) {
-         expect((e as BoksProtocolError).id).toBe(BoksProtocolErrorId.INVALID_SEED_LENGTH);
-      }
+    try {
+      new GenerateCodesPacket(shortSeed);
+    } catch (e) {
+      expect((e as BoksProtocolError).id).toBe(BoksProtocolErrorId.INVALID_SEED_LENGTH);
+    }
   });
 });
 
-  describe('error handling', () => {
-    it('should throw Error if seed length is not exactly 32 bytes in toPayload', () => {
-      // Create valid packet first
-      const validSeedStr = '00112233445566778899AABBCCDDEEFF00112233445566778899AABBCCDDEEFF';
-      const packet = new GenerateCodesPacket(validSeedStr);
+describe('error handling', () => {
+  it('should throw Error if seed length is not exactly 32 bytes in toPayload', () => {
+    // Create valid packet first
+    const validSeedStr = '00112233445566778899AABBCCDDEEFF00112233445566778899AABBCCDDEEFF';
+    const packet = new GenerateCodesPacket(validSeedStr);
 
-      // Forcefully alter the internal seed string directly to bypass constructor validation
-      expect(() => { packet.seedStr = '00112233445566778899AABBCCDDEEFF'; }).toThrowError(BoksProtocolError);
-
-
-    });
+    // Forcefully alter the internal seed string directly to bypass constructor validation
+    expect(() => {
+      packet.seedStr = '00112233445566778899AABBCCDDEEFF';
+    }).toThrowError(BoksProtocolError);
   });
+});

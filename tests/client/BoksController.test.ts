@@ -1,12 +1,7 @@
 import { describe, it, expect, vi, beforeEach, Mock } from 'vitest';
 import { BoksController } from '@/client/BoksController';
 import { BoksClient } from '@/client/BoksClient';
-import {
-  BoksOpcode,
-  BoksCodeType,
-  BOKS_UUIDS,
-  CreateSingleUseCodePacket
-} from '@/protocol';
+import { BoksOpcode, BoksCodeType, BOKS_UUIDS, CreateSingleUseCodePacket } from '@/protocol';
 import { BoksClientError, BoksClientErrorId } from '@/errors/BoksClientError';
 
 // Mock BoksClient
@@ -37,16 +32,18 @@ describe('BoksController', () => {
     controller = new BoksController(new BoksClient());
   });
 
-  const setupSuccess = (response: any = { opcode: BoksOpcode.CODE_OPERATION_SUCCESS }) => 
-    mockClientInstance.execute.mockResolvedValue({ 
-      isSuccess: true, 
+  const setupSuccess = (response: any = { opcode: BoksOpcode.CODE_OPERATION_SUCCESS }) =>
+    mockClientInstance.execute.mockResolvedValue({
+      isSuccess: true,
       response,
       status: 'success'
     });
 
-  const setupError = (error: Error = new BoksClientError(BoksClientErrorId.UNKNOWN_ERROR, 'Operation failed')) => 
-    mockClientInstance.execute.mockResolvedValue({ 
-      isSuccess: false, 
+  const setupError = (
+    error: Error = new BoksClientError(BoksClientErrorId.UNKNOWN_ERROR, 'Operation failed')
+  ) =>
+    mockClientInstance.execute.mockResolvedValue({
+      isSuccess: false,
       error,
       status: 'error'
     });
@@ -76,7 +73,7 @@ describe('BoksController', () => {
       setupSuccess();
       const result = await controller.createSingleUseCode('123456');
       expect(result).toBe(true);
-      
+
       const [packet] = mockClientInstance.execute.mock.calls[0];
       expect(packet).toBeInstanceOf(CreateSingleUseCodePacket);
       expect(packet.configKey).toBe(configKey);
