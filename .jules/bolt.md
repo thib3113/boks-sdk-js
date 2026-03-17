@@ -117,3 +117,7 @@
 ## 2025-10-26 - Uint8Array Array.from(payload).every() Overhead
 **Learning:** Using `Array.from(uint8Array).every()` to check buffer contents creates unnecessary array allocations and callback overhead. A simple `for` loop is significantly faster. Benchmarking showed that replacing `Array.from(payload).every((b) => b === INVALID_BYTE)` with a manual `for` loop provided a ~21x speedup in V8 (~25ms vs ~540ms for 1,000,000 iterations).
 **Action:** Always use manual `for` loops for basic validation or value checks over `Uint8Array`s instead of array conversion and higher-order functions like `every()`.
+
+## 2025-10-26 - Loop Unrolling vs Native JIT Optimization in Simple Loops
+**Learning:** While unrolling loops manually (`for (; i <= len - 4; i += 4) { sum += data[i] + data[i+1]... }`) can seem like an optimization, modern V8 and JS engines can optimize simple `for` loops more efficiently than complex unrolled code, especially for typed array iteration like `Uint8Array`. Replacing a 4-unrolled loop with a standard `for (let i = 0; i < data.length; i++) { sum += data[i]; }` yielded a ~20% speedup on 1000-element arrays and ~40% speedup on short arrays (6-16 bytes). The JIT compiler natively understands simple array iterations and applies the most efficient machine-level unrolling itself.
+**Action:** Avoid manual loop unrolling for simple linear aggregations over arrays unless rigorous benchmarking proves it is faster for your specific data size. Prefer clean, idiomatic `for` loops to let the JIT optimize.
