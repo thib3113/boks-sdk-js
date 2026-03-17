@@ -89,19 +89,6 @@ describe('PayloadMapper Coverage additions', () => {
       expect(childMetadata[METADATA_KEY]).not.toBe(parentMeta); // Should be a clone
     });
 
-    it('should clone metadata for child classes', () => {
-      class ParentPacket {
-        @PayloadConfigKey(0)
-        public accessor key!: string;
-      }
-      class ChildPacket extends ParentPacket {
-        @PayloadConfigKey(8)
-        public accessor key2!: string;
-      }
-      const inst = new ChildPacket();
-      expect(PayloadMapper).toBeDefined(); // Just ensure it compiles and runs without crashing
-    });
-
     it('should handle hex_string with 0 length', () => {
       class ZeroHexPacket {
         @PayloadHexString(0, 0)
