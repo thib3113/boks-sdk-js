@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export type PayloadConstructor = abstract new (...args: any[]) => any;
 
 import { BoksProtocolError, BoksProtocolErrorId } from '../../errors/BoksProtocolError';
@@ -226,15 +227,14 @@ export class PayloadMapper {
         symMetadata = symbols.find((s) => s.toString() === 'Symbol(Symbol.metadata)');
       }
       const fields =
-        (symMetadata /* eslint-disable-next-line @typescript-eslint/no-explicit-any */ &&
+        (symMetadata &&
           (currentClass as Record<PropertyKey, any>)[symMetadata as any]?.[METADATA_KEY]) ||
-        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
         (currentClass as Record<PropertyKey, any>)[Symbol.metadata as any]?.[METADATA_KEY] ||
-        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
         (currentClass.constructor as Record<PropertyKey, any>)?.[Symbol.metadata as any]?.[
           METADATA_KEY
         ] ||
-        legacyMetadataMap.get(currentClass as any) ||        (currentClass as Record<PropertyKey, any>)[METADATA_KEY] ||
+        legacyMetadataMap.get(currentClass as any) ||
+        (currentClass as Record<PropertyKey, any>)[METADATA_KEY] ||
         (currentClass.constructor as Record<PropertyKey, any>)?.[METADATA_KEY];
 
       if (fields && Array.isArray(fields)) {
@@ -807,7 +807,7 @@ export class PayloadMapper {
    * @param payload The raw buffer
    * @returns A mapped object containing the extracted properties
    */
-  /* eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-function-type */
+  /* eslint-disable-next-line @typescript-eslint/no-unsafe-function-type */
   public static parse<T = any>(targetClass: Function | any, payload: Uint8Array): T {
     if (typeof payload === 'string') {
       throw new BoksProtocolError(

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { BoksProtocolError, BoksProtocolErrorId } from '../../errors/BoksProtocolError';
 
 export const METADATA_KEY = Symbol.for('BoksPayloadMapper');
