@@ -141,7 +141,7 @@ describe('PayloadMapper bitIndex Security', () => {
         'Invalid bitIndex: 1); throw new Error("hacked parser"); // for property malicious',
         {
           field: 'malicious',
-          expected: BoksExpectedReason.NUMBER,
+          expected: BoksExpectedReason.BIT_INDEX,
           received: '1); throw new Error("hacked parser"); //'
         }
       )
@@ -160,7 +160,7 @@ describe('PayloadMapper bitIndex Security', () => {
         'Invalid bitIndex: 1); throw new Error("hacked serializer"); // for property malicious',
         {
           field: 'malicious',
-          expected: BoksExpectedReason.NUMBER,
+          expected: BoksExpectedReason.BIT_INDEX,
           received: '1); throw new Error("hacked serializer"); //'
         }
       )
