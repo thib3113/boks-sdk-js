@@ -30,15 +30,7 @@ export class NotifyDoorStatusPacket extends BoksRXPacket {
   }
 
   static fromPayload(payload: Uint8Array): NotifyDoorStatusPacket {
-    const parsed = PayloadMapper.parse<NotifyDoorStatusPacketProps>(
-      NotifyDoorStatusPacket,
-      payload
-    );
-    const packet = new NotifyDoorStatusPacket(
-      { inverted: parsed.inverted!, raw: parsed.raw! },
-      payload
-    );
-
-    return packet;
+    const data = PayloadMapper.parse<NotifyDoorStatusPacketProps>(NotifyDoorStatusPacket, payload);
+    return new NotifyDoorStatusPacket(data, payload);
   }
 }

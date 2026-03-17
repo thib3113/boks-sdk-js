@@ -6,8 +6,8 @@ import { bytesToHex, stringToBytes } from '@/utils/converters';
 
 describe('MasterCodeEditPacket', () => {
   const validKey = '12345678';
-  const validIndex = 2;
-  const validNewPin = '654321';
+  const validIndex = 5;
+  const validNewPin = '667788';
 
   it('should construct with valid parameters', () => {
     const packet = new MasterCodeEditPacket({
@@ -24,8 +24,8 @@ describe('MasterCodeEditPacket', () => {
   it('should encode correctly', () => {
     // Opcode 0x09. Len 15.
     // Key: 3132333435363738
-    // Index: 02
-    // Pin: 363534333231
+    // Index: 05
+    // Pin: 363637373838
     const packet = new MasterCodeEditPacket({
       configKey: validKey,
       index: validIndex,
@@ -35,7 +35,7 @@ describe('MasterCodeEditPacket', () => {
     expect(encoded[0]).toBe(0x09);
     expect(encoded[1]).toBe(15);
 
-    const expectedPayload = '313233343536373802363534333231';
+    const expectedPayload = '313233343536373805363637373838';
     expect(bytesToHex(encoded.subarray(2, 17))).toBe(expectedPayload);
   });
 
@@ -88,5 +88,15 @@ describe('MasterCodeEditPacket', () => {
 
     expect(() => MasterCodeEditPacket.fromPayload(payload)).toThrowError(BoksProtocolError);
     // because pin will be empty string
+  });
+
+  it('should match fixed hexadecimal reference encoding', () => {
+    const packet = new MasterCodeEditPacket({
+      configKey: '12345678',
+      index: 5,
+      newPin: '667788'
+    });
+    // Opcode 0x09, Len 15 (0x0F), Key '12345678', Index 5, PIN '667788', Checksum 0xE7
+    expect(bytesToHex(packet.encode())).toBe('090F3132333435363738053636373738380B');
   });
 });

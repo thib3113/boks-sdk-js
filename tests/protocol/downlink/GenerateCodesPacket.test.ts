@@ -11,7 +11,7 @@ describe('GenerateCodesPacket', () => {
   it('should construct with valid parameters (hex string)', () => {
     const packet = new GenerateCodesPacket(validSeedHex);
     expect(packet.opcode).toBe(BoksOpcode.GENERATE_CODES);
-    expect(packet.seedStr).toBe(validSeedHex);
+    expect(packet.seed).toBe(validSeedHex);
   });
 
   it('should construct with valid parameters (Uint8Array)', () => {
@@ -27,6 +27,14 @@ describe('GenerateCodesPacket', () => {
     expect(encoded[0]).toBe(0x10);
     expect(encoded[1]).toBe(32);
     expect(bytesToHex(encoded.subarray(2, 34))).toBe(validSeedHex);
+  });
+
+  it('should match fixed hexadecimal reference encoding', () => {
+    const seed = '00'.repeat(32);
+    const packet = new GenerateCodesPacket(seed);
+    const encoded = packet.encode();
+    // Opcode 0x10, Len 32 (0x20), Seed all 00, Checksum 0x30
+    expect(bytesToHex(encoded)).toBe('1020' + seed + '30');
   });
 
   it('should parse from payload correctly', () => {
@@ -57,7 +65,7 @@ describe('error handling', () => {
 
     // Forcefully alter the internal seed string directly to bypass constructor validation
     expect(() => {
-      packet.seedStr = '00112233445566778899AABBCCDDEEFF';
+      packet.seed = '00112233445566778899AABBCCDDEEFF';
     }).toThrowError(BoksProtocolError);
   });
 });

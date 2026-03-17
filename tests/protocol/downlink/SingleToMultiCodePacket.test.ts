@@ -5,8 +5,8 @@ import { BoksOpcode } from '@/protocol/constants';
 import { bytesToHex, stringToBytes } from '@/utils/converters';
 
 describe('SingleToMultiCodePacket', () => {
-  const validKey = 'ABCDEF12';
-  const validPin = '123456';
+  const validKey = '12345678';
+  const validPin = '876543';
 
   it('should construct with valid parameters', () => {
     const packet = new SingleToMultiCodePacket({ configKey: validKey, pin: validPin });
@@ -22,10 +22,16 @@ describe('SingleToMultiCodePacket', () => {
     expect(encoded[0]).toBe(0x0a);
     expect(encoded[1]).toBe(14);
 
-    // Key "ABCDEF12" -> 4142434445463132
-    // Pin "123456" -> 313233343536
-    const expectedPayload = '4142434445463132313233343536';
+    // Key "12345678" -> 3132333435363738
+    // Pin "876543" -> 383736353433
+    const expectedPayload = '3132333435363738383736353433';
     expect(bytesToHex(encoded.subarray(2, 16))).toBe(expectedPayload);
+  });
+
+  it('should match fixed hexadecimal reference encoding', () => {
+    const packet = new SingleToMultiCodePacket({ configKey: '12345678', pin: '876543' });
+    // Received: 0A0E3132333435363738383736353433FD
+    expect(bytesToHex(packet.encode())).toBe('0A0E3132333435363738383736353433FD');
   });
 
   it('should parse from payload correctly', () => {

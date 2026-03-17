@@ -24,13 +24,13 @@ export class NfcRegisteringHistoryPacket extends BoksHistoryEvent {
   }
 
   static fromPayload(payload: Uint8Array): NfcRegisteringHistoryPacket {
-    const data = PayloadMapper.parse<NfcRegisteringHistoryPacketProps>(
+    const data = PayloadMapper.parse<NfcRegisteringHistoryPacket>(
       NfcRegisteringHistoryPacket,
       payload
     );
     return new NfcRegisteringHistoryPacket(
       {
-        age: (data as any)._age,
+        age: data.age,
         data: payload.length > 3 ? payload.subarray(3) : new Uint8Array(0)
       },
       payload

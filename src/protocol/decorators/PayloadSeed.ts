@@ -1,11 +1,12 @@
 import { validateSeed } from '../../utils/validation';
 import { bytesToHex } from '../../utils/converters';
-import { PayloadMapper, getOrCreateMetadata } from './PayloadMapper';
+import { getOrCreateMetadata } from './PayloadMapper';
+import { assertSafeBounds } from './PayloadMetadata';
 import { BoksProtocolError, BoksProtocolErrorId } from '../../errors/BoksProtocolError';
 import { BoksExpectedReason } from '../../errors/BoksExpectedReason';
 
 export function PayloadSeed(offset: number) {
-  PayloadMapper.assertSafeBounds(offset, 32);
+  assertSafeBounds(offset, 32);
   return function <T, V>(
     target: ClassAccessorDecoratorTarget<T, V>,
     context: ClassAccessorDecoratorContext<T, V>

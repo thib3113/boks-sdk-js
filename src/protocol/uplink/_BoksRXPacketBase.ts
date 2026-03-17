@@ -1,5 +1,6 @@
 import { BoksPacket } from '@/protocol/_BoksPacketBase';
-import { BoksOpcode, EMPTY_BUFFER } from '@/protocol/constants';
+import { BoksOpcode } from '@/protocol/constants';
+import { PayloadMapper } from '@/protocol/decorators';
 
 /**
  * Base class for all Boks RX packets (notifications).
@@ -18,9 +19,12 @@ export abstract class BoksRXPacket extends BoksPacket {
 
   /**
    * For RX packets, toPayload returns the raw payload received.
+   * If not available (e.g. created for simulator/testing), it serializes the packet.
    */
   toPayload() {
-    /* v8 ignore next */
-    return this.rawPayload ?? EMPTY_BUFFER;
+    if (this.rawPayload && this.rawPayload.length > 0) {
+      return this.rawPayload;
+    }
+    return PayloadMapper.serialize(this);
   }
 }

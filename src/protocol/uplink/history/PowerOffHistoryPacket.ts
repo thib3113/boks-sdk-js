@@ -25,6 +25,6 @@ export class PowerOffHistoryPacket extends BoksHistoryEvent {
 
   static fromPayload(payload: Uint8Array): PowerOffHistoryPacket {
     const data = PayloadMapper.parse<PowerOffHistoryPacketProps>(PowerOffHistoryPacket, payload);
-    return new PowerOffHistoryPacket({ ...data, age: (data as any)._age } as any, payload);
+    return new PowerOffHistoryPacket(data, payload);
   }
 }

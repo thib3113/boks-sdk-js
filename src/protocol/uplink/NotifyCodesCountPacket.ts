@@ -26,18 +26,7 @@ export class NotifyCodesCountPacket extends BoksRXPacket {
   }
 
   static fromPayload(payload: Uint8Array): NotifyCodesCountPacket {
-    const parsed = PayloadMapper.parse<NotifyCodesCountPacketProps>(
-      NotifyCodesCountPacket,
-      payload
-    );
-    const packet = new NotifyCodesCountPacket(
-      {
-        masterCount: parsed.masterCount!,
-        otherCount: parsed.otherCount!
-      },
-      payload
-    );
-
-    return packet;
+    const data = PayloadMapper.parse<NotifyCodesCountPacketProps>(NotifyCodesCountPacket, payload);
+    return new NotifyCodesCountPacket(data, payload);
   }
 }

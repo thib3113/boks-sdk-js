@@ -165,7 +165,7 @@ describe('BoksPacketFactory', () => {
       {
         name: 'BlockResetHistoryPacket',
         class: Packets.BlockResetHistoryPacket,
-        payload: new Uint8Array([0, 0, 10])
+        payload: new Uint8Array([0, 0, 10, 0, 0])
       },
       {
         name: 'BleRebootHistoryPacket',

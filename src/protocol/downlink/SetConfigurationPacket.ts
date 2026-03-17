@@ -43,10 +43,6 @@ export class SetConfigurationPacket extends AuthPacket {
       SetConfigurationPacket,
       payload
     );
-    return new SetConfigurationPacket({
-      configKey: parsed.configKey!,
-      configType: parsed.configType!,
-      value: parsed.value!
-    });
+    return new SetConfigurationPacket(parsed, payload);
   }
 }

@@ -13,7 +13,7 @@ export interface AuthPacketProps {
 @sealed
 export abstract class AuthPacket extends BoksPacket {
   @PayloadConfigKey(0)
-  public accessor configKey!: string;
+  public accessor configKey: string;
 
   constructor(props: AuthPacketProps, rawPayload?: Uint8Array) {
     super(rawPayload);

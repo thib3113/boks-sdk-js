@@ -18,6 +18,6 @@ export class PowerOnHistoryPacket extends BoksHistoryEvent {
 
   static fromPayload(payload: Uint8Array): PowerOnHistoryPacket {
     const data = PayloadMapper.parse<BoksHistoryEventProps>(PowerOnHistoryPacket, payload);
-    return new PowerOnHistoryPacket({ age: (data as any)._age }, payload);
+    return new PowerOnHistoryPacket(data, payload);
   }
 }

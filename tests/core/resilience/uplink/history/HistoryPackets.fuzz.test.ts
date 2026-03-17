@@ -50,7 +50,8 @@ describe('HistoryPackets Resilience (Fuzzing)', () => {
             if (
               e.id === 'MALFORMED_DATA' ||
               e.id === 'INVALID_PIN_FORMAT' ||
-              e.id === 'INVALID_CONFIG_KEY'
+              e.id === 'INVALID_CONFIG_KEY' ||
+              e.id === 'INVALID_NFC_UID_FORMAT'
             ) {
               return;
             }

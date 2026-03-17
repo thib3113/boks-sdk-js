@@ -211,7 +211,7 @@ export function validateNfcUid(uid: string): void {
   if (validLength !== 8 && validLength !== 14 && validLength !== 20) {
     throw new BoksProtocolError(BoksProtocolErrorId.INVALID_NFC_UID_FORMAT, undefined, {
       received: validLength,
-      expected: '8, 14, or 20 hex chars (4, 7, or 10 bytes)',
+      expected: BoksExpectedReason.NFC_UID_FORMAT,
       reason: 'INVALID_LENGTH'
     });
   }

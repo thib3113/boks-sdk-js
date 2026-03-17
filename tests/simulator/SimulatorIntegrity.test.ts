@@ -29,7 +29,7 @@ describe('Boks Hardware Simulator Integrity', () => {
 
   test('Should handle OPEN_DOOR (0x01) correctly', async () => {
     simulator.addPinCode('123456', BoksCodeType.Single);
-    const packet = new OpenDoorPacket({ pin: '123456' }).encode();
+    const packet = new OpenDoorPacket('123456').encode();
     await transport.write(packet);
 
     // We expect 2 packets: VALID_OPEN_CODE (0x81) and NOTIFY_DOOR_STATUS (0x84)
@@ -73,7 +73,7 @@ describe('Boks Hardware Simulator Integrity', () => {
   });
 
   test('Should handle invalid OPEN_DOOR (0x01)', async () => {
-    const packet = new OpenDoorPacket({ pin: '000000' }).encode();
+    const packet = new OpenDoorPacket('000000').encode();
     await transport.write(packet);
     await new Promise((r) => setTimeout(r, 10));
 
@@ -145,7 +145,7 @@ describe('Boks Hardware Simulator Integrity', () => {
     // Actions on isolated simulator
     isolatedSim.setDoorStatus(true);
     const isolatedTransport = new SimulatorTransport(isolatedSim);
-    await isolatedTransport.write(new OpenDoorPacket({ pin: '123456' }).encode());
+    await isolatedTransport.write(new OpenDoorPacket('123456').encode());
 
     expect(isolatedSpy).not.toHaveBeenCalled();
     isolatedSim.destroy();

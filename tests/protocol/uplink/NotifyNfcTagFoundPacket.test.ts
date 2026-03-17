@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { NotifyNfcTagFoundPacket } from '@/protocol/uplink/NotifyNfcTagFoundPacket';
 import { BoksOpcode } from '@/protocol/constants';
+import { bytesToHex } from '@/utils/converters';
 
 describe('NotifyNfcTagFoundPacket', () => {
   it('should parse correctly', () => {
@@ -11,6 +12,16 @@ describe('NotifyNfcTagFoundPacket', () => {
     expect(packet.opcode).toBe(BoksOpcode.NOTIFY_NFC_TAG_FOUND);
     expect(packet.uid).toBe('01020304');
     expect(packet.status).toBe('found');
+  });
+
+  it('should match fixed hexadecimal reference encoding', () => {
+    const packet = new NotifyNfcTagFoundPacket('11223344');
+    const encoded = packet.encode();
+    // Opcode 0xC5 (197), Len 5, 04, 11223344, Checksum 0xEF
+    // 197+5+4+17+34+51+68 = 376, 376%256 = 120 = 0x78 ? Wait.
+    // 197+5+4 + 0x11(17) + 0x22(34) + 0x33(51) + 0x44(68) = 376
+    // 376 % 256 = 120 (0x78)
+    expect(bytesToHex(encoded)).toBe('C505041122334478');
   });
 
   it('should parse 7-byte UID correctly', () => {

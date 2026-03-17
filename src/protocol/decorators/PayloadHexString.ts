@@ -1,9 +1,10 @@
-import { PayloadMapper, getOrCreateMetadata } from './PayloadMapper';
+import { getOrCreateMetadata } from './PayloadMapper';
+import { assertSafeBounds } from './PayloadMetadata';
 import { BoksProtocolError, BoksProtocolErrorId } from '../../errors/BoksProtocolError';
 import { BoksExpectedReason } from '../../errors/BoksExpectedReason';
 
 export function PayloadHexString(offset: number, length?: number) {
-  PayloadMapper.assertSafeBounds(offset, length || 0);
+  assertSafeBounds(offset, length || 0);
   return function <T, V>(
     target: ClassAccessorDecoratorTarget<T, V>,
     context: ClassAccessorDecoratorContext<T, V>

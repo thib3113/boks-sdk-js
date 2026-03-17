@@ -47,19 +47,20 @@ describe('PayloadMapper Resilience Exhaustive', () => {
   it('should throw BoksProtocolError when parsing invalid object types', () => {
     expect(() => PayloadMapper.parse(null, new Uint8Array(2))).toThrow(BoksProtocolError);
     expect(() => PayloadMapper.parse(undefined, new Uint8Array(2))).toThrow(BoksProtocolError);
-    expect(() => PayloadMapper.parse(123 as any, new Uint8Array(2))).toThrow(BoksProtocolError);
-    expect(() => PayloadMapper.parse('string' as any, new Uint8Array(2))).toThrow(
+    expect(() => PayloadMapper.parse(123, new Uint8Array(2))).toThrow(BoksProtocolError);
+    expect(() => PayloadMapper.parse('string', new Uint8Array(2))).toThrow(
       BoksProtocolError
     );
 
-    expect(() => PayloadMapper.parse(EmptyPacket, 'string' as any)).toThrow(BoksProtocolError);
+    // @ts-expect-error - Testing invalid input
+    expect(() => PayloadMapper.parse(EmptyPacket, 'string')).toThrow(BoksProtocolError);
   });
 
   it('should throw BoksProtocolError when serializing invalid instances', () => {
     expect(() => PayloadMapper.serialize(null)).toThrow(BoksProtocolError);
     expect(() => PayloadMapper.serialize(undefined)).toThrow(BoksProtocolError);
-    expect(() => PayloadMapper.serialize(123 as any)).toThrow(BoksProtocolError);
-    expect(() => PayloadMapper.serialize('string' as any)).toThrow(BoksProtocolError);
+    expect(() => PayloadMapper.serialize(123)).toThrow(BoksProtocolError);
+    expect(() => PayloadMapper.serialize('string')).toThrow(BoksProtocolError);
   });
 
   it('should initialize properties on accessors', () => {
@@ -68,21 +69,37 @@ describe('PayloadMapper Resilience Exhaustive', () => {
 
     // Assigning invalid values to test setter throws
     // The decorators throw BoksProtocolError on undefined/null
-    expect(() => (obj.valUint8 = undefined as any)).toThrow(BoksProtocolError);
-    expect(() => (obj.valAscii = null as any)).toThrow(BoksProtocolError);
-    expect(() => (obj.valBit = null as any)).toThrow(BoksProtocolError);
-    expect(() => (obj.valBool = null as any)).toThrow(BoksProtocolError);
-    expect(() => (obj.valBytes = null as any)).toThrow(BoksProtocolError);
-    expect(() => (obj.valConfigKey = null as any)).toThrow(BoksProtocolError);
-    expect(() => (obj.valHex = null as any)).toThrow(BoksProtocolError);
-    expect(() => (obj.valMac = null as any)).toThrow(BoksProtocolError);
-    expect(() => (obj.valMaster = null as any)).toThrow(BoksProtocolError);
-    expect(() => (obj.valNfc = null as any)).toThrow(BoksProtocolError);
-    expect(() => (obj.valPin = null as any)).toThrow(BoksProtocolError);
-    expect(() => (obj.valSeed = null as any)).toThrow(BoksProtocolError);
-    expect(() => (obj.valUint16 = null as any)).toThrow(BoksProtocolError);
-    expect(() => (obj.valUint24 = null as any)).toThrow(BoksProtocolError);
-    expect(() => (obj.valUint32 = null as any)).toThrow(BoksProtocolError);
-    expect(() => (obj.valVarLenHex = null as any)).toThrow(BoksProtocolError);
+    // @ts-expect-error - Testing invalid input
+    expect(() => (obj.valUint8 = undefined)).toThrow(BoksProtocolError);
+    // @ts-expect-error - Testing invalid input
+    expect(() => (obj.valAscii = null)).toThrow(BoksProtocolError);
+    // @ts-expect-error - Testing invalid input
+    expect(() => (obj.valBit = null)).toThrow(BoksProtocolError);
+    // @ts-expect-error - Testing invalid input
+    expect(() => (obj.valBool = null)).toThrow(BoksProtocolError);
+    // @ts-expect-error - Testing invalid input
+    expect(() => (obj.valBytes = null)).toThrow(BoksProtocolError);
+    // @ts-expect-error - Testing invalid input
+    expect(() => (obj.valConfigKey = null)).toThrow(BoksProtocolError);
+    // @ts-expect-error - Testing invalid input
+    expect(() => (obj.valHex = null)).toThrow(BoksProtocolError);
+    // @ts-expect-error - Testing invalid input
+    expect(() => (obj.valMac = null)).toThrow(BoksProtocolError);
+    // @ts-expect-error - Testing invalid input
+    expect(() => (obj.valMaster = null)).toThrow(BoksProtocolError);
+    // @ts-expect-error - Testing invalid input
+    expect(() => (obj.valNfc = null)).toThrow(BoksProtocolError);
+    // @ts-expect-error - Testing invalid input
+    expect(() => (obj.valPin = null)).toThrow(BoksProtocolError);
+    // @ts-expect-error - Testing invalid input
+    expect(() => (obj.valSeed = null)).toThrow(BoksProtocolError);
+    // @ts-expect-error - Testing invalid input
+    expect(() => (obj.valUint16 = null)).toThrow(BoksProtocolError);
+    // @ts-expect-error - Testing invalid input
+    expect(() => (obj.valUint24 = null)).toThrow(BoksProtocolError);
+    // @ts-expect-error - Testing invalid input
+    expect(() => (obj.valUint32 = null)).toThrow(BoksProtocolError);
+    // @ts-expect-error - Testing invalid input
+    expect(() => (obj.valVarLenHex = null)).toThrow(BoksProtocolError);
   });
 });

@@ -47,6 +47,17 @@ describe('SetConfigurationPacket', () => {
     expect(encoded2[11]).toBe(0x00);
   });
 
+  it('should match fixed hexadecimal reference encoding', () => {
+    const packet = new SetConfigurationPacket({
+      configKey: '12345678',
+      configType: 1,
+      value: true
+    });
+    const encoded = packet.encode();
+    // Opcode 0x16, Len 10 (0x0A), Key '12345678', Type 1, Value 1, Checksum 0xC6
+    expect(bytesToHex(encoded)).toBe('160A31323334353637380101C6');
+  });
+
   it('should parse from payload correctly', () => {
     const payload = new Uint8Array(10);
     payload.set(stringToBytes(validKey), 0);

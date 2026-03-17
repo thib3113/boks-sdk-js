@@ -17,6 +17,6 @@ export class KeyOpeningHistoryPacket extends BoksHistoryEvent {
 
   static fromPayload(payload: Uint8Array): KeyOpeningHistoryPacket {
     const data = PayloadMapper.parse<BoksHistoryEventProps>(KeyOpeningHistoryPacket, payload);
-    return new KeyOpeningHistoryPacket({ age: (data as any)._age }, payload);
+    return new KeyOpeningHistoryPacket(data, payload);
   }
 }

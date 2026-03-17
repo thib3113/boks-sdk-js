@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { NotifyScaleMeasureWeightPacket } from '@/protocol/scale/NotifyScaleMeasureWeightPacket';
 import { BoksOpcode } from '@/protocol/constants';
+import { bytesToHex } from '@/utils/converters';
 
 describe('NotifyScaleMeasureWeightPacket', () => {
   it('should parse positive weight', () => {
@@ -9,6 +10,14 @@ describe('NotifyScaleMeasureWeightPacket', () => {
     const packet = NotifyScaleMeasureWeightPacket.fromPayload(payload);
     expect(packet.opcode).toBe(BoksOpcode.NOTIFY_SCALE_MEASURE_WEIGHT);
     expect(packet.weight).toBe(1000);
+  });
+
+  it('should match fixed hexadecimal reference encoding', () => {
+    const packet = new NotifyScaleMeasureWeightPacket(1000);
+    const encoded = packet.encode();
+    // Opcode 0xB7 (183), Len 4, sign 0, val 0003E8, Checksum 0xA6
+    // Sum: 183 + 4 + 0 + 0 + 3 + 232 = 422, 422 % 256 = 166 (0xA6)
+    expect(bytesToHex(encoded)).toBe('B704000003E8A6');
   });
 
   it('should parse negative weight', () => {

@@ -204,6 +204,7 @@ export class BoksController {
       successOpcodes: [successOpcode],
       errorOpcodes: [errorOpcode]
     });
+
     return tx.isSuccess;
   }
 
@@ -374,7 +375,7 @@ export class BoksController {
     // Start scan
     const tx = await this.#client.execute<
       NotifyNfcTagFoundPacket | ErrorNfcScanTimeoutPacket | ErrorNfcTagAlreadyExistsScanPacket
-    >(new RegisterNfcTagScanStartPacket({ configKey }), {
+    >(new RegisterNfcTagScanStartPacket(configKey), {
       successOpcodes: [
         BoksOpcode.NOTIFY_NFC_TAG_FOUND,
         BoksOpcode.ERROR_NFC_SCAN_TIMEOUT,
@@ -472,7 +473,7 @@ export class BoksController {
     this.#lastOpenAttempt = now;
 
     return this.performOperation(
-      new OpenDoorPacket({ pin }),
+      new OpenDoorPacket(pin),
       BoksOpcode.VALID_OPEN_CODE,
       BoksOpcode.INVALID_OPEN_CODE
     );

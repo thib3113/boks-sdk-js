@@ -8,21 +8,28 @@ describe('RegisterNfcTagScanStartPacket', () => {
   const validKey = '12345678';
 
   it('should construct with valid parameters', () => {
-    const packet = new RegisterNfcTagScanStartPacket({ configKey: validKey });
+    const packet = new RegisterNfcTagScanStartPacket(validKey);
     expect(packet.opcode).toBe(BoksOpcode.REGISTER_NFC_TAG_SCAN_START);
     expect(packet.configKey).toBe(validKey);
   });
 
   it('should encode correctly', () => {
-    const packet = new RegisterNfcTagScanStartPacket({ configKey: validKey });
+    const packet = new RegisterNfcTagScanStartPacket(validKey);
     const encoded = packet.encode();
-    // 0x17 + 8 + Key
+    // 0x17 + 9 + 0x00 + Key
     expect(encoded[0]).toBe(0x17);
     expect(encoded[1]).toBe(9);
 
     // Key "12345678" -> 3132333435363738
-    const expectedPayload = '3132333435363738';
-    expect(bytesToHex(encoded.subarray(3, 11))).toBe(expectedPayload);
+    const expectedPayload = '003132333435363738';
+    expect(bytesToHex(encoded.subarray(2, 11))).toBe(expectedPayload);
+  });
+
+  it('should match fixed hexadecimal reference encoding', () => {
+    const packet = new RegisterNfcTagScanStartPacket('12345678');
+    const encoded = packet.encode();
+    // Opcode 0x17, Len 9, Payload 00 + '12345678' (3132333435363738), Checksum 0xC4
+    expect(bytesToHex(encoded)).toBe('1709003132333435363738C4');
   });
 
   it('should parse from payload correctly', () => {
@@ -32,10 +39,10 @@ describe('RegisterNfcTagScanStartPacket', () => {
   });
 
   it('should throw INVALID_CONFIG_KEY for invalid config key format', () => {
-    expect(() => new RegisterNfcTagScanStartPacket({ configKey: 'invalid' })).toThrowError(
+    expect(() => new RegisterNfcTagScanStartPacket('invalid')).toThrowError(
       BoksProtocolError
     );
-    expect(() => new RegisterNfcTagScanStartPacket({ configKey: '' })).toThrowError(
+    expect(() => new RegisterNfcTagScanStartPacket('')).toThrowError(
       BoksProtocolError
     );
   });

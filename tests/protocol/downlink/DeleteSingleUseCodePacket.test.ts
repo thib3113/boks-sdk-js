@@ -5,8 +5,8 @@ import { BoksOpcode } from '@/protocol/constants';
 import { bytesToHex, stringToBytes } from '@/utils/converters';
 
 describe('DeleteSingleUseCodePacket', () => {
-  const validKey = 'ABCDEF12';
-  const validPin = '123456';
+  const validKey = '12345678';
+  const validPin = '998877';
 
   it('should construct with valid parameters', () => {
     const packet = new DeleteSingleUseCodePacket({ configKey: validKey, pin: validPin });
@@ -21,7 +21,9 @@ describe('DeleteSingleUseCodePacket', () => {
     expect(encoded[0]).toBe(0x0d);
     expect(encoded[1]).toBe(14);
 
-    const expectedPayload = '4142434445463132313233343536';
+    // Key "12345678" -> 3132333435363738
+    // Pin "998877" -> 393938383737
+    const expectedPayload = '3132333435363738393938383737';
     expect(bytesToHex(encoded.subarray(2, 16))).toBe(expectedPayload);
   });
 
@@ -66,5 +68,11 @@ describe('DeleteSingleUseCodePacket', () => {
     expect(() => DeleteSingleUseCodePacket.fromPayload(shortPayload)).toThrowError(
       BoksProtocolError
     );
+  });
+
+  it('should match fixed hexadecimal reference encoding', () => {
+    const packet = new DeleteSingleUseCodePacket({ configKey: '12345678', pin: '998877' });
+    // Opcode 0x0D, Len 14 (0x0E), Key '12345678', PIN '998877', Checksum 0x0F
+    expect(bytesToHex(packet.encode())).toBe('0D0E31323334353637383939383837370F');
   });
 });

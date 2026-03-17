@@ -2,15 +2,27 @@ import { BoksProtocolError } from '@/errors/BoksProtocolError';
 import { describe, it, expect } from 'vitest';
 import { NotifyMacAddressBoksScalePacket } from '@/protocol/scale/NotifyMacAddressBoksScalePacket';
 import { BoksOpcode } from '@/protocol/constants';
+import { bytesToHex } from '@/utils/converters';
 
 describe('NotifyMacAddressBoksScalePacket', () => {
   it('should parse correctly', () => {
-    // AA:BB:CC:DD:EE:FF
+    // AA:BB:CC:DD:EE:FF -> FF:EE:DD:CC:BB:AA (MacAddress is Little Endian in protocol)
     const payload = new Uint8Array([0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff]);
     const packet = NotifyMacAddressBoksScalePacket.fromPayload(payload);
 
     expect(packet.opcode).toBe(BoksOpcode.NOTIFY_MAC_ADDRESS_BOKS_SCALE);
     expect(packet.macAddress).toBe('FF:EE:DD:CC:BB:AA');
+  });
+
+  it('should match fixed hexadecimal reference encoding', () => {
+    const packet = new NotifyMacAddressBoksScalePacket('FF:EE:DD:CC:BB:AA');
+    const encoded = packet.encode();
+    // Opcode 0xB2 (178), Len 6, MAC AABBCCDDEEFF, Checksum 0x04
+    // Sum: 178 + 6 + 170 + 187 + 204 + 221 + 238 + 255 = 1459, 1459 % 256 = 179 = 0xB3 ? Wait.
+    // Let me re-calculate Sum carefully:
+    // 178+6 + 170+187+204+221+238+255 = 1459.
+    // 1459 % 256 = 179 (0xB3).
+    expect(bytesToHex(encoded)).toBe('B206AABBCCDDEEFFB3');
   });
 
   it('should handle empty payload', () => {

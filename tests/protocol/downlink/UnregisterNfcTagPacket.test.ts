@@ -6,13 +6,13 @@ import { bytesToHex, stringToBytes } from '@/utils/converters';
 
 describe('UnregisterNfcTagPacket', () => {
   const validKey = '12345678';
-  const validUid = '01:02:03:04'; // 4 bytes -> 8 hex chars.
+  const validUid = '04:A1:B2:C3'; // 4 bytes -> 8 hex chars.
 
   it('should construct with valid parameters', () => {
     const packet = new UnregisterNfcTagPacket({ configKey: validKey, uid: validUid });
     expect(packet.opcode).toBe(BoksOpcode.UNREGISTER_NFC_TAG);
     expect(packet.configKey).toBe(validKey);
-    expect(packet.uid).toBe('01020304');
+    expect(packet.uid).toBe('04A1B2C3');
   });
 
   it('should encode correctly', () => {
@@ -24,9 +24,16 @@ describe('UnregisterNfcTagPacket', () => {
 
     // Key "12345678" -> 3132333435363738
     // Len: 04
-    // UID: 01020304
-    const expectedPayload = '31323334353637380401020304';
+    // UID: 04A1B2C3
+    const expectedPayload = '31323334353637380404A1B2C3';
     expect(bytesToHex(encoded.subarray(2, 15))).toBe(expectedPayload);
+  });
+
+  it('should match fixed hexadecimal reference encoding', () => {
+    const packet = new UnregisterNfcTagPacket({ configKey: '12345678', uid: '04A1B2C3' });
+    // Same as register, but opcode is 0x19 instead of 0x18
+    // Received: 190D31323334353637380404A1B2C3E8
+    expect(bytesToHex(packet.encode())).toBe('190D31323334353637380404A1B2C3E8');
   });
 
   it('should parse from payload correctly', () => {

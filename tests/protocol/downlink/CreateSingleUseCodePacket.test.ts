@@ -5,8 +5,8 @@ import { BoksOpcode } from '@/protocol/constants';
 import { bytesToHex, stringToBytes } from '@/utils/converters';
 
 describe('CreateSingleUseCodePacket', () => {
-  const validKey = 'ABCDEF12';
-  const validPin = '123456';
+  const validKey = '12345678';
+  const validPin = '112233';
 
   it('should construct with valid parameters', () => {
     const packet = new CreateSingleUseCodePacket({ configKey: validKey, pin: validPin });
@@ -21,10 +21,17 @@ describe('CreateSingleUseCodePacket', () => {
     expect(encoded[0]).toBe(0x12);
     expect(encoded[1]).toBe(14);
 
-    // Key "ABCDEF12" -> 4142434445463132
-    // Pin "123456" -> 313233343536
-    const expectedPayload = '4142434445463132313233343536';
+    // Key "12345678" -> 3132333435363738
+    // Pin "112233" -> 313132323333
+    const expectedPayload = '3132333435363738313132323333';
     expect(bytesToHex(encoded.subarray(2, 16))).toBe(expectedPayload);
+  });
+
+  it('should match fixed hexadecimal reference encoding', () => {
+    const packet = new CreateSingleUseCodePacket({ configKey: '12345678', pin: '112233' });
+    const encoded = packet.encode();
+    // Opcode 0x12, Len 14 (0x0E), Key '12345678', PIN '112233', Checksum 0xDE
+    expect(bytesToHex(encoded)).toBe('120E3132333435363738313132323333F0');
   });
 
   it('should parse from payload correctly', () => {

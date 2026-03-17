@@ -1,10 +1,11 @@
 import { validateNfcUid } from '../../utils/validation';
-import { PayloadMapper, getOrCreateMetadata } from './PayloadMapper';
+import { getOrCreateMetadata } from './PayloadMapper';
+import { assertSafeBounds } from './PayloadMetadata';
 import { BoksProtocolError, BoksProtocolErrorId } from '../../errors/BoksProtocolError';
 import { BoksExpectedReason } from '../../errors/BoksExpectedReason';
 
 export function PayloadNfcUid(offset: number) {
-  PayloadMapper.assertSafeBounds(offset, 1);
+  assertSafeBounds(offset, 1);
   return function <T, V>(
     target: ClassAccessorDecoratorTarget<T, V>,
     context: ClassAccessorDecoratorContext<T, V>

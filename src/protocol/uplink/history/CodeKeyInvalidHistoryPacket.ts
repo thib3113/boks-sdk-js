@@ -25,6 +25,6 @@ export class CodeKeyInvalidHistoryPacket extends BoksHistoryEvent {
       CodeKeyInvalidHistoryPacket,
       payload
     );
-    return new CodeKeyInvalidHistoryPacket({ ...data, age: (data as any)._age } as any, payload);
+    return new CodeKeyInvalidHistoryPacket(data, payload);
   }
 }

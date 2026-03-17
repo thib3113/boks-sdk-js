@@ -2,6 +2,7 @@ export type PayloadConstructor = abstract new (...args: any[]) => any;
 
 import { BoksProtocolError, BoksProtocolErrorId } from '../../errors/BoksProtocolError';
 import { BoksExpectedReason } from '../../errors/BoksExpectedReason';
+import { EMPTY_BUFFER } from '../constants';
 
 /**
  * Metadata key used to store field definitions on the class constructor.
@@ -49,6 +50,7 @@ export function getOrCreateMetadata(
     }
     return context.metadata[METADATA_KEY] as FieldDefinition[];
   }
+  /* v8 ignore next */
   return [];
 }
 
@@ -224,14 +226,15 @@ export class PayloadMapper {
         symMetadata = symbols.find((s) => s.toString() === 'Symbol(Symbol.metadata)');
       }
       const fields =
-        (symMetadata && /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-        (currentClass as Record<PropertyKey, any>)[symMetadata as any]?.[METADATA_KEY]) ||
+        (symMetadata /* eslint-disable-next-line @typescript-eslint/no-explicit-any */ &&
+          (currentClass as Record<PropertyKey, any>)[symMetadata as any]?.[METADATA_KEY]) ||
         /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
         (currentClass as Record<PropertyKey, any>)[Symbol.metadata as any]?.[METADATA_KEY] ||
         /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-        (currentClass.constructor as Record<PropertyKey, any>)?.[Symbol.metadata as any]?.[METADATA_KEY] ||
-        legacyMetadataMap.get(currentClass) ||
-        (currentClass as Record<PropertyKey, any>)[METADATA_KEY] ||
+        (currentClass.constructor as Record<PropertyKey, any>)?.[Symbol.metadata as any]?.[
+          METADATA_KEY
+        ] ||
+        legacyMetadataMap.get(currentClass as any) ||        (currentClass as Record<PropertyKey, any>)[METADATA_KEY] ||
         (currentClass.constructor as Record<PropertyKey, any>)?.[METADATA_KEY];
 
       if (fields && Array.isArray(fields)) {
@@ -573,7 +576,7 @@ export class PayloadMapper {
     const fields = this.getFields(targetClass);
 
     if (!fields || fields.length === 0) {
-      return (_instance: any) => new Uint8Array(0); // No fields mapped
+      return () => EMPTY_BUFFER; // No fields mapped
     }
 
     // Calculate maximum required payload size securely
@@ -714,8 +717,19 @@ export class PayloadMapper {
           }
           break;
         case 'mac_address':
-          // Reverse Mac formatting not yet supported for serialization in POC,
-          // but we leave it empty to not break JIT. Downlinks rarely serialize MACs.
+          fnBody += `
+            if (typeof instance['${prop}'] === 'string') {
+              const parts = instance['${prop}'].split(':');
+              if (parts.length === 6) {
+                payload[${o} + 5] = parseInt(parts[0], 16) || 0;
+                payload[${o} + 4] = parseInt(parts[1], 16) || 0;
+                payload[${o} + 3] = parseInt(parts[2], 16) || 0;
+                payload[${o} + 2] = parseInt(parts[3], 16) || 0;
+                payload[${o} + 1] = parseInt(parts[4], 16) || 0;
+                payload[${o}] = parseInt(parts[5], 16) || 0;
+              }
+            }
+          `;
           break;
         case 'pin_code':
           for (let i = 0; i < 6; i++) {
@@ -793,8 +807,8 @@ export class PayloadMapper {
    * @param payload The raw buffer
    * @returns A mapped object containing the extracted properties
    */
-  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-  public static parse<T = any>(targetClass: Function, payload: Uint8Array): T {
+  /* eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-function-type */
+  public static parse<T = any>(targetClass: Function | any, payload: Uint8Array): T {
     if (typeof payload === 'string') {
       throw new BoksProtocolError(
         BoksProtocolErrorId.INVALID_TYPE,
@@ -802,11 +816,12 @@ export class PayloadMapper {
         { received: 'string', expected: 'Uint8Array' }
       );
     }
-    if (!targetClass || typeof targetClass !== 'function')
+    if (!targetClass || typeof targetClass !== 'function') {
       throw new BoksProtocolError(BoksProtocolErrorId.INVALID_TYPE, 'Invalid targetClass', {
         received: typeof targetClass,
         expected: 'function'
       });
+    }
     if (!(payload instanceof Uint8Array)) {
       throw new BoksProtocolError(
         BoksProtocolErrorId.INVALID_TYPE,
@@ -833,11 +848,6 @@ export class PayloadMapper {
    * Serializes an instance into a Uint8Array payload using the JIT compiled function.
    */
   public static serialize(instance: any): Uint8Array {
-    if (!instance || typeof instance !== 'object')
-      throw new BoksProtocolError(BoksProtocolErrorId.INTERNAL_ERROR, 'Invalid instance', {
-        received: typeof instance,
-        expected: 'object'
-      });
     if (!instance || typeof instance !== 'object') {
       throw new BoksProtocolError(
         BoksProtocolErrorId.INVALID_TYPE,

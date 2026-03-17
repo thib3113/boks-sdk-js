@@ -13,15 +13,18 @@ export class GenerateCodesSupportPacket extends BoksPacket {
   }
 
   @PayloadSeed(0)
-  public accessor seedStr!: string;
+  public accessor seed!: string;
 
   constructor(seed: Uint8Array | string, rawPayload?: Uint8Array) {
     super(rawPayload);
-    this.seedStr = seed as unknown as string;
+    this.seed = seed as string;
   }
 
   static fromPayload(payload: Uint8Array): GenerateCodesSupportPacket {
-    const data = PayloadMapper.parse(GenerateCodesSupportPacket, payload);
-    return new GenerateCodesSupportPacket((data as any).seedStr, payload);
+    const data = PayloadMapper.parse<GenerateCodesSupportPacket>(
+      GenerateCodesSupportPacket,
+      payload
+    );
+    return new GenerateCodesSupportPacket(data.seed, payload);
   }
 }
