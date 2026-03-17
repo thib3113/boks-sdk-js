@@ -17,7 +17,7 @@ export class NotifyLogsCountPacket extends BoksRXPacket {
   }
 
   static fromPayload(payload: Uint8Array): NotifyLogsCountPacket {
-    const data = PayloadMapper.parse<Record<string, unknown>>(NotifyLogsCountPacket, payload);
+    const data = PayloadMapper.parse(NotifyLogsCountPacket, payload);
     return new NotifyLogsCountPacket(data.count, payload);
   }
 }

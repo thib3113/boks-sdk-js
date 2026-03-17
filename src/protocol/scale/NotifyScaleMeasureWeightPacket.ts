@@ -26,10 +26,7 @@ export class NotifyScaleMeasureWeightPacket extends BoksRXPacket {
   }
 
   static fromPayload(payload: Uint8Array): NotifyScaleMeasureWeightPacket {
-    const data = PayloadMapper.parse<Record<string, unknown>>(
-      NotifyScaleMeasureWeightPacket,
-      payload
-    );
+    const data = PayloadMapper.parse(NotifyScaleMeasureWeightPacket, payload);
     return new NotifyScaleMeasureWeightPacket(
       (data.signNegative ? -1 : 1) * (data.absWeight as number),
       payload

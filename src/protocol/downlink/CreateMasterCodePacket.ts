@@ -1,5 +1,6 @@
 import { AuthPacket, AuthPacketProps } from '@/protocol/downlink/_AuthPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
+import { BoksProtocolErrorId } from '@/errors/BoksProtocolError';
 import { PayloadMapper, PayloadPinCode, PayloadMasterCodeIndex } from '@/protocol/decorators';
 
 export interface CreateMasterCodePacketProps extends AuthPacketProps {
@@ -30,22 +31,17 @@ export class CreateMasterCodePacket extends AuthPacket {
 
   static fromPayload(payload: Uint8Array): CreateMasterCodePacket {
     let safePayload = payload;
-    // Legacy support for short payloads
     if (payload.length === 14) {
       safePayload = new Uint8Array(15);
       safePayload.set(payload);
     }
-    const data = PayloadMapper.parse<CreateMasterCodePacketProps>(
-      CreateMasterCodePacket,
-      safePayload
-    );
-    return new CreateMasterCodePacket(
-      {
-        configKey: data.configKey,
-        index: data.index,
-        pin: data.pin
-      },
-      payload
-    );
+    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+    let data: any;
+    data = PayloadMapper.parse<CreateMasterCodePacketProps>(CreateMasterCodePacket, safePayload);
+    return new CreateMasterCodePacket({
+      configKey: data.configKey,
+      index: data.index || 0,
+      pin: data.pin as string
+    });
   }
 }

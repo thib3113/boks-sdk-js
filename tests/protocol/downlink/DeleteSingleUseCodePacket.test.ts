@@ -18,7 +18,7 @@ describe('DeleteSingleUseCodePacket', () => {
   it('should encode correctly', () => {
     const packet = new DeleteSingleUseCodePacket({ configKey: validKey, pin: validPin });
     const encoded = packet.encode();
-    expect(encoded[0]).toBe(0x0D);
+    expect(encoded[0]).toBe(0x0d);
     expect(encoded[1]).toBe(14);
 
     const expectedPayload = '4142434445463132313233343536';

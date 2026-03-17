@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { generateBoksPin } from '@/crypto/pin-algorithm';
 
 describe('PIN Algorithm - Stress & Fuzzing', () => {
-  const VALID_KEY = new Uint8Array(32).fill(0xAA);
+  const VALID_KEY = new Uint8Array(32).fill(0xaa);
 
   it('should throw error for invalid key sizes', () => {
     expect(() => generateBoksPin(new Uint8Array(16), 'master', 0)).toThrow(/Invalid key length/);
@@ -63,7 +63,7 @@ describe('PIN Algorithm - Stress & Fuzzing', () => {
   });
 
   it('should be safe when called "concurrently" via Promise.all', async () => {
-    const key = new Uint8Array(32).fill(0xEE);
+    const key = new Uint8Array(32).fill(0xee);
     const indices = Array.from({ length: 100 }, (_, i) => i);
 
     // Pre-calculate expected values synchronously

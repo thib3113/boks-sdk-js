@@ -6,7 +6,7 @@ import { BoksProtocolError } from '@/errors/BoksProtocolError';
 describe('NfcOpeningHistoryPacket', () => {
   it('should parse correctly with age, type and uid', () => {
     // UID 01020304
-    const payload = new Uint8Array([0x00, 0x00, 0x0A, 0x01, 0x04, 0x01, 0x02, 0x03, 0x04, 0, 0, 0]);
+    const payload = new Uint8Array([0x00, 0x00, 0x0a, 0x01, 0x04, 0x01, 0x02, 0x03, 0x04, 0, 0, 0]);
     const packet = NfcOpeningHistoryPacket.fromPayload(payload);
 
     expect(packet.opcode).toBe(BoksOpcode.LOG_EVENT_NFC_OPENING);

@@ -73,7 +73,7 @@ describe('BoksTransaction Fuzzing', () => {
     // Generate valid random mock packets
     const packetArbitrary = fc
       .tuple(
-        fc.integer({ min: 0x00, max: 0xFF }), // Opcode range
+        fc.integer({ min: 0x00, max: 0xff }), // Opcode range
         fc.uint8Array() // Payload
       )
       .map(([opcode, payload]) => new MockPacket(opcode as BoksOpcode, payload));

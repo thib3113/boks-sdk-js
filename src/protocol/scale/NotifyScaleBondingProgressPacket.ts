@@ -18,10 +18,7 @@ export class NotifyScaleBondingProgressPacket extends BoksRXPacket {
   }
 
   static fromPayload(payload: Uint8Array): NotifyScaleBondingProgressPacket {
-    const data = PayloadMapper.parse<Record<string, unknown>>(
-      NotifyScaleBondingProgressPacket,
-      payload
-    );
+    const data = PayloadMapper.parse(NotifyScaleBondingProgressPacket, payload);
     return new NotifyScaleBondingProgressPacket(data.progress, payload);
   }
 }

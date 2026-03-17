@@ -19,7 +19,7 @@ describe('SingleToMultiCodePacket', () => {
     const packet = new SingleToMultiCodePacket({ configKey: validKey, pin: validPin });
     const encoded = packet.encode();
     // 0x0A + 14 + Key + Pin
-    expect(encoded[0]).toBe(0x0A);
+    expect(encoded[0]).toBe(0x0a);
     expect(encoded[1]).toBe(14);
 
     // Key "ABCDEF12" -> 4142434445463132

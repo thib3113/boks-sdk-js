@@ -6,7 +6,7 @@ import { BoksOpcode } from '@/protocol/constants';
 describe('NotifyMacAddressBoksScalePacket', () => {
   it('should parse correctly', () => {
     // AA:BB:CC:DD:EE:FF
-    const payload = new Uint8Array([0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF]);
+    const payload = new Uint8Array([0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff]);
     const packet = NotifyMacAddressBoksScalePacket.fromPayload(payload);
 
     expect(packet.opcode).toBe(BoksOpcode.NOTIFY_MAC_ADDRESS_BOKS_SCALE);

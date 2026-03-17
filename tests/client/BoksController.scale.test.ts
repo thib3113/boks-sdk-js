@@ -9,7 +9,7 @@ vi.mock('@/client/BoksClient');
 describe('Scale Features', () => {
   describe('NotifyScaleMeasureWeightPacket Parsing', () => {
     it('should parse positive weight correctly', () => {
-      const payload = new Uint8Array([0x00, 0x00, 0x03, 0xE8]); // 1000g
+      const payload = new Uint8Array([0x00, 0x00, 0x03, 0xe8]); // 1000g
       const packet = NotifyScaleMeasureWeightPacket.fromPayload(payload);
       expect(packet.weight).toBe(1000);
     });

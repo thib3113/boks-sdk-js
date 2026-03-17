@@ -106,8 +106,8 @@ class ExecuteCommand implements fc.AsyncCommand<
         const payloadLength = 1; // Just opcode
         const buf = new Uint8Array([
           0x02, // STX
-          payloadLength & 0xFF,
-          (payloadLength >> 8) & 0xFF, // Length LE
+          payloadLength & 0xff,
+          (payloadLength >> 8) & 0xff, // Length LE
           successOpcode,
           successOpcode // CRC (since it's just one byte, CRC is the byte itself)
         ]);
@@ -120,8 +120,8 @@ class ExecuteCommand implements fc.AsyncCommand<
         const payloadLength = 1; // Just opcode
         const buf = new Uint8Array([
           0x02, // STX
-          payloadLength & 0xFF,
-          (payloadLength >> 8) & 0xFF, // Length LE
+          payloadLength & 0xff,
+          (payloadLength >> 8) & 0xff, // Length LE
           errOpcode,
           errOpcode // CRC
         ]);
@@ -131,7 +131,7 @@ class ExecuteCommand implements fc.AsyncCommand<
       } else {
         // Just noise, it will timeout eventually
         setTimeout(() => {
-          r.transport.simulateNotification(new Uint8Array([0x00, 0xFF]));
+          r.transport.simulateNotification(new Uint8Array([0x00, 0xff]));
         }, 10);
       }
     };
@@ -184,12 +184,12 @@ describe('BoksClient Fuzzing', () => {
   it('should maintain a healthy command queue despite overlapping transactions and timeouts', async () => {
     const executeArbitrary = fc
       .record({
-        opcode: fc.integer({ min: 0x00, max: 0xFF }),
-        successOpcodes: fc.array(fc.integer({ min: 0x00, max: 0xFF }), {
+        opcode: fc.integer({ min: 0x00, max: 0xff }),
+        successOpcodes: fc.array(fc.integer({ min: 0x00, max: 0xff }), {
           minLength: 1,
           maxLength: 3
         }),
-        errorOpcodes: fc.array(fc.integer({ min: 0x00, max: 0xFF }), { maxLength: 3 }),
+        errorOpcodes: fc.array(fc.integer({ min: 0x00, max: 0xff }), { maxLength: 3 }),
         timeout: fc.integer({ min: 100, max: 5000 }),
         willSucceed: fc.boolean(),
         willTimeout: fc.boolean()

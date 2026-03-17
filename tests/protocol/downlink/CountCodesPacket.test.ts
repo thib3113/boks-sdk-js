@@ -17,7 +17,7 @@ describe('CountCodesPacket', () => {
   });
 
   it('should handle extra payload bytes gracefully (ignore them)', () => {
-    const packet = CountCodesPacket.fromPayload(new Uint8Array([0xFF]));
+    const packet = CountCodesPacket.fromPayload(new Uint8Array([0xff]));
     expect(packet).toBeInstanceOf(CountCodesPacket);
   });
 });

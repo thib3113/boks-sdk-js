@@ -17,7 +17,7 @@ export class OperationErrorPacket extends BoksRXPacket {
   }
 
   static fromPayload(payload: Uint8Array): OperationErrorPacket {
-    const data = PayloadMapper.parse<Record<string, unknown>>(OperationErrorPacket, payload);
+    const data = PayloadMapper.parse(OperationErrorPacket, payload);
     return new OperationErrorPacket(data.errorCode, payload);
   }
 }

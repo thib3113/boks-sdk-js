@@ -34,7 +34,7 @@ describe('CreateMasterCodePacket', () => {
     const encoded = packet.encode();
     // Opcode 11 (0x11), Len 0F, ... payload ... checksum
     expect(encoded[0]).toBe(0x11);
-    expect(encoded[1]).toBe(0x0F);
+    expect(encoded[1]).toBe(0x0f);
 
     const expectedPayloadHex = '313233343536373831323334353601';
     expect(bytesToHex(encoded.subarray(2, 2 + 15))).toBe(expectedPayloadHex);

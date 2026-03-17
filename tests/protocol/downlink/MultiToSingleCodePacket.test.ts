@@ -19,7 +19,7 @@ describe('MultiToSingleCodePacket', () => {
     const packet = new MultiToSingleCodePacket({ configKey: validKey, pin: validPin });
     const encoded = packet.encode();
     // 0x0B
-    expect(encoded[0]).toBe(0x0B);
+    expect(encoded[0]).toBe(0x0b);
     expect(encoded[1]).toBe(14);
 
     const expectedPayload = '4142434445463132313233343536';

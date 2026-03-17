@@ -121,7 +121,7 @@ describe('Boks Hardware Simulator Integrity', () => {
     simulator.setMasterKey(testMasterKey);
     expect(simulator.getInternalState().configKey).toBe('AAAAAAAA'); // Last 8 chars
 
-    const testMasterKeyBytes = new Uint8Array(32).fill(0xBB);
+    const testMasterKeyBytes = new Uint8Array(32).fill(0xbb);
     simulator.setMasterKey(testMasterKeyBytes);
     expect(simulator.getInternalState().configKey).toBe('BBBBBBBB');
 

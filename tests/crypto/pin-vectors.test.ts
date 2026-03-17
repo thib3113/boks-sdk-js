@@ -144,7 +144,7 @@ describe('PIN Algorithm - Secure Non-Regression', () => {
     });
 
     it('should generate consistent pins with All FF key', () => {
-      const FF_KEY = new Uint8Array(32).fill(0xFF);
+      const FF_KEY = new Uint8Array(32).fill(0xff);
       const expected = [
         'B5A6B3',
         '6336A1',

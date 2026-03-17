@@ -68,7 +68,7 @@ describe('converters', () => {
       const str = '👋';
       const bytes = stringToBytes(str);
       // 👋 is F0 9F 91 8B in UTF-8
-      expect(bytes).toEqual(new Uint8Array([0xF0, 0x9F, 0x91, 0x8B]));
+      expect(bytes).toEqual(new Uint8Array([0xf0, 0x9f, 0x91, 0x8b]));
     });
 
     it('should handle empty string', () => {
@@ -123,7 +123,7 @@ describe('converters', () => {
     });
 
     it('should convert UTF-8 bytes to string', () => {
-      const bytes = new Uint8Array([0xF0, 0x9F, 0x91, 0x8B]);
+      const bytes = new Uint8Array([0xf0, 0x9f, 0x91, 0x8b]);
       expect(bytesToString(bytes)).toBe('👋');
     });
 
@@ -154,7 +154,7 @@ describe('converters', () => {
     });
 
     it('should handle array with 0xFF values', () => {
-      const data = new Uint8Array([0xFF, 0xFF]); // sum = 510
+      const data = new Uint8Array([0xff, 0xff]); // sum = 510
       // 510 & 0xFF = 254
       expect(calculateChecksum(data)).toBe(254);
     });

@@ -8,7 +8,7 @@ describe('BoksController Integration with Simulator', () => {
   let transport: SimulatorTransport;
   let controller: BoksController;
 
-  const TEST_SEED = new Uint8Array(32).fill(0xAA); // Dummy seed
+  const TEST_SEED = new Uint8Array(32).fill(0xaa); // Dummy seed
   const TEST_PIN = '123456';
 
   beforeEach(async () => {
@@ -55,7 +55,7 @@ describe('BoksController Integration with Simulator', () => {
     await controller.initialize(TEST_SEED);
     controller.setCredentials(TEST_SEED);
 
-    const NEW_SEED = new Uint8Array(32).fill(0xBB);
+    const NEW_SEED = new Uint8Array(32).fill(0xbb);
     const onProgress = vi.fn();
 
     const success = await controller.regenerateMasterKey(NEW_SEED, onProgress);
@@ -135,7 +135,7 @@ describe('BoksController Integration with Simulator', () => {
     expect(keypadEvent).toBeDefined();
 
     // Check for NFC event (0xA1)
-    const nfcEvent = history.find((h) => h.opcode === 0xA1);
+    const nfcEvent = history.find((h) => h.opcode === 0xa1);
     expect(nfcEvent).toBeDefined();
   });
 });

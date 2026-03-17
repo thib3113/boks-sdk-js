@@ -55,7 +55,7 @@ describe('Battery Utilities', () => {
     });
 
     it('should return undefined for 0xFF (invalid/unreliable)', () => {
-      const payload = new Uint8Array([0xFF]);
+      const payload = new Uint8Array([0xff]);
       expect(parseBatteryLevel(payload)).toBeUndefined();
     });
 
@@ -103,7 +103,7 @@ describe('Battery Utilities', () => {
     });
 
     it('should handle optional 0xFF in 4-byte format', () => {
-      const payload = new Uint8Array([85, 0xFF, 0xFF, 0xFF]);
+      const payload = new Uint8Array([85, 0xff, 0xff, 0xff]);
       const stats = parseBatteryStats(payload);
 
       expect(stats?.details?.t5).toBeUndefined();
@@ -112,7 +112,7 @@ describe('Battery Utilities', () => {
     });
 
     it('should return undefined for all 0xFF payload', () => {
-      const payload = new Uint8Array([0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF]);
+      const payload = new Uint8Array([0xff, 0xff, 0xff, 0xff, 0xff, 0xff]);
       expect(parseBatteryStats(payload)).toBeUndefined();
     });
 

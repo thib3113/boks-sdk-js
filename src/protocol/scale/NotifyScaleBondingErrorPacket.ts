@@ -18,10 +18,7 @@ export class NotifyScaleBondingErrorPacket extends BoksRXPacket {
   }
 
   static fromPayload(payload: Uint8Array): NotifyScaleBondingErrorPacket {
-    const data = PayloadMapper.parse<Record<string, unknown>>(
-      NotifyScaleBondingErrorPacket,
-      payload
-    );
+    const data = PayloadMapper.parse(NotifyScaleBondingErrorPacket, payload);
     return new NotifyScaleBondingErrorPacket(data.errorCode, payload);
   }
 }

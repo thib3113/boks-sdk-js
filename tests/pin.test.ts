@@ -6,7 +6,7 @@ describe('Boks PIN Algorithm', () => {
     // This is a placeholder test. In a real scenario, we would use
     // a known Master Key and its corresponding PIN from the Boks app.
     // Assuming we have a 32-byte key (all zeros for test stability)
-    const key = new Uint8Array(32).fill(0xAA);
+    const key = new Uint8Array(32).fill(0xaa);
     const pin = generateBoksPin(key, 'master', 0);
 
     expect(pin).toHaveLength(6);
@@ -16,7 +16,7 @@ describe('Boks PIN Algorithm', () => {
   });
 
   it('should generate different PINs for different indices', () => {
-    const key = new Uint8Array(32).fill(0xBB);
+    const key = new Uint8Array(32).fill(0xbb);
     const pin0 = generateBoksPin(key, 'single-use', 0);
     const pin1 = generateBoksPin(key, 'single-use', 1);
 
@@ -25,7 +25,7 @@ describe('Boks PIN Algorithm', () => {
 
   // Golden Master Test added by Bolt
   it('should generate exact PIN for known inputs', () => {
-    const key = new Uint8Array(32).fill(0xAA);
+    const key = new Uint8Array(32).fill(0xaa);
     const index = 12345;
     const pin = generateBoksPin(key, 'master', index);
 

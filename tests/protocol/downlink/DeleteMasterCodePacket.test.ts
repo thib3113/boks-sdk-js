@@ -19,7 +19,7 @@ describe('DeleteMasterCodePacket', () => {
     // 0x0C + len(9) + key(8) + index(1) + checksum
     const packet = new DeleteMasterCodePacket({ configKey: validKey, index: validIndex });
     const encoded = packet.encode();
-    expect(encoded[0]).toBe(0x0C);
+    expect(encoded[0]).toBe(0x0c);
     expect(encoded[1]).toBe(9);
 
     // Key "12345678" -> 3132333435363738 + 05

@@ -7,7 +7,7 @@ import {
 import { BoksProtocolError, BoksProtocolErrorId } from '../../src/errors/BoksProtocolError';
 
 describe('Boks Pin Algorithm Security Validation', () => {
-  const masterKey = new Uint8Array(32).fill(0xAA);
+  const masterKey = new Uint8Array(32).fill(0xaa);
   const validContext = new Uint32Array(8).fill(0x12345678);
 
   afterEach(() => {
@@ -38,7 +38,7 @@ describe('Boks Pin Algorithm Security Validation', () => {
     });
 
     it('should throw when key length is invalid', () => {
-      const invalidKey = new Uint8Array(31).fill(0xAA);
+      const invalidKey = new Uint8Array(31).fill(0xaa);
       expect(() => generateBoksPin(invalidKey, 'single-use', 0)).toThrow(BoksProtocolError);
       expect(() => generateBoksPin(invalidKey, 'single-use', 0)).toThrowError(
         /Invalid key length: expected 32 bytes, got 31/
@@ -64,7 +64,7 @@ describe('Boks Pin Algorithm Security Validation', () => {
     });
 
     it('should throw when key length is invalid', () => {
-      const invalidKey = new Uint8Array(33).fill(0xAA);
+      const invalidKey = new Uint8Array(33).fill(0xaa);
       expect(() => precomputeBoksKeyContext(invalidKey)).toThrow(BoksProtocolError);
       expect(() => precomputeBoksKeyContext(invalidKey)).toThrowError(
         /Invalid key length: expected 32 bytes, got 33/

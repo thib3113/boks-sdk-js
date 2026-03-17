@@ -23,6 +23,6 @@ export class DoorOpenHistoryPacket extends BoksHistoryEvent {
 
   static fromPayload(payload: Uint8Array): DoorOpenHistoryPacket {
     const data = PayloadMapper.parse<BoksHistoryEventProps>(DoorOpenHistoryPacket, payload);
-    return new DoorOpenHistoryPacket(data, payload);
+    return new DoorOpenHistoryPacket({ ...data, age: (data as any)._age } as any, payload);
   }
 }

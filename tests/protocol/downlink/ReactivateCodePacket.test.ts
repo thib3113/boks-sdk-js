@@ -18,7 +18,7 @@ describe('ReactivateCodePacket', () => {
   it('should encode correctly', () => {
     const packet = new ReactivateCodePacket({ configKey: validKey, pin: validPin });
     const encoded = packet.encode();
-    expect(encoded[0]).toBe(0x0F);
+    expect(encoded[0]).toBe(0x0f);
     expect(encoded[1]).toBe(14);
 
     // Key "ABCDEF12" -> 4142434445463132

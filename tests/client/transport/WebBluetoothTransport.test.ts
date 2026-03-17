@@ -449,7 +449,7 @@ describe('WebBluetoothTransport', () => {
 
       expect(notifyChar.startNotifications).toHaveBeenCalled();
 
-      const eventData = new Uint8Array([0xAA, 0xBB]);
+      const eventData = new Uint8Array([0xaa, 0xbb]);
       const event = {
         target: {
           value: new DataView(eventData.buffer)
@@ -537,7 +537,7 @@ describe('WebBluetoothTransport', () => {
 
       expect(char.startNotifications).toHaveBeenCalled();
 
-      const eventData = new Uint8Array([0xCC]);
+      const eventData = new Uint8Array([0xcc]);
       const event = {
         target: {
           value: new DataView(eventData.buffer)
