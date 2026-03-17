@@ -332,6 +332,16 @@ export class PayloadMapper {
       const o = field.offset;
       const prop = field.propertyName;
 
+      if (field.type === 'bit') {
+        if (typeof field.bitIndex !== 'number' || field.bitIndex < 0 || field.bitIndex > 7) {
+          throw new BoksProtocolError(
+            BoksProtocolErrorId.INTERNAL_ERROR,
+            `Invalid bitIndex: ${field.bitIndex} for property ${prop}`,
+            { field: prop, received: field.bitIndex, expected: BoksExpectedReason.BIT_INDEX }
+          );
+        }
+      }
+
       switch (field.type) {
         case 'uint8':
           fnBody += `result['${prop}'] = payload[${o}];\n`;
@@ -650,6 +660,17 @@ export class PayloadMapper {
     for (const field of fields) {
       const o = field.offset;
       const prop = field.propertyName;
+
+      if (field.type === 'bit') {
+        if (typeof field.bitIndex !== 'number' || field.bitIndex < 0 || field.bitIndex > 7) {
+          throw new BoksProtocolError(
+            BoksProtocolErrorId.INTERNAL_ERROR,
+            `Invalid bitIndex: ${field.bitIndex} for property ${prop}`,
+            { field: prop, received: field.bitIndex, expected: BoksExpectedReason.BIT_INDEX }
+          );
+        }
+      }
+
       // We read the instance value. Missing values default to 0 for numbers, or empty string.
 
       // Throw if mandatory fields are missing

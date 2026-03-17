@@ -127,3 +127,43 @@ describe('PayloadMapper Security & Resilience', () => {
     expect(serialized[0]).toBe(0); // length is 0
   });
 });
+
+describe('PayloadMapper bitIndex Security', () => {
+  it('prevents JIT injection via bitIndex in compileParser', () => {
+    class MaliciousBitParser {}
+    PayloadMapper.defineSchema(MaliciousBitParser, [
+      { propertyName: 'malicious', type: 'bit', offset: 0, bitIndex: '1); throw new Error("hacked parser"); //'} as any
+    ]);
+
+    expect(() => PayloadMapper.parse(MaliciousBitParser, new Uint8Array([1]))).toThrowError(
+      new BoksProtocolError(
+        BoksProtocolErrorId.INTERNAL_ERROR,
+        'Invalid bitIndex: 1); throw new Error("hacked parser"); // for property malicious',
+        {
+          field: 'malicious',
+          expected: BoksExpectedReason.BIT_INDEX,
+          received: '1); throw new Error("hacked parser"); //'
+        }
+      )
+    );
+  });
+
+  it('prevents JIT injection via bitIndex in compileSerializer', () => {
+    class MaliciousBitSerializer {}
+    PayloadMapper.defineSchema(MaliciousBitSerializer, [
+      { propertyName: 'malicious', type: 'bit', offset: 0, bitIndex: '1); throw new Error("hacked serializer"); //'} as any
+    ]);
+
+    expect(() => PayloadMapper.serialize({ malicious: true, constructor: MaliciousBitSerializer })).toThrowError(
+      new BoksProtocolError(
+        BoksProtocolErrorId.INTERNAL_ERROR,
+        'Invalid bitIndex: 1); throw new Error("hacked serializer"); // for property malicious',
+        {
+          field: 'malicious',
+          expected: BoksExpectedReason.BIT_INDEX,
+          received: '1); throw new Error("hacked serializer"); //'
+        }
+      )
+    );
+  });
+});
