@@ -1,4 +1,4 @@
-import { PayloadMapper, PayloadSeed } from '@/protocol/payload-mapper';
+import { PayloadMapper, PayloadSeed } from '@/protocol/decorators';
 import { BoksPacket } from '@/protocol/_BoksPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
 
@@ -13,15 +13,15 @@ export class GenerateCodesPacket extends BoksPacket {
   }
 
   @PayloadSeed(0)
-  public accessor seedStr!: string;
+  public accessor seed!: string;
 
   constructor(seed: Uint8Array | string, rawPayload?: Uint8Array) {
     super(rawPayload);
-    this.seedStr = seed as unknown as string;
+    this.seed = seed as string;
   }
 
   static fromPayload(payload: Uint8Array): GenerateCodesPacket {
-    const data = PayloadMapper.parse(GenerateCodesPacket, payload);
-    return new GenerateCodesPacket(data.seedStr as string, payload);
+    const data = PayloadMapper.parse<GenerateCodesPacket>(GenerateCodesPacket, payload);
+    return new GenerateCodesPacket(data.seed, payload);
   }
 }

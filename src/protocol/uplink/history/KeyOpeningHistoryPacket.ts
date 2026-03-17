@@ -1,4 +1,4 @@
-import { PayloadMapper } from '@/protocol/payload-mapper';
+import { PayloadMapper } from '@/protocol/decorators';
 import {
   BoksHistoryEvent,
   BoksHistoryEventProps
@@ -16,7 +16,7 @@ export class KeyOpeningHistoryPacket extends BoksHistoryEvent {
   }
 
   static fromPayload(payload: Uint8Array): KeyOpeningHistoryPacket {
-    const data = PayloadMapper.parse(KeyOpeningHistoryPacket, payload);
-    return new KeyOpeningHistoryPacket({ age: data.age as number }, payload);
+    const data = PayloadMapper.parse<BoksHistoryEventProps>(KeyOpeningHistoryPacket, payload);
+    return new KeyOpeningHistoryPacket(data, payload);
   }
 }

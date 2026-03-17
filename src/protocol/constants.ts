@@ -178,7 +178,6 @@ export enum BoksCodeType {
 
 export const EMPTY_BUFFER = new Uint8Array(0);
 
-
 export enum BoksConfigType {
   LaPosteNfc = 1
 }

@@ -11,7 +11,11 @@ describe('SetConfigurationPacket', () => {
   const valueFalse = false;
 
   it('should construct with valid parameters', () => {
-    const packet = new SetConfigurationPacket({ configKey: validKey, configType: type, value: valueTrue });
+    const packet = new SetConfigurationPacket({
+      configKey: validKey,
+      configType: type,
+      value: valueTrue
+    });
     expect(packet.opcode).toBe(BoksOpcode.SET_CONFIGURATION);
     expect(packet.configKey).toBe(validKey);
     expect(packet.configType).toBe(type);
@@ -19,7 +23,11 @@ describe('SetConfigurationPacket', () => {
   });
 
   it('should encode correctly', () => {
-    const packet = new SetConfigurationPacket({ configKey: validKey, configType: type, value: valueTrue });
+    const packet = new SetConfigurationPacket({
+      configKey: validKey,
+      configType: type,
+      value: valueTrue
+    });
     const encoded = packet.encode();
     // 0x16 + 10 + Key + Type + Value
     expect(encoded[0]).toBe(0x16);
@@ -30,9 +38,24 @@ describe('SetConfigurationPacket', () => {
     const expectedPayload = '31323334353637380101';
     expect(bytesToHex(encoded.subarray(2, 12))).toBe(expectedPayload);
 
-    const packet2 = new SetConfigurationPacket({ configKey: validKey, configType: type, value: valueFalse });
+    const packet2 = new SetConfigurationPacket({
+      configKey: validKey,
+      configType: type,
+      value: valueFalse
+    });
     const encoded2 = packet2.encode();
     expect(encoded2[11]).toBe(0x00);
+  });
+
+  it('should match fixed hexadecimal reference encoding', () => {
+    const packet = new SetConfigurationPacket({
+      configKey: '12345678',
+      configType: 1,
+      value: true
+    });
+    const encoded = packet.encode();
+    // Opcode 0x16, Len 10 (0x0A), Key '12345678', Type 1, Value 1, Checksum 0xC6
+    expect(bytesToHex(encoded)).toBe('160A31323334353637380101C6');
   });
 
   it('should parse from payload correctly', () => {
@@ -52,33 +75,35 @@ describe('SetConfigurationPacket', () => {
   });
 
   it('should throw INVALID_CONFIG_KEY for invalid config key format', () => {
-     expect(() => new SetConfigurationPacket({ configKey: 'invalid', configType: type, value: valueTrue })).toThrowError(BoksProtocolError);
+    expect(
+      () => new SetConfigurationPacket({ configKey: 'invalid', configType: type, value: valueTrue })
+    ).toThrowError(BoksProtocolError);
   });
 
   it('should throw INVALID_PAYLOAD_LENGTH if payload is wrong size', () => {
-      const shortPayload = new Uint8Array(9);
-      expect(() => SetConfigurationPacket.fromPayload(shortPayload)).toThrowError(BoksProtocolError);
-      try {
-        SetConfigurationPacket.fromPayload(shortPayload);
-      } catch (e) {
-         expect((e as BoksProtocolError).id).toBe(BoksProtocolErrorId.INVALID_PAYLOAD_LENGTH);
-      }
+    const shortPayload = new Uint8Array(9);
+    expect(() => SetConfigurationPacket.fromPayload(shortPayload)).toThrowError(BoksProtocolError);
+    try {
+      SetConfigurationPacket.fromPayload(shortPayload);
+    } catch (e) {
+      expect((e as BoksProtocolError).id).toBe(BoksProtocolErrorId.INVALID_PAYLOAD_LENGTH);
+    }
 
-      const longPayload = new Uint8Array(11);
-      expect(() => SetConfigurationPacket.fromPayload(longPayload)).toThrowError(BoksProtocolError);
+    const longPayload = new Uint8Array(11);
+    expect(() => SetConfigurationPacket.fromPayload(longPayload)).toThrowError(BoksProtocolError);
   });
 
   it('should throw INVALID_VALUE if value byte is invalid', () => {
-      const payload = new Uint8Array(10);
-      payload.set(stringToBytes(validKey), 0);
-      payload[8] = type;
-      payload[9] = 0x02; // Invalid boolean
+    const payload = new Uint8Array(10);
+    payload.set(stringToBytes(validKey), 0);
+    payload[8] = type;
+    payload[9] = 0x02; // Invalid boolean
 
-      expect(() => SetConfigurationPacket.fromPayload(payload)).toThrowError(BoksProtocolError);
-      try {
-        SetConfigurationPacket.fromPayload(payload);
-      } catch (e) {
-         expect((e as BoksProtocolError).id).toBe(BoksProtocolErrorId.INVALID_VALUE);
-      }
+    expect(() => SetConfigurationPacket.fromPayload(payload)).toThrowError(BoksProtocolError);
+    try {
+      SetConfigurationPacket.fromPayload(payload);
+    } catch (e) {
+      expect((e as BoksProtocolError).id).toBe(BoksProtocolErrorId.INVALID_VALUE);
+    }
   });
 });

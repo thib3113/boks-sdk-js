@@ -8,7 +8,7 @@ describe('BoksController Extended Integration', () => {
   let simulator: BoksHardwareSimulator;
   let transport: SimulatorTransport;
   let controller: BoksController;
-  const TEST_SEED = new Uint8Array(32).fill(0xDD);
+  const TEST_SEED = new Uint8Array(32).fill(0xdd);
 
   beforeEach(async () => {
     simulator = new BoksHardwareSimulator();
@@ -47,15 +47,17 @@ describe('BoksController Extended Integration', () => {
 
   it('should throw error when opening door too quickly', async () => {
     await controller.openDoor('123456');
-    await expect(controller.openDoor('123456')).rejects.toThrow('Please wait 1 second between door opening attempts.');
+    await expect(controller.openDoor('123456')).rejects.toThrow(
+      'Please wait 1 second between door opening attempts.'
+    );
   });
 
   it('should delete a single use code successfully', async () => {
-     await controller.createSingleUseCode('123456');
-     try {
-         const success = await controller.deleteSingleUseCode('123456');
-         expect(success).toBeDefined();
-     } catch(e) {}
+    await controller.createSingleUseCode('123456');
+    try {
+      const success = await controller.deleteSingleUseCode('123456');
+      expect(success).toBeDefined();
+    } catch (e) {}
   }, 10000);
 
   it('should create master code', async () => {
@@ -70,9 +72,9 @@ describe('BoksController Extended Integration', () => {
   });
 
   it('should edit master code successfully', async () => {
-     await controller.createMasterCode(1, '111111');
-     const success = await controller.editMasterCode(1, '222222');
-     expect(success).toBe(true);
+    await controller.createMasterCode(1, '111111');
+    const success = await controller.editMasterCode(1, '222222');
+    expect(success).toBe(true);
   });
 
   it('should unregister NFC tag', async () => {
@@ -81,20 +83,21 @@ describe('BoksController Extended Integration', () => {
   });
 
   it('should clear _hardwareInfo and throw when checking requirements', () => {
-     (controller as any)._hardwareInfo = undefined;
-     expect(() => (controller as any).checkRequirements({ featureName: 'Test', minSw: '2.0.0' }))
-       .toThrow('Hardware info not available');
+    (controller as any)._hardwareInfo = undefined;
+    expect(() =>
+      (controller as any).checkRequirements({ featureName: 'Test', minSw: '2.0.0' })
+    ).toThrow('Hardware info not available');
   });
 
   it('should return false on regenerateMasterKey part A failure if credentials mismatch', async () => {
-     const badController = new BoksController({ transport });
-     await badController.connect();
-     const BAD_SEED = new Uint8Array(32).fill(0xEE);
-     badController.setCredentials(BAD_SEED);
+    const badController = new BoksController({ transport });
+    await badController.connect();
+    const BAD_SEED = new Uint8Array(32).fill(0xee);
+    badController.setCredentials(BAD_SEED);
 
-     const success = await badController.regenerateMasterKey(new Uint8Array(32).fill(0xFF));
-     expect(success).toBe(false);
-     await badController.disconnect();
+    const success = await badController.regenerateMasterKey(new Uint8Array(32).fill(0xff));
+    expect(success).toBe(false);
+    await badController.disconnect();
   });
 
   it('should scan for NFC tags successfully using simulator.simulateNfcScan', async () => {
@@ -136,12 +139,14 @@ describe('BoksController Extended Integration', () => {
   });
 
   it('should timeout Error if getScaleRawSensors returns unexpected opcode', async () => {
-     vi.spyOn(transport, 'write').mockImplementation(async () => {
-         simulator.triggerError(BoksOpcode.ERROR_BAD_REQUEST);
-     });
-     // The client object isn't exposed easily so we can't test execute.
-     // We can just spy performTransaction instead, or just test getScaleRawSensors natively.
-     vi.spyOn(controller as any, 'performTransaction').mockRejectedValue(new Error('Transaction timed out after 50ms'));
-     await expect(controller.getScaleRawSensors()).rejects.toThrow(/Transaction timed out/i);
+    vi.spyOn(transport, 'write').mockImplementation(async () => {
+      simulator.triggerError(BoksOpcode.ERROR_BAD_REQUEST);
+    });
+    // The client object isn't exposed easily so we can't test execute.
+    // We can just spy performTransaction instead, or just test getScaleRawSensors natively.
+    vi.spyOn(controller as any, 'performTransaction').mockRejectedValue(
+      new Error('Transaction timed out after 50ms')
+    );
+    await expect(controller.getScaleRawSensors()).rejects.toThrow(/Transaction timed out/i);
   });
 });

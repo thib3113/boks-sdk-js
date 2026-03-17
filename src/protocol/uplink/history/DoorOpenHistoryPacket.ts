@@ -3,7 +3,7 @@ import {
   BoksHistoryEventProps
 } from '@/protocol/uplink/history/_BoksHistoryEventBase';
 import { BoksOpcode } from '@/protocol/constants';
-import { PayloadMapper } from '@/protocol/payload-mapper';
+import { PayloadMapper } from '@/protocol/decorators';
 
 /**
  * Log: Door Open event.
@@ -22,7 +22,7 @@ export class DoorOpenHistoryPacket extends BoksHistoryEvent {
   }
 
   static fromPayload(payload: Uint8Array): DoorOpenHistoryPacket {
-    const data = PayloadMapper.parse(DoorOpenHistoryPacket, payload);
+    const data = PayloadMapper.parse<BoksHistoryEventProps>(DoorOpenHistoryPacket, payload);
     return new DoorOpenHistoryPacket(data, payload);
   }
 }

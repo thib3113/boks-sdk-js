@@ -1,10 +1,6 @@
 import { BoksPacket } from '@/protocol/_BoksPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
-import { PayloadMapper, PayloadPinCode } from '@/protocol/payload-mapper';
-
-export interface OpenDoorPacketProps {
-  pin: string;
-}
+import { PayloadMapper, PayloadPinCode } from '@/protocol/decorators';
 
 /**
  * Command to open the door with a 6-character PIN.
@@ -19,14 +15,14 @@ export class OpenDoorPacket extends BoksPacket {
     return OpenDoorPacket.opcode;
   }
 
-  constructor(props: OpenDoorPacketProps, rawPayload?: Uint8Array) {
+  constructor(pin: string, rawPayload?: Uint8Array) {
     super(rawPayload);
 
-    this.pin = props.pin;
+    this.pin = pin;
   }
 
   static fromPayload(payload: Uint8Array): OpenDoorPacket {
-    const data = PayloadMapper.parse<OpenDoorPacketProps>(OpenDoorPacket, payload);
-    return new OpenDoorPacket(data, payload);
+    const data = PayloadMapper.parse<OpenDoorPacket>(OpenDoorPacket, payload);
+    return new OpenDoorPacket(data.pin, payload);
   }
 }

@@ -1,4 +1,4 @@
-import { PayloadMapper, PayloadByteArray } from '@/protocol/payload-mapper';
+import { PayloadMapper, PayloadByteArray } from '@/protocol/decorators';
 import { AuthPacket, AuthPacketProps } from '@/protocol/downlink/_AuthPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
 

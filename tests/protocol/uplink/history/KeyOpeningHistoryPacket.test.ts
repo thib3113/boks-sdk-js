@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { KeyOpeningHistoryPacket } from '@/protocol/uplink/history/KeyOpeningHistoryPacket';
 import { BoksOpcode } from '@/protocol/constants';
+import { bytesToHex } from '@/utils/converters';
 
 describe('KeyOpeningHistoryPacket', () => {
   it('should parse correctly with age', () => {
@@ -8,5 +9,11 @@ describe('KeyOpeningHistoryPacket', () => {
     const packet = KeyOpeningHistoryPacket.fromPayload(payload);
     expect(packet.opcode).toBe(BoksOpcode.LOG_EVENT_KEY_OPENING);
     expect(packet.age).toBe(0x010203);
+  });
+
+  it('should match fixed hexadecimal reference encoding', () => {
+    const packet = new KeyOpeningHistoryPacket({ age: 1000 });
+    // Opcode 0x99, Len 3, Age 1000 (0003E8), Checksum 0x87 (153+3+3+232=391, 391%256=135=0x87)
+    expect(bytesToHex(packet.encode())).toBe('99030003E887');
   });
 });

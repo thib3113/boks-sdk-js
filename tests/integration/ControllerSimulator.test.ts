@@ -8,7 +8,7 @@ describe('BoksController Integration with Simulator', () => {
   let transport: SimulatorTransport;
   let controller: BoksController;
 
-  const TEST_SEED = new Uint8Array(32).fill(0xAA); // Dummy seed
+  const TEST_SEED = new Uint8Array(32).fill(0xaa); // Dummy seed
   const TEST_PIN = '123456';
 
   beforeEach(async () => {
@@ -55,7 +55,7 @@ describe('BoksController Integration with Simulator', () => {
     await controller.initialize(TEST_SEED);
     controller.setCredentials(TEST_SEED);
 
-    const NEW_SEED = new Uint8Array(32).fill(0xBB);
+    const NEW_SEED = new Uint8Array(32).fill(0xbb);
     const onProgress = vi.fn();
 
     const success = await controller.regenerateMasterKey(NEW_SEED, onProgress);
@@ -103,7 +103,7 @@ describe('BoksController Integration with Simulator', () => {
     // Trigger is synchronous in simulator.
     const history = await controller.fetchHistory();
     // Should find an entry for BLE Open with our PIN
-    const entry = history.find(h => h.opcode === 0x86); // LOG_CODE_BLE_VALID
+    const entry = history.find((h) => h.opcode === 0x86); // LOG_CODE_BLE_VALID
     expect(entry).toBeDefined();
     // Payload of 0x86 is the PIN.
     // BoksHistoryEvent might parse it?
@@ -126,16 +126,16 @@ describe('BoksController Integration with Simulator', () => {
   it('should sync history correctly', async () => {
     // Manually trigger events in simulator
     simulator.triggerKeypadOpen('654321');
-    simulator.triggerNfcOpen('AABBCC'); // Tag ID
+    simulator.triggerNfcOpen('AABBCCDD'); // Tag ID (4 bytes)
 
     const history = await controller.fetchHistory();
 
     // Check for Keypad event (0x87)
-    const keypadEvent = history.find(h => h.opcode === 0x87);
+    const keypadEvent = history.find((h) => h.opcode === 0x87);
     expect(keypadEvent).toBeDefined();
 
     // Check for NFC event (0xA1)
-    const nfcEvent = history.find(h => h.opcode === 0xA1);
+    const nfcEvent = history.find((h) => h.opcode === 0xa1);
     expect(nfcEvent).toBeDefined();
   });
 });

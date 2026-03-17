@@ -6,7 +6,7 @@ import {
   PayloadVarLenHex,
   PayloadBit,
   PayloadAsciiString
-} from '@/protocol/payload-mapper';
+} from '@/protocol/decorators';
 import { BoksProtocolError } from '@/errors/BoksProtocolError';
 
 class DummyDynamicLengthPacket {
@@ -32,7 +32,7 @@ class DummyBitPacket {
 describe('PayloadMapper Exhaustive Deterministic Tests', () => {
   describe('Missing Decorator Coverage (Uncovered Lines)', () => {
     it('should correctly parse and serialize dynamic length hex string', () => {
-      const payload = new Uint8Array([0xAA, 0xBB, 0xCC]);
+      const payload = new Uint8Array([0xaa, 0xbb, 0xcc]);
       const parsed = PayloadMapper.parse(DummyDynamicLengthPacket, payload);
       expect(parsed.remainingHex).toBe('AABBCC');
 
@@ -42,18 +42,18 @@ describe('PayloadMapper Exhaustive Deterministic Tests', () => {
       const instance = new DummyDynamicLengthPacket();
       instance.remainingHex = 'AABBCC';
       const serialized2 = PayloadMapper.serialize(instance);
-      expect(serialized2).toEqual(new Uint8Array([0xAA, 0xBB, 0xCC]));
+      expect(serialized2).toEqual(new Uint8Array([0xaa, 0xbb, 0xcc]));
     });
 
     it('should correctly parse and serialize dynamic length byte array', () => {
-      const payload = new Uint8Array([0xAA, 0xBB, 0xCC]);
+      const payload = new Uint8Array([0xaa, 0xbb, 0xcc]);
       const parsed = PayloadMapper.parse(DummyDynamicByteArrayPacket, payload);
-      expect(parsed.remainingBytes).toEqual(new Uint8Array([0xAA, 0xBB, 0xCC]));
+      expect(parsed.remainingBytes).toEqual(new Uint8Array([0xaa, 0xbb, 0xcc]));
 
       const instance = new DummyDynamicByteArrayPacket();
-      instance.remainingBytes = new Uint8Array([0xAA, 0xBB, 0xCC]);
+      instance.remainingBytes = new Uint8Array([0xaa, 0xbb, 0xcc]);
       const serialized = PayloadMapper.serialize(instance);
-      expect(serialized).toEqual(new Uint8Array([0xAA, 0xBB, 0xCC]));
+      expect(serialized).toEqual(new Uint8Array([0xaa, 0xbb, 0xcc]));
     });
 
     it('should cleanly fallback to zero-length when dynamic fields are empty on serialization', () => {
@@ -74,15 +74,17 @@ describe('PayloadMapper Exhaustive Deterministic Tests', () => {
       const instance = new DummyVarLenHexPacket();
       instance.varHex = 'AABBCC';
       const serialized = PayloadMapper.serialize(instance);
-      expect(serialized).toEqual(new Uint8Array([0x03, 0xAA, 0xBB, 0xCC]));
+      expect(serialized).toEqual(new Uint8Array([0x03, 0xaa, 0xbb, 0xcc]));
 
       const parsed = PayloadMapper.parse(DummyVarLenHexPacket, serialized);
       expect(parsed.varHex).toBe('AABBCC');
     });
 
     it('should throw MALFORMED_DATA on short var_len_hex parse', () => {
-      const payload = new Uint8Array([0x05, 0xAA, 0xBB]); // Length says 5, but only 2 bytes available
-      expect(() => PayloadMapper.parse(DummyVarLenHexPacket, payload)).toThrowError(BoksProtocolError);
+      const payload = new Uint8Array([0x05, 0xaa, 0xbb]); // Length says 5, but only 2 bytes available
+      expect(() => PayloadMapper.parse(DummyVarLenHexPacket, payload)).toThrowError(
+        BoksProtocolError
+      );
     });
 
     it('should serialize and parse bits cleanly', () => {
@@ -99,27 +101,27 @@ describe('PayloadMapper Exhaustive Deterministic Tests', () => {
     });
 
     it('should set schema on Symbol.metadata if available during defineSchema', () => {
-        class MockClass {}
-        (MockClass as any)[Symbol.metadata] = {};
-        PayloadMapper.defineSchema(MockClass, [{ propertyName: 'foo', type: 'uint8', offset: 0 }]);
-        expect((MockClass as any)[Symbol.metadata][Symbol.for('BoksPayloadMapper')]).toBeDefined();
+      class MockClass {}
+      (MockClass as any)[Symbol.metadata] = {};
+      PayloadMapper.defineSchema(MockClass, [{ propertyName: 'foo', type: 'uint8', offset: 0 }]);
+      expect((MockClass as any)[Symbol.metadata][Symbol.for('BoksPayloadMapper')]).toBeDefined();
     });
 
     it('should throw an error on PayloadAsciiString when missing length parameter definition (Internal guard)', () => {
-        expect(() => {
-             // Mock an internal configuration error where someone bypassed TS for ascii string decorator
-             class BadConfig {
-                 @PayloadAsciiString(0, undefined as any)
-                 public accessor text!: string;
-             }
-             PayloadMapper.parse(BadConfig, new Uint8Array([0x00]));
-        }).toThrowError(BoksProtocolError);
+      expect(() => {
+        // Mock an internal configuration error where someone bypassed TS for ascii string decorator
+        class BadConfig {
+          @PayloadAsciiString(0, undefined as any)
+          public accessor text!: string;
+        }
+        PayloadMapper.parse(BadConfig, new Uint8Array([0x00]));
+      }).toThrowError(BoksProtocolError);
     });
 
     it('should serialize to empty buffer when no fields are mapped', () => {
-        class NoFieldsPacket {}
-        const serialized = PayloadMapper.serialize(new NoFieldsPacket());
-        expect(serialized).toEqual(new Uint8Array(0));
+      class NoFieldsPacket {}
+      const serialized = PayloadMapper.serialize(new NoFieldsPacket());
+      expect(serialized).toEqual(new Uint8Array(0));
     });
   });
 });

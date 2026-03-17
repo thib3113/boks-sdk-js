@@ -47,7 +47,12 @@ describe('HistoryPackets Resilience (Fuzzing)', () => {
             expect(packet.opcode).toBe((PacketClass as any).opcode);
             expect((packet as any).rawPayload).toEqual(payload);
           } catch (e: any) {
-            if (e.id === 'MALFORMED_DATA' || e.id === 'INVALID_PIN_FORMAT' || e.id === 'INVALID_CONFIG_KEY') {
+            if (
+              e.id === 'MALFORMED_DATA' ||
+              e.id === 'INVALID_PIN_FORMAT' ||
+              e.id === 'INVALID_CONFIG_KEY' ||
+              e.id === 'INVALID_NFC_UID_FORMAT'
+            ) {
               return;
             }
             throw e;

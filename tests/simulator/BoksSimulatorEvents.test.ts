@@ -18,7 +18,9 @@ describe('BoksHardwareSimulator Events', () => {
     packetData[0] = opcode;
     packetData[1] = payload.length;
     packetData.set(payload, 2);
-    packetData[packetData.length - 1] = calculateChecksum(packetData.subarray(0, packetData.length - 1));
+    packetData[packetData.length - 1] = calculateChecksum(
+      packetData.subarray(0, packetData.length - 1)
+    );
 
     const events: SimulatorPacketEvent[] = [];
     simulator.onPacket((event) => {
@@ -28,7 +30,7 @@ describe('BoksHardwareSimulator Events', () => {
     await simulator.handlePacket(packetData);
 
     // allow event loop to tick for async response (handlePacket uses setTimeout)
-    await new Promise(r => setTimeout(r, 10));
+    await new Promise((r) => setTimeout(r, 10));
 
     // Should have 1 TX event (the request) and 1 RX event (the invalid open code response)
     expect(events.length).toBe(2);

@@ -6,7 +6,7 @@ import { bytesToHex, stringToBytes } from '@/utils/converters';
 
 describe('DeleteMasterCodePacket', () => {
   const validKey = '12345678';
-  const validIndex = 5;
+  const validIndex = 2;
 
   it('should construct with valid parameters', () => {
     const packet = new DeleteMasterCodePacket({ configKey: validKey, index: validIndex });
@@ -19,12 +19,18 @@ describe('DeleteMasterCodePacket', () => {
     // 0x0C + len(9) + key(8) + index(1) + checksum
     const packet = new DeleteMasterCodePacket({ configKey: validKey, index: validIndex });
     const encoded = packet.encode();
-    expect(encoded[0]).toBe(0x0C);
+    expect(encoded[0]).toBe(0x0c);
     expect(encoded[1]).toBe(9);
 
-    // Key "12345678" -> 3132333435363738 + 05
-    const expectedPayload = '313233343536373805';
+    // Key "12345678" -> 3132333435363738 + 02
+    const expectedPayload = '313233343536373802';
     expect(bytesToHex(encoded.subarray(2, 11))).toBe(expectedPayload);
+  });
+
+  it('should match fixed hexadecimal reference encoding', () => {
+    const packet = new DeleteMasterCodePacket({ configKey: '12345678', index: 2 });
+    // Opcode 0x0C, Len 9, Key '12345678', Index 2, Checksum 0xD1
+    expect(bytesToHex(packet.encode())).toBe('0C09313233343536373802BB');
   });
 
   it('should parse from payload correctly', () => {
@@ -45,22 +51,28 @@ describe('DeleteMasterCodePacket', () => {
   });
 
   it('should throw INVALID_CONFIG_KEY for invalid config key format', () => {
-     expect(() => new DeleteMasterCodePacket({ configKey: 'invalid', index: validIndex })).toThrowError(BoksProtocolError);
-     try {
-       new DeleteMasterCodePacket({ configKey: 'invalid', index: validIndex });
-     } catch (e) {
-       expect((e as BoksProtocolError).id).toBe(BoksProtocolErrorId.INVALID_CONFIG_KEY);
-     }
+    expect(
+      () => new DeleteMasterCodePacket({ configKey: 'invalid', index: validIndex })
+    ).toThrowError(BoksProtocolError);
+    try {
+      new DeleteMasterCodePacket({ configKey: 'invalid', index: validIndex });
+    } catch (e) {
+      expect((e as BoksProtocolError).id).toBe(BoksProtocolErrorId.INVALID_CONFIG_KEY);
+    }
   });
 
   it('should throw INVALID_INDEX_RANGE for invalid index', () => {
-      expect(() => new DeleteMasterCodePacket({ configKey: validKey, index: -1 })).toThrowError(BoksProtocolError);
-      expect(() => new DeleteMasterCodePacket({ configKey: validKey, index: 256 })).toThrowError(BoksProtocolError);
+    expect(() => new DeleteMasterCodePacket({ configKey: validKey, index: -1 })).toThrowError(
+      BoksProtocolError
+    );
+    expect(() => new DeleteMasterCodePacket({ configKey: validKey, index: 256 })).toThrowError(
+      BoksProtocolError
+    );
 
-      try {
-        new DeleteMasterCodePacket({ configKey: validKey, index: 256 });
-      } catch (e) {
-         expect((e as BoksProtocolError).id).toBe(BoksProtocolErrorId.INVALID_INDEX_RANGE);
-      }
+    try {
+      new DeleteMasterCodePacket({ configKey: validKey, index: 256 });
+    } catch (e) {
+      expect((e as BoksProtocolError).id).toBe(BoksProtocolErrorId.INVALID_INDEX_RANGE);
+    }
   });
 });

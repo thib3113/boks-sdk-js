@@ -1,4 +1,4 @@
-import { PayloadMapper, PayloadUint8, PayloadBoolean } from '@/protocol/payload-mapper';
+import { PayloadMapper, PayloadUint8, PayloadBoolean } from '@/protocol/decorators';
 import { AuthPacket, AuthPacketProps } from '@/protocol/downlink/_AuthPacketBase';
 import { BoksOpcode, BoksConfigType } from '@/protocol/constants';
 import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';
@@ -43,10 +43,6 @@ export class SetConfigurationPacket extends AuthPacket {
       SetConfigurationPacket,
       payload
     );
-    return new SetConfigurationPacket({
-      configKey: parsed.configKey!,
-      configType: parsed.configType!,
-      value: parsed.value!
-    });
+    return new SetConfigurationPacket(parsed, payload);
   }
 }

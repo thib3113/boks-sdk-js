@@ -29,12 +29,12 @@ describe('Boks Hardware Simulator Integrity', () => {
 
   test('Should handle OPEN_DOOR (0x01) correctly', async () => {
     simulator.addPinCode('123456', BoksCodeType.Single);
-    const packet = new OpenDoorPacket({ pin: '123456' }).encode();
+    const packet = new OpenDoorPacket('123456').encode();
     await transport.write(packet);
-    
+
     // We expect 2 packets: VALID_OPEN_CODE (0x81) and NOTIFY_DOOR_STATUS (0x84)
     await vi.waitFor(() => expect(responseCallback).toHaveBeenCalledTimes(2));
-    
+
     // Explicitly type the arguments to fix implicit 'any' error
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const opcodes = responseCallback.mock.calls.map((c: any[]) => c[0][0]);
@@ -73,7 +73,7 @@ describe('Boks Hardware Simulator Integrity', () => {
   });
 
   test('Should handle invalid OPEN_DOOR (0x01)', async () => {
-    const packet = new OpenDoorPacket({ pin: '000000' }).encode();
+    const packet = new OpenDoorPacket('000000').encode();
     await transport.write(packet);
     await new Promise((r) => setTimeout(r, 10));
 
@@ -90,7 +90,10 @@ describe('Boks Hardware Simulator Integrity', () => {
 
     // 2. Action: Send DELETE_SINGLE_USE_CODE command
     // Payload: ConfigKey (8 bytes) + PIN (6 bytes)
-    const command = new DeleteSingleUseCodePacket({ configKey: '00000000', pin: '654321' }).encode();
+    const command = new DeleteSingleUseCodePacket({
+      configKey: '00000000',
+      pin: '654321'
+    }).encode();
     await transport.write(command);
 
     // 3. Verification:
@@ -118,7 +121,7 @@ describe('Boks Hardware Simulator Integrity', () => {
     simulator.setMasterKey(testMasterKey);
     expect(simulator.getInternalState().configKey).toBe('AAAAAAAA'); // Last 8 chars
 
-    const testMasterKeyBytes = new Uint8Array(32).fill(0xBB);
+    const testMasterKeyBytes = new Uint8Array(32).fill(0xbb);
     simulator.setMasterKey(testMasterKeyBytes);
     expect(simulator.getInternalState().configKey).toBe('BBBBBBBB');
 
@@ -138,11 +141,11 @@ describe('Boks Hardware Simulator Integrity', () => {
     const isolatedSpy = vi.fn();
     isolatedSim.subscribe(isolatedSpy);
     isolatedSim.setPacketLoss(1.0);
-    
+
     // Actions on isolated simulator
     isolatedSim.setDoorStatus(true);
     const isolatedTransport = new SimulatorTransport(isolatedSim);
-    await isolatedTransport.write(new OpenDoorPacket({ pin: '123456' }).encode());
+    await isolatedTransport.write(new OpenDoorPacket('123456').encode());
 
     expect(isolatedSpy).not.toHaveBeenCalled();
     isolatedSim.destroy();
@@ -232,9 +235,7 @@ describe('Boks Hardware Simulator Integrity', () => {
       const schema = simulator.getGattSchema();
 
       // Verify Boks Service
-      const boksService = schema.find(
-        (s) => s.uuid === 'a7630001-f491-4f21-95ea-846ba586e361'
-      );
+      const boksService = schema.find((s) => s.uuid === 'a7630001-f491-4f21-95ea-846ba586e361');
       expect(boksService).toBeDefined();
 
       const writeChar = boksService?.characteristics.find(
@@ -251,9 +252,7 @@ describe('Boks Hardware Simulator Integrity', () => {
       expect(notifyChar?.properties).toContain('notify');
 
       // Verify Battery Service
-      const batteryService = schema.find(
-        (s) => s.uuid === '0000180f-0000-1000-8000-00805f9b34fb'
-      );
+      const batteryService = schema.find((s) => s.uuid === '0000180f-0000-1000-8000-00805f9b34fb');
       expect(batteryService).toBeDefined();
 
       const batteryChar = batteryService?.characteristics.find(

@@ -1,6 +1,6 @@
 import { AuthPacket, AuthPacketProps } from '@/protocol/downlink/_AuthPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
-import { PayloadMapper, PayloadMasterCodeIndex } from '@/protocol/payload-mapper';
+import { PayloadMapper, PayloadMasterCodeIndex } from '@/protocol/decorators';
 
 /**
  * Command to delete a master code by index.

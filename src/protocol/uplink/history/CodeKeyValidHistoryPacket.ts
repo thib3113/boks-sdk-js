@@ -1,4 +1,4 @@
-import { PayloadMapper, PayloadPinCode } from '@/protocol/payload-mapper';
+import { PayloadMapper, PayloadPinCode } from '@/protocol/decorators';
 import {
   BoksHistoryEvent,
   BoksHistoryEventProps

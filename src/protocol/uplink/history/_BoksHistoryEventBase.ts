@@ -1,6 +1,6 @@
 import { BoksRXPacket } from '@/protocol/uplink/_BoksRXPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
-import { PayloadUint24 } from '@/protocol/payload-mapper';
+import { PayloadUint24 } from '@/protocol/decorators';
 
 /**
  * Base class for all Boks History Event packets.

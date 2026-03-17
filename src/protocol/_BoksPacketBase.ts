@@ -1,5 +1,5 @@
 import { BoksOpcode, EMPTY_BUFFER } from '@/protocol/constants';
-import { PayloadMapper } from '@/protocol/payload-mapper';
+import { PayloadMapper } from '@/protocol/decorators';
 import { calculateChecksum } from '@/utils/converters';
 import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';
 

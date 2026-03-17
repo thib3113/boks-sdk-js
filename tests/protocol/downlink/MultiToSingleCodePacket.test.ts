@@ -5,8 +5,8 @@ import { BoksOpcode } from '@/protocol/constants';
 import { bytesToHex, stringToBytes } from '@/utils/converters';
 
 describe('MultiToSingleCodePacket', () => {
-  const validKey = 'ABCDEF12';
-  const validPin = '123456';
+  const validKey = '12345678';
+  const validPin = '876543';
 
   it('should construct with valid parameters', () => {
     const packet = new MultiToSingleCodePacket({ configKey: validKey, pin: validPin });
@@ -19,11 +19,19 @@ describe('MultiToSingleCodePacket', () => {
     const packet = new MultiToSingleCodePacket({ configKey: validKey, pin: validPin });
     const encoded = packet.encode();
     // 0x0B
-    expect(encoded[0]).toBe(0x0B);
+    expect(encoded[0]).toBe(0x0b);
     expect(encoded[1]).toBe(14);
 
-    const expectedPayload = '4142434445463132313233343536';
+    // Key "12345678" -> 3132333435363738
+    // Pin "876543" -> 383736353433
+    const expectedPayload = '3132333435363738383736353433';
     expect(bytesToHex(encoded.subarray(2, 16))).toBe(expectedPayload);
+  });
+
+  it('should match fixed hexadecimal reference encoding', () => {
+    const packet = new MultiToSingleCodePacket({ configKey: '12345678', pin: '876543' });
+    // Received: 0B0E3132333435363738383736353433FE
+    expect(bytesToHex(packet.encode())).toBe('0B0E3132333435363738383736353433FE');
   });
 
   it('should parse from payload correctly', () => {
@@ -37,15 +45,19 @@ describe('MultiToSingleCodePacket', () => {
   });
 
   it('should throw INVALID_CONFIG_KEY for invalid config key format', () => {
-     expect(() => new MultiToSingleCodePacket({ configKey: 'invalid', pin: validPin })).toThrowError(BoksProtocolError);
+    expect(() => new MultiToSingleCodePacket({ configKey: 'invalid', pin: validPin })).toThrowError(
+      BoksProtocolError
+    );
   });
 
   it('should throw INVALID_PIN_FORMAT for invalid pin', () => {
-      expect(() => new MultiToSingleCodePacket({ configKey: validKey, pin: '123' })).toThrowError(BoksProtocolError);
+    expect(() => new MultiToSingleCodePacket({ configKey: validKey, pin: '123' })).toThrowError(
+      BoksProtocolError
+    );
   });
 
   it('should fail parsing if payload is too short', () => {
-      const shortPayload = new Uint8Array(10);
-      expect(() => MultiToSingleCodePacket.fromPayload(shortPayload)).toThrowError(BoksProtocolError);
+    const shortPayload = new Uint8Array(10);
+    expect(() => MultiToSingleCodePacket.fromPayload(shortPayload)).toThrowError(BoksProtocolError);
   });
 });

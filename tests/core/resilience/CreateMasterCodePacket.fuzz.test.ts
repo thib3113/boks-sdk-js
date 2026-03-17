@@ -21,7 +21,7 @@ describe('CreateMasterCodePacket Resilience (Fuzzing)', () => {
             expect(pin.length).toBe(6);
             expect(index).toBeGreaterThanOrEqual(0);
             expect(index).toBeLessThanOrEqual(255);
-            expect(packet.opcode).toBe(0x0E); // CreateMasterCodePacket opcode
+            expect(packet.opcode).toBe(0x0e); // CreateMasterCodePacket opcode
           } catch (e) {
             // It is an intended FEATURE that validation throws a BoksProtocolError.
             // It should NEVER crash with TypeError, RangeError, etc.
@@ -36,19 +36,16 @@ describe('CreateMasterCodePacket Resilience (Fuzzing)', () => {
   it('FEATURE REGRESSION: should securely reject malformed binary payloads in fromPayload with BoksProtocolError', () => {
     // We fuzz the fromPayload binary parser
     fc.assert(
-      fc.property(
-        fc.uint8Array({ minLength: 0, maxLength: 256 }),
-        (payload) => {
-          try {
-            const packet = CreateMasterCodePacket.fromPayload(payload);
-            expect(packet).toBeInstanceOf(CreateMasterCodePacket);
-          } catch (e) {
-            // It is an intended FEATURE that fromPayload validation throws a BoksProtocolError
-            // when extracting out-of-bounds or malformed string bytes.
-            expect(e).toBeInstanceOf(BoksProtocolError);
-          }
+      fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (payload) => {
+        try {
+          const packet = CreateMasterCodePacket.fromPayload(payload);
+          expect(packet).toBeInstanceOf(CreateMasterCodePacket);
+        } catch (e) {
+          // It is an intended FEATURE that fromPayload validation throws a BoksProtocolError
+          // when extracting out-of-bounds or malformed string bytes.
+          expect(e).toBeInstanceOf(BoksProtocolError);
         }
-      ),
+      }),
       { numRuns: 1000 }
     );
   });

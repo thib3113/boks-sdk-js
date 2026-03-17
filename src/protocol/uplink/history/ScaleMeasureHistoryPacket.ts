@@ -3,7 +3,7 @@ import {
   BoksHistoryEventProps
 } from '@/protocol/uplink/history/_BoksHistoryEventBase';
 import { BoksOpcode } from '@/protocol/constants';
-import { PayloadMapper } from '@/protocol/payload-mapper';
+import { PayloadMapper, PayloadByteArray } from '@/protocol/decorators';
 
 /** ⚠️ This packet is theoretical; it has never been tested in real-world conditions. */
 /**
@@ -19,7 +19,8 @@ export class ScaleMeasureHistoryPacket extends BoksHistoryEvent {
   // We specify length=0 as a wildcard, but the decorator logic currently requires strict length.
   // Instead of full annotation for a dynamic suffix, we map the known part:
 
-  public readonly data: Uint8Array;
+  @PayloadByteArray(3)
+  public accessor data!: Uint8Array;
 
   constructor(props: ScaleMeasureHistoryPacketProps, rawPayload?: Uint8Array) {
     super(ScaleMeasureHistoryPacket.opcode, props, rawPayload);
@@ -27,13 +28,10 @@ export class ScaleMeasureHistoryPacket extends BoksHistoryEvent {
   }
 
   static fromPayload(payload: Uint8Array): ScaleMeasureHistoryPacket {
-    const data = PayloadMapper.parse<ScaleMeasureHistoryPacketProps>(
-      ScaleMeasureHistoryPacket,
-      payload
-    );
+    const data = PayloadMapper.parse<ScaleMeasureHistoryPacket>(ScaleMeasureHistoryPacket, payload);
     return new ScaleMeasureHistoryPacket(
       {
-        age: data.age as number,
+        age: data.age,
         data: payload.length > 3 ? payload.subarray(3) : new Uint8Array(0)
       },
       payload

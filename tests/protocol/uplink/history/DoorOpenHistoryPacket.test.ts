@@ -1,10 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import { DoorOpenHistoryPacket } from '@/protocol/uplink/history/DoorOpenHistoryPacket';
 import { BoksOpcode } from '@/protocol/constants';
+import { bytesToHex } from '@/utils/converters';
 
 describe('DoorOpenHistoryPacket', () => {
   it('should parse correctly with age', () => {
-    const payload = new Uint8Array([0x00, 0x00, 0x0A]);
+    const payload = new Uint8Array([0x00, 0x00, 0x0a]);
     const packet = DoorOpenHistoryPacket.fromPayload(payload);
 
     expect(packet.opcode).toBe(BoksOpcode.LOG_DOOR_OPEN);
@@ -13,9 +14,11 @@ describe('DoorOpenHistoryPacket', () => {
   });
 
   it('should encode correctly', () => {
-    const packet = new DoorOpenHistoryPacket({ age: 10 }, new Uint8Array([0x00, 0x00, 0x0A]));
-    const payload = packet.toPayload();
-
-    expect(payload).toEqual(new Uint8Array([0x00, 0x00, 0x0A]));
+    const packet = new DoorOpenHistoryPacket({ age: 55 });
+    const encoded = packet.encode();
+    // 0x91 + 3 + 000037
+    expect(encoded[0]).toBe(0x91);
+    expect(encoded[1]).toBe(3);
+    expect(bytesToHex(encoded.subarray(2, 5))).toBe('000037');
   });
 });

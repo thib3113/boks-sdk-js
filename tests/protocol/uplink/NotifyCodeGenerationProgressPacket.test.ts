@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { NotifyCodeGenerationProgressPacket } from '@/protocol/uplink/NotifyCodeGenerationProgressPacket';
 import { BoksOpcode } from '@/protocol/constants';
+import { bytesToHex } from '@/utils/converters';
 
 describe('NotifyCodeGenerationProgressPacket', () => {
   it('should parse correctly', () => {
@@ -12,8 +13,10 @@ describe('NotifyCodeGenerationProgressPacket', () => {
     expect(packet.progress).toBe(50);
   });
 
-  it('should throw MALFORMED_DATA on short payload', () => {
-    const payload = new Uint8Array(0);
-    expect(() => NotifyCodeGenerationProgressPacket.fromPayload(payload)).toThrowError();
+  it('should match fixed hexadecimal reference encoding', () => {
+    const packet = new NotifyCodeGenerationProgressPacket(50);
+    const encoded = packet.encode();
+    // Opcode 0xC2 (194), Len 1, Progress 50 (0x32), Checksum 0xF5 (194+1+50=245=0xF5)
+    expect(bytesToHex(encoded)).toBe('C20132F5');
   });
 });

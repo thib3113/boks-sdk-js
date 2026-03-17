@@ -24,10 +24,15 @@ class MockTransport implements BoksTransport {
 }
 
 class MockPacket extends BoksPacket {
-  constructor(public opcode: BoksOpcode, private payload: Uint8Array = new Uint8Array(0)) {
+  constructor(
+    public opcode: BoksOpcode,
+    private payload: Uint8Array = new Uint8Array(0)
+  ) {
     super();
   }
-  toPayload() { return this.payload; }
+  toPayload() {
+    return this.payload;
+  }
 }
 
 describe('BoksClient Coverage', () => {
@@ -65,7 +70,7 @@ describe('BoksClient Coverage', () => {
     expect(loggerMock).toHaveBeenCalledWith('error', 'error', {
       error: expect.any(Error)
     });
-    const errorArg = loggerMock.mock.calls.find(call => call[1] === 'error')?.[2].error;
+    const errorArg = loggerMock.mock.calls.find((call) => call[1] === 'error')?.[2].error;
     expect(errorArg.message).toBe('Unexpected parsing error');
   });
 

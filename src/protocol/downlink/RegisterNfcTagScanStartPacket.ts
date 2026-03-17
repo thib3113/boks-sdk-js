@@ -1,22 +1,34 @@
-import { PayloadMapper } from '@/protocol/payload-mapper';
-import { AuthPacket, AuthPacketProps } from '@/protocol/downlink/_AuthPacketBase';
+import { PayloadMapper, PayloadConfigKey } from '@/protocol/decorators';
+import { BoksPacket } from '@/protocol/_BoksPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
 
 /**
- * Command to start NFC scanning for registration.
+ * Command to start NFC tag scanning for registration.
  */
-export class RegisterNfcTagScanStartPacket extends AuthPacket {
+export class RegisterNfcTagScanStartPacket extends BoksPacket {
   static readonly opcode = BoksOpcode.REGISTER_NFC_TAG_SCAN_START;
   get opcode() {
     return RegisterNfcTagScanStartPacket.opcode;
   }
 
-  constructor(props: AuthPacketProps, rawPayload?: Uint8Array) {
-    super(props, rawPayload);
+  @PayloadConfigKey(1)
+  public accessor configKey!: string;
+
+  constructor(configKey: string, rawPayload?: Uint8Array) {
+    super(rawPayload);
+    this.configKey = configKey;
   }
 
   static fromPayload(payload: Uint8Array): RegisterNfcTagScanStartPacket {
-    const data = PayloadMapper.parse(RegisterNfcTagScanStartPacket, payload);
-    return new RegisterNfcTagScanStartPacket({ configKey: data.configKey as string }, payload);
+    let parsePayload = payload;
+    if (payload.length === 8) {
+      parsePayload = new Uint8Array([0, ...payload]);
+    }
+
+    const data = PayloadMapper.parse<RegisterNfcTagScanStartPacket>(
+      RegisterNfcTagScanStartPacket,
+      parsePayload
+    );
+    return new RegisterNfcTagScanStartPacket(data.configKey, payload);
   }
 }

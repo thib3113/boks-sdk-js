@@ -20,7 +20,9 @@ describe('NotifyNfcTagFoundPacket - Resilience & Edge Cases', () => {
     });
 
     it('should correctly handle completely empty payloads', () => {
-      expect(() => NotifyNfcTagFoundPacket.fromPayload(new Uint8Array(0))).toThrow(BoksProtocolError);
+      expect(() => NotifyNfcTagFoundPacket.fromPayload(new Uint8Array(0))).toThrow(
+        BoksProtocolError
+      );
     });
 
     it('should parse specific known lengths correctly', () => {

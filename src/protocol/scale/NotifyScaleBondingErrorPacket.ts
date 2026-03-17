@@ -1,4 +1,4 @@
-import { PayloadMapper, PayloadUint8 } from '@/protocol/payload-mapper';
+import { PayloadMapper, PayloadUint8 } from '@/protocol/decorators';
 import { BoksRXPacket } from '@/protocol/uplink/_BoksRXPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
 
@@ -19,6 +19,6 @@ export class NotifyScaleBondingErrorPacket extends BoksRXPacket {
 
   static fromPayload(payload: Uint8Array): NotifyScaleBondingErrorPacket {
     const data = PayloadMapper.parse(NotifyScaleBondingErrorPacket, payload);
-    return new NotifyScaleBondingErrorPacket(data.errorCode as number, payload);
+    return new NotifyScaleBondingErrorPacket(data.errorCode, payload);
   }
 }

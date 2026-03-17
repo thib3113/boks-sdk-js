@@ -1,8 +1,9 @@
-import { bytesToHex } from '../utils/converters';
-/* eslint-disable @typescript-eslint/no-unsafe-function-type, @typescript-eslint/no-explicit-any */
-import { BoksProtocolError, BoksProtocolErrorId } from '../errors/BoksProtocolError';
-import { BoksExpectedReason } from '../errors/BoksExpectedReason';
-import { validateMasterCodeIndex, validateNfcUid, validateSeed } from '../utils/validation';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+export type PayloadConstructor = abstract new (...args: any[]) => any;
+
+import { BoksProtocolError, BoksProtocolErrorId } from '../../errors/BoksProtocolError';
+import { BoksExpectedReason } from '../../errors/BoksExpectedReason';
+import { EMPTY_BUFFER } from '../constants';
 
 /**
  * Metadata key used to store field definitions on the class constructor.
@@ -36,9 +37,11 @@ export interface FieldDefinition {
  * Ensures the target class has a metadata array for field definitions.
  */
 
-const legacyMetadataMap = new WeakMap<Function, FieldDefinition[]>();
+const legacyMetadataMap = new WeakMap<PayloadConstructor, FieldDefinition[]>();
 
-function getOrCreateMetadata(context: ClassAccessorDecoratorContext<any, any>): FieldDefinition[] {
+export function getOrCreateMetadata(
+  context: ClassAccessorDecoratorContext<unknown, unknown>
+): FieldDefinition[] {
   if (context.metadata) {
     if (!context.metadata[METADATA_KEY]) {
       context.metadata[METADATA_KEY] = [];
@@ -48,7 +51,8 @@ function getOrCreateMetadata(context: ClassAccessorDecoratorContext<any, any>): 
     }
     return context.metadata[METADATA_KEY] as FieldDefinition[];
   }
-  return /* v8 ignore next */ [];
+  /* v8 ignore next */
+  return [];
 }
 
 /**
@@ -57,10 +61,10 @@ function getOrCreateMetadata(context: ClassAccessorDecoratorContext<any, any>): 
  */
 export class PayloadMapper {
   // Cache of compiled parsing functions, keyed by Class Constructor
-  private static compiledParsers = new WeakMap<Function, Function>();
+  private static compiledParsers = new WeakMap<PayloadConstructor, (...args: any[]) => any>();
   // Cache of compiled serialization functions
-  private static compiledSerializers = new WeakMap<Function, Function>();
-  private static compiledValidators = new WeakMap<Function, Function>();
+  private static compiledSerializers = new WeakMap<PayloadConstructor, (...args: any[]) => any>();
+  private static compiledValidators = new WeakMap<PayloadConstructor, (...args: any[]) => any>();
 
   /**
    * Pre-computed hex table for JIT compilers
@@ -208,7 +212,7 @@ export class PayloadMapper {
    * Compiles the JIT parsing function for a class.
    */
 
-  private static getFields(targetClass: any): FieldDefinition[] {
+  private static getFields(targetClass: PayloadConstructor | unknown): FieldDefinition[] {
     const allFields: FieldDefinition[] = [];
     let currentClass = targetClass;
     while (
@@ -217,18 +221,21 @@ export class PayloadMapper {
       currentClass !== Object.prototype
     ) {
       let symMetadata: symbol | undefined = Symbol.metadata;
-      /* v8 ignore next 4 */
+
       if (!symMetadata) {
         const symbols = Object.getOwnPropertySymbols(currentClass);
         symMetadata = symbols.find((s) => s.toString() === 'Symbol(Symbol.metadata)');
       }
       const fields =
-        /* v8 ignore next */ (symMetadata && currentClass[symMetadata as any]?.[METADATA_KEY]) ||
-        /* v8 ignore next */ currentClass[Symbol.metadata as any]?.[METADATA_KEY] ||
-        /* v8 ignore next */ currentClass.constructor?.[Symbol.metadata as any]?.[METADATA_KEY] ||
-        legacyMetadataMap.get(currentClass) ||
-        /* v8 ignore next */ currentClass[METADATA_KEY] ||
-        /* v8 ignore next */ currentClass.constructor?.[METADATA_KEY];
+        (symMetadata &&
+          (currentClass as Record<PropertyKey, any>)[symMetadata as any]?.[METADATA_KEY]) ||
+        (currentClass as Record<PropertyKey, any>)[Symbol.metadata as any]?.[METADATA_KEY] ||
+        (currentClass.constructor as Record<PropertyKey, any>)?.[Symbol.metadata as any]?.[
+          METADATA_KEY
+        ] ||
+        legacyMetadataMap.get(currentClass as any) ||
+        (currentClass as Record<PropertyKey, any>)[METADATA_KEY] ||
+        (currentClass.constructor as Record<PropertyKey, any>)?.[METADATA_KEY];
 
       if (fields && Array.isArray(fields)) {
         // Add fields that aren't already mapped
@@ -244,11 +251,10 @@ export class PayloadMapper {
     return allFields;
   }
 
-  private static compileParser(targetClass: any): Function {
+  private static compileParser(targetClass: PayloadConstructor): (...args: any[]) => any {
     const fields = this.getFields(targetClass);
 
     if (!fields || fields.length === 0) {
-      /* v8 ignore next */
       return (_payload: Uint8Array) => ({}); // No fields mapped
     }
 
@@ -268,11 +274,9 @@ export class PayloadMapper {
         size = 6;
       } else if (field.type === 'pin_code') {
         size = 6;
-        /* v8 ignore next */
       } else if (field.type === 'config_key') {
         size = 8;
       } else if (field.type === 'ascii_string') {
-        /* v8 ignore next 5 */
         if (typeof field.length !== 'number') {
           throw new BoksProtocolError(
             BoksProtocolErrorId.INTERNAL_ERROR,
@@ -380,7 +384,6 @@ export class PayloadMapper {
           if (typeof field.length === 'number') {
             fnBody += `result['${prop}'] = payload.subarray(${o}, ${o} + ${field.length});\n`;
           } else {
-            /* v8 ignore next 3 */
             fnBody += `result['${prop}'] = payload.subarray(${o});\n`;
           }
           break;
@@ -418,7 +421,7 @@ export class PayloadMapper {
              for(let i=0; i<8; i++) {
                const c = payload[${o} + i];
                // '0'-'9' (48-57), 'A'-'F' (65-70), 'a'-'f' (97-102)
-               /* v8 ignore next */
+
           if ((c < 48 || c > 57) && (c < 65 || c > 70) && (c < 97 || c > 102)) {
                   throw new BoksProtocolError(
                     BoksProtocolErrorId.INVALID_CONFIG_KEY,
@@ -439,11 +442,9 @@ export class PayloadMapper {
             if (hexArgs.length > 0) {
               fnBody += `result['${prop}'] = ${hexArgs.join(' + ')};\n`;
             } else {
-              /* v8 ignore next 3 */
               fnBody += `result['${prop}'] = '';\n`;
             }
           } else {
-            /* v8 ignore next 11 */
             fnBody += `
             {
                let s = '';
@@ -493,7 +494,7 @@ export class PayloadMapper {
       'BoksExpectedReason',
       'HEX_TABLE',
       fnBody
-    );
+    ) as (...args: any[]) => any;
   }
 
   /**
@@ -504,7 +505,7 @@ export class PayloadMapper {
    * Compiles the JIT validation function for a class instance.
    * Used in constructors to validate manually provided properties.
    */
-  private static compileValidator(targetClass: any): Function {
+  private static compileValidator(targetClass: PayloadConstructor): (...args: any[]) => any {
     const fields = this.getFields(targetClass);
 
     if (!fields || fields.length === 0) {
@@ -538,7 +539,6 @@ export class PayloadMapper {
               }
            }
          `;
-        /* v8 ignore next */
       } else if (field.type === 'config_key') {
         fnBody += `
            if (typeof ${val} !== 'string' || ${val}.length !== 8) {
@@ -569,15 +569,14 @@ export class PayloadMapper {
       'BoksProtocolErrorId',
       'BoksExpectedReason',
       fnBody
-    );
+    ) as (...args: any[]) => any;
   }
 
-  private static compileSerializer(targetClass: any): Function {
+  private static compileSerializer(targetClass: PayloadConstructor): (...args: any[]) => any {
     const fields = this.getFields(targetClass);
 
-    /* v8 ignore next */
     if (!fields || fields.length === 0) {
-      return (_instance: any) => new Uint8Array(0); // No fields mapped
+      return () => EMPTY_BUFFER; // No fields mapped
     }
 
     // Calculate maximum required payload size securely
@@ -596,7 +595,6 @@ export class PayloadMapper {
         fieldSize = 6;
       } else if (field.type === 'pin_code') {
         fieldSize = 6;
-        /* v8 ignore next */
       } else if (field.type === 'config_key') {
         fieldSize = 8;
       } else if (field.type === 'ascii_string') {
@@ -630,20 +628,16 @@ export class PayloadMapper {
     // Check if we need to add length for dynamic fields
     for (const field of fields) {
       const prop = field.propertyName;
-      /* v8 ignore next 2 */
+
       if (field.type === 'var_len_hex') {
-        /* v8 ignore next */
         dynamicSizeCalc += ` + (instance['${prop}'] && typeof instance['${prop}'] === 'string' ? Math.floor(instance['${prop}'].length / 2) : 0)`;
       } else if (
         (field.type === 'hex_string' || field.type === 'byte_array') &&
-        /* v8 ignore next */ typeof field.length !== 'number'
+        typeof field.length !== 'number'
       ) {
-        /* v8 ignore next 5 */
         if (field.type === 'hex_string') {
-          /* v8 ignore next */
           dynamicSizeCalc += ` + (instance['${prop}'] && typeof instance['${prop}'] === 'string' ? Math.floor(instance['${prop}'].length / 2) : 0)`;
         } else {
-          /* v8 ignore next */
           dynamicSizeCalc += ` + (instance['${prop}'] && instance['${prop}'] instanceof Uint8Array ? instance['${prop}'].length : 0)`;
         }
       }
@@ -723,8 +717,19 @@ export class PayloadMapper {
           }
           break;
         case 'mac_address':
-          // Reverse Mac formatting not yet supported for serialization in POC,
-          // but we leave it empty to not break JIT. Downlinks rarely serialize MACs.
+          fnBody += `
+            if (typeof instance['${prop}'] === 'string') {
+              const parts = instance['${prop}'].split(':');
+              if (parts.length === 6) {
+                payload[${o} + 5] = parseInt(parts[0], 16) || 0;
+                payload[${o} + 4] = parseInt(parts[1], 16) || 0;
+                payload[${o} + 3] = parseInt(parts[2], 16) || 0;
+                payload[${o} + 2] = parseInt(parts[3], 16) || 0;
+                payload[${o} + 1] = parseInt(parts[4], 16) || 0;
+                payload[${o}] = parseInt(parts[5], 16) || 0;
+              }
+            }
+          `;
           break;
         case 'pin_code':
           for (let i = 0; i < 6; i++) {
@@ -792,7 +797,7 @@ export class PayloadMapper {
       'BoksProtocolErrorId',
       'BoksExpectedReason',
       fnBody
-    );
+    ) as (...args: any[]) => any;
   }
 
   /**
@@ -802,7 +807,21 @@ export class PayloadMapper {
    * @param payload The raw buffer
    * @returns A mapped object containing the extracted properties
    */
-  public static parse<T = any>(targetClass: Function, payload: Uint8Array): T {
+  /* eslint-disable-next-line @typescript-eslint/no-unsafe-function-type */
+  public static parse<T = any>(targetClass: Function | any, payload: Uint8Array): T {
+    if (typeof payload === 'string') {
+      throw new BoksProtocolError(
+        BoksProtocolErrorId.INVALID_TYPE,
+        'Payload must be a Uint8Array',
+        { received: 'string', expected: 'Uint8Array' }
+      );
+    }
+    if (!targetClass || typeof targetClass !== 'function') {
+      throw new BoksProtocolError(BoksProtocolErrorId.INVALID_TYPE, 'Invalid targetClass', {
+        received: typeof targetClass,
+        expected: 'function'
+      });
+    }
     if (!(payload instanceof Uint8Array)) {
       throw new BoksProtocolError(
         BoksProtocolErrorId.INVALID_TYPE,
@@ -810,10 +829,10 @@ export class PayloadMapper {
         { received: typeof payload, expected: 'Uint8Array' }
       );
     }
-    let parser = this.compiledParsers.get(targetClass);
+    let parser = this.compiledParsers.get(targetClass as PayloadConstructor);
     if (!parser) {
-      parser = this.compileParser(targetClass);
-      this.compiledParsers.set(targetClass, parser);
+      parser = this.compileParser(targetClass as PayloadConstructor);
+      this.compiledParsers.set(targetClass as PayloadConstructor, parser);
     }
     const result = parser(
       payload,
@@ -844,10 +863,10 @@ export class PayloadMapper {
         { received: 'undefined', expected: 'constructor' }
       );
     }
-    let serializer = this.compiledSerializers.get(targetClass);
+    let serializer = this.compiledSerializers.get(targetClass as PayloadConstructor);
     if (!serializer) {
-      serializer = this.compileSerializer(targetClass);
-      this.compiledSerializers.set(targetClass, serializer);
+      serializer = this.compileSerializer(targetClass as PayloadConstructor);
+      this.compiledSerializers.set(targetClass as PayloadConstructor, serializer);
     }
     return serializer(instance, BoksProtocolError, BoksProtocolErrorId, BoksExpectedReason);
   }
@@ -861,650 +880,28 @@ export class PayloadMapper {
    */
   public static validate(instance: any): void {
     const targetClass = instance.constructor;
-    let validator = this.compiledValidators.get(targetClass);
-    /* v8 ignore next */
+    let validator = this.compiledValidators.get(targetClass as PayloadConstructor);
+
     if (!validator) {
-      validator = this.compileValidator(targetClass);
-      this.compiledValidators.set(targetClass, validator);
+      validator = this.compileValidator(targetClass as PayloadConstructor);
+      this.compiledValidators.set(targetClass as PayloadConstructor, validator);
     }
     validator(instance, BoksProtocolError, BoksProtocolErrorId, BoksExpectedReason);
   }
 
   public static defineSchema(targetClass: any, schema: FieldDefinition[]): void {
-    /* v8 ignore next 5 */
     if (targetClass[Symbol.metadata]) {
       targetClass[Symbol.metadata][METADATA_KEY] = schema;
     } else {
       targetClass[METADATA_KEY] = schema;
-      legacyMetadataMap.set(targetClass, schema);
+      legacyMetadataMap.set(targetClass as PayloadConstructor, schema);
     }
 
     // Clear any existing compiled functions for this class
-    this.compiledParsers.delete(targetClass);
-    this.compiledSerializers.delete(targetClass);
-    this.compiledValidators.delete(targetClass);
+    this.compiledParsers.delete(targetClass as PayloadConstructor);
+    this.compiledSerializers.delete(targetClass as PayloadConstructor);
+    this.compiledValidators.delete(targetClass as PayloadConstructor);
   }
 }
 
 // --- Decorators ---
-
-export function PayloadUint8(offset: number) {
-  PayloadMapper.assertSafeBounds(offset, 1);
-  return function <T, V>(
-    target: ClassAccessorDecoratorTarget<T, V>,
-    context: ClassAccessorDecoratorContext<T, V>
-  ): ClassAccessorDecoratorResult<T, V> {
-    const meta = getOrCreateMetadata(context);
-    meta.push({ propertyName: context.name as string, type: 'uint8', offset });
-
-    return {
-      get() {
-        return target.get.call(this);
-      },
-      set(val: V) {
-        if (val === undefined || val === null) {
-          throw new BoksProtocolError(
-            BoksProtocolErrorId.MISSING_MANDATORY_FIELD,
-            'Required field cannot be undefined',
-            {
-              field: context.name as string,
-              received: val,
-              expected: BoksExpectedReason.EXACT_LENGTH
-            }
-          );
-        }
-        target.set.call(this, val);
-      },
-      init(initialValue: V): V {
-        return initialValue;
-      }
-    };
-  };
-}
-
-export function PayloadUint16(offset: number) {
-  PayloadMapper.assertSafeBounds(offset, 2);
-  return function <T, V>(
-    target: ClassAccessorDecoratorTarget<T, V>,
-    context: ClassAccessorDecoratorContext<T, V>
-  ): ClassAccessorDecoratorResult<T, V> {
-    const meta = getOrCreateMetadata(context);
-    meta.push({ propertyName: context.name as string, type: 'uint16', offset });
-
-    return {
-      get() {
-        return target.get.call(this);
-      },
-      set(val: V) {
-        if (val === undefined || val === null) {
-          throw new BoksProtocolError(
-            BoksProtocolErrorId.MISSING_MANDATORY_FIELD,
-            'Required field cannot be undefined',
-            {
-              field: context.name as string,
-              received: val,
-              expected: BoksExpectedReason.EXACT_LENGTH
-            }
-          );
-        }
-        target.set.call(this, val);
-      },
-      init(initialValue: V): V {
-        return initialValue;
-      }
-    };
-  };
-}
-
-export function PayloadUint24(offset: number) {
-  PayloadMapper.assertSafeBounds(offset, 3);
-  return function <T, V>(
-    target: ClassAccessorDecoratorTarget<T, V>,
-    context: ClassAccessorDecoratorContext<T, V>
-  ): ClassAccessorDecoratorResult<T, V> {
-    const meta = getOrCreateMetadata(context);
-    meta.push({ propertyName: context.name as string, type: 'uint24', offset });
-
-    return {
-      get() {
-        return target.get.call(this);
-      },
-      set(val: V) {
-        if (val === undefined || val === null) {
-          throw new BoksProtocolError(
-            BoksProtocolErrorId.MISSING_MANDATORY_FIELD,
-            'Required field cannot be undefined',
-            {
-              field: context.name as string,
-              received: val,
-              expected: BoksExpectedReason.EXACT_LENGTH
-            }
-          );
-        }
-        target.set.call(this, val);
-      },
-      init(initialValue: V): V {
-        return initialValue;
-      }
-    };
-  };
-}
-
-export function PayloadUint32(offset: number) {
-  PayloadMapper.assertSafeBounds(offset, 4);
-  return function <T, V>(
-    target: ClassAccessorDecoratorTarget<T, V>,
-    context: ClassAccessorDecoratorContext<T, V>
-  ): ClassAccessorDecoratorResult<T, V> {
-    const meta = getOrCreateMetadata(context);
-    meta.push({ propertyName: context.name as string, type: 'uint32', offset });
-
-    return {
-      get() {
-        return target.get.call(this);
-      },
-      set(val: V) {
-        if (val === undefined || val === null) {
-          throw new BoksProtocolError(
-            BoksProtocolErrorId.MISSING_MANDATORY_FIELD,
-            'Required field cannot be undefined',
-            {
-              field: context.name as string,
-              received: val,
-              expected: BoksExpectedReason.EXACT_LENGTH
-            }
-          );
-        }
-        target.set.call(this, val);
-      },
-      init(initialValue: V): V {
-        return initialValue;
-      }
-    };
-  };
-}
-
-export function PayloadAsciiString(offset: number, length: number) {
-  PayloadMapper.assertSafeBounds(offset, length);
-  return function <T, V>(
-    target: ClassAccessorDecoratorTarget<T, V>,
-    context: ClassAccessorDecoratorContext<T, V>
-  ): ClassAccessorDecoratorResult<T, V> {
-    const meta = getOrCreateMetadata(context);
-    meta.push({ propertyName: context.name as string, type: 'ascii_string', offset, length });
-
-    return {
-      get() {
-        return target.get.call(this);
-      },
-      set(val: V) {
-        if (val === undefined || val === null) {
-          throw new BoksProtocolError(
-            BoksProtocolErrorId.MISSING_MANDATORY_FIELD,
-            'Required field cannot be undefined',
-            {
-              field: context.name as string,
-              received: val,
-              expected: BoksExpectedReason.EXACT_LENGTH
-            }
-          );
-        }
-        target.set.call(this, val);
-      },
-      init(initialValue: V): V {
-        return initialValue;
-      }
-    };
-  };
-}
-
-export function PayloadMacAddress(offset: number) {
-  PayloadMapper.assertSafeBounds(offset, 6);
-  return function <T, V>(
-    target: ClassAccessorDecoratorTarget<T, V>,
-    context: ClassAccessorDecoratorContext<T, V>
-  ): ClassAccessorDecoratorResult<T, V> {
-    const meta = getOrCreateMetadata(context);
-    meta.push({ propertyName: context.name as string, type: 'mac_address', offset, length: 6 });
-
-    return {
-      get() {
-        return target.get.call(this);
-      },
-      set(val: V) {
-        if (val === undefined || val === null) {
-          throw new BoksProtocolError(
-            BoksProtocolErrorId.MISSING_MANDATORY_FIELD,
-            'Required field cannot be undefined',
-            {
-              field: context.name as string,
-              received: val,
-              expected: BoksExpectedReason.EXACT_LENGTH
-            }
-          );
-        }
-        target.set.call(this, val);
-      },
-      init(initialValue: V): V {
-        return initialValue;
-      }
-    };
-  };
-}
-
-export function PayloadSeed(offset: number) {
-  PayloadMapper.assertSafeBounds(offset, 32);
-  return function <T, V>(
-    target: ClassAccessorDecoratorTarget<T, V>,
-    context: ClassAccessorDecoratorContext<T, V>
-  ): ClassAccessorDecoratorResult<T, V> {
-    const meta = getOrCreateMetadata(context);
-    meta.push({ propertyName: context.name as string, type: 'hex_string', offset, length: 32 });
-
-    return {
-      get() {
-        return target.get.call(this);
-      },
-      set(val: V) {
-        if (val === undefined || val === null) {
-          throw new BoksProtocolError(
-            BoksProtocolErrorId.MISSING_MANDATORY_FIELD,
-            'Required field cannot be undefined',
-            {
-              field: context.name as string,
-              received: val,
-              expected: BoksExpectedReason.EXACT_LENGTH
-            }
-          );
-        }
-
-        let formattedStr: string;
-        validateSeed(val as unknown as string | Uint8Array);
-        if (typeof val === 'string') {
-          formattedStr = val.toUpperCase();
-        } else {
-          // It's a Uint8Array
-          formattedStr = bytesToHex(val as unknown as Uint8Array).toUpperCase();
-        }
-
-        target.set.call(this, formattedStr as V);
-      },
-      init(initialValue: V): V {
-        return initialValue;
-      }
-    };
-  };
-}
-
-export function PayloadHexString(offset: number, length?: number) {
-  PayloadMapper.assertSafeBounds(offset, length || 0);
-  return function <T, V>(
-    target: ClassAccessorDecoratorTarget<T, V>,
-    context: ClassAccessorDecoratorContext<T, V>
-  ): ClassAccessorDecoratorResult<T, V> {
-    const meta = getOrCreateMetadata(context);
-    meta.push({ propertyName: context.name as string, type: 'hex_string', offset, length });
-
-    return {
-      get() {
-        return target.get.call(this);
-      },
-      set(val: V) {
-        if (val === undefined || val === null) {
-          throw new BoksProtocolError(
-            BoksProtocolErrorId.MISSING_MANDATORY_FIELD,
-            'Required field cannot be undefined',
-            {
-              field: context.name as string,
-              received: val,
-              expected: BoksExpectedReason.EXACT_LENGTH
-            }
-          );
-        }
-        target.set.call(this, val);
-      },
-      init(initialValue: V): V {
-        return initialValue;
-      }
-    };
-  };
-}
-
-export function PayloadVarLenHex(offset: number) {
-  PayloadMapper.assertSafeBounds(offset, 1);
-  return function <T, V>(
-    target: ClassAccessorDecoratorTarget<T, V>,
-    context: ClassAccessorDecoratorContext<T, V>
-  ): ClassAccessorDecoratorResult<T, V> {
-    const meta = getOrCreateMetadata(context);
-    meta.push({ propertyName: context.name as string, type: 'var_len_hex', offset });
-
-    return {
-      get() {
-        return target.get.call(this);
-      },
-      set(val: V) {
-        if (val === undefined || val === null) {
-          throw new BoksProtocolError(
-            BoksProtocolErrorId.MISSING_MANDATORY_FIELD,
-            'Required field cannot be undefined',
-            {
-              field: context.name as string,
-              received: val,
-              expected: BoksExpectedReason.EXACT_LENGTH
-            }
-          );
-        }
-        target.set.call(this, val);
-      },
-      init(initialValue: V): V {
-        return initialValue;
-      }
-    };
-  };
-}
-
-export function PayloadBit(offset: number, bitIndex: number) {
-  PayloadMapper.assertSafeBounds(offset, 1);
-  return function <T, V>(
-    target: ClassAccessorDecoratorTarget<T, V>,
-    context: ClassAccessorDecoratorContext<T, V>
-  ): ClassAccessorDecoratorResult<T, V> {
-    const meta = getOrCreateMetadata(context);
-    if (bitIndex < 0 || bitIndex > 7) {
-      throw new Error(`Invalid bitIndex ${bitIndex} for property ${context.name as string}`);
-    }
-    meta.push({ propertyName: context.name as string, type: 'bit', offset, bitIndex });
-
-    return {
-      get() {
-        return target.get.call(this);
-      },
-      set(val: V) {
-        if (val === undefined || val === null) {
-          throw new BoksProtocolError(
-            BoksProtocolErrorId.MISSING_MANDATORY_FIELD,
-            'Required field cannot be undefined',
-            {
-              field: context.name as string,
-              received: val,
-              expected: BoksExpectedReason.EXACT_LENGTH
-            }
-          );
-        }
-        target.set.call(this, val);
-      },
-      init(initialValue: V): V {
-        return initialValue;
-      }
-    };
-  };
-}
-
-export function PayloadPinCode(offset: number) {
-  PayloadMapper.assertSafeBounds(offset, 6);
-  return function <T, V>(
-    target: ClassAccessorDecoratorTarget<T, V>,
-    context: ClassAccessorDecoratorContext<T, V>
-  ): ClassAccessorDecoratorResult<T, V> {
-    const meta = getOrCreateMetadata(context);
-    meta.push({ propertyName: context.name as string, type: 'pin_code', offset, length: 6 });
-
-    return {
-      get() {
-        return target.get.call(this);
-      },
-      set(val: V) {
-        if (val === undefined || val === null) {
-          throw new BoksProtocolError(
-            BoksProtocolErrorId.MISSING_MANDATORY_FIELD,
-            'Required field cannot be undefined',
-            {
-              field: context.name as string,
-              received: val,
-              expected: BoksExpectedReason.EXACT_LENGTH
-            }
-          );
-        }
-        const formatted = typeof val === 'string' ? val.toUpperCase() : String(val).toUpperCase();
-        if (formatted.length !== 6) {
-          throw new BoksProtocolError(
-            BoksProtocolErrorId.INVALID_PIN_FORMAT,
-            'PIN must be exactly 6 characters',
-            { field: context.name as string, received: formatted.length, expected: 6 }
-          );
-        }
-        for (let i = 0; i < 6; i++) {
-          const c = formatted.charCodeAt(i);
-          if ((c < 48 || c > 57) && c !== 65 && c !== 66 && c !== 97 && c !== 98) {
-            throw new BoksProtocolError(
-              BoksProtocolErrorId.INVALID_PIN_FORMAT,
-              'PIN must contain only 0-9, A, B',
-              {
-                field: context.name as string,
-                received: formatted,
-                expected: BoksExpectedReason.PIN_CODE_FORMAT
-              }
-            );
-          }
-        }
-        target.set.call(this, formatted as V);
-      },
-      init(initialValue: V): V {
-        return initialValue;
-      }
-    };
-  };
-}
-
-export function PayloadNfcUid(offset: number) {
-  PayloadMapper.assertSafeBounds(offset, 1);
-  return function <T, V>(
-    target: ClassAccessorDecoratorTarget<T, V>,
-    context: ClassAccessorDecoratorContext<T, V>
-  ): ClassAccessorDecoratorResult<T, V> {
-    const meta = getOrCreateMetadata(context);
-    // Uses var_len_hex because NFC UID is variable length hex in the payload
-    meta.push({ propertyName: context.name as string, type: 'var_len_hex', offset });
-
-    return {
-      get() {
-        return target.get.call(this);
-      },
-      set(val: V) {
-        if (val === undefined || val === null) {
-          throw new BoksProtocolError(
-            BoksProtocolErrorId.MISSING_MANDATORY_FIELD,
-            'Required field cannot be undefined',
-            {
-              field: context.name as string,
-              received: val,
-              expected: BoksExpectedReason.EXACT_LENGTH
-            }
-          );
-        }
-        const strVal = String(val);
-        validateNfcUid(strVal);
-        const formatted = strVal.replace(/:/g, '').toUpperCase();
-        target.set.call(this, formatted as V);
-      },
-      init(initialValue: V): V {
-        return initialValue;
-      }
-    };
-  };
-}
-
-export function PayloadConfigKey(offset: number) {
-  PayloadMapper.assertSafeBounds(offset, 8);
-  return function <T, V>(
-    target: ClassAccessorDecoratorTarget<T, V>,
-    context: ClassAccessorDecoratorContext<T, V>
-  ): ClassAccessorDecoratorResult<T, V> {
-    const meta = getOrCreateMetadata(context);
-    meta.push({ propertyName: context.name as string, type: 'config_key', offset, length: 8 });
-
-    return {
-      get() {
-        return target.get.call(this);
-      },
-      set(val: V) {
-        if (val === undefined || val === null) {
-          throw new BoksProtocolError(
-            BoksProtocolErrorId.MISSING_MANDATORY_FIELD,
-            'Required field cannot be undefined',
-            {
-              field: context.name as string,
-              received: val,
-              expected: BoksExpectedReason.EXACT_LENGTH
-            }
-          );
-        }
-        const formatted = typeof val === 'string' ? val.toUpperCase() : String(val).toUpperCase();
-        if (formatted.length !== 8) {
-          throw new BoksProtocolError(
-            BoksProtocolErrorId.INVALID_CONFIG_KEY,
-            'Config Key must be exactly 8 characters',
-            { field: context.name as string, received: formatted.length, expected: 8 }
-          );
-        }
-        for (let i = 0; i < 8; i++) {
-          const c = formatted.charCodeAt(i);
-          if ((c < 48 || c > 57) && (c < 65 || c > 70) && (c < 97 || c > 102)) {
-            throw new BoksProtocolError(
-              BoksProtocolErrorId.INVALID_CONFIG_KEY,
-              'Config Key must contain only hex characters',
-              {
-                field: context.name as string,
-                received: formatted,
-                expected: BoksExpectedReason.VALID_HEX_CHAR
-              }
-            );
-          }
-        }
-        target.set.call(this, formatted as V);
-      },
-      init(initialValue: V): V {
-        return initialValue;
-      }
-    };
-  };
-}
-
-export function PayloadMasterCodeIndex(offset: number) {
-  PayloadMapper.assertSafeBounds(offset, 1);
-  return function <T, V>(
-    target: ClassAccessorDecoratorTarget<T, V>,
-    context: ClassAccessorDecoratorContext<T, V>
-  ): ClassAccessorDecoratorResult<T, V> {
-    const meta = getOrCreateMetadata(context);
-    meta.push({ propertyName: context.name as string, type: 'uint8', offset });
-
-    return {
-      get() {
-        return target.get.call(this);
-      },
-      set(val: V) {
-        if (val === undefined || val === null) {
-          /* v8 ignore next */ /* v8 ignore next */
-          throw new BoksProtocolError(
-            BoksProtocolErrorId.MISSING_MANDATORY_FIELD,
-            'Required field cannot be undefined',
-            {
-              field: context.name as string,
-              received: val,
-              expected: BoksExpectedReason.EXACT_LENGTH
-            }
-          );
-        }
-        validateMasterCodeIndex(val as number);
-        target.set.call(this, val);
-      },
-      init(initialValue: V): V {
-        return initialValue;
-      }
-    };
-  };
-}
-
-export function PayloadBoolean(offset: number) {
-  PayloadMapper.assertSafeBounds(offset, 1);
-  return function <T, V>(
-    target: ClassAccessorDecoratorTarget<T, V>,
-    context: ClassAccessorDecoratorContext<T, V>
-  ): ClassAccessorDecoratorResult<T, V> {
-    const meta = getOrCreateMetadata(context);
-    meta.push({ propertyName: context.name as string, type: 'boolean', offset });
-
-    return {
-      get() {
-        return target.get.call(this);
-      },
-      set(val: V) {
-        if (val === undefined || val === null) {
-          /* v8 ignore next */ /* v8 ignore next */
-          throw new BoksProtocolError(
-            BoksProtocolErrorId.MISSING_MANDATORY_FIELD,
-            'Required field cannot be undefined',
-            {
-              field: context.name as string,
-              received: val,
-              expected: BoksExpectedReason.EXACT_LENGTH
-            }
-          );
-        }
-        target.set.call(this, val);
-      },
-      init(initialValue: V): V {
-        return initialValue;
-      }
-    };
-  };
-}
-
-export function PayloadByteArray(offset: number, length?: number) {
-  PayloadMapper.assertSafeBounds(offset, length || 0);
-  return function <T, V>(
-    target: ClassAccessorDecoratorTarget<T, V>,
-    context: ClassAccessorDecoratorContext<T, V>
-  ): ClassAccessorDecoratorResult<T, V> {
-    const meta = getOrCreateMetadata(context);
-    meta.push({ propertyName: context.name as string, type: 'byte_array', offset, length });
-
-    return {
-      get() {
-        return target.get.call(this);
-      },
-      set(val: V) {
-        if (val === undefined || val === null) {
-          /* v8 ignore next */ /* v8 ignore next */
-          throw new BoksProtocolError(
-            BoksProtocolErrorId.MISSING_MANDATORY_FIELD,
-            'Required field cannot be undefined',
-            {
-              field: context.name as string,
-              received: val,
-              expected: BoksExpectedReason.EXACT_LENGTH
-            }
-          );
-        }
-
-        if (length !== undefined && (val as unknown as Uint8Array).length !== length) {
-          throw new BoksProtocolError(
-            BoksProtocolErrorId.INVALID_PAYLOAD_LENGTH,
-            `Array length must be exactly ${length}`,
-            {
-              field: context.name as string,
-              received: (val as unknown as Uint8Array).length,
-              expected: length
-            }
-          );
-        }
-        target.set.call(this, val);
-      },
-      init(initialValue: V): V {
-        return initialValue;
-      }
-    };
-  };
-}

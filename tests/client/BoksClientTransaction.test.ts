@@ -27,10 +27,15 @@ class MockTransport implements BoksTransport {
 
 // Mock Packet
 class MockPacket extends BoksPacket {
-  constructor(public opcode: BoksOpcode, private payload: Uint8Array = new Uint8Array(0)) {
+  constructor(
+    public opcode: BoksOpcode,
+    private payload: Uint8Array = new Uint8Array(0)
+  ) {
     super();
   }
-  toPayload() { return this.payload; }
+  toPayload() {
+    return this.payload;
+  }
   // Override encode to bypass checksum calculation in tests if needed,
   // but base class implementation works if checksum logic is pure.
   // For simplicity, we assume base encode works.
@@ -137,7 +142,7 @@ describe('BoksClient Transaction', () => {
 
     // Wait enough ticks.
     await vi.waitFor(() => {
-        expect(transport.write).toHaveBeenCalledTimes(2);
+      expect(transport.write).toHaveBeenCalledTimes(2);
     });
 
     // Complete second tx

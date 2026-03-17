@@ -2,19 +2,32 @@ import { BoksProtocolError } from '@/errors/BoksProtocolError';
 import { describe, it, expect } from 'vitest';
 import { AnswerDoorStatusPacket } from '@/protocol/uplink/AnswerDoorStatusPacket';
 import { BoksOpcode } from '@/protocol/constants';
+import { bytesToHex } from '@/utils/converters';
 
 describe('AnswerDoorStatusPacket', () => {
-  it('should detect OPEN state (inv=0, raw=1)', () => {
+  it('should detect OPEN state (inv=false, raw=true)', () => {
     const payload = new Uint8Array([0x00, 0x01]);
     const packet = AnswerDoorStatusPacket.fromPayload(payload);
     expect(packet.opcode).toBe(BoksOpcode.ANSWER_DOOR_STATUS);
     expect(packet.isOpen).toBe(true);
   });
 
-  it('should detect CLOSED state (inv=1, raw=0)', () => {
-    const payload = new Uint8Array([0x01, 0x00]);
-    const packet = AnswerDoorStatusPacket.fromPayload(payload);
-    expect(packet.isOpen).toBe(false);
+  it('should encode correctly (Open)', () => {
+    const packet = new AnswerDoorStatusPacket({ inverted: false, raw: true });
+    const encoded = packet.encode();
+    // Opcode 0x85, Len 2, Inv 0, Raw 1
+    expect(encoded[0]).toBe(0x85);
+    expect(encoded[1]).toBe(2);
+    expect(bytesToHex(encoded.subarray(2, 4))).toBe('0001');
+  });
+
+  it('should encode correctly (Closed)', () => {
+    const packet = new AnswerDoorStatusPacket({ inverted: true, raw: false });
+    const encoded = packet.encode();
+    // Opcode 0x85, Len 2, Inv 1, Raw 0
+    expect(encoded[0]).toBe(0x85);
+    expect(encoded[1]).toBe(2);
+    expect(bytesToHex(encoded.subarray(2, 4))).toBe('0100');
   });
 
   it('should throw BoksProtocolError if payload too short', () => {

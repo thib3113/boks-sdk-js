@@ -1,7 +1,7 @@
-import { PayloadMapper } from '@/protocol/payload-mapper';
+import { PayloadMapper } from '@/protocol/decorators';
 import { AuthPacket, AuthPacketProps } from '@/protocol/downlink/_AuthPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
-import { PayloadNfcUid } from '@/protocol/payload-mapper';
+import { PayloadNfcUid } from '@/protocol/decorators';
 
 /**
  * Command to unregister an NFC tag.

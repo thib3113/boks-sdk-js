@@ -9,10 +9,12 @@ describe('AnswerDoorStatusPacket - Resilience & Edge Cases', () => {
       fc.assert(
         fc.property(fc.uint8Array(), (payload) => {
           let packet;
-        // TODO, crashing with invalid data is normal, but we need to check the error, no catch without tests . Need to rewrite this test
-        try {
-             packet = AnswerDoorStatusPacket.fromPayload(payload);
-          } catch(e) { return; }
+          // TODO, crashing with invalid data is normal, but we need to check the error, no catch without tests . Need to rewrite this test
+          try {
+            packet = AnswerDoorStatusPacket.fromPayload(payload);
+          } catch (e) {
+            return;
+          }
           expect(packet).toBeInstanceOf(AnswerDoorStatusPacket);
           expect(packet.opcode).toBe(BoksOpcode.ANSWER_DOOR_STATUS);
           expect((packet as any).rawPayload).toEqual(payload);

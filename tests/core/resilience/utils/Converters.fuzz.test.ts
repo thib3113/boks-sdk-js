@@ -1,10 +1,17 @@
 import { describe, it, expect } from 'vitest';
 import fc from 'fast-check';
-import { hexToBytes, bytesToMac, stringToBytes, readConfigKeyFromBuffer, readPinFromBuffer, writeConfigKeyToBuffer, bytesToString } from '../../../../src/utils/converters';
+import {
+  hexToBytes,
+  bytesToMac,
+  stringToBytes,
+  readConfigKeyFromBuffer,
+  readPinFromBuffer,
+  writeConfigKeyToBuffer,
+  bytesToString
+} from '../../../../src/utils/converters';
 import { BoksProtocolError } from '../../../../src/errors/BoksProtocolError';
 
 describe('Converters Utils Resilience (Fuzzing)', () => {
-
   it('FEATURE REGRESSION: hexToBytes should safely handle arbitrary strings', () => {
     fc.assert(
       fc.property(fc.string(), (str) => {
@@ -41,34 +48,47 @@ describe('Converters Utils Resilience (Fuzzing)', () => {
 
   it('FEATURE REGRESSION: readConfigKeyFromBuffer should safely handle out of bounds reading', () => {
     fc.assert(
-      fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), fc.integer({ min: -10, max: 300 }), (arr, offset) => {
-        const result = readConfigKeyFromBuffer(arr, offset);
-        expect(typeof result).toBe('string');
-      }),
+      fc.property(
+        fc.uint8Array({ minLength: 0, maxLength: 256 }),
+        fc.integer({ min: -10, max: 300 }),
+        (arr, offset) => {
+          const result = readConfigKeyFromBuffer(arr, offset);
+          expect(typeof result).toBe('string');
+        }
+      ),
       { numRuns: 1000 }
     );
   });
 
   it('FEATURE REGRESSION: readPinFromBuffer should safely handle out of bounds reading', () => {
     fc.assert(
-      fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), fc.integer({ min: -10, max: 300 }), (arr, offset) => {
-        const result = readPinFromBuffer(arr, offset);
-        expect(typeof result).toBe('string');
-      }),
+      fc.property(
+        fc.uint8Array({ minLength: 0, maxLength: 256 }),
+        fc.integer({ min: -10, max: 300 }),
+        (arr, offset) => {
+          const result = readPinFromBuffer(arr, offset);
+          expect(typeof result).toBe('string');
+        }
+      ),
       { numRuns: 1000 }
     );
   });
 
   it('FEATURE REGRESSION: writeConfigKeyToBuffer should safely handle out of bounds writing', () => {
     fc.assert(
-      fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), fc.integer({ min: -10, max: 300 }), fc.string(), (arr, offset, str) => {
-        try {
-          writeConfigKeyToBuffer(arr, offset, str);
-        } catch (e) {
+      fc.property(
+        fc.uint8Array({ minLength: 0, maxLength: 256 }),
+        fc.integer({ min: -10, max: 300 }),
+        fc.string(),
+        (arr, offset, str) => {
+          try {
+            writeConfigKeyToBuffer(arr, offset, str);
+          } catch (e) {
             // Out of bounds or string too short
             expect(e instanceof TypeError || e instanceof RangeError).toBe(true);
+          }
         }
-      }),
+      ),
       { numRuns: 1000 }
     );
   });

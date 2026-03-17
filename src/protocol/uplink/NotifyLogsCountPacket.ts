@@ -1,4 +1,4 @@
-import { PayloadMapper, PayloadUint16 } from '@/protocol/payload-mapper';
+import { PayloadMapper, PayloadUint16 } from '@/protocol/decorators';
 import { BoksRXPacket } from '@/protocol/uplink/_BoksRXPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
 
@@ -17,7 +17,7 @@ export class NotifyLogsCountPacket extends BoksRXPacket {
   }
 
   static fromPayload(payload: Uint8Array): NotifyLogsCountPacket {
-    const data = PayloadMapper.parse(NotifyLogsCountPacket, payload);
-    return new NotifyLogsCountPacket(data.count as number, payload);
+    const data = PayloadMapper.parse<NotifyLogsCountPacket>(NotifyLogsCountPacket, payload);
+    return new NotifyLogsCountPacket(data.count, payload);
   }
 }

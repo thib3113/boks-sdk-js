@@ -1,9 +1,13 @@
-import { PayloadMapper } from '@/protocol/payload-mapper';
+import { PayloadMapper, PayloadHexString } from '@/protocol/decorators';
 import {
   BoksHistoryEvent,
   BoksHistoryEventProps
 } from '@/protocol/uplink/history/_BoksHistoryEventBase';
 import { BoksOpcode } from '@/protocol/constants';
+
+export interface BlockResetHistoryPacketProps extends BoksHistoryEventProps {
+  resetInfo: string;
+}
 
 /**
  * Log: Block Reset event.
@@ -11,12 +15,19 @@ import { BoksOpcode } from '@/protocol/constants';
 export class BlockResetHistoryPacket extends BoksHistoryEvent {
   static readonly opcode = BoksOpcode.BLOCK_RESET;
 
-  constructor(props: BoksHistoryEventProps, rawPayload?: Uint8Array) {
+  @PayloadHexString(3, 2)
+  public accessor resetInfo!: string;
+
+  constructor(props: BlockResetHistoryPacketProps, rawPayload?: Uint8Array) {
     super(BlockResetHistoryPacket.opcode, props, rawPayload);
+    this.resetInfo = props.resetInfo;
   }
 
   static fromPayload(payload: Uint8Array): BlockResetHistoryPacket {
-    const data = PayloadMapper.parse(BlockResetHistoryPacket, payload);
-    return new BlockResetHistoryPacket({ age: data.age as number }, payload);
+    const data = PayloadMapper.parse<BlockResetHistoryPacketProps>(
+      BlockResetHistoryPacket,
+      payload
+    );
+    return new BlockResetHistoryPacket(data, payload);
   }
 }

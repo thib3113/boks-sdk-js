@@ -62,7 +62,10 @@ type ModelState = {
 
 // --- Commands ---
 
-class ExecuteCommand implements fc.AsyncCommand<ModelState, { client: BoksClient; transport: MockTransport }> {
+class ExecuteCommand implements fc.AsyncCommand<
+  ModelState,
+  { client: BoksClient; transport: MockTransport }
+> {
   constructor(
     public opcode: BoksOpcode,
     public successOpcodes: number[],
@@ -87,65 +90,70 @@ class ExecuteCommand implements fc.AsyncCommand<ModelState, { client: BoksClient
       if (this.willTimeout) {
         // Do nothing, let it timeout natively
       } else if (this.willSucceed && this.successOpcodes.length > 0) {
-         // Respond with success
-         // Use the first success opcode. We need a valid BoksPacket payload structure.
-         // A basic valid payload is usually 3 bytes: STX (0x02), Length (0x02), Opcode, ...
-         const successOpcode = this.successOpcodes[0];
-         // Craft a mock valid packet payload for the factory to parse.
-         // STX (0x02), Length (2 bytes, LE), Opcode, CRC (1 byte)
-         // Actually, BoksPacketFactory is complex. Let's create a real packet bytes if possible or mock the factory?
-         // Mocking the factory is hard in an integration test.
-         // Let's craft a raw packet:
-         // STX: 0x02
-         // Length: 0x02, 0x00 (length of payload excluding STX and Length, so 1 byte for opcode + 1 byte for crc = 2? No, length is opcode + data. Let's say length=1 for just opcode)
-         // Opcode: successOpcode
-         // CRC: simple XOR
-         const payloadLength = 1; // Just opcode
-         const buf = new Uint8Array([
-           0x02, // STX
-           payloadLength & 0xFF, (payloadLength >> 8) & 0xFF, // Length LE
-           successOpcode,
-           successOpcode // CRC (since it's just one byte, CRC is the byte itself)
-         ]);
+        // Respond with success
+        // Use the first success opcode. We need a valid BoksPacket payload structure.
+        // A basic valid payload is usually 3 bytes: STX (0x02), Length (0x02), Opcode, ...
+        const successOpcode = this.successOpcodes[0];
+        // Craft a mock valid packet payload for the factory to parse.
+        // STX (0x02), Length (2 bytes, LE), Opcode, CRC (1 byte)
+        // Actually, BoksPacketFactory is complex. Let's create a real packet bytes if possible or mock the factory?
+        // Mocking the factory is hard in an integration test.
+        // Let's craft a raw packet:
+        // STX: 0x02
+        // Length: 0x02, 0x00 (length of payload excluding STX and Length, so 1 byte for opcode + 1 byte for crc = 2? No, length is opcode + data. Let's say length=1 for just opcode)
+        // Opcode: successOpcode
+        // CRC: simple XOR
+        const payloadLength = 1; // Just opcode
+        const buf = new Uint8Array([
+          0x02, // STX
+          payloadLength & 0xff,
+          (payloadLength >> 8) & 0xff, // Length LE
+          successOpcode,
+          successOpcode // CRC (since it's just one byte, CRC is the byte itself)
+        ]);
 
-         setTimeout(() => {
-           r.transport.simulateNotification(buf);
-         }, 10);
+        setTimeout(() => {
+          r.transport.simulateNotification(buf);
+        }, 10);
       } else if (this.errorOpcodes.length > 0) {
-          const errOpcode = this.errorOpcodes[0];
-          const payloadLength = 1; // Just opcode
-          const buf = new Uint8Array([
-            0x02, // STX
-            payloadLength & 0xFF, (payloadLength >> 8) & 0xFF, // Length LE
-            errOpcode,
-            errOpcode // CRC
-          ]);
-          setTimeout(() => {
-            r.transport.simulateNotification(buf);
-          }, 10);
+        const errOpcode = this.errorOpcodes[0];
+        const payloadLength = 1; // Just opcode
+        const buf = new Uint8Array([
+          0x02, // STX
+          payloadLength & 0xff,
+          (payloadLength >> 8) & 0xff, // Length LE
+          errOpcode,
+          errOpcode // CRC
+        ]);
+        setTimeout(() => {
+          r.transport.simulateNotification(buf);
+        }, 10);
       } else {
         // Just noise, it will timeout eventually
         setTimeout(() => {
-            r.transport.simulateNotification(new Uint8Array([0x00, 0xFF]));
+          r.transport.simulateNotification(new Uint8Array([0x00, 0xff]));
         }, 10);
       }
     };
 
     const requestPacket = new DummyPacket(this.opcode);
 
-    r.client.execute(requestPacket, {
-      successOpcodes: this.successOpcodes,
-      errorOpcodes: this.errorOpcodes,
-      timeout: this.timeout
-    }).then(() => {
-      m.pendingTransactions--;
-      m.completedTransactions++;
-      resolver();
-    }).catch(() => {
-      m.pendingTransactions--;
-      m.failedTransactions++;
-      resolver();
-    });
+    r.client
+      .execute(requestPacket, {
+        successOpcodes: this.successOpcodes,
+        errorOpcodes: this.errorOpcodes,
+        timeout: this.timeout
+      })
+      .then(() => {
+        m.pendingTransactions--;
+        m.completedTransactions++;
+        resolver();
+      })
+      .catch(() => {
+        m.pendingTransactions--;
+        m.failedTransactions++;
+        resolver();
+      });
 
     // To prevent the test from hanging, we wait for the transaction to settle or advance timers
     // In this fuzzer, we will actually advance timers manually in a separate command or wait.
@@ -174,14 +182,29 @@ describe('BoksClient Fuzzing', () => {
   });
 
   it('should maintain a healthy command queue despite overlapping transactions and timeouts', async () => {
-    const executeArbitrary = fc.record({
-      opcode: fc.integer({ min: 0x00, max: 0xFF }),
-      successOpcodes: fc.array(fc.integer({ min: 0x00, max: 0xFF }), { minLength: 1, maxLength: 3 }),
-      errorOpcodes: fc.array(fc.integer({ min: 0x00, max: 0xFF }), { maxLength: 3 }),
-      timeout: fc.integer({ min: 100, max: 5000 }),
-      willSucceed: fc.boolean(),
-      willTimeout: fc.boolean()
-    }).map(r => new ExecuteCommand(r.opcode as BoksOpcode, r.successOpcodes, r.errorOpcodes, r.timeout, r.willSucceed, r.willTimeout));
+    const executeArbitrary = fc
+      .record({
+        opcode: fc.integer({ min: 0x00, max: 0xff }),
+        successOpcodes: fc.array(fc.integer({ min: 0x00, max: 0xff }), {
+          minLength: 1,
+          maxLength: 3
+        }),
+        errorOpcodes: fc.array(fc.integer({ min: 0x00, max: 0xff }), { maxLength: 3 }),
+        timeout: fc.integer({ min: 100, max: 5000 }),
+        willSucceed: fc.boolean(),
+        willTimeout: fc.boolean()
+      })
+      .map(
+        (r) =>
+          new ExecuteCommand(
+            r.opcode as BoksOpcode,
+            r.successOpcodes,
+            r.errorOpcodes,
+            r.timeout,
+            r.willSucceed,
+            r.willTimeout
+          )
+      );
 
     const commandsArbitrary = fc.commands([executeArbitrary], { maxCommands: 20 });
 

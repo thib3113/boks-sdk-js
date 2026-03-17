@@ -39,25 +39,29 @@ describe('RegeneratePartAPacket', () => {
   });
 
   it('should throw INVALID_CONFIG_KEY for invalid config key format', () => {
-     expect(() => new RegeneratePartAPacket({ configKey: 'invalid', part: validPart })).toThrowError(BoksProtocolError);
+    expect(() => new RegeneratePartAPacket({ configKey: 'invalid', part: validPart })).toThrowError(
+      BoksProtocolError
+    );
   });
 
   it('should throw INVALID_VALUE for invalid part length', () => {
-      const shortPart = new Uint8Array(15);
-      expect(() => new RegeneratePartAPacket({ configKey: validKey, part: shortPart })).toThrowError(BoksProtocolError);
-      try {
-        new RegeneratePartAPacket({ configKey: validKey, part: shortPart });
-      } catch (e) {
-         expect((e as BoksProtocolError).id).toBe(BoksProtocolErrorId.INVALID_PAYLOAD_LENGTH);
-      }
+    const shortPart = new Uint8Array(15);
+    expect(() => new RegeneratePartAPacket({ configKey: validKey, part: shortPart })).toThrowError(
+      BoksProtocolError
+    );
+    try {
+      new RegeneratePartAPacket({ configKey: validKey, part: shortPart });
+    } catch (e) {
+      expect((e as BoksProtocolError).id).toBe(BoksProtocolErrorId.INVALID_PAYLOAD_LENGTH);
+    }
   });
 
   it('should fail parsing if payload is too short (part incomplete)', () => {
-      // slice(8, 24) handles short arrays by returning what's there.
-      // Constructor checks length.
-      const payload = new Uint8Array(20);
-      payload.set(stringToBytes(validKey), 0);
+    // slice(8, 24) handles short arrays by returning what's there.
+    // Constructor checks length.
+    const payload = new Uint8Array(20);
+    payload.set(stringToBytes(validKey), 0);
 
-      expect(() => RegeneratePartAPacket.fromPayload(payload)).toThrowError(BoksProtocolError);
+    expect(() => RegeneratePartAPacket.fromPayload(payload)).toThrowError(BoksProtocolError);
   });
 });

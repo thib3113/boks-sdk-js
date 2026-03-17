@@ -1,6 +1,6 @@
 import { AuthPacket, AuthPacketProps } from '@/protocol/downlink/_AuthPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
-import { PayloadMapper, PayloadNfcUid } from '@/protocol/payload-mapper';
+import { PayloadMapper, PayloadNfcUid } from '@/protocol/decorators';
 
 /**
  * NFC Tag Registration.

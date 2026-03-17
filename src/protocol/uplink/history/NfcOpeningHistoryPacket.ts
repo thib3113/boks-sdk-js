@@ -1,4 +1,4 @@
-import { PayloadMapper, PayloadUint8, PayloadNfcUid } from '@/protocol/payload-mapper';
+import { PayloadMapper, PayloadUint8, PayloadNfcUid } from '@/protocol/decorators';
 import {
   BoksHistoryEvent,
   BoksHistoryEventProps
@@ -15,10 +15,9 @@ export class NfcOpeningHistoryPacket extends BoksHistoryEvent {
 
   @PayloadUint8(3)
   public accessor tagType!: number;
-  public readonly uid: string;
 
   @PayloadNfcUid(4)
-  public accessor nfcUidData!: string;
+  public accessor uid!: string;
 
   constructor(props: NfcOpeningHistoryPacketProps, rawPayload?: Uint8Array) {
     super(NfcOpeningHistoryPacket.opcode, props, rawPayload);
@@ -31,13 +30,6 @@ export class NfcOpeningHistoryPacket extends BoksHistoryEvent {
       NfcOpeningHistoryPacket,
       payload
     );
-    return new NfcOpeningHistoryPacket(
-      {
-        age: data.age as number,
-        tagType: data.tagType as number,
-        uid: (data as unknown as { nfcUidData: string }).nfcUidData as string
-      },
-      payload
-    );
+    return new NfcOpeningHistoryPacket(data, payload);
   }
 }

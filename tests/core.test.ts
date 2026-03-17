@@ -10,6 +10,5 @@ describe('core.ts exports', () => {
 
     expect(Core.validatePinCode).toBeDefined();
     expect(Core.BoksProtocolError).toBeDefined();
-
   });
 });

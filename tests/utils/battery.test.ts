@@ -1,5 +1,10 @@
 import { describe, it, expect, vi } from 'vitest';
-import { fetchBatteryLevel, fetchBatteryStats, parseBatteryLevel, parseBatteryStats } from '@/utils/battery';
+import {
+  fetchBatteryLevel,
+  fetchBatteryStats,
+  parseBatteryLevel,
+  parseBatteryStats
+} from '@/utils/battery';
 import { BoksTransport } from '@/client/transport';
 import { BOKS_UUIDS } from '@/protocol/constants';
 
@@ -10,7 +15,7 @@ describe('Battery Utilities', () => {
     write: vi.fn(),
     read: vi.fn(),
     subscribe: vi.fn(),
-    subscribeTo: vi.fn(),
+    subscribeTo: vi.fn()
   };
 
   describe('fetchBatteryLevel', () => {
@@ -76,7 +81,7 @@ describe('Battery Utilities', () => {
         min: 80,
         mean: 85,
         max: 95,
-        last: 88,
+        last: 88
       });
     });
 
@@ -93,7 +98,7 @@ describe('Battery Utilities', () => {
       expect(stats?.details).toEqual({
         t1: 85,
         t5: 82,
-        t10: 80,
+        t10: 80
       });
     });
 

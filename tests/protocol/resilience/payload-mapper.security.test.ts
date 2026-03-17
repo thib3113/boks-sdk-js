@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { PayloadMapper, PayloadUint8 } from '@/protocol/payload-mapper';
+import { PayloadMapper, PayloadUint8 } from '@/protocol/decorators';
 import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';
 import { BoksExpectedReason } from '@/errors/BoksExpectedReason';
 
@@ -15,7 +15,10 @@ describe('PayloadMapper Security & Resilience', () => {
       new BoksProtocolError(
         BoksProtocolErrorId.INTERNAL_ERROR,
         'Unsafe property name mapped: "); throw new Error("hacked"); //',
-        { expected: BoksExpectedReason.VALID_HEX_CHAR, received: '"); throw new Error("hacked"); //' }
+        {
+          expected: BoksExpectedReason.VALID_HEX_CHAR,
+          received: '"); throw new Error("hacked"); //'
+        }
       )
     );
   });
@@ -78,7 +81,11 @@ describe('PayloadMapper Security & Resilience', () => {
     // Minimum size required is 5 bytes (index 4 + 1 size)
     // Passing only 3 bytes should throw
     expect(() => PayloadMapper.parse(ValidPacket, new Uint8Array([1, 2, 3]))).toThrowError(
-      new BoksProtocolError(BoksProtocolErrorId.MALFORMED_DATA, 'Payload too short for mapped fields', { expected: 5, received: 3 })
+      new BoksProtocolError(
+        BoksProtocolErrorId.MALFORMED_DATA,
+        'Payload too short for mapped fields',
+        { expected: 5, received: 3 }
+      )
     );
   });
 

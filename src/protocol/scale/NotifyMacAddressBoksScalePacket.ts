@@ -1,4 +1,4 @@
-import { PayloadMapper, PayloadMacAddress } from '@/protocol/payload-mapper';
+import { PayloadMapper, PayloadMacAddress } from '@/protocol/decorators';
 import { BoksRXPacket } from '@/protocol/uplink/_BoksRXPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
 
@@ -19,6 +19,6 @@ export class NotifyMacAddressBoksScalePacket extends BoksRXPacket {
 
   static fromPayload(payload: Uint8Array): NotifyMacAddressBoksScalePacket {
     const data = PayloadMapper.parse(NotifyMacAddressBoksScalePacket, payload);
-    return new NotifyMacAddressBoksScalePacket(data.macAddress as string, payload);
+    return new NotifyMacAddressBoksScalePacket(data.macAddress, payload);
   }
 }

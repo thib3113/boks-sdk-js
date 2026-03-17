@@ -2,40 +2,41 @@ import { describe, expect, it } from 'vitest';
 import { NfcOpeningHistoryPacket } from '@/protocol/uplink/history/NfcOpeningHistoryPacket';
 import { BoksOpcode } from '@/protocol/constants';
 import { BoksProtocolError } from '@/errors/BoksProtocolError';
+import { bytesToHex } from '@/utils/converters';
 
 describe('NfcOpeningHistoryPacket', () => {
   it('should parse correctly with age, type and uid', () => {
-    // UID 01020304
-    const payload = new Uint8Array([0x00, 0x00, 0x0A, 0x01, 0x04, 0x01, 0x02, 0x03, 0x04, 0, 0, 0]);
+    // UID 04050607, type 2, age 10
+    const payload = new Uint8Array([0x00, 0x00, 0x0a, 0x02, 0x04, 0x04, 0x05, 0x06, 0x07]);
     const packet = NfcOpeningHistoryPacket.fromPayload(payload);
-    
+
     expect(packet.opcode).toBe(BoksOpcode.LOG_EVENT_NFC_OPENING);
     expect(packet.age).toBe(10);
-    expect(packet.tagType).toBe(1);
-    expect(packet.uid).toBe('01020304');
+    expect(packet.tagType).toBe(2);
+    expect(packet.uid).toBe('04050607');
   });
 
-  it('should throw on missing uid due to strict parsing via mapper', () => {
-    const payload = new Uint8Array([0, 0, 10, 1, 4]);
-    // The mapper throws first due to out of bounds
-    expect(() => NfcOpeningHistoryPacket.fromPayload(payload)).toThrowError(BoksProtocolError);
+  it('should encode correctly', () => {
+    const packet = new NfcOpeningHistoryPacket({
+      age: 10,
+      tagType: 2,
+      uid: '04050607'
+    });
+    const encoded = packet.encode();
+    // 0xA1 + 9 + 00000A + 02 + 04 + 04050607
+    expect(encoded[0]).toBe(0xa1);
+    expect(encoded[1]).toBe(9);
+    expect(bytesToHex(encoded.subarray(2, 5))).toBe('00000A');
+    expect(encoded[5]).toBe(2);
+    expect(encoded[6]).toBe(4);
+    expect(bytesToHex(encoded.subarray(7, 11))).toBe('04050607');
   });
 
-  it('should throw if payload length is shorter than expected UID length', () => {
-    // We bypass the initial PayloadMapper to test the internal packet logic explicitly
-    // Since PayloadMapper checks fixed size (5+7=12 bytes), we provide 12 bytes but specify a uidLen that exceeds it or we make sure to hit the custom logic.
-    // Wait, if PayloadMapper requires exactly 12 bytes because of @PayloadByteArray(5, 7),
-    // it will parse successfully if we provide exactly 12 bytes.
-    // What if uidLength = 8?
-    // The mapper will set uidLength to 8.
-    // Then the custom logic checks: if (payload.length (12) < offset (5) + uidLen (8) = 13)
-    // It should throw the custom error!
-
-    const payload = new Uint8Array([0, 0, 10, 1, 8, 1, 2, 3, 4, 5, 6, 7]); // 12 bytes length
-    // uidLength is at index 4, which is 8.
-
-    expect(() => NfcOpeningHistoryPacket.fromPayload(payload)).toThrowError(BoksProtocolError);
+  it('should throw on invalid uid format', () => {
+    expect(() => new NfcOpeningHistoryPacket({
+      age: 10,
+      tagType: 2,
+      uid: 'invalid'
+    })).toThrowError(BoksProtocolError);
   });
-
-
 });

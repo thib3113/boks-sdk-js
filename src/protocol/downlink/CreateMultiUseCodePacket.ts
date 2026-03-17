@@ -1,6 +1,6 @@
 import { AuthPacket, AuthPacketProps } from '@/protocol/downlink/_AuthPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
-import { PayloadMapper, PayloadPinCode } from '@/protocol/payload-mapper';
+import { PayloadMapper, PayloadPinCode } from '@/protocol/decorators';
 
 /**
  * Command to create a multi-use code.

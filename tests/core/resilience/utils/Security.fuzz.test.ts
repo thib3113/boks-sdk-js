@@ -3,7 +3,6 @@ import fc from 'fast-check';
 import { sealed, freeze } from '../../../../src/utils/security';
 
 describe('Security Utils Resilience (Fuzzing)', () => {
-
   it('FEATURE REGRESSION: sealed should not throw when sealing classes', async () => {
     await fc.assert(
       fc.asyncProperty(fc.string(), async (name) => {

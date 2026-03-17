@@ -1,4 +1,4 @@
-import { PayloadMapper } from '@/protocol/payload-mapper';
+import { PayloadMapper, PayloadByteArray } from '@/protocol/decorators';
 import {
   BoksHistoryEvent,
   BoksHistoryEventProps
@@ -15,7 +15,8 @@ export interface NfcRegisteringHistoryPacketProps extends BoksHistoryEventProps 
 export class NfcRegisteringHistoryPacket extends BoksHistoryEvent {
   static readonly opcode = BoksOpcode.LOG_EVENT_NFC_REGISTERING;
 
-  public readonly data: Uint8Array;
+  @PayloadByteArray(3)
+  public accessor data!: Uint8Array;
 
   constructor(props: NfcRegisteringHistoryPacketProps, rawPayload?: Uint8Array) {
     super(NfcRegisteringHistoryPacket.opcode, props, rawPayload);
@@ -23,13 +24,13 @@ export class NfcRegisteringHistoryPacket extends BoksHistoryEvent {
   }
 
   static fromPayload(payload: Uint8Array): NfcRegisteringHistoryPacket {
-    const data = PayloadMapper.parse<NfcRegisteringHistoryPacketProps>(
+    const data = PayloadMapper.parse<NfcRegisteringHistoryPacket>(
       NfcRegisteringHistoryPacket,
       payload
     );
     return new NfcRegisteringHistoryPacket(
       {
-        age: data.age as number,
+        age: data.age,
         data: payload.length > 3 ? payload.subarray(3) : new Uint8Array(0)
       },
       payload

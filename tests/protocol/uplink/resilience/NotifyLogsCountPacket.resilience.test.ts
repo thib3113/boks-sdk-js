@@ -33,21 +33,17 @@ describe('NotifyLogsCountPacket - Resilience & Edge Cases', () => {
 
     it('should correctly parse the count with trailing bytes', () => {
       fc.assert(
-        fc.property(
-          fc.integer({ min: 0, max: 65535 }),
-          fc.uint8Array(),
-          (count, trailingBytes) => {
-            const buffer = new ArrayBuffer(2 + trailingBytes.length);
-            const view = new DataView(buffer);
-            view.setUint16(0, count, false);
+        fc.property(fc.integer({ min: 0, max: 65535 }), fc.uint8Array(), (count, trailingBytes) => {
+          const buffer = new ArrayBuffer(2 + trailingBytes.length);
+          const view = new DataView(buffer);
+          view.setUint16(0, count, false);
 
-            const payload = new Uint8Array(buffer);
-            payload.set(trailingBytes, 2);
+          const payload = new Uint8Array(buffer);
+          payload.set(trailingBytes, 2);
 
-            const packet = NotifyLogsCountPacket.fromPayload(payload);
-            expect(packet.count).toBe(count);
-          }
-        )
+          const packet = NotifyLogsCountPacket.fromPayload(payload);
+          expect(packet.count).toBe(count);
+        })
       );
     });
   });

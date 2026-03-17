@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { HistoryEraseHistoryPacket } from '@/protocol/uplink/history/HistoryEraseHistoryPacket';
 import { BoksOpcode } from '@/protocol/constants';
+import { bytesToHex } from '@/utils/converters';
 
 describe('HistoryEraseHistoryPacket', () => {
   it('should parse correctly with age', () => {
@@ -8,5 +9,14 @@ describe('HistoryEraseHistoryPacket', () => {
     const packet = HistoryEraseHistoryPacket.fromPayload(payload);
     expect(packet.opcode).toBe(BoksOpcode.LOG_HISTORY_ERASE);
     expect(packet.age).toBe(0x010203);
+  });
+
+  it('should encode correctly', () => {
+    const packet = new HistoryEraseHistoryPacket({ age: 1 });
+    const encoded = packet.encode();
+    // 0x93 + 3 + 000001
+    expect(encoded[0]).toBe(0x93);
+    expect(encoded[1]).toBe(3);
+    expect(bytesToHex(encoded.subarray(2, 5))).toBe('000001');
   });
 });

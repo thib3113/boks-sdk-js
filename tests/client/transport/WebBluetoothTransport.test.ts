@@ -37,7 +37,7 @@ class MockBluetoothRemoteGATTCharacteristic {
   // Helper for tests to trigger events
   triggerEvent(type: string, event: any) {
     if (this.listeners[type]) {
-      this.listeners[type].forEach(l => l(event));
+      this.listeners[type].forEach((l) => l(event));
     }
   }
 }
@@ -111,16 +111,15 @@ class MockBluetoothDevice {
 }
 
 const mockNavigatorBluetooth = {
-  requestDevice: vi.fn(),
+  requestDevice: vi.fn()
 };
 
 // --- Tests ---
 
 describe('WebBluetoothTransport', () => {
-
   beforeEach(() => {
     vi.stubGlobal('navigator', {
-        bluetooth: mockNavigatorBluetooth,
+      bluetooth: mockNavigatorBluetooth
     });
     vi.resetAllMocks();
   });
@@ -193,7 +192,6 @@ describe('WebBluetoothTransport', () => {
       });
     });
 
-
     it('should successfully connect and setup characteristics using pre-provided device', async () => {
       const device = new MockBluetoothDevice();
       const service = new MockBluetoothRemoteGATTService(BOKS_UUIDS.SERVICE);
@@ -222,27 +220,24 @@ describe('WebBluetoothTransport', () => {
 
       const transport = new WebBluetoothTransport();
       await expect(transport.connect()).rejects.toThrowError(
-        new BoksClientError(
-          BoksClientErrorId.CONNECTION_FAILED,
-          'GATT Server not available.'
-        )
+        new BoksClientError(BoksClientErrorId.CONNECTION_FAILED, 'GATT Server not available.')
       );
     });
 
     it('should rethrow existing BoksClientError from try block', async () => {
-        const device = new MockBluetoothDevice();
-        // Don't add the primary service, so getPrimaryService throws
-        mockNavigatorBluetooth.requestDevice.mockResolvedValueOnce(device);
+      const device = new MockBluetoothDevice();
+      // Don't add the primary service, so getPrimaryService throws
+      mockNavigatorBluetooth.requestDevice.mockResolvedValueOnce(device);
 
-        // Mock device.gatt.connect to throw a BoksClientError explicitly
-        vi.spyOn(device.gatt, 'connect').mockRejectedValueOnce(
-            new BoksClientError(BoksClientErrorId.CONNECTION_FAILED, 'Mocked Error')
-        );
+      // Mock device.gatt.connect to throw a BoksClientError explicitly
+      vi.spyOn(device.gatt, 'connect').mockRejectedValueOnce(
+        new BoksClientError(BoksClientErrorId.CONNECTION_FAILED, 'Mocked Error')
+      );
 
-        const transport = new WebBluetoothTransport();
-        await expect(transport.connect()).rejects.toThrowError(
-             new BoksClientError(BoksClientErrorId.CONNECTION_FAILED, 'Mocked Error')
-        );
+      const transport = new WebBluetoothTransport();
+      await expect(transport.connect()).rejects.toThrowError(
+        new BoksClientError(BoksClientErrorId.CONNECTION_FAILED, 'Mocked Error')
+      );
     });
 
     it('should wrap general errors in BoksClientError', async () => {
@@ -284,19 +279,21 @@ describe('WebBluetoothTransport', () => {
     });
 
     it('should catch errors and throw DISCONNECT_FAILED', async () => {
-        const device = new MockBluetoothDevice();
-        const transport = new WebBluetoothTransport(device as unknown as BluetoothDevice);
+      const device = new MockBluetoothDevice();
+      const transport = new WebBluetoothTransport(device as unknown as BluetoothDevice);
 
-        const error = new Error('Failed to stop');
-        // Mock server to throw on disconnect
-        (transport as any).server = {
-            connected: true,
-            disconnect: () => { throw error; }
-        };
+      const error = new Error('Failed to stop');
+      // Mock server to throw on disconnect
+      (transport as any).server = {
+        connected: true,
+        disconnect: () => {
+          throw error;
+        }
+      };
 
-        await expect(transport.disconnect()).rejects.toThrowError(
-            new BoksClientError(BoksClientErrorId.DISCONNECT_FAILED, 'Failed to disconnect', { error })
-        );
+      await expect(transport.disconnect()).rejects.toThrowError(
+        new BoksClientError(BoksClientErrorId.DISCONNECT_FAILED, 'Failed to disconnect', { error })
+      );
     });
   });
 
@@ -339,11 +336,9 @@ describe('WebBluetoothTransport', () => {
       (transport as any).writeChar = mockWriteChar;
 
       await expect(transport.write(new Uint8Array([1]))).rejects.toThrowError(
-        new BoksClientError(
-          BoksClientErrorId.WRITE_FAILED,
-          'Failed to write to Boks device',
-          { error }
-        )
+        new BoksClientError(BoksClientErrorId.WRITE_FAILED, 'Failed to write to Boks device', {
+          error
+        })
       );
     });
   });
@@ -405,215 +400,234 @@ describe('WebBluetoothTransport', () => {
       (transport as any).server = device.gatt;
 
       await expect(transport.read('missing-char')).rejects.toThrowError(
-        new BoksClientError(BoksClientErrorId.PARSE_ERROR, 'Characteristic missing-char not found in any visible service.')
+        new BoksClientError(
+          BoksClientErrorId.PARSE_ERROR,
+          'Characteristic missing-char not found in any visible service.'
+        )
       );
     });
 
     it('should rethrow general error properly formatted in read block catch', async () => {
-       const device = new MockBluetoothDevice();
-       const service = new MockBluetoothRemoteGATTService('service-1');
-       const expectedError = new Error('Failed to list services');
+      const device = new MockBluetoothDevice();
+      const service = new MockBluetoothRemoteGATTService('service-1');
+      const expectedError = new Error('Failed to list services');
 
-       const gattServer = device.gatt;
-       vi.spyOn(gattServer, 'getPrimaryServices').mockRejectedValueOnce(expectedError);
-       device.gatt.addService(service);
+      const gattServer = device.gatt;
+      vi.spyOn(gattServer, 'getPrimaryServices').mockRejectedValueOnce(expectedError);
+      device.gatt.addService(service);
 
-       const transport = new WebBluetoothTransport(device as unknown as BluetoothDevice);
-       (transport as any).server = gattServer;
+      const transport = new WebBluetoothTransport(device as unknown as BluetoothDevice);
+      (transport as any).server = gattServer;
 
-       await expect(transport.read('char-1')).rejects.toThrowError(
-        new BoksClientError(BoksClientErrorId.PARSE_ERROR, 'Failed to read characteristic char-1', { error: expectedError })
-       )
+      await expect(transport.read('char-1')).rejects.toThrowError(
+        new BoksClientError(BoksClientErrorId.PARSE_ERROR, 'Failed to read characteristic char-1', {
+          error: expectedError
+        })
+      );
     });
   });
 
   describe('subscribe', () => {
-      it('should throw if notifyChar is missing', async () => {
-        const transport = new WebBluetoothTransport();
-        await expect(transport.subscribe(vi.fn())).rejects.toThrowError(
-            new BoksClientError(BoksClientErrorId.NOT_CONNECTED, 'Not connected (Notify characteristic missing).')
-        );
-      });
+    it('should throw if notifyChar is missing', async () => {
+      const transport = new WebBluetoothTransport();
+      await expect(transport.subscribe(vi.fn())).rejects.toThrowError(
+        new BoksClientError(
+          BoksClientErrorId.NOT_CONNECTED,
+          'Not connected (Notify characteristic missing).'
+        )
+      );
+    });
 
-      it('should subscribe and trigger callback on notification', async () => {
-          const transport = new WebBluetoothTransport();
-          const notifyChar = new MockBluetoothRemoteGATTCharacteristic(BOKS_UUIDS.NOTIFY);
-          vi.spyOn(notifyChar, 'startNotifications');
-          (transport as any).notifyChar = notifyChar;
+    it('should subscribe and trigger callback on notification', async () => {
+      const transport = new WebBluetoothTransport();
+      const notifyChar = new MockBluetoothRemoteGATTCharacteristic(BOKS_UUIDS.NOTIFY);
+      vi.spyOn(notifyChar, 'startNotifications');
+      (transport as any).notifyChar = notifyChar;
 
-          const callback = vi.fn();
-          await transport.subscribe(callback);
+      const callback = vi.fn();
+      await transport.subscribe(callback);
 
-          expect(notifyChar.startNotifications).toHaveBeenCalled();
+      expect(notifyChar.startNotifications).toHaveBeenCalled();
 
-          const eventData = new Uint8Array([0xAA, 0xBB]);
-          const event = {
-              target: {
-                  value: new DataView(eventData.buffer)
-              }
-          };
+      const eventData = new Uint8Array([0xaa, 0xbb]);
+      const event = {
+        target: {
+          value: new DataView(eventData.buffer)
+        }
+      };
 
-          notifyChar.triggerEvent('characteristicvaluechanged', event);
-          expect(callback).toHaveBeenCalledWith(eventData);
-      });
+      notifyChar.triggerEvent('characteristicvaluechanged', event);
+      expect(callback).toHaveBeenCalledWith(eventData);
+    });
 
-      it('should not trigger callback if value is null', async () => {
-          const transport = new WebBluetoothTransport();
-          const notifyChar = new MockBluetoothRemoteGATTCharacteristic(BOKS_UUIDS.NOTIFY);
-          (transport as any).notifyChar = notifyChar;
+    it('should not trigger callback if value is null', async () => {
+      const transport = new WebBluetoothTransport();
+      const notifyChar = new MockBluetoothRemoteGATTCharacteristic(BOKS_UUIDS.NOTIFY);
+      (transport as any).notifyChar = notifyChar;
 
-          const callback = vi.fn();
-          await transport.subscribe(callback);
+      const callback = vi.fn();
+      await transport.subscribe(callback);
 
-          const event = {
-              target: {
-                  value: null
-              }
-          };
+      const event = {
+        target: {
+          value: null
+        }
+      };
 
-          notifyChar.triggerEvent('characteristicvaluechanged', event);
-          expect(callback).not.toHaveBeenCalled();
-      });
+      notifyChar.triggerEvent('characteristicvaluechanged', event);
+      expect(callback).not.toHaveBeenCalled();
+    });
 
-      it('should throw SUBSCRIBE_FAILED if startNotifications fails', async () => {
-          const transport = new WebBluetoothTransport();
-          const notifyChar = new MockBluetoothRemoteGATTCharacteristic(BOKS_UUIDS.NOTIFY);
-          const error = new Error('fail');
-          vi.spyOn(notifyChar, 'startNotifications').mockRejectedValueOnce(error);
-          (transport as any).notifyChar = notifyChar;
+    it('should throw SUBSCRIBE_FAILED if startNotifications fails', async () => {
+      const transport = new WebBluetoothTransport();
+      const notifyChar = new MockBluetoothRemoteGATTCharacteristic(BOKS_UUIDS.NOTIFY);
+      const error = new Error('fail');
+      vi.spyOn(notifyChar, 'startNotifications').mockRejectedValueOnce(error);
+      (transport as any).notifyChar = notifyChar;
 
-          await expect(transport.subscribe(vi.fn())).rejects.toThrowError(
-               new BoksClientError(BoksClientErrorId.SUBSCRIBE_FAILED, 'Failed to subscribe to notifications', { error })
-          );
-      });
+      await expect(transport.subscribe(vi.fn())).rejects.toThrowError(
+        new BoksClientError(
+          BoksClientErrorId.SUBSCRIBE_FAILED,
+          'Failed to subscribe to notifications',
+          { error }
+        )
+      );
+    });
   });
 
   describe('subscribeTo', () => {
-      it('should continue searching if getCharacteristic returns null instead of throwing', async () => {
-          const device = new MockBluetoothDevice();
-          const service1 = new MockBluetoothRemoteGATTService('service-1');
-          const service2 = new MockBluetoothRemoteGATTService('service-2');
-          const char = new MockBluetoothRemoteGATTCharacteristic('target-uuid');
+    it('should continue searching if getCharacteristic returns null instead of throwing', async () => {
+      const device = new MockBluetoothDevice();
+      const service1 = new MockBluetoothRemoteGATTService('service-1');
+      const service2 = new MockBluetoothRemoteGATTService('service-2');
+      const char = new MockBluetoothRemoteGATTCharacteristic('target-uuid');
 
-          vi.spyOn(service1, 'getCharacteristic').mockResolvedValueOnce(null as any);
-          service2.addCharacteristic(char);
-          device.gatt.addService(service1);
-          device.gatt.addService(service2);
+      vi.spyOn(service1, 'getCharacteristic').mockResolvedValueOnce(null as any);
+      service2.addCharacteristic(char);
+      device.gatt.addService(service1);
+      device.gatt.addService(service2);
 
-          const transport = new WebBluetoothTransport(device as unknown as BluetoothDevice);
-          (transport as any).server = device.gatt;
+      const transport = new WebBluetoothTransport(device as unknown as BluetoothDevice);
+      (transport as any).server = device.gatt;
 
-          const callback = vi.fn();
-          await transport.subscribeTo('target-uuid', callback);
-          expect((char.listeners['characteristicvaluechanged'] || []).length).toBe(1);
-      });
-      it('should throw if server not connected', async () => {
-          const transport = new WebBluetoothTransport();
-          await expect(transport.subscribeTo('uuid1', vi.fn())).rejects.toThrowError(
-              new BoksClientError(BoksClientErrorId.NOT_CONNECTED, 'Not connected (GATT server missing).')
-          );
-      });
+      const callback = vi.fn();
+      await transport.subscribeTo('target-uuid', callback);
+      expect((char.listeners['characteristicvaluechanged'] || []).length).toBe(1);
+    });
+    it('should throw if server not connected', async () => {
+      const transport = new WebBluetoothTransport();
+      await expect(transport.subscribeTo('uuid1', vi.fn())).rejects.toThrowError(
+        new BoksClientError(BoksClientErrorId.NOT_CONNECTED, 'Not connected (GATT server missing).')
+      );
+    });
 
-      it('should subscribe to a specific characteristic', async () => {
-          const device = new MockBluetoothDevice();
-          const service = new MockBluetoothRemoteGATTService('service-1');
-          const char = new MockBluetoothRemoteGATTCharacteristic('target-uuid');
-          vi.spyOn(char, 'startNotifications');
-          service.addCharacteristic(char);
-          device.gatt.addService(service);
+    it('should subscribe to a specific characteristic', async () => {
+      const device = new MockBluetoothDevice();
+      const service = new MockBluetoothRemoteGATTService('service-1');
+      const char = new MockBluetoothRemoteGATTCharacteristic('target-uuid');
+      vi.spyOn(char, 'startNotifications');
+      service.addCharacteristic(char);
+      device.gatt.addService(service);
 
-          const transport = new WebBluetoothTransport(device as unknown as BluetoothDevice);
-          (transport as any).server = device.gatt;
+      const transport = new WebBluetoothTransport(device as unknown as BluetoothDevice);
+      (transport as any).server = device.gatt;
 
-          const callback = vi.fn();
-          await transport.subscribeTo('target-uuid', callback);
+      const callback = vi.fn();
+      await transport.subscribeTo('target-uuid', callback);
 
-          expect(char.startNotifications).toHaveBeenCalled();
+      expect(char.startNotifications).toHaveBeenCalled();
 
-          const eventData = new Uint8Array([0xCC]);
-          const event = {
-              target: {
-                  value: new DataView(eventData.buffer)
-              }
-          };
+      const eventData = new Uint8Array([0xcc]);
+      const event = {
+        target: {
+          value: new DataView(eventData.buffer)
+        }
+      };
 
-          char.triggerEvent('characteristicvaluechanged', event);
-          expect(callback).toHaveBeenCalledWith(eventData);
-      });
+      char.triggerEvent('characteristicvaluechanged', event);
+      expect(callback).toHaveBeenCalledWith(eventData);
+    });
 
-      it('should continue searching for a characteristic if getCharacteristic fails on one service', async () => {
-          const device = new MockBluetoothDevice();
-          const service1 = new MockBluetoothRemoteGATTService('service-1');
-          const service2 = new MockBluetoothRemoteGATTService('service-2');
+    it('should continue searching for a characteristic if getCharacteristic fails on one service', async () => {
+      const device = new MockBluetoothDevice();
+      const service1 = new MockBluetoothRemoteGATTService('service-1');
+      const service2 = new MockBluetoothRemoteGATTService('service-2');
 
-          const charTarget = new MockBluetoothRemoteGATTCharacteristic('target-uuid');
+      const charTarget = new MockBluetoothRemoteGATTCharacteristic('target-uuid');
 
-          // Service 1 does NOT have the char, so it will reject when getting it.
-          // Service 2 has the char.
-          service2.addCharacteristic(charTarget);
-          device.gatt.addService(service1);
-          device.gatt.addService(service2);
+      // Service 1 does NOT have the char, so it will reject when getting it.
+      // Service 2 has the char.
+      service2.addCharacteristic(charTarget);
+      device.gatt.addService(service1);
+      device.gatt.addService(service2);
 
-          const transport = new WebBluetoothTransport(device as unknown as BluetoothDevice);
-          (transport as any).server = device.gatt;
+      const transport = new WebBluetoothTransport(device as unknown as BluetoothDevice);
+      (transport as any).server = device.gatt;
 
-          const callback = vi.fn();
-          await transport.subscribeTo('target-uuid', callback); // Should not throw
+      const callback = vi.fn();
+      await transport.subscribeTo('target-uuid', callback); // Should not throw
 
-          expect((charTarget.listeners['characteristicvaluechanged'] || []).length).toBe(1);
-      });
+      expect((charTarget.listeners['characteristicvaluechanged'] || []).length).toBe(1);
+    });
 
+    it('should handle characteristic value null in subscribeTo', async () => {
+      const device = new MockBluetoothDevice();
+      const service = new MockBluetoothRemoteGATTService('service-1');
+      const char = new MockBluetoothRemoteGATTCharacteristic('target-uuid');
+      service.addCharacteristic(char);
+      device.gatt.addService(service);
 
-      it('should handle characteristic value null in subscribeTo', async () => {
-          const device = new MockBluetoothDevice();
-          const service = new MockBluetoothRemoteGATTService('service-1');
-          const char = new MockBluetoothRemoteGATTCharacteristic('target-uuid');
-          service.addCharacteristic(char);
-          device.gatt.addService(service);
+      const transport = new WebBluetoothTransport(device as unknown as BluetoothDevice);
+      (transport as any).server = device.gatt;
 
-          const transport = new WebBluetoothTransport(device as unknown as BluetoothDevice);
-          (transport as any).server = device.gatt;
+      const callback = vi.fn();
+      await transport.subscribeTo('target-uuid', callback);
 
-          const callback = vi.fn();
-          await transport.subscribeTo('target-uuid', callback);
+      const event = { target: { value: null } };
+      char.triggerEvent('characteristicvaluechanged', event);
+      expect(callback).not.toHaveBeenCalled();
+    });
 
-          const event = { target: { value: null } };
-          char.triggerEvent('characteristicvaluechanged', event);
-          expect(callback).not.toHaveBeenCalled();
-      });
+    it('should throw SUBSCRIBE_FAILED if characteristic not found', async () => {
+      const device = new MockBluetoothDevice();
+      const service = new MockBluetoothRemoteGATTService('service-1');
+      device.gatt.addService(service); // Empty service
 
+      const transport = new WebBluetoothTransport(device as unknown as BluetoothDevice);
+      (transport as any).server = device.gatt;
 
-      it('should throw SUBSCRIBE_FAILED if characteristic not found', async () => {
-          const device = new MockBluetoothDevice();
-          const service = new MockBluetoothRemoteGATTService('service-1');
-          device.gatt.addService(service); // Empty service
+      const error = new BoksClientError(
+        BoksClientErrorId.SUBSCRIBE_FAILED,
+        'Characteristic missing not found'
+      );
 
-          const transport = new WebBluetoothTransport(device as unknown as BluetoothDevice);
-          (transport as any).server = device.gatt;
+      await expect(transport.subscribeTo('missing', vi.fn())).rejects.toThrowError(
+        new BoksClientError(BoksClientErrorId.SUBSCRIBE_FAILED, 'Failed to subscribe to missing', {
+          error
+        })
+      );
+    });
 
-          const error = new BoksClientError(BoksClientErrorId.SUBSCRIBE_FAILED, 'Characteristic missing not found');
+    it('should throw SUBSCRIBE_FAILED on internal error', async () => {
+      const device = new MockBluetoothDevice();
+      const service = new MockBluetoothRemoteGATTService('service-1');
+      const char = new MockBluetoothRemoteGATTCharacteristic('target-uuid');
+      const error = new Error('fail');
+      vi.spyOn(char, 'startNotifications').mockRejectedValueOnce(error);
+      service.addCharacteristic(char);
+      device.gatt.addService(service);
 
-          await expect(transport.subscribeTo('missing', vi.fn())).rejects.toThrowError(
-              new BoksClientError(BoksClientErrorId.SUBSCRIBE_FAILED, 'Failed to subscribe to missing', { error })
-          );
-      });
+      const transport = new WebBluetoothTransport(device as unknown as BluetoothDevice);
+      (transport as any).server = device.gatt;
 
-      it('should throw SUBSCRIBE_FAILED on internal error', async () => {
-          const device = new MockBluetoothDevice();
-          const service = new MockBluetoothRemoteGATTService('service-1');
-          const char = new MockBluetoothRemoteGATTCharacteristic('target-uuid');
-          const error = new Error('fail');
-          vi.spyOn(char, 'startNotifications').mockRejectedValueOnce(error);
-          service.addCharacteristic(char);
-          device.gatt.addService(service);
-
-          const transport = new WebBluetoothTransport(device as unknown as BluetoothDevice);
-          (transport as any).server = device.gatt;
-
-          await expect(transport.subscribeTo('target-uuid', vi.fn())).rejects.toThrowError(
-              new BoksClientError(BoksClientErrorId.SUBSCRIBE_FAILED, 'Failed to subscribe to target-uuid', { error })
-          );
-      });
+      await expect(transport.subscribeTo('target-uuid', vi.fn())).rejects.toThrowError(
+        new BoksClientError(
+          BoksClientErrorId.SUBSCRIBE_FAILED,
+          'Failed to subscribe to target-uuid',
+          { error }
+        )
+      );
+    });
   });
 });
 // Add an extra test inside the describe('subscribeTo') block to reach the branch where `char` could be falsy (if an implementation allowed it to not throw but return null/undefined)

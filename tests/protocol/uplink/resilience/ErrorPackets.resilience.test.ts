@@ -11,8 +11,18 @@ describe('ErrorPackets - Resilience & Edge Cases', () => {
   const PACKETS = [
     { packetClass: ErrorBadRequestPacket, opcode: BoksOpcode.ERROR_BAD_REQUEST },
     { packetClass: ErrorCrcPacket, opcode: BoksOpcode.ERROR_CRC },
-    { packetClass: ErrorNfcScanTimeoutPacket, opcode: BoksOpcode.ERROR_NFC_SCAN_TIMEOUT, hasStatus: true, status: 'timeout' },
-    { packetClass: ErrorNfcTagAlreadyExistsScanPacket, opcode: BoksOpcode.ERROR_NFC_TAG_ALREADY_EXISTS_SCAN, hasStatus: true, status: 'already_exists' },
+    {
+      packetClass: ErrorNfcScanTimeoutPacket,
+      opcode: BoksOpcode.ERROR_NFC_SCAN_TIMEOUT,
+      hasStatus: true,
+      status: 'timeout'
+    },
+    {
+      packetClass: ErrorNfcTagAlreadyExistsScanPacket,
+      opcode: BoksOpcode.ERROR_NFC_TAG_ALREADY_EXISTS_SCAN,
+      hasStatus: true,
+      status: 'already_exists'
+    },
     { packetClass: ErrorUnauthorizedPacket, opcode: BoksOpcode.ERROR_UNAUTHORIZED }
   ];
 

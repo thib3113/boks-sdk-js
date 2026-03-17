@@ -527,13 +527,13 @@ export class BoksHardwareSimulator {
    * Triggers a door opening via NFC Tag.
    */
   public triggerNfcOpen(tagId: string = ''): void {
-    const payload = new Uint8Array(12);
+    const payload = new Uint8Array(tagId ? 1 + 1 + Math.floor(tagId.length / 2) : 0);
     if (tagId) {
       const match = tagId.match(/.{1,2}/g);
       const bytes = match ? new Uint8Array(match.map((byte) => parseInt(byte, 16))) : EMPTY_BUFFER;
-      payload[3] = 1; // tagType
-      payload[4] = bytes.length; // uidLength
-      payload.set(bytes, 5); // Put tag ID at offset 5
+      payload[0] = 1; // tagType
+      payload[1] = bytes.length; // uidLength
+      payload.set(bytes, 2); // Put tag ID at offset 2
     }
     this.executeDoorOpen(BoksOpcode.LOG_EVENT_NFC_OPENING, payload, tagId);
   }
