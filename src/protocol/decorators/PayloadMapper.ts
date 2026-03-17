@@ -337,7 +337,7 @@ export class PayloadMapper {
           throw new BoksProtocolError(
             BoksProtocolErrorId.INTERNAL_ERROR,
             `Invalid bitIndex: ${field.bitIndex} for property ${prop}`,
-            { field: prop, received: field.bitIndex, expected: 'number 0-7' }
+            { field: prop, received: field.bitIndex, expected: BoksExpectedReason.NUMBER }
           );
         }
       }
@@ -666,7 +666,7 @@ export class PayloadMapper {
           throw new BoksProtocolError(
             BoksProtocolErrorId.INTERNAL_ERROR,
             `Invalid bitIndex: ${field.bitIndex} for property ${prop}`,
-            { field: prop, received: field.bitIndex, expected: 'number 0-7' }
+            { field: prop, received: field.bitIndex, expected: BoksExpectedReason.NUMBER }
           );
         }
       }
