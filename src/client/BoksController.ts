@@ -728,7 +728,7 @@ export class BoksController {
       // Part A
       const successA = await this.performOperation(
         new RegeneratePartAPacket({ configKey: configKey, part: partA }),
-        BoksOpcode.CODE_OPERATION_SUCCESS,
+        BoksOpcode.NOTIFY_CODE_GENERATION_PROGRESS,
         BoksOpcode.ERROR_UNAUTHORIZED
       );
       if (!successA) {

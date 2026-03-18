@@ -215,6 +215,31 @@
 
             if (!confirm('Are you sure you want to change the Master Key? This cannot be undone.')) return;
 
+            // Force download of the new key
+            const blob = new Blob([newKey], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `boks-recovery-key-${new Date().getTime()}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            log('Downloaded recovery key file.', 'success');
+
+            // Disable buttons during provisioning
+            generateKeyBtn.disabled = true;
+            provisionBtn.disabled = true;
+
+            // Warn on unload
+            const beforeUnloadHandler = (e) => {
+                const msg = 'Provisioning in progress. DO NOT CLOSE THIS PAGE or your device will be bricked.';
+                e.preventDefault();
+                e.returnValue = msg;
+                return msg;
+            };
+            window.addEventListener('beforeunload', beforeUnloadHandler);
+
             progressContainer.classList.remove('hidden');
             progressBar.value = 0;
             progressText.textContent = '0%';
@@ -239,6 +264,10 @@
             } catch (err) {
                 log(`Provisioning error: ${err.message}`, 'error');
             } finally {
+                // Re-enable buttons and remove warn
+                generateKeyBtn.disabled = false;
+                provisionBtn.disabled = false;
+                window.removeEventListener('beforeunload', beforeUnloadHandler);
                 // progressContainer.classList.add('hidden');
             }
         });
