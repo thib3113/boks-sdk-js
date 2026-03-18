@@ -21,4 +21,12 @@ describe('GetLogsCountPacket', () => {
     const packet = GetLogsCountPacket.fromPayload(new Uint8Array([0xff]));
     expect(packet).toBeInstanceOf(GetLogsCountPacket);
   });
+
+  it('should output only mapped payload properties and opcode via toJSON', () => {
+    const packet = new GetLogsCountPacket();
+    const json = packet.toJSON();
+    expect(json).toStrictEqual({
+        "opcode": 7,
+      });
+  });
 });

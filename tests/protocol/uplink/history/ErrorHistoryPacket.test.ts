@@ -32,4 +32,14 @@ describe('ErrorHistoryPacket', () => {
     // Sum: 148 + 4 + 0 + 1 + 44 + 5 = 202 (0xCA)
     expect(bytesToHex(packet.encode())).toBe('A00400012C05D6');
   });
+
+  it('should output only mapped payload properties and opcode via toJSON', () => {
+    const packet = ErrorHistoryPacket.fromPayload(new Uint8Array([0x00, 0x00, 0x0a, 0xff]));
+    const json = packet.toJSON();
+    expect(json).toStrictEqual({
+        "age": 10,
+        "errorCode": 255,
+        "opcode": 160,
+      });
+  });
 });

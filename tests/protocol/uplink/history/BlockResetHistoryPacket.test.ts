@@ -21,4 +21,14 @@ describe('BlockResetHistoryPacket', () => {
     expect(bytesToHex(encoded.subarray(2, 5))).toBe('00007B');
     expect(bytesToHex(encoded.subarray(5, 7))).toBe('AABB');
   });
+
+  it('should output only mapped payload properties and opcode via toJSON', () => {
+    const packet = BlockResetHistoryPacket.fromPayload(new Uint8Array([0x00, 0x00, 0x0a, 0xaa, 0xbb]));
+    const json = packet.toJSON();
+    expect(json).toStrictEqual({
+        "age": 10,
+        "opcode": 149,
+        "resetInfo": "AABB",
+      });
+  });
 });

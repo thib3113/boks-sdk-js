@@ -14,4 +14,12 @@ describe('ScaleMeasureWeightPacket', () => {
     const packet = ScaleMeasureWeightPacket.fromPayload(new Uint8Array(0));
     expect(packet.opcode).toBe(BoksOpcode.SCALE_MEASURE_WEIGHT);
   });
+
+  it('should output only mapped payload properties and opcode via toJSON', () => {
+    const packet = new ScaleMeasureWeightPacket();
+    const json = packet.toJSON();
+    expect(json).toStrictEqual({
+        "opcode": 87,
+      });
+  });
 });

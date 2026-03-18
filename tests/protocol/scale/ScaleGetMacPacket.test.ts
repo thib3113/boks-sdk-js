@@ -14,4 +14,12 @@ describe('ScaleGetMacPacket', () => {
     const packet = ScaleGetMacPacket.fromPayload(new Uint8Array(0));
     expect(packet.opcode).toBe(BoksOpcode.SCALE_GET_MAC_ADDRESS_BOKS);
   });
+
+  it('should output only mapped payload properties and opcode via toJSON', () => {
+    const packet = new ScaleGetMacPacket();
+    const json = packet.toJSON();
+    expect(json).toStrictEqual({
+        "opcode": 82,
+      });
+  });
 });

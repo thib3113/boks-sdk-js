@@ -17,4 +17,17 @@ describe('NotifyScaleRawSensorsPacket', () => {
     // Opcode 0xB9 (185), Len 3, Data 010203, Checksum 0xC2 (185+3+1+2+3=194=0xC2)
     expect(bytesToHex(encoded)).toBe('B903010203C2');
   });
+
+  it('should output only mapped payload properties and opcode via toJSON', () => {
+    const packet = NotifyScaleRawSensorsPacket.fromPayload(new Uint8Array([0x01, 0x02, 0x03]));
+    const json = packet.toJSON();
+    expect(json).toStrictEqual({
+        "data": new Uint8Array([
+          1,
+          2,
+          3,
+        ]),
+        "opcode": 185,
+      });
+  });
 });

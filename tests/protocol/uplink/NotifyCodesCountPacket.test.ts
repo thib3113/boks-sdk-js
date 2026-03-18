@@ -22,4 +22,14 @@ describe('NotifyCodesCountPacket', () => {
     // Re-calculate: 195+4+10+20 = 229. 229 % 256 = 229 (0xE5).
     expect(bytesToHex(encoded)).toBe('C304000A0014E5');
   });
+
+  it('should output only mapped payload properties and opcode via toJSON', () => {
+    const packet = NotifyCodesCountPacket.fromPayload(new Uint8Array([0x00, 0x0a, 0x00, 0x14]));
+    const json = packet.toJSON();
+    expect(json).toStrictEqual({
+        "masterCount": 10,
+        "opcode": 195,
+        "otherCount": 20,
+      });
+  });
 });

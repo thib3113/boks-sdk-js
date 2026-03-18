@@ -31,4 +31,19 @@ describe('NfcRegisteringHistoryPacket', () => {
     const packet = NfcRegisteringHistoryPacket.fromPayload(payload);
     expect(packet.data.length).toBe(0);
   });
+
+  it('should output only mapped payload properties and opcode via toJSON', () => {
+    const packet = NfcRegisteringHistoryPacket.fromPayload(new Uint8Array([0x00, 0x00, 0x0a, 0x01, 0x02, 0x03, 0x04]));
+    const json = packet.toJSON();
+    expect(json).toStrictEqual({
+        "age": 10,
+        "data": new Uint8Array([
+          1,
+          2,
+          3,
+          4,
+        ]),
+        "opcode": 162,
+      });
+  });
 });

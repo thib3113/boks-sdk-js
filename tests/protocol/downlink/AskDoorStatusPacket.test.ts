@@ -22,4 +22,12 @@ describe('AskDoorStatusPacket', () => {
     const packet = AskDoorStatusPacket.fromPayload(new Uint8Array([0x01, 0x02]));
     expect(packet).toBeInstanceOf(AskDoorStatusPacket);
   });
+
+  it('should output only mapped payload properties and opcode via toJSON', () => {
+    const packet = new AskDoorStatusPacket();
+    const json = packet.toJSON();
+    expect(json).toStrictEqual({
+        "opcode": 2,
+      });
+  });
 });

@@ -14,4 +14,12 @@ describe('ScaleTareEmptyPacket', () => {
     const packet = ScaleTareEmptyPacket.fromPayload(new Uint8Array(0));
     expect(packet.opcode).toBe(BoksOpcode.SCALE_TARE_EMPTY);
   });
+
+  it('should output only mapped payload properties and opcode via toJSON', () => {
+    const packet = new ScaleTareEmptyPacket();
+    const json = packet.toJSON();
+    expect(json).toStrictEqual({
+        "opcode": 85,
+      });
+  });
 });

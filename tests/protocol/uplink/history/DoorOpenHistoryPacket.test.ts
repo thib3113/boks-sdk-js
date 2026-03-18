@@ -21,4 +21,13 @@ describe('DoorOpenHistoryPacket', () => {
     expect(encoded[1]).toBe(3);
     expect(bytesToHex(encoded.subarray(2, 5))).toBe('000037');
   });
+
+  it('should output only mapped payload properties and opcode via toJSON', () => {
+    const packet = DoorOpenHistoryPacket.fromPayload(new Uint8Array([0x00, 0x00, 0x0a]));
+    const json = packet.toJSON();
+    expect(json).toStrictEqual({
+        "age": 10,
+        "opcode": 145,
+      });
+  });
 });

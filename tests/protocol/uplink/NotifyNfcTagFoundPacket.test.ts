@@ -59,4 +59,13 @@ describe('NotifyNfcTagFoundPacket', () => {
     const payload = new Uint8Array(0);
     expect(() => NotifyNfcTagFoundPacket.fromPayload(payload)).toThrow();
   });
+
+  it('should output only mapped payload properties and opcode via toJSON', () => {
+    const packet = NotifyNfcTagFoundPacket.fromPayload(new Uint8Array([0x04, 0x01, 0x02, 0x03, 0x04]));
+    const json = packet.toJSON();
+    expect(json).toStrictEqual({
+        "opcode": 197,
+        "uid": "01020304",
+      });
+  });
 });

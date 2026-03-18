@@ -24,4 +24,13 @@ describe('PowerOnHistoryPacket', () => {
     const packet = new PowerOnHistoryPacket({ age: 0 });
     expect(bytesToHex(packet.encode())).toBe('960300000099');
   });
+
+  it('should output only mapped payload properties and opcode via toJSON', () => {
+    const packet = PowerOnHistoryPacket.fromPayload(new Uint8Array([0x00, 0x00, 0x00]));
+    const json = packet.toJSON();
+    expect(json).toStrictEqual({
+        "age": 0,
+        "opcode": 150,
+      });
+  });
 });

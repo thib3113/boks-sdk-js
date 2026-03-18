@@ -14,4 +14,12 @@ describe('ScaleGetRawSensorsPacket', () => {
     const packet = ScaleGetRawSensorsPacket.fromPayload(new Uint8Array(0));
     expect(packet.opcode).toBe(BoksOpcode.SCALE_GET_RAW_SENSORS);
   });
+
+  it('should output only mapped payload properties and opcode via toJSON', () => {
+    const packet = new ScaleGetRawSensorsPacket();
+    const json = packet.toJSON();
+    expect(json).toStrictEqual({
+        "opcode": 97,
+      });
+  });
 });

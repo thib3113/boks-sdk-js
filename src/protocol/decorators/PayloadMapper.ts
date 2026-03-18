@@ -212,7 +212,7 @@ export class PayloadMapper {
    * Compiles the JIT parsing function for a class.
    */
 
-  private static getFields(targetClass: PayloadConstructor | unknown): FieldDefinition[] {
+  public static getFields(targetClass: PayloadConstructor | unknown): FieldDefinition[] {
     const allFields: FieldDefinition[] = [];
     let currentClass = targetClass;
     while (

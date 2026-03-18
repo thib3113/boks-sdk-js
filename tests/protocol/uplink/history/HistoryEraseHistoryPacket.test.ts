@@ -19,4 +19,13 @@ describe('HistoryEraseHistoryPacket', () => {
     expect(encoded[1]).toBe(3);
     expect(bytesToHex(encoded.subarray(2, 5))).toBe('000001');
   });
+
+  it('should output only mapped payload properties and opcode via toJSON', () => {
+    const packet = HistoryEraseHistoryPacket.fromPayload(new Uint8Array([0x01, 0x02, 0x03]));
+    const json = packet.toJSON();
+    expect(json).toStrictEqual({
+        "age": 66051,
+        "opcode": 147,
+      });
+  });
 });

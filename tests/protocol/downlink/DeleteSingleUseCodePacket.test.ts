@@ -75,4 +75,14 @@ describe('DeleteSingleUseCodePacket', () => {
     // Opcode 0x0D, Len 14 (0x0E), Key '12345678', PIN '998877', Checksum 0x0F
     expect(bytesToHex(packet.encode())).toBe('0D0E31323334353637383939383837370F');
   });
+
+  it('should output only mapped payload properties and opcode via toJSON', () => {
+    const packet = new DeleteSingleUseCodePacket({ configKey: validKey, pin: validPin });
+    const json = packet.toJSON();
+    expect(json).toStrictEqual({
+        "configKey": "12345678",
+        "opcode": 13,
+        "pin": "998877",
+      });
+  });
 });

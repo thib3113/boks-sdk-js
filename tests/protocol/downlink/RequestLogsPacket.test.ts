@@ -16,4 +16,12 @@ describe('RequestLogsPacket', () => {
     expect(packet).toBeInstanceOf(RequestLogsPacket);
     expect(packet.opcode).toBe(BoksOpcode.REQUEST_LOGS);
   });
+
+  it('should output only mapped payload properties and opcode via toJSON', () => {
+    const packet = new RequestLogsPacket();
+    const json = packet.toJSON();
+    expect(json).toStrictEqual({
+        "opcode": 3,
+      });
+  });
 });
