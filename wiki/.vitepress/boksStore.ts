@@ -18,6 +18,7 @@ export interface BoksPacketLog {
   name: string;
   length: number;
   data?: any;
+  rawData?: any;
 }
 
 export const boksStore = reactive({
@@ -103,8 +104,8 @@ export const boksStore = reactive({
       // Extract interesting fields from common packets
       if ('pinCode' in packet) data.pin = packet.pinCode;
       if ('configKey' in packet) data.key = packet.configKey;
-      if ('weight' in packet) data.weight = `${packet.weight}g`;
-      if ('battery' in packet) data.batt = `${packet.battery}%`;
+      if ('weight' in packet) data.weight = \`\${packet.weight}g\`;
+      if ('battery' in packet) data.batt = \`\${packet.battery}%\`;
       if ('isOpen' in packet) data.open = packet.isOpen;
       if ('date' in packet) data.time = packet.date.toLocaleTimeString();
     }
@@ -112,10 +113,11 @@ export const boksStore = reactive({
     this.packetLogs.unshift({
       time: new Date().toLocaleTimeString(),
       direction,
-      opcode: `0x${opcode.toString(16).padStart(2, '0').toUpperCase()}`,
+      opcode: \`0x\${opcode.toString(16).padStart(2, '0').toUpperCase()}\`,
       name: this.getOpcodeName(opcode),
       length,
-      data: Object.keys(data).length > 0 ? data : undefined
+      data: Object.keys(data).length > 0 ? data : undefined,
+      rawData: packet
     });
     if (this.packetLogs.length > 50) this.packetLogs.pop();
   },
