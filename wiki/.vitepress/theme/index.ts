@@ -1,6 +1,7 @@
 import DefaultTheme from 'vitepress/theme';
 import BoksGlobalProvider from '../components/BoksGlobalProvider.vue';
 import InitializationDemo from '../components/InitializationDemo.vue';
+import RegenerateKeyDemo from '../components/RegenerateKeyDemo.vue';
 import OpenDoorDemo from '../components/OpenDoorDemo.vue';
 import HistoryDemo from '../components/HistoryDemo.vue';
 import BatteryDemo from '../components/BatteryDemo.vue';
@@ -12,6 +13,7 @@ export default {
     // Register global components
     app.component('BoksGlobalProvider', BoksGlobalProvider);
     app.component('InitializationDemo', InitializationDemo);
+    app.component('RegenerateKeyDemo', RegenerateKeyDemo);
     app.component('OpenDoorDemo', OpenDoorDemo);
     app.component('HistoryDemo', HistoryDemo);
     app.component('BatteryDemo', BatteryDemo);
