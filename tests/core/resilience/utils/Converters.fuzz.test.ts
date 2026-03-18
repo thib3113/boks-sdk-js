@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import fc from 'fast-check';
 import {
   hexToBytes,
+  bytesToHex,
   bytesToMac,
   stringToBytes,
   readConfigKeyFromBuffer,
@@ -21,6 +22,16 @@ describe('Converters Utils Resilience (Fuzzing)', () => {
         } catch (e) {
           expect(e).toBeInstanceOf(BoksProtocolError);
         }
+      }),
+      { numRuns: 1000 }
+    );
+  });
+
+  it('FEATURE REGRESSION: bytesToHex should safely handle arbitrary bytes', () => {
+    fc.assert(
+      fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (bytes) => {
+        const result = bytesToHex(bytes);
+        expect(typeof result).toBe('string');
       }),
       { numRuns: 1000 }
     );
