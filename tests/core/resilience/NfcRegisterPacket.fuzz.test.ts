@@ -17,7 +17,7 @@ describe('NfcRegisterPacket Resilience (Fuzzing)', () => {
             // If it succeeds, the inputs MUST have matched the strict validation criteria:
             // Config Key = 8 hex chars
             expect(configKey.length).toBe(8);
-            expect(packet.opcode).toBe(0x13); // NfcRegisterPacket opcode
+            expect(packet.opcode).toBe(0x18); // NfcRegisterPacket opcode
           } catch (e) {
             // It is an intended FEATURE that validation throws a BoksProtocolError.
             // It should NEVER crash with TypeError, RangeError, etc.

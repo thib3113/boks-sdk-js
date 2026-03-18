@@ -62,3 +62,10 @@
 ## 2026-03-10 - [Core] **Hardened:** src/utils/security.ts **Edge-Cases Covered:** Fuzzed Object.seal and Object.freeze without crashes.
 ## 2026-03-10 - [Client] **Hardened:** src/client/WebBluetoothTransport.ts **Edge-Cases Covered:** [Arbitrary payload lengths from 0 to 512 bytes ensuring parsing safety, graceful BoksClientError wrapping on Web Bluetooth failures]
 ## 2026-03-10 - [Core] **Hardened:** tests/core/resilience/uplink/SimpleNotificationPackets.fuzz.test.ts **Edge-Cases Covered:** [Explicit error assertions for BoksProtocolError, splitting tests for valid and invalid short payloads to prevent silent error suppression]
+## 2024-03-18 - [Protocol] **Hardened:** [All Scale Packets] **Edge-Cases Covered:** [Random/Malformed Buffer Decodes, Buffer Overflows]
+## 2024-03-18 - [Protocol] **Hardened:** [All Downlink Packets] **Edge-Cases Covered:** [Random/Malformed Buffer Decodes, Buffer Overflows]
+## 2024-03-18 - [Protocol] **Hardened:** [All Uplink Packets] **Edge-Cases Covered:** [Random/Malformed Buffer Decodes, Buffer Overflows]
+## 2024-03-18 - [Utils] **Hardened:** [Converters] **Edge-Cases Covered:** [Non-string inputs to hex converters, Invalid/Odd hex strings, Non-ascii payloads]
+## 2024-03-18 - [Protocol] **Hardened:** [MultiToSingleCodePacket] **Edge-Cases Covered:** [Wrong Opcodes checked correctly]
+## 2024-03-18 - [Protocol] **Hardened:** [SingleToMultiCodePacket] **Edge-Cases Covered:** [Wrong Opcodes checked correctly]
+## 2024-03-18 - [Protocol] **Hardened:** [MasterCodeEditPacket] **Edge-Cases Covered:** [Wrong Opcodes checked correctly]
