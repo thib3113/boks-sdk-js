@@ -16,6 +16,12 @@ export type BoksPacketConstructor<T extends BoksPacket = BoksPacket> = {
 /**
  * Base class for all Boks packets
  */
+export type BoksPacketJSON<T> = {
+  opcode: BoksOpcode;
+} & {
+  [K in keyof Omit<T, keyof BoksPacket>]: T[K];
+};
+
 export abstract class BoksPacket {
   #rawPayload?: Uint8Array;
 
@@ -44,6 +50,24 @@ export abstract class BoksPacket {
   /**
    * Encodes the full packet: [Opcode, Length, ...Payload, Checksum]
    */
+
+  /**
+   * Serializes the packet to a plain JSON object.
+   * Includes the opcode and all properties mapped by decorators.
+   */
+  toJSON(): BoksPacketJSON<this> {
+    const fields = PayloadMapper.getFields(this.constructor);
+    const result: any = { opcode: this.opcode };
+
+    for (const field of fields) {
+      if (field.propertyName in this) {
+        result[field.propertyName] = (this as any)[field.propertyName];
+      }
+    }
+
+    return result as BoksPacketJSON<this>;
+  }
+
   encode(): Uint8Array {
     const payload = this.toPayload();
     const packet = new Uint8Array(payload.length + 3);
