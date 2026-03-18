@@ -9,7 +9,7 @@ describe('GenerateCodesSupportPacket', () => {
   const validSeedBytes = new Uint8Array(32).map((_, i) => i);
 
   it('should construct with valid parameters (hex string)', () => {
-    const packet = new GenerateCodesSupportPacket('000102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F');
+    const packet = new GenerateCodesSupportPacket(validSeedHex);
     expect(packet.opcode).toBe(BoksOpcode.GENERATE_CODES_SUPPORT);
     expect(packet.seed).toBe(validSeedHex);
   });
@@ -78,11 +78,11 @@ describe('error handling', () => {
   });
 
   it('should output only mapped payload properties and opcode via toJSON', () => {
-    const packet = new GenerateCodesSupportPacket('000102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F');
+    const packet = new GenerateCodesSupportPacket(validSeedHex);
     const json = packet.toJSON();
     expect(json).toStrictEqual({
         "opcode": 21,
-        "seed": "000102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F",
+        "seed": validSeedHex,
       });
   });
 });
