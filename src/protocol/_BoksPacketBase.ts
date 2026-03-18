@@ -57,10 +57,15 @@ export abstract class BoksPacket {
    */
   toJSON(): BoksPacketJSON<this> {
     const fields = PayloadMapper.getFields(this.constructor);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const result: any = { opcode: this.opcode };
 
     for (const field of fields) {
+      if (field.propertyName.startsWith('#') || field.propertyName.startsWith('_')) {
+        continue;
+      }
       if (field.propertyName in this) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         result[field.propertyName] = (this as any)[field.propertyName];
       }
     }
