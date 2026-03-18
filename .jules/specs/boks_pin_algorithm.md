@@ -4,12 +4,12 @@ Ce document détaille le fonctionnement de l'algorithme propriétaire utilisé p
 
 ## 1. Spécifications Techniques
 
-L'algorithme est une variante personnalisée de **BLAKE2s** qui utilise les constantes d'initialisation de **SHA-256** au lieu des constantes standards.
+L'algorithme est basé sur **BLAKE2s**.
 
 | Composante               | Description                                                           |
 |:-------------------------|:----------------------------------------------------------------------|
 | **Algorithme**           | BLAKE2s (Structure ARX, 10 rounds)                                    |
-| **Vecteur Initial (IV)** | Constantes H de SHA-256 standard                                      |
+| **Vecteur Initial (IV)** | Constantes d'initialisation BLAKE2s                                 |
 | **Initialisation**       | `H[0]` XORé avec les métadonnées `[6, 32, 1, 1]`                      |
 | **Séquence**             | 1. Traitement de la Clé (Bloc 1)<br>2. Traitement du Message (Bloc 2) |
 | **Transformation PIN**   | Chaque octet du hash subit un **Modulo 12**                           |
@@ -20,7 +20,7 @@ L'algorithme est une variante personnalisée de **BLAKE2s** qui utilise les cons
 ```python
 import struct
 
-# IV SHA-256 utilisé en remplacement de l'IV BLAKE2s
+# Vecteur d'initialisation BLAKE2s
 IV = [0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19]
 
 # Table de permutation Sigma standard

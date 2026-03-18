@@ -1,5 +1,5 @@
 /**
- * Boks PIN Algorithm (Modified BLAKE2s with SHA-256 IV)
+ * Boks PIN Algorithm (BLAKE2s)
  */
 
 import { PIN_ALGO_CONFIG } from '../protocol/constants';
