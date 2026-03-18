@@ -53,7 +53,8 @@ function exportLogs() {
   // Map over the logs to structure the output well
   const exportedLogs = boksStore.packetLogs.map(log => {
     // Clone the raw data and remove opcode to avoid redundancy in the export
-    const packetData = JSON.parse(JSON.stringify(log.rawData));
+    const rawDataToExport = log.rawData && typeof log.rawData.toJSON === 'function' ? log.rawData.toJSON() : log.rawData;
+    const packetData = JSON.parse(JSON.stringify(rawDataToExport));
     if (packetData && typeof packetData === 'object') {
       delete packetData.opcode;
     }
@@ -197,7 +198,7 @@ function exportLogs() {
                 <td class="op"><code>{{ log.opcode }}</code></td>
                 <td class="name">{{ log.name }}</td>
                 <td class="data">
-                  <pre v-if="log.rawData" class="json-data"><code>{{ JSON.stringify(log.rawData, (key, val) => key === 'opcode' ? undefined : val, 2) }}</code></pre>
+                  <pre v-if="log.rawData" class="json-data"><code>{{ JSON.stringify(log.rawData.toJSON ? log.rawData.toJSON() : log.rawData, (key, val) => key === 'opcode' ? undefined : val, 2) }}</code></pre>
                   <span v-else>-</span>
                 </td>
               </tr>
