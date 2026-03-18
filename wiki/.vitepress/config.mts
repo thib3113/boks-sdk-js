@@ -15,7 +15,14 @@ export default defineConfig({
   locales: {
     root: {
       label: 'English',
-      lang: 'en'
+      lang: 'en',
+      themeConfig: {
+        outline: { label: 'On this page' },
+        lastUpdated: { text: 'Last updated' },
+        returnToTopLabel: 'Return to top',
+        darkModeSwitchLabel: 'Appearance',
+        sidebarMenuLabel: 'Menu'
+      }
     },
     fr: {
       label: 'Français',
@@ -30,6 +37,11 @@ export default defineConfig({
           { text: 'Exemples', link: '/fr/examples/' },
           { text: 'Référence API', link: '/docs/index.html', target: '_blank' }
         ],
+        outline: { label: 'Sur cette page' },
+        lastUpdated: { text: 'Dernière mise à jour' },
+        returnToTopLabel: 'Retour en haut',
+        darkModeSwitchLabel: 'Apparence',
+        sidebarMenuLabel: 'Menu',
         sidebar: {
           '/fr/guide/': [
             {

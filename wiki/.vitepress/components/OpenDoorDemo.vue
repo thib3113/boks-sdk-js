@@ -1,6 +1,11 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { boksStore } from '../boksStore'
+import { useData } from 'vitepress'
+import { i18n } from '../i18n'
+
+const { lang } = useData()
+const t = computed(() => i18n[lang.value as keyof typeof i18n] || i18n.en)
 
 // Local State for this demo
 const pinCode = ref('123456')
@@ -9,28 +14,28 @@ const doorStatus = ref<boolean | null>(null)
 
 async function openDoor() {
   if (!boksStore.controller || !boksStore.isConnected) {
-    alert('Please connect first using the Global Controller.')
+    alert(t.value.global.pleaseConnectFirst)
     return
   }
   
   if (!pinCode.value || pinCode.value.length !== 6) {
-    boksStore.log('PIN must be exactly 6 characters.', 'warning')
+    boksStore.log(t.value.openDoor.pinLengthWarning, 'warning')
     return
   }
 
   isOpening.value = true
-  boksStore.log(`Attempting to open door with PIN "${pinCode.value}"...`, 'info')
+  boksStore.log(t.value.openDoor.attemptingOpen.replace('{pin}', pinCode.value), 'info')
 
   try {
     const success = await boksStore.controller.openDoor(pinCode.value)
     if (success) {
-      boksStore.log('Door opened successfully!', 'success')
+      boksStore.log(t.value.openDoor.openSuccess, 'success')
       await checkStatus()
       // Simulator auto-closes after 10s, refresh to show it
       setTimeout(checkStatus, 5000)
       setTimeout(checkStatus, 11000)
     } else {
-      boksStore.log('Failed to open door. Invalid PIN?', 'error')
+      boksStore.log(t.value.openDoor.openFailed, 'error')
     }
   } catch (err: any) {
     boksStore.log(`Error opening door: ${err.message}`, 'error')
@@ -44,7 +49,7 @@ async function checkStatus() {
   try {
     const isOpen = await boksStore.controller.getDoorStatus()
     doorStatus.value = isOpen
-    boksStore.log(`Door is ${isOpen ? 'OPEN' : 'CLOSED'}`, isOpen ? 'warning' : 'info')
+    boksStore.log(t.value.openDoor.doorStateMsg.replace('{state}', isOpen ? 'OPEN' : 'CLOSED'), isOpen ? 'warning' : 'info')
   } catch (err: any) {
     boksStore.log(`Failed to get status: ${err.message}`, 'error')
   }
@@ -53,17 +58,15 @@ async function checkStatus() {
 
 <template>
   <div class="demo-card">
-    <div v-if="!boksStore.isConnected" class="warning-box">
-      ⚠️ <strong>Not Connected</strong>. Please use the connection panel at the top of the page.
-    </div>
+    <div v-if="!boksStore.isConnected" class="warning-box" v-html="t.global.notConnectedWarning"></div>
 
     <div class="card">
-      <h3>Open Door Command</h3>
-      <p class="desc">Send a standard open command using a 6-digit PIN code.</p>
+      <h3>{{ t.openDoor.title }}</h3>
+      <p class="desc">{{ t.openDoor.desc }}</p>
       
       <div class="control-row">
         <div class="input-group">
-          <label>PIN Code</label>
+          <label>{{ t.openDoor.pinCode }}</label>
           <input
             v-model="pinCode"
             type="text"
@@ -78,16 +81,16 @@ async function checkStatus() {
           :disabled="!boksStore.isConnected || isOpening || pinCode.length !== 6"
           class="primary-btn big-btn"
         >
-          {{ isOpening ? 'Opening...' : 'Open Door' }}
+          {{ isOpening ? t.openDoor.openingBtn : t.openDoor.openBtn }}
         </button>
       </div>
 
       <div class="status-display" v-if="boksStore.isConnected && doorStatus !== null">
-        Current State:
+        {{ t.openDoor.currentState }}
         <span :class="['badge', doorStatus ? 'open' : 'closed']">
           {{ doorStatus ? 'OPEN' : 'CLOSED' }}
         </span>
-        <button @click="checkStatus" class="icon-btn" title="Refresh Status">🔄</button>
+        <button @click="checkStatus" class="icon-btn" :title="t.openDoor.refreshStatus">🔄</button>
       </div>
     </div>
   </div>

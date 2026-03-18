@@ -1,6 +1,11 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { boksStore } from '../boksStore'
+import { useData } from 'vitepress'
+import { i18n } from '../i18n'
+
+const { lang } = useData()
+const t = computed(() => i18n[lang.value as keyof typeof i18n] || i18n.en)
 
 const isInitializing = ref(false)
 const initProgress = ref(0)
@@ -15,7 +20,7 @@ function generateKey() {
   window.crypto.getRandomValues(array)
   const hex = Array.from(array).map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase()
   boksStore.setActiveKey(hex)
-  boksStore.log('New Master Key generated.', 'success')
+  boksStore.log(t.value.init.newKeyGen, 'success')
 }
 
 async function initialize() {
@@ -24,7 +29,7 @@ async function initialize() {
 
   isInitializing.value = true
   initProgress.value = 0
-  boksStore.log('Starting initialization...', 'warning')
+  boksStore.log(t.value.init.startInit, 'warning')
 
   try {
     const success = await boksStore.controller.initialize(boksStore.activeMasterKey, (p) => {
@@ -32,11 +37,11 @@ async function initialize() {
     })
 
     if (success) {
-      boksStore.log('Device initialized!', 'success')
+      boksStore.log(t.value.init.initSuccess, 'success')
       boksStore.controller.setCredentials(boksStore.activeMasterKey)
-      alert('Success! Your Boks is now configured.')
+      alert(t.value.init.successAlert)
     } else {
-      boksStore.log('Device reported an error.', 'error')
+      boksStore.log(t.value.init.initError, 'error')
     }
   } catch (err: any) {
     boksStore.log(`Init Error: ${err.message}`, 'error')
@@ -52,47 +57,45 @@ function copy(text: string) {
 
 <template>
   <div class="demo-card">
-    <div v-if="!boksStore.isConnected" class="warning-box">
-      ⚠️ <strong>Not Connected</strong>. Please use the connection panel at the top.
-    </div>
+    <div v-if="!boksStore.isConnected" class="warning-box" v-html="t.global.notConnectedWarning"></div>
 
     <!-- Active Key Card -->
     <div class="card">
       <div class="card-header">
-        <h3>1. Active Credentials</h3>
-        <button @click="generateKey" class="secondary-btn small">Generate New</button>
+        <h3>{{ t.init.activeCredentials }}</h3>
+        <button @click="generateKey" class="secondary-btn small">{{ t.init.generateNew }}</button>
       </div>
 
       <div v-if="boksStore.activeMasterKey" class="key-details">
         <div class="field">
-          <label>Master Key (32 bytes)</label>
+          <label>{{ t.init.masterKey }}</label>
           <div class="value-row">
             <code>{{ boksStore.activeMasterKey }}</code>
             <button @click="copy(boksStore.activeMasterKey)" class="icon-btn">📋</button>
           </div>
         </div>
         <div class="field">
-          <label>Config Key (derived)</label>
+          <label>{{ t.init.configKey }}</label>
           <div class="value-row">
             <code>{{ boksStore.deriveConfigKey(boksStore.activeMasterKey) }}</code>
             <button @click="copy(boksStore.deriveConfigKey(boksStore.activeMasterKey))" class="icon-btn">📋</button>
           </div>
         </div>
       </div>
-      <div v-else class="empty">Click "Generate New" to create your credentials.</div>
+      <div v-else class="empty">{{ t.init.emptyCredentials }}</div>
     </div>
 
     <!-- Initialization Action -->
     <div class="card action-card" v-if="boksStore.activeMasterKey">
-      <h3>2. Provisioning</h3>
-      <p class="desc">Send the active Master Key to the Boks device.</p>
+      <h3>{{ t.init.provisioning }}</h3>
+      <p class="desc">{{ t.init.provisioningDesc }}</p>
       
       <button 
         @click="initialize" 
         :disabled="!boksStore.isConnected || isInitializing" 
         class="danger-btn big-btn"
       >
-        {{ isInitializing ? 'Initializing...' : 'Initialize Boks Device' }}
+        {{ isInitializing ? t.init.initializingBtn : t.init.initializeBtn }}
       </button>
 
       <div v-if="isInitializing" class="progress-bar-container">
@@ -104,17 +107,17 @@ function copy(text: string) {
     <!-- History -->
     <div class="history-toggle" v-if="boksStore.keyHistory.length">
       <button @click="showHistory = !showHistory" class="text-btn">
-        {{ showHistory ? 'Hide Vault' : '📜 View Key Vault' }} ({{ boksStore.keyHistory.length }})
+        {{ showHistory ? t.init.hideVault : t.init.viewVault }} ({{ boksStore.keyHistory.length }})
       </button>
       
       <div v-if="showHistory" class="vault-list">
         <table class="vault-table">
           <thead>
             <tr>
-              <th>Date</th>
-              <th>Master Key (Start)</th>
-              <th>Config Key</th>
-              <th>Action</th>
+              <th>{{ t.init.date }}</th>
+              <th>{{ t.init.masterKeyStart }}</th>
+              <th>{{ t.init.configKeyVault }}</th>
+              <th>{{ t.init.action }}</th>
             </tr>
           </thead>
           <tbody>
@@ -127,7 +130,7 @@ function copy(text: string) {
                 </div>
               </td>
               <td><code>{{ item.configKey }}</code></td>
-              <td><button @click="boksStore.activeMasterKey = item.key" class="small-btn">Set Active</button></td>
+              <td><button @click="boksStore.activeMasterKey = item.key" class="small-btn">{{ t.init.setActive }}</button></td>
             </tr>
           </tbody>
         </table>
@@ -139,9 +142,9 @@ function copy(text: string) {
       <div class="sponsor-content">
         <span class="heart">💖</span>
         <div class="text">
-          <p><strong>Support this development</strong></p>
-          <p>Hardware initialization is a critical feature that we currently cannot test on real devices. Your donations help us buy hardware to validate these experimental features safely.</p>
-          <a href="https://github.com/sponsors/thib3113" target="_blank" class="sponsor-link">Become a Sponsor on GitHub</a>
+          <p><strong>{{ t.init.sponsorTitle }}</strong></p>
+          <p>{{ t.init.sponsorText }}</p>
+          <a href="https://github.com/sponsors/thib3113" target="_blank" class="sponsor-link">{{ t.init.sponsorLink }}</a>
         </div>
       </div>
     </div>

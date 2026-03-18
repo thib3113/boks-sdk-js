@@ -1,7 +1,12 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { boksStore } from '../boksStore'
 import { BoksOpcode } from '../../../src/protocol/constants'
+import { useData } from 'vitepress'
+import { i18n } from '../i18n'
+
+const { lang } = useData()
+const t = computed(() => i18n[lang.value as keyof typeof i18n] || i18n.en)
 
 // Local State
 const isFetching = ref(false)
@@ -9,19 +14,19 @@ const historyEvents = ref<any[]>([])
 
 async function fetchHistory() {
   if (!boksStore.controller || !boksStore.isConnected) {
-    alert('Please connect first using the Global Controller.')
+    alert(t.value.global.pleaseConnectFirst)
     return
   }
 
   isFetching.value = true
   historyEvents.value = []
-  boksStore.log('Fetching history from device memory...', 'info')
+  boksStore.log(t.value.history.fetchingMsg, 'info')
 
   try {
     const events = await boksStore.controller.fetchHistory()
     // Sort by date descending (newest first)
     historyEvents.value = events.sort((a: any, b: any) => b.date - a.date)
-    boksStore.log(`Successfully fetched ${events.length} events.`, 'success')
+    boksStore.log(t.value.history.fetchSuccess.replace('{count}', String(events.length)), 'success')
   } catch (err: any) {
     boksStore.log(`Failed to fetch history: ${err.message}`, 'error')
   } finally {
@@ -32,13 +37,13 @@ async function fetchHistory() {
 function getEventDetails(event: any) {
   const opcode = event.opcode
   switch (opcode) {
-    case BoksOpcode.LOG_DOOR_OPEN: return { icon: '🚪', text: 'Door Opened', class: 'event-open' }
-    case BoksOpcode.LOG_DOOR_CLOSE: return { icon: '🔒', text: 'Door Closed', class: 'event-close' }
-    case BoksOpcode.LOG_CODE_BLE_VALID: return { icon: '📱', text: 'Valid App Code', class: 'event-success' }
-    case BoksOpcode.LOG_CODE_KEY_VALID: return { icon: '🔢', text: 'Valid Keypad Code', class: 'event-success' }
-    case BoksOpcode.LOG_EVENT_NFC_OPENING: return { icon: '💳', text: 'Valid NFC Tag', class: 'event-success' }
-    case BoksOpcode.LOG_EVENT_KEY_OPENING: return { icon: '🔑', text: 'Physical Key', class: 'event-warning' }
-    case BoksOpcode.POWER_ON: return { icon: '⚡', text: 'System Power On', class: 'event-system' }
+    case BoksOpcode.LOG_DOOR_OPEN: return { icon: '🚪', text: t.value.history.doorOpened, class: 'event-open' }
+    case BoksOpcode.LOG_DOOR_CLOSE: return { icon: '🔒', text: t.value.history.doorClosed, class: 'event-close' }
+    case BoksOpcode.LOG_CODE_BLE_VALID: return { icon: '📱', text: t.value.history.validAppCode, class: 'event-success' }
+    case BoksOpcode.LOG_CODE_KEY_VALID: return { icon: '🔢', text: t.value.history.validKeypadCode, class: 'event-success' }
+    case BoksOpcode.LOG_EVENT_NFC_OPENING: return { icon: '💳', text: t.value.history.validNfcTag, class: 'event-success' }
+    case BoksOpcode.LOG_EVENT_KEY_OPENING: return { icon: '🔑', text: t.value.history.physicalKey, class: 'event-warning' }
+    case BoksOpcode.POWER_ON: return { icon: '⚡', text: t.value.history.systemPowerOn, class: 'event-system' }
     default: return { icon: '❓', text: `Event 0x${opcode.toString(16).toUpperCase()}`, class: 'event-unknown' }
   }
 }
@@ -50,29 +55,27 @@ function formatDate(date: any) {
 
 <template>
   <div class="demo-card">
-    <div v-if="!boksStore.isConnected" class="warning-box">
-      ⚠️ <strong>Not Connected</strong>. Please use the connection panel at the top of the page.
-    </div>
+    <div v-if="!boksStore.isConnected" class="warning-box" v-html="t.global.notConnectedWarning"></div>
 
     <div class="card">
-      <h3>History Synchronization</h3>
-      <p class="desc">Download and parse the internal event log of the Boks device.</p>
+      <h3>{{ t.history.title }}</h3>
+      <p class="desc">{{ t.history.desc }}</p>
 
       <button
         @click="fetchHistory"
         :disabled="!boksStore.isConnected || isFetching"
         class="primary-btn"
       >
-        {{ isFetching ? 'Fetching data...' : 'Sync History' }}
+        {{ isFetching ? t.history.fetchingBtn : t.history.syncBtn }}
       </button>
 
       <div v-if="historyEvents.length > 0" class="history-table-container">
         <table class="history-table">
           <thead>
             <tr>
-              <th>Date</th>
-              <th>Type</th>
-              <th>Event Description</th>
+              <th>{{ t.history.date }}</th>
+              <th>{{ t.history.type }}</th>
+              <th>{{ t.history.eventDesc }}</th>
             </tr>
           </thead>
           <tbody>
@@ -90,7 +93,7 @@ function formatDate(date: any) {
       </div>
       
       <div v-else-if="!isFetching && boksStore.isConnected" class="empty-state">
-        <p>No history fetched yet. Click "Sync History".</p>
+        <p>{{ t.history.noHistory }}</p>
       </div>
     </div>
   </div>
