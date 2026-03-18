@@ -11,6 +11,7 @@ import {
 import { BoksClientError, BoksClientErrorId } from '@/errors/BoksClientError';
 import { fetchBatteryLevel, fetchBatteryStats } from '@/utils/battery';
 import { BoksTransaction } from './BoksTransaction';
+import { BoksEventRouter } from './BoksEventRouter';
 
 /**
  * Mapping of log events to their respective context data types.
@@ -39,19 +40,43 @@ export type BoksLogger = <K extends keyof BoksLogEvents>(
 export type BoksPacketDirection = 'TX' | 'RX';
 
 /**
- * Filter for packet listeners.
- */
-export type BoksPacketFilter = BoksPacketDirection | '*';
-
-/**
  * Callback function for packet listeners.
  */
 export type BoksPacketListener = (packet: BoksPacket, direction: BoksPacketDirection) => void;
 
-interface RegisteredListener {
-  callback: BoksPacketListener;
-  filter: BoksPacketFilter;
-}
+export type BoksClientFilterConstructor<T extends BoksPacket = BoksPacket> = new (
+  ...args: any[]
+) => T;
+
+export type BoksClientFilterSingle =
+  | BoksPacketDirection
+  | '*'
+  | number
+  | BoksClientFilterConstructor<any>;
+
+export type BoksClientFilter = BoksClientFilterSingle | BoksClientFilterSingle[];
+
+export type InferClientPayloadSingle<F> = F extends BoksPacketDirection | '*'
+  ? BoksPacket
+  : F extends number
+    ? BoksPacket
+    : F extends BoksClientFilterConstructor<infer P>
+      ? P
+      : BoksPacket;
+
+export type InferClientPayload<F> = F extends any[]
+  ? InferClientPayloadSingle<F[number]>
+  : InferClientPayloadSingle<F>;
+
+export type BoksClientListener<F extends BoksClientFilter> = (
+  packet: InferClientPayload<F>,
+  direction: BoksPacketDirection
+) => void;
+
+/**
+ * @deprecated Use BoksClientFilter instead.
+ */
+export type BoksPacketFilter = BoksPacketDirection | '*';
 
 /**
  * Configuration options for the BoksClient.
@@ -77,7 +102,7 @@ interface TransactionContext {
 export class BoksClient {
   private readonly transport: BoksTransport;
   private readonly logger?: BoksLogger;
-  private listeners: Set<RegisteredListener> = new Set();
+  public readonly event: BoksEventRouter<Record<string, never>> = new BoksEventRouter();
   private commandQueue: Promise<void> = Promise.resolve();
   private currentTransactionContext: TransactionContext | null = null;
 
@@ -116,15 +141,11 @@ export class BoksClient {
    * Internal helper to notify listeners of a packet event.
    */
   private emitPacket(packet: BoksPacket, direction: BoksPacketDirection) {
-    this.listeners.forEach((listener) => {
-      if (listener.filter === '*' || listener.filter === direction) {
-        try {
-          listener.callback(packet, direction);
-        } catch (e) {
-          this.log('error', 'listener_error', { opcode: packet.opcode, error: e });
-        }
-      }
-    });
+    try {
+      this.event.emitClientEvent(packet, direction);
+    } catch (e) {
+      this.log('error', 'listener_error', { opcode: packet.opcode, error: e });
+    }
   }
 
   /**
@@ -168,7 +189,19 @@ export class BoksClient {
   }
 
   /**
+   * Subscribes to events.
+   *
+   * @param filter The filter to apply. Can be a direction, opcode, Packet class, or an array of these.
+   * @param callback The callback to invoke when a matching packet is received.
+   * @returns A function to unsubscribe.
+   */
+  on<F extends BoksClientFilter>(filter: F, callback: BoksClientListener<F>): () => void {
+    return this.event.on(filter, callback as any);
+  }
+
+  /**
    * Subscribes to packets.
+   * @deprecated Use `on()` instead.
    *
    * Usage:
    * client.onPacket((p, dir) => ...) // Listen to everything
@@ -195,11 +228,7 @@ export class BoksClient {
       actualCallback = callback!;
     }
 
-    const listener = { callback: actualCallback, filter };
-    this.listeners.add(listener);
-    return () => {
-      this.listeners.delete(listener);
-    };
+    return this.event.on(filter, actualCallback as any);
   }
 
   /**
