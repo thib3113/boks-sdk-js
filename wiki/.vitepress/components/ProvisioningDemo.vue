@@ -20,6 +20,27 @@ function generateKey() {
   boksStore.log('New random 32-byte key generated.', 'success')
 }
 
+// Check semantic version
+function compareSemVer(v1: string, v2: string): number {
+  if (!v1 || !v2) return -1
+  const p1 = v1.split('.').map(Number)
+  const p2 = v2.split('.').map(Number)
+  const len = Math.max(p1.length, p2.length)
+  for (let i = 0; i < len; i++) {
+    const n1 = p1[i] || 0
+    const n2 = p2[i] || 0
+    if (n1 > n2) return 1
+    if (n1 < n2) return -1
+  }
+  return 0
+}
+
+const isVersionSupported = computed(() => {
+  if (!boksStore.isConnected) return false
+  if (boksStore.useSimulator) return true // Simulator supports everything
+  return compareSemVer(boksStore.softwareVersion, '4.5.1') >= 0
+})
+
 // Watch progress to prompt user to save logs
 watch(provisionProgress, (newVal) => {
   if (newVal > 0 && !hasPromptedLogs.value) {
@@ -95,6 +116,10 @@ async function provision() {
 <template>
   <div class="demo-card">
     <div v-if="!boksStore.isConnected" class="warning-box" v-html="t.global.notConnectedWarning"></div>
+    <div v-else-if="!isVersionSupported" class="warning-box">
+      <strong>⚠️ {{ t.provision.unsupportedVersion }}</strong><br>
+      {{ t.provision.unsupportedVersionDesc }} ({{ boksStore.softwareVersion }} &lt; 4.5.1)
+    </div>
 
     <div class="card action-card">
       <h3>{{ t.provision.title }}</h3>
@@ -119,7 +144,7 @@ async function provision() {
 
       <button
         @click="provision"
-        :disabled="!boksStore.isConnected || isProvisioning || !newMasterKey"
+        :disabled="!boksStore.isConnected || !isVersionSupported || isProvisioning || !newMasterKey"
         class="danger-btn big-btn"
         style="margin-top: 1rem;"
       >

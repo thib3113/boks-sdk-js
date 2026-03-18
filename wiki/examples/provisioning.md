@@ -1,6 +1,6 @@
 # Provisioning Demo
 
-<BoksGlobalProvider />
+<BoksGlobalProvider minSw="4.5.1" />
 
 ::: warning CRITICAL WARNING
 This software is currently **theoretical** and has **not been tested on real hardware**.

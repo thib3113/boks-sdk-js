@@ -1,6 +1,6 @@
 # Démo de Provisionnement
 
-<BoksGlobalProvider />
+<BoksGlobalProvider minSw="4.5.1" />
 
 ::: warning AVERTISSEMENT CRITIQUE
 Ce logiciel est actuellement **théorique** et n'a **pas été testé sur du vrai matériel**.
