@@ -16,4 +16,13 @@ describe('KeyOpeningHistoryPacket', () => {
     // Opcode 0x99, Len 3, Age 1000 (0003E8), Checksum 0x87 (153+3+3+232=391, 391%256=135=0x87)
     expect(bytesToHex(packet.encode())).toBe('99030003E887');
   });
+
+  it('should output only mapped payload properties and opcode via toJSON', () => {
+    const packet = KeyOpeningHistoryPacket.fromPayload(new Uint8Array([0x01, 0x02, 0x03]));
+    const json = packet.toJSON();
+    expect(json).toStrictEqual({
+        "age": 66051,
+        "opcode": 153,
+      });
+  });
 });

@@ -21,4 +21,6 @@ describe('BoksRXPacketBase', () => {
     const packet = new DummyPacket();
     expect(packet.opcode).toBe(0x99);
   });
+
+
 });

@@ -31,4 +31,13 @@ describe('NotifyMacAddressBoksScalePacket', () => {
       BoksProtocolError
     );
   });
+
+  it('should output only mapped payload properties and opcode via toJSON', () => {
+    const packet = NotifyMacAddressBoksScalePacket.fromPayload(new Uint8Array([0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff]));
+    const json = packet.toJSON();
+    expect(json).toStrictEqual({
+        "macAddress": "FF:EE:DD:CC:BB:AA",
+        "opcode": 178,
+      });
+  });
 });

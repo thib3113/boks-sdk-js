@@ -106,4 +106,19 @@ describe('SetConfigurationPacket', () => {
       expect((e as BoksProtocolError).id).toBe(BoksProtocolErrorId.INVALID_VALUE);
     }
   });
+
+  it('should output only mapped payload properties and opcode via toJSON', () => {
+    const packet = new SetConfigurationPacket({
+      configKey: validKey,
+      configType: type,
+      value: valueTrue
+    });
+    const json = packet.toJSON();
+    expect(json).toStrictEqual({
+        "configKey": "12345678",
+        "configType": 1,
+        "opcode": 22,
+        "value": true,
+      });
+  });
 });

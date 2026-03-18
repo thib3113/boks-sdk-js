@@ -34,4 +34,14 @@ describe('AnswerDoorStatusPacket', () => {
     const payload = new Uint8Array(1);
     expect(() => AnswerDoorStatusPacket.fromPayload(payload)).toThrowError(BoksProtocolError);
   });
+
+  it('should output only mapped payload properties and opcode via toJSON', () => {
+    const packet = AnswerDoorStatusPacket.fromPayload(new Uint8Array([0x00, 0x01]));
+    const json = packet.toJSON();
+    expect(json).toStrictEqual({
+        "inverted": false,
+        "opcode": 133,
+        "raw": true,
+      });
+  });
 });

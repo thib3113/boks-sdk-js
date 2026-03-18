@@ -15,4 +15,12 @@ describe('ScaleForgetPacket', () => {
     const packet = ScaleForgetPacket.fromPayload(new Uint8Array(0));
     expect(packet.opcode).toBe(BoksOpcode.SCALE_FORGET_BONDING);
   });
+
+  it('should output only mapped payload properties and opcode via toJSON', () => {
+    const packet = new ScaleForgetPacket();
+    const json = packet.toJSON();
+    expect(json).toStrictEqual({
+        "opcode": 83,
+      });
+  });
 });

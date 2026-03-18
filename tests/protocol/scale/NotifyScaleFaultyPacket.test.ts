@@ -18,4 +18,16 @@ describe('NotifyScaleFaultyPacket', () => {
     // 186 + 2 + 1 + 2 = 191 (0xBF)
     expect(bytesToHex(encoded)).toBe('BA020102BF');
   });
+
+  it('should output only mapped payload properties and opcode via toJSON', () => {
+    const packet = NotifyScaleFaultyPacket.fromPayload(new Uint8Array([0x01, 0x02]));
+    const json = packet.toJSON();
+    expect(json).toStrictEqual({
+        "data": new Uint8Array([
+          1,
+          2,
+        ]),
+        "opcode": 186,
+      });
+  });
 });

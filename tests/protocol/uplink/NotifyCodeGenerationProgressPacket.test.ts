@@ -19,4 +19,13 @@ describe('NotifyCodeGenerationProgressPacket', () => {
     // Opcode 0xC2 (194), Len 1, Progress 50 (0x32), Checksum 0xF5 (194+1+50=245=0xF5)
     expect(bytesToHex(encoded)).toBe('C20132F5');
   });
+
+  it('should output only mapped payload properties and opcode via toJSON', () => {
+    const packet = NotifyCodeGenerationProgressPacket.fromPayload(new Uint8Array([50]));
+    const json = packet.toJSON();
+    expect(json).toStrictEqual({
+        "opcode": 194,
+        "progress": 50,
+      });
+  });
 });

@@ -28,4 +28,13 @@ describe('OperationErrorPacket', () => {
   it('should throw error if payload is empty', () => {
     expect(() => OperationErrorPacket.fromPayload(new Uint8Array(0))).toThrowError();
   });
+
+  it('should output only mapped payload properties and opcode via toJSON', () => {
+    const packet = OperationErrorPacket.fromPayload(new Uint8Array([0x01]));
+    const json = packet.toJSON();
+    expect(json).toStrictEqual({
+        "errorCode": 1,
+        "opcode": 120,
+      });
+  });
 });

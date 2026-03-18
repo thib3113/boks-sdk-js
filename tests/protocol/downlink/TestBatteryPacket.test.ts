@@ -16,4 +16,12 @@ describe('TestBatteryPacket', () => {
     expect(packet).toBeInstanceOf(TestBatteryPacket);
     expect(packet.opcode).toBe(BoksOpcode.TEST_BATTERY);
   });
+
+  it('should output only mapped payload properties and opcode via toJSON', () => {
+    const packet = new TestBatteryPacket();
+    const json = packet.toJSON();
+    expect(json).toStrictEqual({
+        "opcode": 8,
+      });
+  });
 });

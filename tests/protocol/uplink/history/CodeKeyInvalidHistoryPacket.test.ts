@@ -26,4 +26,14 @@ describe('CodeKeyInvalidHistoryPacket', () => {
     // 705 % 256 = 193 = 0xC1.
     expect(bytesToHex(encoded)).toBe('89090000C83635343332318F');
   });
+
+  it('should output only mapped payload properties and opcode via toJSON', () => {
+    const packet = CodeKeyInvalidHistoryPacket.fromPayload(new Uint8Array([0, 0, 10, 49, 50, 51, 52, 53, 54]));
+    const json = packet.toJSON();
+    expect(json).toStrictEqual({
+        "age": 10,
+        "code": "123456",
+        "opcode": 137,
+      });
+  });
 });

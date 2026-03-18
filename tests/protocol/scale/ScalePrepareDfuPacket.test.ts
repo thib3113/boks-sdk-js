@@ -14,4 +14,12 @@ describe('ScalePrepareDfuPacket', () => {
     const packet = ScalePrepareDfuPacket.fromPayload(new Uint8Array(0));
     expect(packet.opcode).toBe(BoksOpcode.SCALE_PREPARE_DFU);
   });
+
+  it('should output only mapped payload properties and opcode via toJSON', () => {
+    const packet = new ScalePrepareDfuPacket();
+    const json = packet.toJSON();
+    expect(json).toStrictEqual({
+        "opcode": 96,
+      });
+  });
 });

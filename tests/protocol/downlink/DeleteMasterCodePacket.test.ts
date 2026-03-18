@@ -75,4 +75,14 @@ describe('DeleteMasterCodePacket', () => {
       expect((e as BoksProtocolError).id).toBe(BoksProtocolErrorId.INVALID_INDEX_RANGE);
     }
   });
+
+  it('should output only mapped payload properties and opcode via toJSON', () => {
+    const packet = new DeleteMasterCodePacket({ configKey: validKey, index: validIndex });
+    const json = packet.toJSON();
+    expect(json).toStrictEqual({
+        "configKey": "12345678",
+        "index": 2,
+        "opcode": 12,
+      });
+  });
 });

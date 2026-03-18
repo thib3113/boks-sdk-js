@@ -47,4 +47,13 @@ describe('OpenDoorPacket', () => {
     const shortPayload = new Uint8Array(5);
     expect(() => OpenDoorPacket.fromPayload(shortPayload)).toThrowError(BoksProtocolError);
   });
+
+  it('should output only mapped payload properties and opcode via toJSON', () => {
+    const packet = new OpenDoorPacket(validPin);
+    const json = packet.toJSON();
+    expect(json).toStrictEqual({
+        "opcode": 1,
+        "pin": "123456",
+      });
+  });
 });

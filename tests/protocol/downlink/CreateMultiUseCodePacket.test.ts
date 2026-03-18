@@ -78,4 +78,14 @@ describe('CreateMultiUseCodePacket', () => {
       BoksProtocolError
     );
   });
+
+  it('should output only mapped payload properties and opcode via toJSON', () => {
+    const packet = new CreateMultiUseCodePacket({ configKey: validKey, pin: validPin });
+    const json = packet.toJSON();
+    expect(json).toStrictEqual({
+        "configKey": "12345678",
+        "opcode": 19,
+        "pin": "654321",
+      });
+  });
 });

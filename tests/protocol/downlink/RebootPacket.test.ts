@@ -16,4 +16,12 @@ describe('RebootPacket', () => {
     expect(packet).toBeInstanceOf(RebootPacket);
     expect(packet.opcode).toBe(BoksOpcode.REBOOT);
   });
+
+  it('should output only mapped payload properties and opcode via toJSON', () => {
+    const packet = new RebootPacket();
+    const json = packet.toJSON();
+    expect(json).toStrictEqual({
+        "opcode": 6,
+      });
+  });
 });

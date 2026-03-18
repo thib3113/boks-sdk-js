@@ -99,4 +99,19 @@ describe('MasterCodeEditPacket', () => {
     // Opcode 0x09, Len 15 (0x0F), Key '12345678', Index 5, PIN '667788', Checksum 0xE7
     expect(bytesToHex(packet.encode())).toBe('090F3132333435363738053636373738380B');
   });
+
+  it('should output only mapped payload properties and opcode via toJSON', () => {
+    const packet = new MasterCodeEditPacket({
+      configKey: validKey,
+      index: validIndex,
+      newPin: validNewPin
+    });
+    const json = packet.toJSON();
+    expect(json).toStrictEqual({
+        "configKey": "12345678",
+        "index": 5,
+        "newPin": "667788",
+        "opcode": 9,
+      });
+  });
 });

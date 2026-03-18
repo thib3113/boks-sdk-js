@@ -26,4 +26,14 @@ describe('PowerOffHistoryPacket', () => {
     const payload = new Uint8Array([0x00, 0x00, 0x0a]);
     expect(() => PowerOffHistoryPacket.fromPayload(payload)).toThrowError();
   });
+
+  it('should output only mapped payload properties and opcode via toJSON', () => {
+    const packet = PowerOffHistoryPacket.fromPayload(new Uint8Array([0x00, 0x00, 0x3c, 0x01]));
+    const json = packet.toJSON();
+    expect(json).toStrictEqual({
+        "age": 60,
+        "opcode": 148,
+        "reason": 1,
+      });
+  });
 });

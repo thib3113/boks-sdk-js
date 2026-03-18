@@ -17,4 +17,13 @@ describe('DoorCloseHistoryPacket', () => {
     // Opcode 0x90, Len 3, Age 50 (000032), Checksum 0xC5 (144+3+50=197)
     expect(bytesToHex(packet.encode())).toBe('9003000032C5');
   });
+
+  it('should output only mapped payload properties and opcode via toJSON', () => {
+    const packet = DoorCloseHistoryPacket.fromPayload(new Uint8Array([0x01, 0x02, 0x03]));
+    const json = packet.toJSON();
+    expect(json).toStrictEqual({
+        "age": 66051,
+        "opcode": 144,
+      });
+  });
 });

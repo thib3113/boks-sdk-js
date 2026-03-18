@@ -31,4 +31,14 @@ describe('NotifyScaleMeasureWeightPacket', () => {
     const payload = new Uint8Array(2);
     expect(() => NotifyScaleMeasureWeightPacket.fromPayload(payload)).toThrowError();
   });
+
+  it('should output only mapped payload properties and opcode via toJSON', () => {
+    const packet = NotifyScaleMeasureWeightPacket.fromPayload(new Uint8Array([0x00, 0x00, 0x03, 0xe8]));
+    const json = packet.toJSON();
+    expect(json).toStrictEqual({
+        "absWeight": 1000,
+        "opcode": 183,
+        "signNegative": false,
+      });
+  });
 });

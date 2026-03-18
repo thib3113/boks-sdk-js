@@ -4,10 +4,10 @@ The Boks ecosystem uses a custom derivation algorithm to generate 6-character al
 
 ## Theoretical Overview
 
-The algorithm is based on a modified **SHA-256** hash (or BLAKE2s in some implementations) with a custom initialization vector and a final character mapping.
+The algorithm is based on **BLAKE2s** with a custom initialization vector and a final character mapping.
 
 ### 1. Hash Initialization
-Instead of the standard SHA-256 IV, the algorithm uses a specific constant for XORing the initial state:
+The algorithm uses a specific constant for XORing the initial state:
 - **Modifier**: `0x01012006`
 
 ### 2. Message Format

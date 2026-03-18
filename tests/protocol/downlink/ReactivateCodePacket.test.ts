@@ -62,4 +62,14 @@ describe('ReactivateCodePacket', () => {
     const shortPayload = new Uint8Array(10);
     expect(() => ReactivateCodePacket.fromPayload(shortPayload)).toThrowError(BoksProtocolError);
   });
+
+  it('should output only mapped payload properties and opcode via toJSON', () => {
+    const packet = new ReactivateCodePacket({ configKey: validKey, pin: validPin });
+    const json = packet.toJSON();
+    expect(json).toStrictEqual({
+        "configKey": "12345678",
+        "opcode": 15,
+        "pin": "998877",
+      });
+  });
 });

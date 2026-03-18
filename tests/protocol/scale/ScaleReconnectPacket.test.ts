@@ -14,4 +14,12 @@ describe('ScaleReconnectPacket', () => {
     const packet = ScaleReconnectPacket.fromPayload(new Uint8Array(0));
     expect(packet.opcode).toBe(BoksOpcode.SCALE_RECONNECT);
   });
+
+  it('should output only mapped payload properties and opcode via toJSON', () => {
+    const packet = new ScaleReconnectPacket();
+    const json = packet.toJSON();
+    expect(json).toStrictEqual({
+        "opcode": 98,
+      });
+  });
 });

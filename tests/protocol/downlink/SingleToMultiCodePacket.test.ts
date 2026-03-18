@@ -60,4 +60,14 @@ describe('SingleToMultiCodePacket', () => {
     const shortPayload = new Uint8Array(10);
     expect(() => SingleToMultiCodePacket.fromPayload(shortPayload)).toThrowError(BoksProtocolError);
   });
+
+  it('should output only mapped payload properties and opcode via toJSON', () => {
+    const packet = new SingleToMultiCodePacket({ configKey: validKey, pin: validPin });
+    const json = packet.toJSON();
+    expect(json).toStrictEqual({
+        "configKey": "12345678",
+        "opcode": 10,
+        "pin": "876543",
+      });
+  });
 });
