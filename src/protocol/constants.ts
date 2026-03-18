@@ -143,7 +143,7 @@ export interface BoksBatteryStats {
 }
 
 /**
- * PIN Algorithm Configuration (Blake2s / SHA-256)
+ * PIN Algorithm Configuration (BLAKE2s)
  */
 export const PIN_ALGO_CONFIG = {
   IV: new Uint32Array([

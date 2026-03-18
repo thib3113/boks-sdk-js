@@ -4,10 +4,10 @@ L'écosystème Boks utilise un algorithme de dérivation personnalisé pour gén
 
 ## Aperçu Théorique
 
-L'algorithme est basé sur un hash **SHA-256** modifié (ou BLAKE2s dans certaines implémentations) avec un vecteur d'initialisation personnalisé et un mappage final des caractères.
+L'algorithme est basé sur **BLAKE2s** avec un vecteur d'initialisation personnalisé et un mappage final des caractères.
 
 ### 1. Initialisation du Hash
-Au lieu de l'IV SHA-256 standard, l'algorithme utilise une constante spécifique pour XORer l'état initial :
+L'algorithme utilise une constante spécifique pour XORer l'état initial :
 - **Modificateur** : `0x01012006`
 
 ### 2. Format du Message
