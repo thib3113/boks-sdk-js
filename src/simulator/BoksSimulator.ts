@@ -558,6 +558,10 @@ export class BoksHardwareSimulator {
     callback(new Uint8Array([this.#batteryLevel]));
   }
 
+  public unsubscribeToBattery(callback: (data: Uint8Array) => void): void {
+    this.#batterySubscribers.delete(callback);
+  }
+
   /**
    * Manually injects a valid PIN.
    */
