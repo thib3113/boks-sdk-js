@@ -31,6 +31,7 @@ describe('toJSON method on BoksPacket', () => {
     class DummyPacket extends BoksPacket {
       get opcode() { return 0x99; }
       #privateVar = 10;
+      getPrivate() { return this.#privateVar; }
       _privateVar = 20;
       publicVar = 30;
       constructor() { super(); }
