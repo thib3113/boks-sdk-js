@@ -6,6 +6,7 @@ import { BoksOpcode } from '../../../src/protocol/constants'
 // Simulator local state for UI binding
 const simState = ref<any>({})
 const showSimControls = ref(true)
+const showClearConfirm = ref(false)
 
 function refreshSimState() {
   if (boksStore.simulator) {
@@ -28,10 +29,56 @@ async function toggleConnection() {
 }
 
 function triggerRealisticOpen(type: 'keypad' | 'key' | 'nfc') {
-  const detail = type === 'keypad' ? '123456' : type === 'nfc' ? 'AABBCCDD' : ''
-  boksStore.simulator?.triggerDoorOpen(source, detail)
-  boksStore.log(`Simulator: Triggered opening via ${type}`, 'success')
+  if (!boksStore.simulator) return;
+
+  const detail = type === 'keypad' ? '123456' : type === 'nfc' ? 'AABBCCDD' : '';
+  
+  switch (type) {
+    case 'keypad':
+      boksStore.simulator.triggerKeypadOpen(detail);
+      break;
+    case 'key':
+      boksStore.simulator.triggerPhysicalKeyOpen();
+      break;
+    case 'nfc':
+      boksStore.simulator.triggerNfcOpen(detail);
+      break;
+  }
+  
+  boksStore.log(`Simulator: Triggered opening via ${type}`, 'success');
 }
+
+function exportLogs() {
+  // Convert packet logs to a JSON array string
+  // Map over the logs to structure the output well
+  const exportedLogs = boksStore.packetLogs.map(log => {
+    // Clone the raw data and remove opcode to avoid redundancy in the export
+    const packetData = JSON.parse(JSON.stringify(log.rawData));
+    if (packetData && typeof packetData === 'object') {
+      delete packetData.opcode;
+    }
+    
+    return {
+      time: log.time,
+      direction: log.direction,
+      opcode: log.opcode,
+      name: log.name,
+      length: log.length,
+      data: packetData
+    };
+  });
+  const dataStr = JSON.stringify(exportedLogs, null, 2);
+  const blob = new Blob([dataStr], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `boks-packet-logs-${new Date().toISOString().replace(/[:.]/g, '-')}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
 </script>
 
 <template>
@@ -123,7 +170,14 @@ function triggerRealisticOpen(type: 'keypad' | 'key' | 'nfc') {
       <div class="log-section">
         <div class="section-header">
           <h4>Packet Flow</h4>
-          <button @click="boksStore.packetLogs = []" class="clear-btn">Clear</button>
+
+          <div class="section-header-actions">
+            <button @click="exportLogs" class="action-btn" title="Export JSON">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            </button>
+            <button @click="showClearConfirm = true" class="clear-btn">Clear</button>
+          </div>
+
         </div>
         <div class="scroll-container">
           <table v-if="boksStore.packetLogs.length" class="log-table">
@@ -143,7 +197,7 @@ function triggerRealisticOpen(type: 'keypad' | 'key' | 'nfc') {
                 <td class="op"><code>{{ log.opcode }}</code></td>
                 <td class="name">{{ log.name }}</td>
                 <td class="data">
-                  <code v-if="log.data">{{ JSON.stringify(log.data) }}</code>
+                  <pre v-if="log.rawData" class="json-data"><code>{{ JSON.stringify(log.rawData, (key, val) => key === 'opcode' ? undefined : val, 2) }}</code></pre>
                   <span v-else>-</span>
                 </td>
               </tr>
@@ -158,8 +212,21 @@ function triggerRealisticOpen(type: 'keypad' | 'key' | 'nfc') {
       </div>
 
     </div>
+
+    <!-- CLEAR CONFIRMATION MODAL -->
+    <div v-if="showClearConfirm" class="modal-overlay">
+      <div class="modal-content">
+        <h4>Clear Logs</h4>
+        <p>Are you sure you want to clear all packet logs?</p>
+        <div class="modal-actions">
+          <button @click="showClearConfirm = false" class="modal-btn cancel">Cancel</button>
+          <button @click="boksStore.packetLogs = []; showClearConfirm = false" class="modal-btn confirm">Confirm</button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
+
 
 <style scoped>
 .sdk-dashboard {
@@ -255,4 +322,30 @@ function triggerRealisticOpen(type: 'keypad' | 'key' | 'nfc') {
   .log-table th.name-col, .log-table td.name { display: none; } /* Hide description on mobile to save space */
   .log-table th.time-col, .log-table td.time { width: 60px; }
 }
+
+.section-header { display: flex; justify-content: space-between; align-items: center; }
+.section-header-actions { display: flex; gap: 0.5rem; align-items: center; }
+.action-btn { background: none; border: none; color: var(--vp-c-text-2); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0.2rem; border-radius: 4px; transition: color 0.2s, background 0.2s; }
+.action-btn:hover { color: var(--vp-c-brand-1); background: var(--vp-c-bg-soft); }
+
+.modal-overlay {
+  position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.5); z-index: 200;
+  display: flex; align-items: center; justify-content: center;
+  backdrop-filter: blur(2px);
+}
+.modal-content {
+  background: var(--vp-c-bg); border: 1px solid var(--vp-c-divider);
+  border-radius: 8px; padding: 1.5rem; width: 300px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+.modal-content h4 { margin: 0 0 0.5rem 0; color: var(--vp-c-text-1); }
+.modal-content p { margin: 0 0 1.5rem 0; font-size: 0.85rem; color: var(--vp-c-text-2); }
+.modal-actions { display: flex; justify-content: flex-end; gap: 0.5rem; }
+.modal-btn { padding: 0.4rem 0.8rem; border-radius: 4px; font-size: 0.8rem; cursor: pointer; font-weight: 600; }
+.modal-btn.cancel { background: var(--vp-c-bg-alt); border: 1px solid var(--vp-c-divider); color: var(--vp-c-text-2); }
+.modal-btn.confirm { background: var(--vp-c-red-1); border: none; color: white; }
+
+.json-data { margin: 0; padding: 0.4rem; background: var(--vp-c-bg-alt); border-radius: 4px; font-size: 0.7rem; max-height: 150px; overflow-y: auto; white-space: pre-wrap; word-break: break-all; }
+
 </style>

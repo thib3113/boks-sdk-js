@@ -34,6 +34,26 @@ export type BoksLogger = <K extends keyof BoksLogEvents>(
 ) => void;
 
 /**
+ * Direction of a packet (Transmitted or Received).
+ */
+export type BoksPacketDirection = 'TX' | 'RX';
+
+/**
+ * Filter for packet listeners.
+ */
+export type BoksPacketFilter = BoksPacketDirection | '*';
+
+/**
+ * Callback function for packet listeners.
+ */
+export type BoksPacketListener = (packet: BoksPacket, direction: BoksPacketDirection) => void;
+
+interface RegisteredListener {
+  callback: BoksPacketListener;
+  filter: BoksPacketFilter;
+}
+
+/**
  * Configuration options for the BoksClient.
  */
 export interface BoksClientOptions {
@@ -57,7 +77,7 @@ interface TransactionContext {
 export class BoksClient {
   private readonly transport: BoksTransport;
   private readonly logger?: BoksLogger;
-  private listeners: Set<(packet: BoksPacket) => void> = new Set();
+  private listeners: Set<RegisteredListener> = new Set();
   private commandQueue: Promise<void> = Promise.resolve();
   private currentTransactionContext: TransactionContext | null = null;
 
@@ -90,6 +110,21 @@ export class BoksClient {
     if (this.logger) {
       this.logger(level, event, context);
     }
+  }
+
+  /**
+   * Internal helper to notify listeners of a packet event.
+   */
+  private emitPacket(packet: BoksPacket, direction: BoksPacketDirection) {
+    this.listeners.forEach((listener) => {
+      if (listener.filter === '*' || listener.filter === direction) {
+        try {
+          listener.callback(packet, direction);
+        } catch (e) {
+          this.log('error', 'listener_error', { opcode: packet.opcode, error: e });
+        }
+      }
+    });
   }
 
   /**
@@ -133,14 +168,35 @@ export class BoksClient {
   }
 
   /**
-   * Subscribes to all incoming packets.
-   * @param callback Function called for every parsed packet received.
+   * Subscribes to packets.
+   *
+   * Usage:
+   * client.onPacket((p, dir) => ...) // Listen to everything
+   * client.onPacket('*', (p, dir) => ...) // Listen to everything
+   * client.onPacket('RX', (p) => ...) // Listen to incoming only
+   *
+   * @param filterOrCallback Direction filter ('RX', 'TX', '*') or the callback itself.
+   * @param callback The callback if a filter was provided.
    * @returns A function to unsubscribe.
    */
-  onPacket(callback: (packet: BoksPacket) => void): () => void {
-    this.listeners.add(callback);
+  onPacket(
+    filterOrCallback: BoksPacketFilter | BoksPacketListener,
+    callback?: BoksPacketListener
+  ): () => void {
+    let filter: BoksPacketFilter = '*';
+    let actualCallback: BoksPacketListener;
+
+    if (typeof filterOrCallback === 'function') {
+      actualCallback = filterOrCallback;
+    } else {
+      filter = filterOrCallback;
+      actualCallback = callback!;
+    }
+
+    const listener = { callback: actualCallback, filter };
+    this.listeners.add(listener);
     return () => {
-      this.listeners.delete(callback);
+      this.listeners.delete(listener);
     };
   }
 
@@ -166,6 +222,7 @@ export class BoksClient {
       try {
         const payload = request.encode();
         this.log('debug', 'send', { opcode: request.opcode, length: payload.length });
+        this.emitPacket(request, 'TX');
 
         // Setup the transaction context BEFORE sending to ensure we don't miss immediate responses
         const promise = new Promise<BoksTransaction<TResponse, BoksPacket>>((resolve, reject) => {
@@ -248,15 +305,7 @@ export class BoksClient {
       }
 
       this.log('debug', 'receive', { opcode: packet.opcode });
-
-      // 1. Notify generic listeners
-      this.listeners.forEach((listener) => {
-        try {
-          listener(packet);
-        } catch (e) {
-          this.log('error', 'listener_error', { opcode: packet.opcode, error: e });
-        }
-      });
+      this.emitPacket(packet, 'RX');
 
       // 2. Handle active transaction
       if (this.currentTransactionContext) {

@@ -1,4 +1,4 @@
-import { reactive, shallowRef } from 'vue';
+import { reactive, shallowRef, toRaw, markRaw } from 'vue';
 import { BoksController } from '../../src/client/BoksController';
 import { BoksClient } from '../../src/client/BoksClient';
 import { BoksHardwareSimulator } from '../../src/simulator/BoksSimulator';
@@ -18,6 +18,7 @@ export interface BoksPacketLog {
   name: string;
   length: number;
   data?: any;
+  rawData?: any;
 }
 
 export const boksStore = reactive({
@@ -98,24 +99,27 @@ export const boksStore = reactive({
   },
 
   logPacket(direction: 'TX' | 'RX', opcode: number, length: number, packet?: any) {
+    const rawPacket = packet ? toRaw(packet) : undefined;
     const data: any = {};
-    if (packet) {
-      // Extract interesting fields from common packets
-      if ('pinCode' in packet) data.pin = packet.pinCode;
-      if ('configKey' in packet) data.key = packet.configKey;
-      if ('weight' in packet) data.weight = `${packet.weight}g`;
-      if ('battery' in packet) data.batt = `${packet.battery}%`;
-      if ('isOpen' in packet) data.open = packet.isOpen;
-      if ('date' in packet) data.time = packet.date.toLocaleTimeString();
+    if (rawPacket) {
+      // Extract interesting fields from common packets for the summary view
+      if ('pinCode' in rawPacket) data.pin = rawPacket.pinCode;
+      if ('pin' in rawPacket) data.pin = rawPacket.pin;
+      if ('configKey' in rawPacket) data.key = rawPacket.configKey;
+      if ('weight' in rawPacket) data.weight = `${rawPacket.weight}g`;
+      if ('battery' in rawPacket) data.batt = `${rawPacket.battery}%`;
+      if ('isOpen' in rawPacket) data.open = rawPacket.isOpen;
+      if ('date' in rawPacket) data.time = rawPacket.date instanceof Date ? rawPacket.date.toLocaleTimeString() : rawPacket.date;
     }
 
     this.packetLogs.unshift({
       time: new Date().toLocaleTimeString(),
       direction,
-      opcode: `0x${opcode.toString(16).padStart(2, '0').toUpperCase()}`,
+      opcode: `0x${opcode.toString(16).padStart(2, "0").toUpperCase()}`,
       name: this.getOpcodeName(opcode),
       length,
-      data: Object.keys(data).length > 0 ? data : undefined
+      data: Object.keys(data).length > 0 ? data : undefined,
+      rawData: rawPacket ? markRaw(rawPacket) : undefined
     });
     if (this.packetLogs.length > 50) this.packetLogs.pop();
   },
@@ -123,17 +127,6 @@ export const boksStore = reactive({
   async connect() {
     this.isConnecting = true;
     try {
-      const logger = (level: string, event: string, context: any) => {
-        if (event === 'send' || event === 'receive') {
-          this.logPacket(
-            event === 'send' ? 'TX' : 'RX',
-            context.opcode,
-            context.length || 0,
-            (context as any).packet
-          );
-        }
-      };
-
       if (this.useSimulator) {
         this.log('Initializing Simulator...', 'info');
         const sim = new BoksHardwareSimulator();
@@ -141,15 +134,24 @@ export const boksStore = reactive({
         this.simulator = sim;
 
         const transport = new SimulatorTransport(sim);
-        const client = new BoksClient({ transport, logger });
+        const client = new BoksClient({ transport });
         this.controller = new BoksController(client);
+
+        client.onPacket((p, dir) => {
+          this.logPacket(dir, p.opcode, p.rawPayload.length, p);
+        });
 
         await this.controller.connect();
         this.deviceName = 'Boks Simulator';
       } else {
         this.log('Requesting Bluetooth device...', 'info');
-        const client = new BoksClient({ logger });
+        const client = new BoksClient();
         this.controller = new BoksController(client);
+
+        client.onPacket((p, dir) => {
+          this.logPacket(dir, p.opcode, p.rawPayload.length, p);
+        });
+
         await this.controller.connect();
 
         // Get the real BLE name if possible
