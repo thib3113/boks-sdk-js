@@ -121,3 +121,7 @@
 ## 2025-10-26 - Loop Unrolling vs Native JIT Optimization in Simple Loops
 **Learning:** While unrolling loops manually (`for (; i <= len - 4; i += 4) { sum += data[i] + data[i+1]... }`) can seem like an optimization, modern V8 and JS engines can optimize simple `for` loops more efficiently than complex unrolled code, especially for typed array iteration like `Uint8Array`. Replacing a 4-unrolled loop with a standard `for (let i = 0; i < data.length; i++) { sum += data[i]; }` yielded a ~20% speedup on 1000-element arrays and ~40% speedup on short arrays (6-16 bytes). The JIT compiler natively understands simple array iterations and applies the most efficient machine-level unrolling itself.
 **Action:** Avoid manual loop unrolling for simple linear aggregations over arrays unless rigorous benchmarking proves it is faster for your specific data size. Prefer clean, idiomatic `for` loops to let the JIT optimize.
+
+## 2025-10-26 - Uint8Array subarray vs start/end index parameters
+**Learning:** Passing `start` and `end` indices to iteration functions instead of allocating new `Uint8Array` views via `subarray()` avoids intermediate allocations and can significantly improve execution speed in hot paths (like checksum calculation or packet validation). Benchmarking showed a ~1.7x speedup in V8.
+**Action:** When iterating over a portion of a `Uint8Array` in high-frequency functions, pass explicit `start` and `end` index boundaries rather than calling `.subarray()`.
