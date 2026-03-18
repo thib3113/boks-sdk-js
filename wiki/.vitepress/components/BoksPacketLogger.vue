@@ -29,28 +29,50 @@ async function toggleConnection() {
 }
 
 function triggerRealisticOpen(type: 'keypad' | 'key' | 'nfc') {
-  const detail = type === 'keypad' ? '123456' : type === 'nfc' ? 'AABBCCDD' : ''
-  boksStore.simulator?.triggerDoorOpen(source, detail)
-  boksStore.log(`Simulator: Triggered opening via ${type}`, 'success')
+  if (!boksStore.simulator) return;
+
+  const detail = type === 'keypad' ? '123456' : type === 'nfc' ? 'AABBCCDD' : '';
+  
+  switch (type) {
+    case 'keypad':
+      boksStore.simulator.triggerKeypadOpen(detail);
+      break;
+    case 'key':
+      boksStore.simulator.triggerPhysicalKeyOpen();
+      break;
+    case 'nfc':
+      boksStore.simulator.triggerNfcOpen(detail);
+      break;
+  }
+  
+  boksStore.log(`Simulator: Triggered opening via ${type}`, 'success');
 }
 
 function exportLogs() {
   // Convert packet logs to a JSON array string
   // Map over the logs to structure the output well
-  const exportedLogs = boksStore.packetLogs.map(log => ({
-    time: log.time,
-    direction: log.direction,
-    opcode: log.opcode,
-    name: log.name,
-    length: log.length,
-    data: log.rawData // use the raw packet data for the export
-  }));
+  const exportedLogs = boksStore.packetLogs.map(log => {
+    // Clone the raw data and remove opcode to avoid redundancy in the export
+    const packetData = JSON.parse(JSON.stringify(log.rawData));
+    if (packetData && typeof packetData === 'object') {
+      delete packetData.opcode;
+    }
+    
+    return {
+      time: log.time,
+      direction: log.direction,
+      opcode: log.opcode,
+      name: log.name,
+      length: log.length,
+      data: packetData
+    };
+  });
   const dataStr = JSON.stringify(exportedLogs, null, 2);
   const blob = new Blob([dataStr], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `boks-packet-logs-\${new Date().toISOString().replace(/:/g, '-')}.json`;
+  a.download = `boks-packet-logs-${new Date().toISOString().replace(/[:.]/g, '-')}.json`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -175,7 +197,7 @@ function exportLogs() {
                 <td class="op"><code>{{ log.opcode }}</code></td>
                 <td class="name">{{ log.name }}</td>
                 <td class="data">
-                  <pre v-if="log.rawData" class="json-data"><code>{{ JSON.stringify(log.rawData, null, 2) }}</code></pre>
+                  <pre v-if="log.rawData" class="json-data"><code>{{ JSON.stringify(log.rawData, (key, val) => key === 'opcode' ? undefined : val, 2) }}</code></pre>
                   <span v-else>-</span>
                 </td>
               </tr>
