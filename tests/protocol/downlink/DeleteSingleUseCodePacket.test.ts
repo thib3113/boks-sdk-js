@@ -3,7 +3,6 @@ import { DeleteSingleUseCodePacket } from '@/protocol/downlink/DeleteSingleUseCo
 import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';
 import { BoksOpcode } from '@/protocol/constants';
 import { bytesToHex, stringToBytes } from '@/utils/converters';
-import { PayloadMapper } from '@/protocol/decorators';
 
 describe('DeleteSingleUseCodePacket', () => {
   const validKey = '12345678';
@@ -80,12 +79,10 @@ describe('DeleteSingleUseCodePacket', () => {
   it('should output only mapped payload properties and opcode via toJSON', () => {
     const packet = new DeleteSingleUseCodePacket({ configKey: validKey, pin: validPin });
     const json = packet.toJSON();
-    expect(json).toStrictEqual(
-        Object.assign({ opcode: packet.opcode },
-        Object.fromEntries(
-            PayloadMapper.getFields(packet.constructor)
-            .map((f: any) => [f.propertyName, (packet as any)[f.propertyName]])
-        ))
-    );
+    expect(json).toStrictEqual({
+        "configKey": "12345678",
+        "opcode": 13,
+        "pin": "998877",
+      });
   });
 });

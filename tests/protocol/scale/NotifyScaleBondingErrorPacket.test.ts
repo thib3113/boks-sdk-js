@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest';
 import { NotifyScaleBondingErrorPacket } from '@/protocol/scale/NotifyScaleBondingErrorPacket';
 import { BoksOpcode } from '@/protocol/constants';
 import { bytesToHex } from '@/utils/converters';
-import { PayloadMapper } from '@/protocol/decorators';
 
 describe('NotifyScaleBondingErrorPacket', () => {
   it('should parse correctly with error code', () => {
@@ -22,12 +21,9 @@ describe('NotifyScaleBondingErrorPacket', () => {
   it('should output only mapped payload properties and opcode via toJSON', () => {
     const packet = NotifyScaleBondingErrorPacket.fromPayload(new Uint8Array([0x05]));
     const json = packet.toJSON();
-    expect(json).toStrictEqual(
-        Object.assign({ opcode: packet.opcode },
-        Object.fromEntries(
-            PayloadMapper.getFields(packet.constructor)
-            .map((f: any) => [f.propertyName, (packet as any)[f.propertyName]])
-        ))
-    );
+    expect(json).toStrictEqual({
+        "errorCode": 5,
+        "opcode": 177,
+      });
   });
 });

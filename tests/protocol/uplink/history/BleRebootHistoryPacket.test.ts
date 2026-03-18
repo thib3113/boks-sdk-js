@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest';
 import { BleRebootHistoryPacket } from '@/protocol/uplink/history/BleRebootHistoryPacket';
 import { BoksOpcode } from '@/protocol/constants';
 import { bytesToHex } from '@/utils/converters';
-import { PayloadMapper } from '@/protocol/decorators';
 
 describe('BleRebootHistoryPacket', () => {
   it('should parse correctly with age', () => {
@@ -35,12 +34,9 @@ describe('BleRebootHistoryPacket', () => {
   it('should output only mapped payload properties and opcode via toJSON', () => {
     const packet = BleRebootHistoryPacket.fromPayload(new Uint8Array([0x00, 0x00, 0x0a]));
     const json = packet.toJSON();
-    expect(json).toStrictEqual(
-        Object.assign({ opcode: packet.opcode },
-        Object.fromEntries(
-            PayloadMapper.getFields(packet.constructor)
-            .map((f: any) => [f.propertyName, (packet as any)[f.propertyName]])
-        ))
-    );
+    expect(json).toStrictEqual({
+        "age": 10,
+        "opcode": 151,
+      });
   });
 });

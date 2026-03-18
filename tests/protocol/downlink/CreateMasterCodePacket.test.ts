@@ -3,7 +3,6 @@ import { CreateMasterCodePacket } from '@/protocol/downlink/CreateMasterCodePack
 import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';
 import { BoksOpcode } from '@/protocol/constants';
 import { bytesToHex, stringToBytes } from '@/utils/converters';
-import { PayloadMapper } from '@/protocol/decorators';
 
 describe('CreateMasterCodePacket', () => {
   const validKey = '12345678';
@@ -118,12 +117,11 @@ describe('CreateMasterCodePacket', () => {
       pin: validPin
     });
     const json = packet.toJSON();
-    expect(json).toStrictEqual(
-        Object.assign({ opcode: packet.opcode },
-        Object.fromEntries(
-            PayloadMapper.getFields(packet.constructor)
-            .map((f: any) => [f.propertyName, (packet as any)[f.propertyName]])
-        ))
-    );
+    expect(json).toStrictEqual({
+        "configKey": "12345678",
+        "index": 1,
+        "opcode": 17,
+        "pin": "123456",
+      });
   });
 });

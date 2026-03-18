@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest';
 import { ScaleTareLoadedPacket } from '@/protocol/scale/ScaleTareLoadedPacket';
 import { BoksOpcode } from '@/protocol/constants';
 import { bytesToHex } from '@/utils/converters';
-import { PayloadMapper } from '@/protocol/decorators';
 
 describe('ScaleTareLoadedPacket', () => {
   it('should construct and encode correctly with data', () => {
@@ -23,12 +22,8 @@ describe('ScaleTareLoadedPacket', () => {
   it('should output only mapped payload properties and opcode via toJSON', () => {
     const packet = ScaleTareLoadedPacket.fromPayload(new Uint8Array([0x01, 0x02]));
     const json = packet.toJSON();
-    expect(json).toStrictEqual(
-        Object.assign({ opcode: packet.opcode },
-        Object.fromEntries(
-            PayloadMapper.getFields(packet.constructor)
-            .map((f: any) => [f.propertyName, (packet as any)[f.propertyName]])
-        ))
-    );
+    expect(json).toStrictEqual({
+        "opcode": 86,
+      });
   });
 });

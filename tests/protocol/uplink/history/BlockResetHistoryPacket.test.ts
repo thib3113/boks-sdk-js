@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest';
 import { BlockResetHistoryPacket } from '@/protocol/uplink/history/BlockResetHistoryPacket';
 import { BoksOpcode } from '@/protocol/constants';
 import { bytesToHex } from '@/utils/converters';
-import { PayloadMapper } from '@/protocol/decorators';
 
 describe('BlockResetHistoryPacket', () => {
   it('should parse correctly with age and info', () => {
@@ -26,12 +25,10 @@ describe('BlockResetHistoryPacket', () => {
   it('should output only mapped payload properties and opcode via toJSON', () => {
     const packet = BlockResetHistoryPacket.fromPayload(new Uint8Array([0x00, 0x00, 0x0a, 0xaa, 0xbb]));
     const json = packet.toJSON();
-    expect(json).toStrictEqual(
-        Object.assign({ opcode: packet.opcode },
-        Object.fromEntries(
-            PayloadMapper.getFields(packet.constructor)
-            .map((f: any) => [f.propertyName, (packet as any)[f.propertyName]])
-        ))
-    );
+    expect(json).toStrictEqual({
+        "age": 10,
+        "opcode": 149,
+        "resetInfo": "AABB",
+      });
   });
 });

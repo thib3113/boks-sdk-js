@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import { CodeBleValidHistoryPacket } from '@/protocol/uplink/history/CodeBleValidHistoryPacket';
 import { BoksOpcode } from '@/protocol/constants';
 import { bytesToHex } from '@/utils/converters';
-import { PayloadMapper } from '@/protocol/decorators';
 
 describe('CodeBleValidHistoryPacket', () => {
   it('should parse correctly with age and code', () => {
@@ -40,12 +39,11 @@ describe('CodeBleValidHistoryPacket', () => {
   it('should output only mapped payload properties and opcode via toJSON', () => {
     const packet = CodeBleValidHistoryPacket.fromPayload(new Uint8Array([0, 0, 10, 49, 50, 51, 52, 53, 54, 0, 0, 0, 0, 0, 0, 0, 0]));
     const json = packet.toJSON();
-    expect(json).toStrictEqual(
-        Object.assign({ opcode: packet.opcode },
-        Object.fromEntries(
-            PayloadMapper.getFields(packet.constructor)
-            .map((f: any) => [f.propertyName, (packet as any)[f.propertyName]])
-        ))
-    );
+    expect(json).toStrictEqual({
+        "age": 10,
+        "code": "123456",
+        "connectedMac": "00:00:00:00:00:00",
+        "opcode": 134,
+      });
   });
 });

@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest';
 import { NotifyNfcTagFoundPacket } from '@/protocol/uplink/NotifyNfcTagFoundPacket';
 import { BoksOpcode } from '@/protocol/constants';
 import { bytesToHex } from '@/utils/converters';
-import { PayloadMapper } from '@/protocol/decorators';
 
 describe('NotifyNfcTagFoundPacket', () => {
   it('should parse correctly', () => {
@@ -64,12 +63,9 @@ describe('NotifyNfcTagFoundPacket', () => {
   it('should output only mapped payload properties and opcode via toJSON', () => {
     const packet = NotifyNfcTagFoundPacket.fromPayload(new Uint8Array([0x04, 0x01, 0x02, 0x03, 0x04]));
     const json = packet.toJSON();
-    expect(json).toStrictEqual(
-        Object.assign({ opcode: packet.opcode },
-        Object.fromEntries(
-            PayloadMapper.getFields(packet.constructor)
-            .map((f: any) => [f.propertyName, (packet as any)[f.propertyName]])
-        ))
-    );
+    expect(json).toStrictEqual({
+        "opcode": 197,
+        "uid": "01020304",
+      });
   });
 });

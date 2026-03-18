@@ -3,7 +3,6 @@ import { RegeneratePartAPacket } from '@/protocol/downlink/RegeneratePartAPacket
 import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';
 import { BoksOpcode } from '@/protocol/constants';
 import { bytesToHex, stringToBytes } from '@/utils/converters';
-import { PayloadMapper } from '@/protocol/decorators';
 
 describe('RegeneratePartAPacket', () => {
   const validKey = '12345678';
@@ -69,12 +68,27 @@ describe('RegeneratePartAPacket', () => {
   it('should output only mapped payload properties and opcode via toJSON', () => {
     const packet = new RegeneratePartAPacket({ configKey: validKey, part: validPart });
     const json = packet.toJSON();
-    expect(json).toStrictEqual(
-        Object.assign({ opcode: packet.opcode },
-        Object.fromEntries(
-            PayloadMapper.getFields(packet.constructor)
-            .map((f: any) => [f.propertyName, (packet as any)[f.propertyName]])
-        ))
-    );
+    expect(json).toStrictEqual({
+        "configKey": "12345678",
+        "opcode": 32,
+        "part": new Uint8Array([
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+        ]),
+      });
   });
 });

@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest';
 import { AskDoorStatusPacket } from '@/protocol/downlink/AskDoorStatusPacket';
 import { BoksOpcode } from '@/protocol/constants';
 import { bytesToHex } from '@/utils/converters';
-import { PayloadMapper } from '@/protocol/decorators';
 
 describe('AskDoorStatusPacket', () => {
   it('should construct and encode correctly', () => {
@@ -27,12 +26,8 @@ describe('AskDoorStatusPacket', () => {
   it('should output only mapped payload properties and opcode via toJSON', () => {
     const packet = new AskDoorStatusPacket();
     const json = packet.toJSON();
-    expect(json).toStrictEqual(
-        Object.assign({ opcode: packet.opcode },
-        Object.fromEntries(
-            PayloadMapper.getFields(packet.constructor)
-            .map((f: any) => [f.propertyName, (packet as any)[f.propertyName]])
-        ))
-    );
+    expect(json).toStrictEqual({
+        "opcode": 2,
+      });
   });
 });

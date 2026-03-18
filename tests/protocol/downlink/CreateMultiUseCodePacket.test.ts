@@ -3,7 +3,6 @@ import { CreateMultiUseCodePacket } from '@/protocol/downlink/CreateMultiUseCode
 import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';
 import { BoksOpcode } from '@/protocol/constants';
 import { bytesToHex, stringToBytes } from '@/utils/converters';
-import { PayloadMapper } from '@/protocol/decorators';
 
 describe('CreateMultiUseCodePacket', () => {
   const validKey = '12345678';
@@ -83,12 +82,10 @@ describe('CreateMultiUseCodePacket', () => {
   it('should output only mapped payload properties and opcode via toJSON', () => {
     const packet = new CreateMultiUseCodePacket({ configKey: validKey, pin: validPin });
     const json = packet.toJSON();
-    expect(json).toStrictEqual(
-        Object.assign({ opcode: packet.opcode },
-        Object.fromEntries(
-            PayloadMapper.getFields(packet.constructor)
-            .map((f: any) => [f.propertyName, (packet as any)[f.propertyName]])
-        ))
-    );
+    expect(json).toStrictEqual({
+        "configKey": "12345678",
+        "opcode": 19,
+        "pin": "654321",
+      });
   });
 });

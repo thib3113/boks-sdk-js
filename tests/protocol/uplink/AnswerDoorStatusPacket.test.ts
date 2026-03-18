@@ -3,7 +3,6 @@ import { describe, it, expect } from 'vitest';
 import { AnswerDoorStatusPacket } from '@/protocol/uplink/AnswerDoorStatusPacket';
 import { BoksOpcode } from '@/protocol/constants';
 import { bytesToHex } from '@/utils/converters';
-import { PayloadMapper } from '@/protocol/decorators';
 
 describe('AnswerDoorStatusPacket', () => {
   it('should detect OPEN state (inv=false, raw=true)', () => {
@@ -39,12 +38,10 @@ describe('AnswerDoorStatusPacket', () => {
   it('should output only mapped payload properties and opcode via toJSON', () => {
     const packet = AnswerDoorStatusPacket.fromPayload(new Uint8Array([0x00, 0x01]));
     const json = packet.toJSON();
-    expect(json).toStrictEqual(
-        Object.assign({ opcode: packet.opcode },
-        Object.fromEntries(
-            PayloadMapper.getFields(packet.constructor)
-            .map((f: any) => [f.propertyName, (packet as any)[f.propertyName]])
-        ))
-    );
+    expect(json).toStrictEqual({
+        "inverted": false,
+        "opcode": 133,
+        "raw": true,
+      });
   });
 });

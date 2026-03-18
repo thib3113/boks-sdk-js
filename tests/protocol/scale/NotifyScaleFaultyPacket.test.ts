@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest';
 import { NotifyScaleFaultyPacket } from '@/protocol/scale/NotifyScaleFaultyPacket';
 import { BoksOpcode } from '@/protocol/constants';
 import { bytesToHex } from '@/utils/converters';
-import { PayloadMapper } from '@/protocol/decorators';
 
 describe('NotifyScaleFaultyPacket', () => {
   it('should parse correctly with data', () => {
@@ -23,12 +22,12 @@ describe('NotifyScaleFaultyPacket', () => {
   it('should output only mapped payload properties and opcode via toJSON', () => {
     const packet = NotifyScaleFaultyPacket.fromPayload(new Uint8Array([0x01, 0x02]));
     const json = packet.toJSON();
-    expect(json).toStrictEqual(
-        Object.assign({ opcode: packet.opcode },
-        Object.fromEntries(
-            PayloadMapper.getFields(packet.constructor)
-            .map((f: any) => [f.propertyName, (packet as any)[f.propertyName]])
-        ))
-    );
+    expect(json).toStrictEqual({
+        "data": new Uint8Array([
+          1,
+          2,
+        ]),
+        "opcode": 186,
+      });
   });
 });

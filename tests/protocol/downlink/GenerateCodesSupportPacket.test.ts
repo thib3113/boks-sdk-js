@@ -3,7 +3,6 @@ import { GenerateCodesSupportPacket } from '@/protocol/downlink/GenerateCodesSup
 import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';
 import { BoksOpcode } from '@/protocol/constants';
 import { bytesToHex } from '@/utils/converters';
-import { PayloadMapper } from '@/protocol/decorators';
 
 describe('GenerateCodesSupportPacket', () => {
   const validSeedHex = '000102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F';
@@ -81,12 +80,9 @@ describe('error handling', () => {
   it('should output only mapped payload properties and opcode via toJSON', () => {
     const packet = new GenerateCodesSupportPacket('000102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F');
     const json = packet.toJSON();
-    expect(json).toStrictEqual(
-        Object.assign({ opcode: packet.opcode },
-        Object.fromEntries(
-            PayloadMapper.getFields(packet.constructor)
-            .map((f: any) => [f.propertyName, (packet as any)[f.propertyName]])
-        ))
-    );
+    expect(json).toStrictEqual({
+        "opcode": 21,
+        "seed": "000102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F",
+      });
   });
 });

@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest';
 import { NotifyLogsCountPacket } from '@/protocol/uplink/NotifyLogsCountPacket';
 import { BoksOpcode } from '@/protocol/constants';
 import { bytesToHex } from '@/utils/converters';
-import { PayloadMapper } from '@/protocol/decorators';
 
 describe('NotifyLogsCountPacket', () => {
   it('should parse correctly', () => {
@@ -24,12 +23,9 @@ describe('NotifyLogsCountPacket', () => {
   it('should output only mapped payload properties and opcode via toJSON', () => {
     const packet = NotifyLogsCountPacket.fromPayload(new Uint8Array([0x01, 0x00]));
     const json = packet.toJSON();
-    expect(json).toStrictEqual(
-        Object.assign({ opcode: packet.opcode },
-        Object.fromEntries(
-            PayloadMapper.getFields(packet.constructor)
-            .map((f: any) => [f.propertyName, (packet as any)[f.propertyName]])
-        ))
-    );
+    expect(json).toStrictEqual({
+        "count": 256,
+        "opcode": 121,
+      });
   });
 });

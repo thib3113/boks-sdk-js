@@ -3,7 +3,6 @@ import { DeleteMasterCodePacket } from '@/protocol/downlink/DeleteMasterCodePack
 import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';
 import { BoksOpcode } from '@/protocol/constants';
 import { bytesToHex, stringToBytes } from '@/utils/converters';
-import { PayloadMapper } from '@/protocol/decorators';
 
 describe('DeleteMasterCodePacket', () => {
   const validKey = '12345678';
@@ -80,12 +79,10 @@ describe('DeleteMasterCodePacket', () => {
   it('should output only mapped payload properties and opcode via toJSON', () => {
     const packet = new DeleteMasterCodePacket({ configKey: validKey, index: validIndex });
     const json = packet.toJSON();
-    expect(json).toStrictEqual(
-        Object.assign({ opcode: packet.opcode },
-        Object.fromEntries(
-            PayloadMapper.getFields(packet.constructor)
-            .map((f: any) => [f.propertyName, (packet as any)[f.propertyName]])
-        ))
-    );
+    expect(json).toStrictEqual({
+        "configKey": "12345678",
+        "index": 2,
+        "opcode": 12,
+      });
   });
 });

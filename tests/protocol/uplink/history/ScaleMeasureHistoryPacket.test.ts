@@ -3,7 +3,6 @@ import { ScaleMeasureHistoryPacket } from '@/protocol/uplink/history/ScaleMeasur
 import { BoksOpcode } from '@/protocol/constants';
 import { BoksProtocolError } from '@/errors/BoksProtocolError';
 import { bytesToHex } from '@/utils/converters';
-import { PayloadMapper } from '@/protocol/decorators';
 
 describe('ScaleMeasureHistoryPacket', () => {
   it('should parse correctly with age and data', () => {
@@ -57,12 +56,15 @@ describe('ScaleMeasureHistoryPacket', () => {
   it('should output only mapped payload properties and opcode via toJSON', () => {
     const packet = ScaleMeasureHistoryPacket.fromPayload(new Uint8Array([0x00, 0x00, 0x0a, 0x01, 0x02, 0x03, 0x04]));
     const json = packet.toJSON();
-    expect(json).toStrictEqual(
-        Object.assign({ opcode: packet.opcode },
-        Object.fromEntries(
-            PayloadMapper.getFields(packet.constructor)
-            .map((f: any) => [f.propertyName, (packet as any)[f.propertyName]])
-        ))
-    );
+    expect(json).toStrictEqual({
+        "age": 10,
+        "data": new Uint8Array([
+          1,
+          2,
+          3,
+          4,
+        ]),
+        "opcode": 152,
+      });
   });
 });

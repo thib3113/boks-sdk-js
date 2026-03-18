@@ -3,7 +3,6 @@ import { describe, it, expect } from 'vitest';
 import { MultiToSingleCodePacket } from '@/protocol/downlink/MultiToSingleCodePacket';
 import { BoksOpcode } from '@/protocol/constants';
 import { bytesToHex, stringToBytes } from '@/utils/converters';
-import { PayloadMapper } from '@/protocol/decorators';
 
 describe('MultiToSingleCodePacket', () => {
   const validKey = '12345678';
@@ -65,12 +64,10 @@ describe('MultiToSingleCodePacket', () => {
   it('should output only mapped payload properties and opcode via toJSON', () => {
     const packet = new MultiToSingleCodePacket({ configKey: validKey, pin: validPin });
     const json = packet.toJSON();
-    expect(json).toStrictEqual(
-        Object.assign({ opcode: packet.opcode },
-        Object.fromEntries(
-            PayloadMapper.getFields(packet.constructor)
-            .map((f: any) => [f.propertyName, (packet as any)[f.propertyName]])
-        ))
-    );
+    expect(json).toStrictEqual({
+        "configKey": "12345678",
+        "opcode": 11,
+        "pin": "876543",
+      });
   });
 });
