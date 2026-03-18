@@ -1,6 +1,11 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { boksStore } from '../boksStore'
+import { useData } from 'vitepress'
+import { i18n } from '../i18n'
+
+const { lang } = useData()
+const t = computed(() => i18n[lang.value as keyof typeof i18n] || i18n.en)
 
 // Local State
 const batteryLevel = ref<number | undefined>(undefined)
@@ -10,7 +15,7 @@ const isLoading = ref(false)
 
 async function refreshData() {
   if (!boksStore.controller || !boksStore.isConnected) {
-    alert('Please connect first using the Global Controller.')
+    alert(t.value.global.pleaseConnectFirst)
     return
   }
   isLoading.value = true
@@ -18,11 +23,11 @@ async function refreshData() {
   try {
     hardwareInfo.value = boksStore.controller.hardwareInfo
     
-    boksStore.log('Reading battery levels...', 'info')
+    boksStore.log(t.value.battery.readingLevels, 'info')
     batteryLevel.value = await boksStore.controller.getBatteryLevel()
     batteryStats.value = await boksStore.controller.getBatteryStats()
     
-    boksStore.log('Battery and Hardware data refreshed.', 'success')
+    boksStore.log(t.value.battery.refreshSuccess, 'success')
   } catch (err: any) {
     boksStore.log(`Failed to refresh data: ${err.message}`, 'error')
   } finally {
@@ -40,29 +45,27 @@ function getBatteryColor(level: number | undefined) {
 
 <template>
   <div class="demo-card">
-    <div v-if="!boksStore.isConnected" class="warning-box">
-      ⚠️ <strong>Not Connected</strong>. Please use the connection panel at the top of the page.
-    </div>
+    <div v-if="!boksStore.isConnected" class="warning-box" v-html="t.global.notConnectedWarning"></div>
 
     <div class="card">
       <div class="header-row">
-        <h3>Battery & Hardware Info</h3>
+        <h3>{{ t.battery.title }}</h3>
         <button @click="refreshData" :disabled="!boksStore.isConnected || isLoading" class="secondary-btn small">
-          {{ isLoading ? 'Refreshing...' : 'Refresh Data' }}
+          {{ isLoading ? t.battery.refreshingBtn : t.battery.refreshBtn }}
         </button>
       </div>
 
       <div v-if="boksStore.isConnected && hardwareInfo" class="info-grid">
         <div class="info-item">
-          <span class="label">HW Version</span>
+          <span class="label">{{ t.battery.hwVersion }}</span>
           <span class="value">{{ hardwareInfo.hardwareVersion }}</span>
         </div>
         <div class="info-item">
-          <span class="label">FW Revision</span>
+          <span class="label">{{ t.battery.fwRevision }}</span>
           <span class="value">{{ hardwareInfo.firmwareRevision }}</span>
         </div>
         <div class="info-item">
-          <span class="label">Chipset</span>
+          <span class="label">{{ t.battery.chipset }}</span>
           <span class="value">{{ hardwareInfo.chipset }}</span>
         </div>
       </div>
@@ -76,8 +79,8 @@ function getBatteryColor(level: number | undefined) {
         <div v-if="batteryStats" class="stats-table">
           <table>
             <tbody>
-              <tr><td>Format</td><td><code>{{ batteryStats.format }}</code></td></tr>
-              <tr v-if="batteryStats.temperature !== undefined"><td>Temp</td><td>{{ batteryStats.temperature }}°C</td></tr>
+              <tr><td>{{ t.battery.format }}</td><td><code>{{ batteryStats.format }}</code></td></tr>
+              <tr v-if="batteryStats.temperature !== undefined"><td>{{ t.battery.temp }}</td><td>{{ batteryStats.temperature }}°C</td></tr>
             </tbody>
           </table>
         </div>

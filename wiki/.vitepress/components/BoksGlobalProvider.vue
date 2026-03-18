@@ -1,15 +1,18 @@
 <script setup lang="ts">
 import { boksStore } from '../boksStore'
+import { useData } from 'vitepress'
+import { i18n } from '../i18n'
+import { computed } from 'vue'
+
+const { lang } = useData()
+const t = computed(() => i18n[lang.value as keyof typeof i18n] || i18n.en)
 </script>
 
 <template>
   <div class="boks-info-banner" v-if="!boksStore.isConnected">
     <div class="banner-content">
       <span class="icon">💡</span>
-      <p>
-        To use these interactive examples, start the <strong>Simulator</strong> or <strong>Connect</strong> 
-        a real device using the dashboard at the bottom of your screen.
-      </p>
+      <p v-html="t.global.notConnectedBanner"></p>
     </div>
   </div>
 </template>

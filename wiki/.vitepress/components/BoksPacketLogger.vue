@@ -1,7 +1,12 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { boksStore } from '../boksStore'
 import { BoksOpcode } from '../../../src/protocol/constants'
+import { useData } from 'vitepress'
+import { i18n } from '../i18n'
+
+const { lang } = useData()
+const t = computed(() => i18n[lang.value as keyof typeof i18n] || i18n.en)
 
 // Simulator local state for UI binding
 const simState = ref<any>({})
@@ -45,7 +50,7 @@ function triggerRealisticOpen(type: 'keypad' | 'key' | 'nfc') {
       break;
   }
   
-  boksStore.log(`Simulator: Triggered opening via ${type}`, 'success');
+  boksStore.log(t.value.logger.simTriggered.replace('{type}', type), 'success');
 }
 
 function exportLogs() {
@@ -86,19 +91,19 @@ function exportLogs() {
     <!-- BAND (Header) -->
     <div class="dashboard-header" @click="boksStore.isExpanded = !boksStore.isExpanded">
       <div class="title">
-        📡 SDK Dashboard
+        📡 {{ t.logger.title }}
         <span class="target-name" v-if="boksStore.isConnected"> — {{ boksStore.deviceName }}</span>
       </div>
 
       <div class="header-actions">
         <label class="sim-switch desktop-only" @click.stop v-if="!boksStore.isConnected">
           <input type="checkbox" v-model="boksStore.useSimulator">
-          <span>{{ boksStore.useSimulator ? 'Simulator' : 'Real BLE' }}</span>
+          <span>{{ boksStore.useSimulator ? t.logger.simulator : t.logger.realBle }}</span>
         </label>
 
         <button @click.stop="toggleConnection" :class="['action-btn-main', { connected: boksStore.isConnected, loading: boksStore.isConnecting }]">
           <span v-if="boksStore.isConnecting" class="spinner">⏳</span>
-          {{ boksStore.isConnecting ? 'Working...' : (boksStore.isConnected ? 'Disconnect' : (boksStore.useSimulator ? 'Start' : 'Connect')) }}
+          {{ boksStore.isConnecting ? t.logger.working : (boksStore.isConnected ? t.logger.disconnect : (boksStore.useSimulator ? t.logger.start : t.logger.connect)) }}
         </button>
         
         <span class="arrow">{{ boksStore.isExpanded ? '▼' : '▲' }}</span>
@@ -111,7 +116,7 @@ function exportLogs() {
       <!-- DEVICE STATUS & CONTROL -->
       <div class="config-section">
         <div class="section-header" @click="showSimControls = !showSimControls">
-          <h4>Device Status & Info</h4>
+          <h4>{{ t.logger.deviceStatus }}</h4>
           <span class="mobile-only">{{ showSimControls ? '▼' : '▲' }}</span>
         </div>
         
@@ -119,7 +124,7 @@ function exportLogs() {
           <div class="config-grid">
             <!-- Info for both Real and Sim -->
             <div class="config-item">
-              <label>Battery Level: <strong>{{ (boksStore.useSimulator ? simState.batteryLevel : boksStore.batteryLevel) ?? 100 }}%</strong></label>
+              <label>{{ t.logger.batteryLevel }} <strong>{{ (boksStore.useSimulator ? simState.batteryLevel : boksStore.batteryLevel) ?? 100 }}%</strong></label>
               <input v-if="boksStore.useSimulator" type="range" min="0" max="100" v-model.number="simState.batteryLevel" @input="boksStore.simulator?.setBatteryLevel(simState.batteryLevel)">
               <div v-else class="gauge-mini"><div class="gauge-fill" :style="{ width: boksStore.batteryLevel + '%' }"></div></div>
             </div>
@@ -128,37 +133,37 @@ function exportLogs() {
             <template v-if="boksStore.useSimulator">
               <div class="config-item row">
                 <button @click="boksStore.simulator?.setDoorStatus(!simState.isOpen)" :class="['ctrl-btn', { active: simState.isOpen }]">
-                  {{ simState.isOpen ? '🔒 Close Door' : '🔓 Open Door' }}
+                  {{ simState.isOpen ? t.logger.closeDoor : t.logger.openDoor }}
                 </button>
                 <button @click="boksStore.simulator?.setChaosMode(!simState.chaosMode)" :class="['ctrl-btn', { warning: simState.chaosMode }]">
-                  {{ simState.chaosMode ? '🔥 Chaos' : '🛡️ Normal' }}
+                  {{ simState.chaosMode ? t.logger.chaosMode : t.logger.normalMode }}
                 </button>
               </div>
 
-              <div class="sub-title">Trigger Physical Events</div>
+              <div class="sub-title">{{ t.logger.triggerEvents }}</div>
               <div class="config-item row tri">
-                <button @click="triggerRealisticOpen('keypad')" class="small-btn">🔢 Keypad</button>
-                <button @click="triggerRealisticOpen('key')" class="small-btn">🔑 Key</button>
-                <button @click="triggerRealisticOpen('nfc')" class="small-btn">💳 NFC</button>
+                <button @click="triggerRealisticOpen('keypad')" class="small-btn">{{ t.logger.keypad }}</button>
+                <button @click="triggerRealisticOpen('key')" class="small-btn">{{ t.logger.key }}</button>
+                <button @click="triggerRealisticOpen('nfc')" class="small-btn">{{ t.logger.nfc }}</button>
               </div>
             </template>
 
             <!-- Metadata for both -->
             <div class="debug-info">
               <div class="debug-row">
-                <span class="label">Software</span>
+                <span class="label">{{ t.logger.software }}</span>
                 <span class="value">{{ boksStore.useSimulator ? simState.softwareVersion : boksStore.softwareVersion }}</span>
               </div>
               <div class="debug-row">
-                <span class="label">Firmware</span>
+                <span class="label">{{ t.logger.firmware }}</span>
                 <span class="value">{{ boksStore.useSimulator ? simState.firmwareVersion : boksStore.firmwareVersion }}</span>
               </div>
               <div class="debug-row">
-                <span class="label">Master Codes</span>
+                <span class="label">{{ t.logger.masterCodes }}</span>
                 <span class="value">{{ boksStore.useSimulator ? simState.pinsCount : boksStore.masterCodesCount }}</span>
               </div>
               <div class="debug-row">
-                <span class="label">Single-Use</span>
+                <span class="label">{{ t.logger.singleUse }}</span>
                 <span class="value">{{ boksStore.useSimulator ? 'N/A' : boksStore.singleCodesCount }}</span>
               </div>
             </div>
@@ -169,13 +174,13 @@ function exportLogs() {
       <!-- PACKET LOGS -->
       <div class="log-section">
         <div class="section-header">
-          <h4>Packet Flow</h4>
+          <h4>{{ t.logger.packetFlow }}</h4>
 
           <div class="section-header-actions">
-            <button @click="exportLogs" class="action-btn" title="Export JSON">
+            <button @click="exportLogs" class="action-btn" :title="t.logger.exportJson">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
             </button>
-            <button @click="showClearConfirm = true" class="clear-btn">Clear</button>
+            <button @click="showClearConfirm = true" class="clear-btn">{{ t.logger.clear }}</button>
           </div>
 
         </div>
@@ -183,11 +188,11 @@ function exportLogs() {
           <table v-if="boksStore.packetLogs.length" class="log-table">
             <thead>
               <tr>
-                <th class="time-col">Time</th>
-                <th class="dir-col">D</th>
-                <th class="op-col">Op</th>
-                <th class="name-col">Description</th>
-                <th>Data</th>
+                <th class="time-col">{{ t.logger.time }}</th>
+                <th class="dir-col">{{ t.logger.dir }}</th>
+                <th class="op-col">{{ t.logger.op }}</th>
+                <th class="name-col">{{ t.logger.desc }}</th>
+                <th>{{ t.logger.data }}</th>
               </tr>
             </thead>
             <tbody>
@@ -205,8 +210,8 @@ function exportLogs() {
           </table>
           <div v-else class="empty-state">
             <div class="pulse-icon">📡</div>
-            <p>Waiting for traffic...</p>
-            <span>Interact with the SDK to see live packets</span>
+            <p>{{ t.logger.waiting }}</p>
+            <span>{{ t.logger.interact }}</span>
           </div>
         </div>
       </div>
@@ -216,11 +221,11 @@ function exportLogs() {
     <!-- CLEAR CONFIRMATION MODAL -->
     <div v-if="showClearConfirm" class="modal-overlay">
       <div class="modal-content">
-        <h4>Clear Logs</h4>
-        <p>Are you sure you want to clear all packet logs?</p>
+        <h4>{{ t.logger.clearLogsTitle }}</h4>
+        <p>{{ t.logger.clearLogsDesc }}</p>
         <div class="modal-actions">
-          <button @click="showClearConfirm = false" class="modal-btn cancel">Cancel</button>
-          <button @click="boksStore.packetLogs = []; showClearConfirm = false" class="modal-btn confirm">Confirm</button>
+          <button @click="showClearConfirm = false" class="modal-btn cancel">{{ t.logger.cancel }}</button>
+          <button @click="boksStore.packetLogs = []; showClearConfirm = false" class="modal-btn confirm">{{ t.logger.confirm }}</button>
         </div>
       </div>
     </div>
