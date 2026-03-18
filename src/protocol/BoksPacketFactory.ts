@@ -246,7 +246,7 @@ export class BoksPacketFactory {
     const checksum = data[length + 2];
 
     // Validate checksum
-    const computedChecksum = calculateChecksum(data.subarray(0, length + 2));
+    const computedChecksum = calculateChecksum(data, 0, length + 2);
     if (checksum !== computedChecksum) {
       if (logger) {
         logger('warn', 'checksum_error', {

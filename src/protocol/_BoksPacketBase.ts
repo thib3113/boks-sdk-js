@@ -76,7 +76,7 @@ export abstract class BoksPacket {
     packet[0] = this.opcode;
     packet[1] = payload.length;
     packet.set(payload, 2);
-    packet[packet.length - 1] = calculateChecksum(packet.subarray(0, packet.length - 1));
+    packet[packet.length - 1] = calculateChecksum(packet, 0, packet.length - 1);
     return packet;
   }
 }
