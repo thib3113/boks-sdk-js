@@ -3,6 +3,7 @@ import { CreateSingleUseCodePacket } from '@/protocol/downlink/CreateSingleUseCo
 import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';
 import { BoksOpcode } from '@/protocol/constants';
 import { bytesToHex, stringToBytes } from '@/utils/converters';
+import { PayloadMapper } from '@/protocol/decorators';
 
 describe('CreateSingleUseCodePacket', () => {
   const validKey = '12345678';
@@ -74,6 +75,18 @@ describe('CreateSingleUseCodePacket', () => {
     const shortPayload = new Uint8Array(10);
     expect(() => CreateSingleUseCodePacket.fromPayload(shortPayload)).toThrowError(
       BoksProtocolError
+    );
+  });
+
+  it('should output only mapped payload properties and opcode via toJSON', () => {
+    const packet = new CreateSingleUseCodePacket({ configKey: validKey, pin: validPin });
+    const json = packet.toJSON();
+    expect(json).toStrictEqual(
+        Object.assign({ opcode: packet.opcode },
+        Object.fromEntries(
+            PayloadMapper.getFields(packet.constructor)
+            .map((f: any) => [f.propertyName, (packet as any)[f.propertyName]])
+        ))
     );
   });
 });

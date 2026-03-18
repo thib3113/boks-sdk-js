@@ -3,6 +3,7 @@ import { describe, it, expect } from 'vitest';
 import { MasterCodeEditPacket } from '@/protocol/downlink/MasterCodeEditPacket';
 import { BoksOpcode } from '@/protocol/constants';
 import { bytesToHex, stringToBytes } from '@/utils/converters';
+import { PayloadMapper } from '@/protocol/decorators';
 
 describe('MasterCodeEditPacket', () => {
   const validKey = '12345678';
@@ -98,5 +99,21 @@ describe('MasterCodeEditPacket', () => {
     });
     // Opcode 0x09, Len 15 (0x0F), Key '12345678', Index 5, PIN '667788', Checksum 0xE7
     expect(bytesToHex(packet.encode())).toBe('090F3132333435363738053636373738380B');
+  });
+
+  it('should output only mapped payload properties and opcode via toJSON', () => {
+    const packet = new MasterCodeEditPacket({
+      configKey: validKey,
+      index: validIndex,
+      newPin: validNewPin
+    });
+    const json = packet.toJSON();
+    expect(json).toStrictEqual(
+        Object.assign({ opcode: packet.opcode },
+        Object.fromEntries(
+            PayloadMapper.getFields(packet.constructor)
+            .map((f: any) => [f.propertyName, (packet as any)[f.propertyName]])
+        ))
+    );
   });
 });

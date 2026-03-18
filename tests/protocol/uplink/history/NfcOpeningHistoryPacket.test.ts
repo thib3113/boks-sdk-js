@@ -3,6 +3,7 @@ import { NfcOpeningHistoryPacket } from '@/protocol/uplink/history/NfcOpeningHis
 import { BoksOpcode } from '@/protocol/constants';
 import { BoksProtocolError } from '@/errors/BoksProtocolError';
 import { bytesToHex } from '@/utils/converters';
+import { PayloadMapper } from '@/protocol/decorators';
 
 describe('NfcOpeningHistoryPacket', () => {
   it('should parse correctly with age, type and uid', () => {
@@ -38,5 +39,17 @@ describe('NfcOpeningHistoryPacket', () => {
       tagType: 2,
       uid: 'invalid'
     })).toThrowError(BoksProtocolError);
+  });
+
+  it('should output only mapped payload properties and opcode via toJSON', () => {
+    const packet = NfcOpeningHistoryPacket.fromPayload(new Uint8Array([0x00, 0x00, 0x0a, 0x02, 0x04, 0x04, 0x05, 0x06, 0x07]));
+    const json = packet.toJSON();
+    expect(json).toStrictEqual(
+        Object.assign({ opcode: packet.opcode },
+        Object.fromEntries(
+            PayloadMapper.getFields(packet.constructor)
+            .map((f: any) => [f.propertyName, (packet as any)[f.propertyName]])
+        ))
+    );
   });
 });

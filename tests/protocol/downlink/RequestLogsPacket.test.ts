@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { RequestLogsPacket } from '@/protocol/downlink/RequestLogsPacket';
 import { BoksOpcode } from '@/protocol/constants';
 import { bytesToHex } from '@/utils/converters';
+import { PayloadMapper } from '@/protocol/decorators';
 
 describe('RequestLogsPacket', () => {
   it('should construct and encode correctly', () => {
@@ -15,5 +16,17 @@ describe('RequestLogsPacket', () => {
     const packet = RequestLogsPacket.fromPayload(new Uint8Array(0));
     expect(packet).toBeInstanceOf(RequestLogsPacket);
     expect(packet.opcode).toBe(BoksOpcode.REQUEST_LOGS);
+  });
+
+  it('should output only mapped payload properties and opcode via toJSON', () => {
+    const packet = new RequestLogsPacket();
+    const json = packet.toJSON();
+    expect(json).toStrictEqual(
+        Object.assign({ opcode: packet.opcode },
+        Object.fromEntries(
+            PayloadMapper.getFields(packet.constructor)
+            .map((f: any) => [f.propertyName, (packet as any)[f.propertyName]])
+        ))
+    );
   });
 });

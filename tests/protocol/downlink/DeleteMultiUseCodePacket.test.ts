@@ -3,6 +3,7 @@ import { DeleteMultiUseCodePacket } from '@/protocol/downlink/DeleteMultiUseCode
 import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';
 import { BoksOpcode } from '@/protocol/constants';
 import { bytesToHex, stringToBytes } from '@/utils/converters';
+import { PayloadMapper } from '@/protocol/decorators';
 
 describe('DeleteMultiUseCodePacket', () => {
   const validKey = '12345678';
@@ -74,5 +75,17 @@ describe('DeleteMultiUseCodePacket', () => {
     const packet = new DeleteMultiUseCodePacket({ configKey: '12345678', pin: '334455' });
     // Opcode 0x0E, Len 14 (0x0E), Key '12345678', PIN '334455', Checksum 0xF8
     expect(bytesToHex(packet.encode())).toBe('0E0E3132333435363738333334343535F8');
+  });
+
+  it('should output only mapped payload properties and opcode via toJSON', () => {
+    const packet = new DeleteMultiUseCodePacket({ configKey: validKey, pin: validPin });
+    const json = packet.toJSON();
+    expect(json).toStrictEqual(
+        Object.assign({ opcode: packet.opcode },
+        Object.fromEntries(
+            PayloadMapper.getFields(packet.constructor)
+            .map((f: any) => [f.propertyName, (packet as any)[f.propertyName]])
+        ))
+    );
   });
 });

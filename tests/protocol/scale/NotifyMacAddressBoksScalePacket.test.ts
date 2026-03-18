@@ -3,6 +3,7 @@ import { describe, it, expect } from 'vitest';
 import { NotifyMacAddressBoksScalePacket } from '@/protocol/scale/NotifyMacAddressBoksScalePacket';
 import { BoksOpcode } from '@/protocol/constants';
 import { bytesToHex } from '@/utils/converters';
+import { PayloadMapper } from '@/protocol/decorators';
 
 describe('NotifyMacAddressBoksScalePacket', () => {
   it('should parse correctly', () => {
@@ -29,6 +30,18 @@ describe('NotifyMacAddressBoksScalePacket', () => {
     const payload = new Uint8Array(0);
     expect(() => NotifyMacAddressBoksScalePacket.fromPayload(payload)).toThrowError(
       BoksProtocolError
+    );
+  });
+
+  it('should output only mapped payload properties and opcode via toJSON', () => {
+    const packet = NotifyMacAddressBoksScalePacket.fromPayload(new Uint8Array([0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff]));
+    const json = packet.toJSON();
+    expect(json).toStrictEqual(
+        Object.assign({ opcode: packet.opcode },
+        Object.fromEntries(
+            PayloadMapper.getFields(packet.constructor)
+            .map((f: any) => [f.propertyName, (packet as any)[f.propertyName]])
+        ))
     );
   });
 });

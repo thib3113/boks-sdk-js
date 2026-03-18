@@ -3,6 +3,7 @@ import { SetConfigurationPacket } from '@/protocol/downlink/SetConfigurationPack
 import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';
 import { BoksOpcode } from '@/protocol/constants';
 import { bytesToHex, stringToBytes } from '@/utils/converters';
+import { PayloadMapper } from '@/protocol/decorators';
 
 describe('SetConfigurationPacket', () => {
   const validKey = '12345678';
@@ -105,5 +106,21 @@ describe('SetConfigurationPacket', () => {
     } catch (e) {
       expect((e as BoksProtocolError).id).toBe(BoksProtocolErrorId.INVALID_VALUE);
     }
+  });
+
+  it('should output only mapped payload properties and opcode via toJSON', () => {
+    const packet = new SetConfigurationPacket({
+      configKey: validKey,
+      configType: type,
+      value: valueTrue
+    });
+    const json = packet.toJSON();
+    expect(json).toStrictEqual(
+        Object.assign({ opcode: packet.opcode },
+        Object.fromEntries(
+            PayloadMapper.getFields(packet.constructor)
+            .map((f: any) => [f.propertyName, (packet as any)[f.propertyName]])
+        ))
+    );
   });
 });

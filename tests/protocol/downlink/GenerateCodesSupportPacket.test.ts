@@ -3,13 +3,14 @@ import { GenerateCodesSupportPacket } from '@/protocol/downlink/GenerateCodesSup
 import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';
 import { BoksOpcode } from '@/protocol/constants';
 import { bytesToHex } from '@/utils/converters';
+import { PayloadMapper } from '@/protocol/decorators';
 
 describe('GenerateCodesSupportPacket', () => {
   const validSeedHex = '000102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F';
   const validSeedBytes = new Uint8Array(32).map((_, i) => i);
 
   it('should construct with valid parameters (hex string)', () => {
-    const packet = new GenerateCodesSupportPacket(validSeedHex);
+    const packet = new GenerateCodesSupportPacket('000102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F');
     expect(packet.opcode).toBe(BoksOpcode.GENERATE_CODES_SUPPORT);
     expect(packet.seed).toBe(validSeedHex);
   });
@@ -75,5 +76,17 @@ describe('error handling', () => {
     expect(() => {
       packet.seed = '00112233445566778899AABBCCDDEEFF';
     }).toThrowError(BoksProtocolError);
+  });
+
+  it('should output only mapped payload properties and opcode via toJSON', () => {
+    const packet = new GenerateCodesSupportPacket('000102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F');
+    const json = packet.toJSON();
+    expect(json).toStrictEqual(
+        Object.assign({ opcode: packet.opcode },
+        Object.fromEntries(
+            PayloadMapper.getFields(packet.constructor)
+            .map((f: any) => [f.propertyName, (packet as any)[f.propertyName]])
+        ))
+    );
   });
 });

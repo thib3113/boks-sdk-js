@@ -3,6 +3,7 @@ import { describe, it, expect } from 'vitest';
 import { RegisterNfcTagScanStartPacket } from '@/protocol/downlink/RegisterNfcTagScanStartPacket';
 import { BoksOpcode } from '@/protocol/constants';
 import { bytesToHex, stringToBytes } from '@/utils/converters';
+import { PayloadMapper } from '@/protocol/decorators';
 
 describe('RegisterNfcTagScanStartPacket', () => {
   const validKey = '12345678';
@@ -51,6 +52,18 @@ describe('RegisterNfcTagScanStartPacket', () => {
     const payload = new Uint8Array(5);
     expect(() => RegisterNfcTagScanStartPacket.fromPayload(payload)).toThrowError(
       BoksProtocolError
+    );
+  });
+
+  it('should output only mapped payload properties and opcode via toJSON', () => {
+    const packet = new RegisterNfcTagScanStartPacket(validKey);
+    const json = packet.toJSON();
+    expect(json).toStrictEqual(
+        Object.assign({ opcode: packet.opcode },
+        Object.fromEntries(
+            PayloadMapper.getFields(packet.constructor)
+            .map((f: any) => [f.propertyName, (packet as any)[f.propertyName]])
+        ))
     );
   });
 });

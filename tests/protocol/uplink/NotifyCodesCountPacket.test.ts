@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { NotifyCodesCountPacket } from '@/protocol/uplink/NotifyCodesCountPacket';
 import { BoksOpcode } from '@/protocol/constants';
 import { bytesToHex } from '@/utils/converters';
+import { PayloadMapper } from '@/protocol/decorators';
 
 describe('NotifyCodesCountPacket', () => {
   it('should parse correctly', () => {
@@ -21,5 +22,17 @@ describe('NotifyCodesCountPacket', () => {
     // 195+4+0+10+0+20 = 229 (0xE5)
     // Re-calculate: 195+4+10+20 = 229. 229 % 256 = 229 (0xE5).
     expect(bytesToHex(encoded)).toBe('C304000A0014E5');
+  });
+
+  it('should output only mapped payload properties and opcode via toJSON', () => {
+    const packet = NotifyCodesCountPacket.fromPayload(new Uint8Array([0x00, 0x0a, 0x00, 0x14]));
+    const json = packet.toJSON();
+    expect(json).toStrictEqual(
+        Object.assign({ opcode: packet.opcode },
+        Object.fromEntries(
+            PayloadMapper.getFields(packet.constructor)
+            .map((f: any) => [f.propertyName, (packet as any)[f.propertyName]])
+        ))
+    );
   });
 });

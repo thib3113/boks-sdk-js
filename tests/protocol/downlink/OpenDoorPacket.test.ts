@@ -3,6 +3,7 @@ import { describe, it, expect } from 'vitest';
 import { OpenDoorPacket } from '@/protocol/downlink/OpenDoorPacket';
 import { BoksOpcode } from '@/protocol/constants';
 import { bytesToHex, stringToBytes } from '@/utils/converters';
+import { PayloadMapper } from '@/protocol/decorators';
 
 describe('OpenDoorPacket', () => {
   const validPin = '123456';
@@ -46,5 +47,17 @@ describe('OpenDoorPacket', () => {
   it('should fail parsing if payload is too short', () => {
     const shortPayload = new Uint8Array(5);
     expect(() => OpenDoorPacket.fromPayload(shortPayload)).toThrowError(BoksProtocolError);
+  });
+
+  it('should output only mapped payload properties and opcode via toJSON', () => {
+    const packet = new OpenDoorPacket(validPin);
+    const json = packet.toJSON();
+    expect(json).toStrictEqual(
+        Object.assign({ opcode: packet.opcode },
+        Object.fromEntries(
+            PayloadMapper.getFields(packet.constructor)
+            .map((f: any) => [f.propertyName, (packet as any)[f.propertyName]])
+        ))
+    );
   });
 });

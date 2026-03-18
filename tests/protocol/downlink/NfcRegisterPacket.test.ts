@@ -3,6 +3,7 @@ import { describe, it, expect } from 'vitest';
 import { NfcRegisterPacket } from '@/protocol/downlink/NfcRegisterPacket';
 import { BoksOpcode } from '@/protocol/constants';
 import { bytesToHex, stringToBytes } from '@/utils/converters';
+import { PayloadMapper } from '@/protocol/decorators';
 
 describe('NfcRegisterPacket', () => {
   const validKey = '12345678';
@@ -102,5 +103,17 @@ describe('NfcRegisterPacket', () => {
 
     const packet = NfcRegisterPacket.fromPayload(payload);
     expect(packet.uid).toBe('11223344556677');
+  });
+
+  it('should output only mapped payload properties and opcode via toJSON', () => {
+    const packet = new NfcRegisterPacket({ configKey: '12345678', uid: '04A1B2C3' });
+    const json = packet.toJSON();
+    expect(json).toStrictEqual(
+        Object.assign({ opcode: packet.opcode },
+        Object.fromEntries(
+            PayloadMapper.getFields(packet.constructor)
+            .map((f: any) => [f.propertyName, (packet as any)[f.propertyName]])
+        ))
+    );
   });
 });

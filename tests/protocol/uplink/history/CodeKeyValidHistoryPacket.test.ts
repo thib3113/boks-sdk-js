@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { CodeKeyValidHistoryPacket } from '@/protocol/uplink/history/CodeKeyValidHistoryPacket';
 import { BoksOpcode } from '@/protocol/constants';
 import { bytesToHex } from '@/utils/converters';
+import { PayloadMapper } from '@/protocol/decorators';
 
 describe('CodeKeyValidHistoryPacket', () => {
   it('should parse correctly with age and code', () => {
@@ -21,5 +22,17 @@ describe('CodeKeyValidHistoryPacket', () => {
     expect(encoded[1]).toBe(9);
     expect(bytesToHex(encoded.subarray(2, 5))).toBe('0000C8');
     expect(bytesToHex(encoded.subarray(5, 11))).toBe('363534333231');
+  });
+
+  it('should output only mapped payload properties and opcode via toJSON', () => {
+    const packet = CodeKeyValidHistoryPacket.fromPayload(new Uint8Array([0, 0, 10, 49, 50, 51, 52, 53, 54]));
+    const json = packet.toJSON();
+    expect(json).toStrictEqual(
+        Object.assign({ opcode: packet.opcode },
+        Object.fromEntries(
+            PayloadMapper.getFields(packet.constructor)
+            .map((f: any) => [f.propertyName, (packet as any)[f.propertyName]])
+        ))
+    );
   });
 });
