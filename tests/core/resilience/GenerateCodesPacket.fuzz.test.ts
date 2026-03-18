@@ -14,7 +14,7 @@ describe('GenerateCodesPacket Resilience (Fuzzing)', () => {
             const packet = new GenerateCodesPacket(seed);
 
             // If it succeeds, the inputs MUST have matched strict validation:
-            expect(packet.opcode).toBe(0x06); // GenerateCodesPacket opcode
+            expect(packet.opcode).toBe(0x10); // GenerateCodesPacket opcode
           } catch (e) {
             // It is an intended FEATURE that validation throws a BoksProtocolError.
             // It should NEVER crash with TypeError, RangeError, etc.

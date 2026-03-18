@@ -18,7 +18,7 @@ describe('DeleteMultiUseCodePacket Resilience (Fuzzing)', () => {
             // Config Key = 8 hex chars, PIN = 6 authorized chars
             expect(configKey.length).toBe(8);
             expect(pin.length).toBe(6);
-            expect(packet.opcode).toBe(0x03); // DeleteMultiUseCodePacket opcode
+            expect(packet.opcode).toBe(0x0e); // DeleteMultiUseCodePacket opcode
           } catch (e) {
             // It is an intended FEATURE that validation throws a BoksProtocolError.
             // It should NEVER crash with TypeError, RangeError, etc.

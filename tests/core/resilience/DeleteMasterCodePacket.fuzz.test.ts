@@ -19,7 +19,7 @@ describe('DeleteMasterCodePacket Resilience (Fuzzing)', () => {
             expect(configKey.length).toBe(8);
             expect(index).toBeGreaterThanOrEqual(0);
             expect(index).toBeLessThanOrEqual(255);
-            expect(packet.opcode).toBe(0x0f); // DeleteMasterCodePacket opcode
+            expect(packet.opcode).toBe(0x0c); // DeleteMasterCodePacket opcode
           } catch (e) {
             // It is an intended FEATURE that validation throws a BoksProtocolError.
             // It should NEVER crash with TypeError, RangeError, etc.
