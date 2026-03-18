@@ -1284,7 +1284,7 @@ export class BoksHardwareSimulator {
       return this.createResponse(BoksOpcode.ERROR_UNAUTHORIZED, EMPTY_BUFFER);
     }
     this.#pendingProvisioningPartA = payload.subarray(8, 24);
-    return this.createResponse(BoksOpcode.CODE_OPERATION_SUCCESS, EMPTY_BUFFER);
+    return this.createResponse(BoksOpcode.NOTIFY_CODE_GENERATION_PROGRESS, new Uint8Array([0]));
   }
 
   private async handleRegeneratePartB(payload: Uint8Array): Promise<Uint8Array | null> {

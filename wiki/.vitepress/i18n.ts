@@ -1,5 +1,23 @@
 export const i18n = {
   en: {
+
+    provision: {
+      title: 'Re-Keying (Provisioning)',
+      desc: 'Generate a new random Master Key and provision it to the device.',
+      generateNew: 'Generate New Random Key',
+      newKey: 'New Master Key',
+      provisionBtn: 'Provision New Key',
+      provisioningBtn: 'Provisioning...',
+      progress: 'Provisioning Progress:',
+      saveLogsAlert: 'CRITICAL: Provisioning has started. Please save the packet logs in case of failure!',
+      successAlert: 'Provisioning Success! Please update your credentials.',
+      confirm: 'Are you sure you want to change the Master Key? This cannot be undone.',
+      error: 'Provisioning failed.',
+      sponsorTitle: 'Support this development',
+      sponsorText: 'Hardware initialization is a critical feature that we currently cannot test on real devices. Your donations help us buy hardware to validate these experimental features safely.',
+      sponsorLink: 'Become a Sponsor on GitHub',
+    },
+
     global: {
       notConnectedBanner: 'To use these interactive examples, start the <strong>Simulator</strong> or <strong>Connect</strong> a real device using the dashboard at the bottom of your screen.',
       notConnectedWarning: '⚠️ <strong>Not Connected</strong>. Please use the connection panel at the top of the page.',
@@ -116,6 +134,24 @@ export const i18n = {
     }
   },
   fr: {
+
+    provision: {
+      title: 'Re-génération (Provisioning)',
+      desc: 'Générez une nouvelle Clé Maître aléatoire et provisionnez-la sur l\'appareil.',
+      generateNew: 'Générer Nouvelle Clé Aléatoire',
+      newKey: 'Nouvelle Clé Maître',
+      provisionBtn: 'Provisionner la Nouvelle Clé',
+      provisioningBtn: 'Provisionnement...',
+      progress: 'Progression du Provisionnement :',
+      saveLogsAlert: 'CRITIQUE : Le provisionnement a commencé. Veuillez sauvegarder les journaux de paquets en cas d\'échec !',
+      successAlert: 'Succès du provisionnement ! Veuillez mettre à jour vos identifiants.',
+      confirm: 'Êtes-vous sûr de vouloir changer la Clé Maître ? Cette action est irréversible.',
+      error: 'Échec du provisionnement.',
+      sponsorTitle: 'Soutenez ce développement',
+      sponsorText: 'L\'initialisation matérielle est une fonctionnalité critique que nous ne pouvons actuellement pas tester sur de vrais appareils. Vos dons nous aident à acheter du matériel pour valider ces fonctionnalités expérimentales en toute sécurité.',
+      sponsorLink: 'Devenir un Sponsor sur GitHub',
+    },
+
     global: {
       notConnectedBanner: 'Pour utiliser ces exemples interactifs, démarrez le <strong>Simulateur</strong> ou <strong>Connectez</strong> un véritable appareil à l\'aide du tableau de bord au bas de votre écran.',
       notConnectedWarning: '⚠️ <strong>Non connecté</strong>. Veuillez utiliser le panneau de connexion en haut de la page.',

@@ -11,6 +11,7 @@ The connection state and simulated data are shared across all pages in this sect
 ## Available Demos
 
 - [**Initialization**](./initialization): Set up a factory-fresh Boks with a new Master Key.
+- [**Provisioning**](./provisioning): Generate and provision a new Master Key to a Boks device.
 - [**Open Door**](./open-door): Send a PIN code to unlock the device.
 - [**History Sync**](./history): Download and parse the internal event log.
 - [**Battery & Hardware**](./battery): Read battery levels and detailed statistics.
