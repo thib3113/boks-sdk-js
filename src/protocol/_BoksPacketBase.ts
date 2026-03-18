@@ -45,49 +45,6 @@ export abstract class BoksPacket {
    * Encodes the full packet: [Opcode, Length, ...Payload, Checksum]
    */
 
-  /**
-   * Returns a JSON representation of the packet, including all properties (including getters).
-   */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  toJSON(): Record<string, any> {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const jsonObj: Record<string, any> = {};
-    const proto = Object.getPrototypeOf(this);
-
-    // Get all property names and getters from the instance and its prototype
-    const propertyNames = Object.getOwnPropertyNames(this);
-    const protoPropertyNames = Object.getOwnPropertyNames(proto);
-
-    // Filter out internal properties or methods
-    const allNames = [...new Set([...propertyNames, ...protoPropertyNames])].filter((name) => {
-      return (
-        name !== 'constructor' &&
-        name !== 'rawPayload' &&
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        typeof (this as any)[name] !== 'function'
-      );
-    });
-
-    for (const name of allNames) {
-      if (name.startsWith('#')) {
-        continue;
-      }
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const val = (this as any)[name];
-      if (val instanceof Uint8Array) {
-        // Convert Uint8Array to an array or hex string for JSON serialization
-        jsonObj[name] = Array.from(val)
-          .map((b) => b.toString(16).padStart(2, '0'))
-          .join('');
-      } else {
-        jsonObj[name] = val;
-      }
-    }
-
-    return jsonObj;
-  }
-
   encode(): Uint8Array {
     const payload = this.toPayload();
     const packet = new Uint8Array(payload.length + 3);
