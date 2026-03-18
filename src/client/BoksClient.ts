@@ -179,6 +179,8 @@ export class BoksClient {
    * @param callback The callback if a filter was provided.
    * @returns A function to unsubscribe.
    */
+  onPacket(callback: BoksPacketListener): () => void;
+  onPacket(filter: BoksPacketFilter, callback: BoksPacketListener): () => void;
   onPacket(
     filterOrCallback: BoksPacketFilter | BoksPacketListener,
     callback?: BoksPacketListener
