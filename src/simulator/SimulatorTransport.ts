@@ -8,6 +8,8 @@ import { EMPTY_BUFFER } from '../protocol/constants';
  */
 export class SimulatorTransport implements BoksTransport {
   private simulator: BoksHardwareSimulator;
+  private subscriptions: Set<(data: Uint8Array) => void> = new Set();
+  private batterySubscriptions: Set<(data: Uint8Array) => void> = new Set();
 
   constructor(simulator: BoksHardwareSimulator) {
     this.simulator = simulator;
@@ -18,7 +20,15 @@ export class SimulatorTransport implements BoksTransport {
   }
 
   async disconnect(): Promise<void> {
-    // No-op for simulator
+    for (const callback of this.subscriptions) {
+      this.simulator.unsubscribe(callback);
+    }
+    this.subscriptions.clear();
+
+    for (const callback of this.batterySubscriptions) {
+      this.simulator.unsubscribeToBattery(callback);
+    }
+    this.batterySubscriptions.clear();
   }
 
   async write(data: Uint8Array): Promise<void> {
@@ -48,12 +58,14 @@ export class SimulatorTransport implements BoksTransport {
   }
 
   async subscribe(callback: (data: Uint8Array) => void): Promise<void> {
+    this.subscriptions.add(callback);
     this.simulator.subscribe(callback);
   }
 
   async subscribeTo(uuid: string, callback: (data: Uint8Array) => void): Promise<void> {
     // If it's battery level
     if (uuid.includes('2a19') || uuid.includes('2A19')) {
+      this.batterySubscriptions.add(callback);
       this.simulator.subscribeToBattery(callback);
     }
   }
