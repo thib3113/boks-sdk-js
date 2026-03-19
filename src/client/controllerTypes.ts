@@ -1,17 +1,21 @@
 import { BoksClientFilterSingle, BoksPacketDirection, InferClientPayloadSingle } from './types';
 
-export interface BoksControllerEvents {
+export type BoksControllerEvents = Record<string, unknown> & {
   doorStateChanged: boolean;
   codesCountUpdated: { masterCount: number; singleCount: number };
   logsCountUpdated: number;
-}
+};
 
 export type BoksControllerFilterSingle = BoksClientFilterSingle | keyof BoksControllerEvents;
 
 export type BoksControllerFilter = BoksControllerFilterSingle | BoksControllerFilterSingle[];
 
-export type InferControllerPayloadSingle<F> = F extends keyof BoksControllerEvents
-  ? BoksControllerEvents[F]
+export type InferControllerPayloadSingle<F> = F extends string
+  ? F extends 'TX' | 'RX' | '*'
+    ? InferClientPayloadSingle<F>
+    : F extends keyof BoksControllerEvents
+      ? BoksControllerEvents[F]
+      : InferClientPayloadSingle<F>
   : InferClientPayloadSingle<F>;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

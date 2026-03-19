@@ -91,10 +91,8 @@ export class BoksController {
   #logCount: number = 0;
   #lastOpenAttempt: number = 0;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public readonly event: BoksEventRouter<BoksControllerEvents & Record<string | symbol, any>> =
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    new BoksEventRouter<BoksControllerEvents & Record<string | symbol, any>>();
+  public readonly event: BoksEventRouter<BoksControllerEvents> =
+    new BoksEventRouter<BoksControllerEvents>();
 
   constructor(optionsOrClient?: BoksClientOptions | BoksClient) {
     if (optionsOrClient instanceof BoksClient) {

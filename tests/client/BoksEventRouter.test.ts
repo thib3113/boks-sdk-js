@@ -2,9 +2,9 @@ import { describe, it, expect, vi } from 'vitest';
 import { BoksEventRouter } from '@/client/BoksEventRouter';
 import { BoksOpcode, AnswerDoorStatusPacket, NotifyDoorStatusPacket, AskDoorStatusPacket } from '@/protocol';
 
-interface TestEventMap {
+type TestEventMap = Record<string, unknown> & {
   doorStateChanged: boolean;
-}
+};
 
 describe('BoksEventRouter', () => {
   it('should route events by direction', () => {

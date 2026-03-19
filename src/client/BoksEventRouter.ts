@@ -2,40 +2,41 @@ import { BoksPacket } from '../protocol/_BoksPacketBase';
 
 import { BoksPacketDirection, BoksClientFilterSingle, InferClientPayloadSingle } from './types';
 
-export type BoksEventRouterFilterSingle<TEventMap extends Record<string | symbol, unknown>> =
+export type BoksEventRouterFilterSingle<TEventMap extends Record<string, unknown>> =
   | BoksClientFilterSingle
   | keyof TEventMap;
 
-export type BoksEventRouterFilter<TEventMap extends Record<string | symbol, unknown>> =
+export type BoksEventRouterFilter<TEventMap extends Record<string, unknown>> =
   | BoksEventRouterFilterSingle<TEventMap>
   | BoksEventRouterFilterSingle<TEventMap>[];
 
 export type InferRouterPayloadSingle<
-  TEventMap extends Record<string | symbol, unknown>,
+  TEventMap extends Record<string, unknown>,
   F
-> = F extends keyof TEventMap ? TEventMap[F] : InferClientPayloadSingle<F>;
+> = F extends string
+  ? F extends 'TX' | 'RX' | '*'
+    ? InferClientPayloadSingle<F>
+    : F extends keyof TEventMap
+      ? TEventMap[F]
+      : InferClientPayloadSingle<F>
+  : InferClientPayloadSingle<F>;
 
-export type InferRouterPayload<
-  TEventMap extends Record<string | symbol, unknown>,
-  F
-> = F extends unknown[]
+export type InferRouterPayload<TEventMap extends Record<string, unknown>, F> = F extends unknown[]
   ? InferRouterPayloadSingle<TEventMap, F[number]>
   : InferRouterPayloadSingle<TEventMap, F>;
 
 export type BoksEventRouterListener<
-  TEventMap extends Record<string | symbol, unknown>,
+  TEventMap extends Record<string, unknown>,
   F extends BoksEventRouterFilter<TEventMap>
 > = (payload: InferRouterPayload<TEventMap, F>, direction: BoksPacketDirection | undefined) => void;
 
-interface RegisteredListener<TEventMap extends Record<string | symbol, unknown>> {
+interface RegisteredListener<TEventMap extends Record<string, unknown>> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   callback: BoksEventRouterListener<TEventMap, any>;
   filter: BoksEventRouterFilter<TEventMap>;
 }
 
-export class BoksEventRouter<
-  TEventMap extends Record<string | symbol, unknown> = Record<string | symbol, never>
-> {
+export class BoksEventRouter<TEventMap extends Record<string, unknown> = Record<string, never>> {
   private listeners: Set<RegisteredListener<TEventMap>> = new Set();
 
   public on<F extends BoksEventRouterFilter<TEventMap>>(
