@@ -10,20 +10,14 @@ const encoder = new TextEncoder();
 const BOKS_CHAR_MAP = '0123456789AB';
 
 // Optimization: Precompute 16-bit lookup table (2 chars) for faster PIN extraction.
-// This avoids repeated array access, modulo, and string concatenation in the hot loop.
-// Since memory footprint is small (64K * ~2 bytes = ~128KB), the speedup easily outweighs memory cost.
 const PIN_LOOKUP_16BIT = new Array<string>(65536);
 for (let i = 0; i < 65536; i++) {
   PIN_LOOKUP_16BIT[i] = BOKS_CHAR_MAP[(i & 255) % 12] + BOKS_CHAR_MAP[((i >>> 8) & 255) % 12];
 }
 
-// Whitelist of allowed prefixes for PIN generation to prevent misuse and buffer overflows.
-// These are the only prefixes defined in the Boks protocol.
 const ALLOWED_PREFIXES = ['single-use', 'multi-use', 'master'] as const;
 type AllowedPrefix = (typeof ALLOWED_PREFIXES)[number];
 
-// Optimization: Precomputed UTF-8 bytes for allowed prefixes
-// This avoids calling TextEncoder.encodeInto repeatedly for the static parts of the message.
 const PREFIX_BYTES = ALLOWED_PREFIXES.reduce(
   (acc, prefix) => {
     acc[prefix] = encoder.encode(prefix);
@@ -32,9 +26,6 @@ const PREFIX_BYTES = ALLOWED_PREFIXES.reduce(
   {} as Record<AllowedPrefix, Uint8Array>
 );
 
-// Optimization: Shared buffers to avoid allocation on every call.
-// This is safe in single-threaded environments (Browser/Node main thread).
-// We rely on the try-finally block to wipe these buffers after use.
 const SHARED_H = new Uint32Array(8);
 const SHARED_BLOCK_BUFFER = new Uint8Array(64);
 const SHARED_BLOCK32 = new Uint32Array(SHARED_BLOCK_BUFFER.buffer);
@@ -55,7 +46,6 @@ const G = (v: Uint32Array, a: number, b: number, c: number, d: number, x: number
   v[b] = ((tmpB2 >>> 7) | (tmpB2 << 25)) >>> 0;
 };
 
-// Optimization: Reuse Uint32Array view if possible
 const compress = (
   h: Uint32Array,
   block32: Uint32Array,
@@ -63,18 +53,12 @@ const compress = (
   f0: number,
   v: Uint32Array
 ): Uint32Array => {
-  // Initialize v
   v.set(h, 0);
   v.set(PIN_ALGO_CONFIG.IV, 8);
   v[12] ^= t0;
   v[14] ^= f0;
 
-  // No allocation for m needed, use block32 directly
-  // Note: This assumes Little-Endian architecture.
-  // In a cross-platform safe implementation we would check endianness,
-  // but for high-perf Boks SDK (Node/Browser) we assume LE.
   const m = block32;
-
   for (let i = 0; i < 10; i++) {
     const s = PIN_ALGO_CONFIG.SIGMA[i];
     G(v, 0, 4, 8, 12, m[s[0]], m[s[1]]);
@@ -93,10 +77,25 @@ const compress = (
   return h;
 };
 
+const validateParams = (index: number, typePrefix: string) => {
+  if (index < 0 || !Number.isInteger(index)) {
+    throw new BoksProtocolError(
+      BoksProtocolErrorId.INVALID_VALUE,
+      `Invalid index: must be a non-negative integer, got ${index}`,
+      { received: index, field: 'index', expected: BoksExpectedReason.POSITIVE_INTEGER }
+    );
+  }
+  if (!ALLOWED_PREFIXES.includes(typePrefix as AllowedPrefix)) {
+    throw new BoksProtocolError(
+      BoksProtocolErrorId.INVALID_VALUE,
+      `Invalid PIN type prefix: "${typePrefix}". Allowed: ${ALLOWED_PREFIXES.join(', ')}`,
+      { received: typePrefix, allowed: ALLOWED_PREFIXES, expected: ALLOWED_PREFIXES.join(', ') }
+    );
+  }
+};
+
 /**
  * Shared internal logic for processing the message block and extracting PIN.
- * Assumes h contains the state after the Key block processing.
- *
  * @internal
  */
 const processMessageBlock = (h: Uint32Array, typePrefix: string, index: number): string => {
@@ -104,32 +103,18 @@ const processMessageBlock = (h: Uint32Array, typePrefix: string, index: number):
   const block32 = SHARED_BLOCK32;
   const v = SHARED_V;
 
-  // Block 2: The Message (prefix + " " + index)
-  // Optimization: Write parts directly to buffer to avoid string concatenation `${typePrefix} ${index}`
-  // which allocates a new string.
-
-  // Clear buffer for next block
   blockBuffer.fill(0);
-
   let offset = 0;
 
-  // Optimization: Use precomputed bytes instead of TextEncoder
-  // This avoids UTF-8 encoding overhead for known static prefixes.
   const prefixBytes = PREFIX_BYTES[typePrefix as AllowedPrefix];
   blockBuffer.set(prefixBytes, 0);
   offset += prefixBytes.length;
 
-  // Write space ' '
-  blockBuffer[offset++] = 32;
+  blockBuffer[offset++] = 32; // space
 
-  // Write index
-  // Optimization: Write integer directly to buffer to avoid string allocation (index.toString())
-  // and TextEncoder overhead. The index is guaranteed to be a non-negative integer.
   if (index === 0) {
     blockBuffer[offset++] = 48; // '0'
   } else {
-    // Optimization: Modern V8 string coercion ('' + index) + charCodeAt
-    // is significantly faster (up to ~3.8x) than custom modulo/division loops.
     const indexStr = '' + index;
     const digits = indexStr.length;
 
@@ -154,16 +139,7 @@ const processMessageBlock = (h: Uint32Array, typePrefix: string, index: number):
 
   compress(h, block32, 64 + offset, PIN_ALGO_CONFIG.MAX_32, v);
 
-  // Result: First 6 bytes of the hash, mapped to Boks Chars
-  // Need to extract 6 bytes from h (which is 8x32bit words)
-  // The Python ref uses struct.pack('<I', x) for each word then takes [:6]
-
-  // Optimization: Unrolled loop to avoid temporary array allocation
-  // Optimization: Precomputed 16-bit lookup table maps 2 bytes to 2 characters at once.
-  // Word 0 (bytes 0, 1, 2, 3)
   const w0 = h[0];
-
-  // Word 1 (bytes 4, 5)
   const w1 = h[1];
 
   return (
@@ -175,19 +151,13 @@ const processMessageBlock = (h: Uint32Array, typePrefix: string, index: number):
 
 /**
  * Precomputes the intermediate hash state after processing the key block.
- * This state can be reused to generate multiple PINs with the same key.
  */
 export const precomputeBoksKeyContext = (key: Uint8Array): Uint32Array => {
-  // Input Validation
   if (key.length !== 32) {
     throw new BoksProtocolError(
       BoksProtocolErrorId.INVALID_VALUE,
       `Invalid key length: expected 32 bytes, got ${key.length}`,
-      {
-        received: key.length,
-        expected: 32,
-        field: 'key'
-      }
+      { received: key.length, expected: 32, field: 'key' }
     );
   }
 
@@ -197,149 +167,54 @@ export const precomputeBoksKeyContext = (key: Uint8Array): Uint32Array => {
   const v = SHARED_V;
 
   try {
-    // Reset h with IV
     h.set(PIN_ALGO_CONFIG.IV);
     h[0] ^= PIN_ALGO_CONFIG.CONST_1;
-
-    // Block 1: The Key (padded to 64 bytes)
-    // We must clear blockBuffer first because we reuse it
     blockBuffer.fill(0);
-    blockBuffer.set(key); // Assumes key.length <= 64
+    blockBuffer.set(key);
     compress(h, block32, 64, 0, v);
-
-    // Return a copy of h
     return new Uint32Array(h);
   } finally {
-    // Security: Wipe the buffer containing the key/intermediate state
+    // Note: don't wipe SHARED_H here as we return a copy, 
+    // but we wipe temporary calculation buffers
     blockBuffer.fill(0);
-    h.fill(0);
     v.fill(0);
-    block32.fill(0);
   }
 };
 
 /**
  * Generates a Boks PIN using a precomputed key context.
- * This skips the key block processing and is significantly faster for bulk generation.
  */
 export const generateBoksPinFromContext = (
   keyContext: Uint32Array,
   typePrefix: string,
   index: number
 ): string => {
-  // Input Validation
   if (keyContext.length !== 8) {
     throw new BoksProtocolError(
       BoksProtocolErrorId.INVALID_VALUE,
       `Invalid key context length: expected 8 words, got ${keyContext.length}`,
-      {
-        received: keyContext.length,
-        expected: 8,
-        field: 'keyContext'
-      }
+      { received: keyContext.length, expected: 8, field: 'keyContext' }
     );
   }
-  if (index < 0 || !Number.isInteger(index)) {
-    throw new BoksProtocolError(
-      BoksProtocolErrorId.INVALID_VALUE,
-      `Invalid index: must be a non-negative integer, got ${index}`,
-      {
-        received: index,
-        field: 'index',
-        expected: BoksExpectedReason.POSITIVE_INTEGER
-      }
-    );
-  }
-  if (!ALLOWED_PREFIXES.includes(typePrefix as AllowedPrefix)) {
-    throw new BoksProtocolError(
-      BoksProtocolErrorId.INVALID_VALUE,
-      `Invalid PIN type prefix: "${typePrefix}". Allowed: ${ALLOWED_PREFIXES.join(', ')}`,
-      {
-        received: typePrefix,
-        allowed: ALLOWED_PREFIXES,
-        expected: ALLOWED_PREFIXES.join(', ')
-      }
-    );
-  }
-
+  validateParams(index, typePrefix);
   const h = SHARED_H;
-  const blockBuffer = SHARED_BLOCK_BUFFER;
-  const block32 = SHARED_BLOCK32;
-  const v = SHARED_V;
-
   try {
-    // Restore h from context
     h.set(keyContext);
     return processMessageBlock(h, typePrefix, index);
   } finally {
-    // Security: Wipe the buffer containing the key/intermediate state
-    blockBuffer.fill(0);
     h.fill(0);
-    v.fill(0);
-    block32.fill(0);
+    SHARED_V.fill(0);
   }
 };
 
+/**
+ * Generates a Boks PIN from a master key.
+ */
 export const generateBoksPin = (key: Uint8Array, typePrefix: string, index: number): string => {
-  // Input Validation
-  if (key.length !== 32) {
-    throw new BoksProtocolError(
-      BoksProtocolErrorId.INVALID_VALUE,
-      `Invalid key length: expected 32 bytes, got ${key.length}`,
-      {
-        received: key.length,
-        expected: 32,
-        field: 'key'
-      }
-    );
-  }
-  if (index < 0 || !Number.isInteger(index)) {
-    throw new BoksProtocolError(
-      BoksProtocolErrorId.INVALID_VALUE,
-      `Invalid index: must be a non-negative integer, got ${index}`,
-      {
-        received: index,
-        field: 'index',
-        expected: BoksExpectedReason.POSITIVE_INTEGER
-      }
-    );
-  }
-
-  if (!ALLOWED_PREFIXES.includes(typePrefix as AllowedPrefix)) {
-    throw new BoksProtocolError(
-      BoksProtocolErrorId.INVALID_VALUE,
-      `Invalid PIN type prefix: "${typePrefix}". Allowed: ${ALLOWED_PREFIXES.join(', ')}`,
-      {
-        received: typePrefix,
-        allowed: ALLOWED_PREFIXES,
-        expected: ALLOWED_PREFIXES.join(', ')
-      }
-    );
-  }
-
-  // Use shared buffers
-  const h = SHARED_H;
-  const blockBuffer = SHARED_BLOCK_BUFFER;
-  const block32 = SHARED_BLOCK32;
-  const v = SHARED_V;
-
-  try {
-    // Reset h with IV
-    h.set(PIN_ALGO_CONFIG.IV);
-    h[0] ^= PIN_ALGO_CONFIG.CONST_1;
-
-    // Block 1: The Key (padded to 64 bytes)
-    // We must clear blockBuffer first because we reuse it
-    blockBuffer.fill(0);
-    blockBuffer.set(key); // Assumes key.length <= 64
-    compress(h, block32, 64, 0, v);
-
-    return processMessageBlock(h, typePrefix, index);
-  } finally {
-    // Security: Wipe the buffer containing the key/intermediate state
-    blockBuffer.fill(0);
-    h.fill(0);
-    v.fill(0);
-    block32.fill(0);
-  }
+  // Reuse precompute logic to avoid duplication
+  const context = precomputeBoksKeyContext(key);
+  const pin = generateBoksPinFromContext(context, typePrefix, index);
+  // Security: Wipe context immediately
+  context.fill(0);
+  return pin;
 };
