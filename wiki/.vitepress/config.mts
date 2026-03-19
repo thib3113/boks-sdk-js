@@ -69,6 +69,7 @@ export default defineConfig({
               items: [
                 { text: 'Présentation', link: '/fr/examples/' },
                 { text: 'Démo Initialisation', link: '/fr/examples/initialization' },
+        { text: 'Démo Provisionnement', link: '/fr/examples/provisioning' },
                 { text: 'Démo Ouverture', link: '/fr/examples/open-door' },
                 { text: 'Sync Historique', link: '/fr/examples/history' },
                 { text: 'Gestion Codes', link: '/fr/examples/codes' },
@@ -138,6 +139,7 @@ export default defineConfig({
           items: [
             { text: 'Overview', link: '/examples/' },
             { text: 'Initialization Demo', link: '/examples/initialization' },
+        { text: 'Provisioning Demo', link: '/examples/provisioning' },
             { text: 'Open Door Demo', link: '/examples/open-door' },
             { text: 'History Sync', link: '/examples/history' },
             { text: 'Code Management', link: '/examples/codes' },

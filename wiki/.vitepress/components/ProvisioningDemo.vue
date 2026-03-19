@@ -158,6 +158,10 @@ async function provision() {
         {{ isProvisioning ? t.provision.provisioningBtn : t.provision.provisionBtn }}
       </button>
 
+      <div v-if="hasAnnouncedAcceptance" class="success-panel">
+        <strong>✅ {{ t.provision.acceptedTitle || 'Key Accepted' }}</strong>
+        <p>{{ t.provision.acceptedMsg.replace('{key}', boksStore.deriveConfigKey(newMasterKey)) }}</p>
+      </div>
       <div v-if="isProvisioning || provisionProgress > 0" class="progress-bar-container">
         <label>{{ t.provision.progress }}</label>
         <div style="display: flex; align-items: center; gap: 1rem;">
@@ -200,6 +204,9 @@ async function provision() {
 .fill { height: 100%; background: var(--vp-c-brand-1); transition: width 0.3s; }
 .pct { font-size: 0.75rem; font-weight: bold; width: 30px; }
 .warning-box { background: rgba(239, 68, 68, 0.1); border: 1px solid var(--vp-c-red-1); color: var(--vp-c-red-1); padding: 1rem; border-radius: 8px; margin-bottom: 1rem; }
+
+.success-panel { background: rgba(16, 185, 129, 0.1); border: 1px solid var(--vp-c-green-1); color: var(--vp-c-green-2); padding: 1rem; border-radius: 8px; margin-top: 1rem; font-size: 0.9rem; }
+.success-panel p { margin: 0.5rem 0 0 0; font-family: monospace; }
 
 /* Sponsoring Styles */
 .sponsoring-card {
