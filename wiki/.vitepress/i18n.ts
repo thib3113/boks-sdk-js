@@ -1,9 +1,33 @@
 export const i18n = {
   en: {
+
+    provision: {
+      title: 'Seed Regeneration',
+      desc: 'Replace the current Master Key with a new known seed to generate offline codes.',
+      generateNew: 'Generate New Random Key',
+      newKey: 'New Master Key',
+      provisionBtn: 'Regenerate Seed',
+      provisioningBtn: 'Regenerating...',
+      progress: 'Regeneration Progress:',
+      saveLogsAlert: 'CRITICAL: Regeneration has started. Please save the packet logs in case of failure!',
+      acceptedMsg: 'Boks has accepted the change! It is now generating the new codes. Your new Config Key will be {key}.',
+      acceptedTitle: 'Key Accepted',
+      successAlert: 'Regeneration Success! Please update your credentials.',
+      confirm: 'Are you sure you want to change the Master Key? This cannot be undone.',
+      error: 'Regeneration failed.',
+      unsupportedVersion: 'Unsupported Software Version',
+      unsupportedVersionDesc: 'Master Key Regeneration requires Boks software version >= 4.5.1.',
+      sponsorTitle: 'Support this development',
+      sponsorText: 'Hardware initialization is a critical feature that we currently cannot test on real devices. Your donations help us buy hardware to validate these experimental features safely.',
+      sponsorLink: 'Become a Sponsor on GitHub',
+    },
+
     global: {
       notConnectedBanner: 'To use these interactive examples, start the <strong>Simulator</strong> or <strong>Connect</strong> a real device using the dashboard at the bottom of your screen.',
       notConnectedWarning: '⚠️ <strong>Not Connected</strong>. Please use the connection panel at the top of the page.',
       pleaseConnectFirst: 'Please connect first using the Global Controller.',
+      unsupportedVersionTitle: 'Unsupported Software Version',
+      unsupportedVersionDesc: 'This feature requires a newer software version on your device.',
     },
     init: {
       activeCredentials: '1. Active Credentials',
@@ -116,10 +140,34 @@ export const i18n = {
     }
   },
   fr: {
+
+    provision: {
+      title: 'Régénération de Seed',
+      desc: 'Générez une nouvelle Clé Maître aléatoire et provisionnez-la sur l\'appareil.',
+      generateNew: 'Générer Nouvelle Clé Aléatoire',
+      newKey: 'Nouvelle Clé Maître',
+      provisionBtn: 'Régénérer la Seed',
+      provisioningBtn: 'Régénération en cours...',
+      progress: 'Progression de la régénération :',
+      saveLogsAlert: 'CRITIQUE : La régénération a commencé. Veuillez sauvegarder les journaux de paquets en cas d\'échec !',
+      acceptedMsg: 'La Boks a accepté le changement ! Elle génère maintenant les nouveaux codes. Votre nouvelle Clé de Config sera {key}.',
+      acceptedTitle: 'Clé Acceptée',
+      successAlert: 'Succès de la régénération ! Veuillez mettre à jour vos identifiants.',
+      confirm: 'Êtes-vous sûr de vouloir changer la Clé Maître ? Cette action est irréversible.',
+      error: 'Échec de la régénération.',
+      unsupportedVersion: 'Version logicielle non supportée',
+      unsupportedVersionDesc: 'La régénération de la Clé Maître nécessite une version logicielle Boks >= 4.5.1.',
+      sponsorTitle: 'Soutenez ce développement',
+      sponsorText: 'L\'initialisation matérielle est une fonctionnalité critique que nous ne pouvons actuellement pas tester sur de vrais appareils. Vos dons nous aident à acheter du matériel pour valider ces fonctionnalités expérimentales en toute sécurité.',
+      sponsorLink: 'Devenir un Sponsor sur GitHub',
+    },
+
     global: {
       notConnectedBanner: 'Pour utiliser ces exemples interactifs, démarrez le <strong>Simulateur</strong> ou <strong>Connectez</strong> un véritable appareil à l\'aide du tableau de bord au bas de votre écran.',
       notConnectedWarning: '⚠️ <strong>Non connecté</strong>. Veuillez utiliser le panneau de connexion en haut de la page.',
       pleaseConnectFirst: 'Veuillez d\'abord vous connecter en utilisant le contrôleur global.',
+      unsupportedVersionTitle: 'Version logicielle non supportée',
+      unsupportedVersionDesc: 'Cette fonctionnalité nécessite une version logicielle plus récente sur votre appareil.',
     },
     init: {
       activeCredentials: '1. Identifiants Actifs',

@@ -706,6 +706,7 @@ export class BoksController {
     newMasterKey: string | Uint8Array,
     onProgress?: (progress: number) => void
   ): Promise<boolean> {
+    this.checkRequirements({ minSw: '4.5.1', featureName: 'Master Key Regeneration' });
     const configKey = this.getConfigKeyOrThrow();
     validateSeed(newMasterKey);
 
@@ -728,7 +729,7 @@ export class BoksController {
       // Part A
       const successA = await this.performOperation(
         new RegeneratePartAPacket({ configKey: configKey, part: partA }),
-        BoksOpcode.CODE_OPERATION_SUCCESS,
+        BoksOpcode.NOTIFY_CODE_GENERATION_PROGRESS,
         BoksOpcode.ERROR_UNAUTHORIZED
       );
       if (!successA) {
