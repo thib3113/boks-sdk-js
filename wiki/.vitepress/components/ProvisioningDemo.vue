@@ -41,11 +41,17 @@ const isVersionSupported = computed(() => {
   return compareSemVer(boksStore.softwareVersion, '4.5.1') >= 0
 })
 
-// Watch progress to prompt user to save logs
+// Watch progress to prompt user to save logs and announce early acceptance
+const hasAnnouncedAcceptance = ref(false)
 watch(provisionProgress, (newVal) => {
   if (newVal > 0 && !hasPromptedLogs.value) {
     hasPromptedLogs.value = true
     alert(t.value.provision.saveLogsAlert)
+  }
+  if (newVal > 0 && !hasAnnouncedAcceptance.value) {
+    hasAnnouncedAcceptance.value = true
+    const newConfigKey = boksStore.deriveConfigKey(newMasterKey.value)
+    boksStore.log(t.value.provision.acceptedMsg.replace('{key}', newConfigKey), 'success')
   }
 })
 
@@ -81,6 +87,7 @@ async function provision() {
   isProvisioning.value = true
   provisionProgress.value = 0
   hasPromptedLogs.value = false
+  hasAnnouncedAcceptance.value = false
 
   // Anti-Brick Measure 1: Auto-Download Key
   downloadKey(newMasterKey.value)
