@@ -69,3 +69,8 @@
 ## 2024-03-18 - [Protocol] **Hardened:** [MultiToSingleCodePacket] **Edge-Cases Covered:** [Wrong Opcodes checked correctly]
 ## 2024-03-18 - [Protocol] **Hardened:** [SingleToMultiCodePacket] **Edge-Cases Covered:** [Wrong Opcodes checked correctly]
 ## 2024-03-18 - [Protocol] **Hardened:** [MasterCodeEditPacket] **Edge-Cases Covered:** [Wrong Opcodes checked correctly]
+## 2024-03-19 - [Protocol Uplink] **Hardened:** [AnswerDoorStatusPacket, NotifyCodeGenerationProgressPacket, NotifyDoorStatusPacket, OperationErrorPacket] **Edge-Cases Covered:** [Missing error expectations, unhandled crashes]
+- Updated `AnswerDoorStatusPacket.resilience.test.ts` to expect `BoksProtocolError` when invalid payloads are parsed instead of returning silently.
+- Updated `NotifyCodeGenerationProgressPacket.resilience.test.ts` to expect `BoksProtocolError` when invalid payloads are parsed instead of returning silently.
+- Updated `NotifyDoorStatusPacket.resilience.test.ts` to expect `BoksProtocolError` when invalid payloads are parsed instead of returning silently.
+- Updated `SimpleNotificationPackets.resilience.test.ts` to expect `BoksProtocolError` when `OperationErrorPacket` receives invalid payloads instead of returning silently.
