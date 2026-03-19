@@ -5,6 +5,7 @@ export const i18n = {
       title: 'Seed Regeneration',
       desc: 'Replace the current Master Key with a new known seed to generate offline codes.',
       generateNew: 'Generate New Random Key',
+      clickGenerateAbove: 'Click generate button above',
       newKey: 'New Master Key',
       provisionBtn: 'Regenerate Seed',
       provisioningBtn: 'Regenerating...',
@@ -24,7 +25,7 @@ export const i18n = {
 
     global: {
       notConnectedBanner: 'To use these interactive examples, start the <strong>Simulator</strong> or <strong>Connect</strong> a real device using the dashboard at the bottom of your screen.',
-      notConnectedWarning: '⚠️ <strong>Not Connected</strong>. Please use the connection panel at the top of the page.',
+      notConnectedWarning: '⚠️ <strong>Not Connected</strong>. Please use the connection panel at the bottom of the page.',
       pleaseConnectFirst: 'Please connect first using the Global Controller.',
       unsupportedVersionTitle: 'Unsupported Software Version',
       unsupportedVersionDesc: 'This feature requires a newer software version on your device.',
@@ -101,7 +102,7 @@ export const i18n = {
       refreshSuccess: 'Battery and Hardware data refreshed.',
     },
     logger: {
-      title: 'SDK Dashboard',
+      title: 'Console',
       simulator: 'Simulator',
       realBle: 'Real BLE',
       connect: 'Connect',
@@ -145,6 +146,7 @@ export const i18n = {
       title: 'Régénération de Seed',
       desc: 'Générez une nouvelle Clé Maître aléatoire et provisionnez-la sur l\'appareil.',
       generateNew: 'Générer Nouvelle Clé Aléatoire',
+      clickGenerateAbove: 'Cliquez sur le bouton de génération ci-dessus',
       newKey: 'Nouvelle Clé Maître',
       provisionBtn: 'Régénérer la Seed',
       provisioningBtn: 'Régénération en cours...',
@@ -164,7 +166,7 @@ export const i18n = {
 
     global: {
       notConnectedBanner: 'Pour utiliser ces exemples interactifs, démarrez le <strong>Simulateur</strong> ou <strong>Connectez</strong> un véritable appareil à l\'aide du tableau de bord au bas de votre écran.',
-      notConnectedWarning: '⚠️ <strong>Non connecté</strong>. Veuillez utiliser le panneau de connexion en haut de la page.',
+      notConnectedWarning: '⚠️ <strong>Non connecté</strong>. Veuillez utiliser le panneau de connexion en bas de la page.',
       pleaseConnectFirst: 'Veuillez d\'abord vous connecter en utilisant le contrôleur global.',
       unsupportedVersionTitle: 'Version logicielle non supportée',
       unsupportedVersionDesc: 'Cette fonctionnalité nécessite une version logicielle plus récente sur votre appareil.',
@@ -241,7 +243,7 @@ export const i18n = {
       refreshSuccess: 'Données Batterie et Matériel actualisées.',
     },
     logger: {
-      title: 'Tableau de bord SDK',
+      title: 'Console',
       simulator: 'Simulateur',
       realBle: 'Vrai BLE',
       connect: 'Connecter',
