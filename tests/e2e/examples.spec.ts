@@ -39,6 +39,7 @@ test.describe('SDK Examples E2E', () => {
     await page.getByTestId('open-door-button').click();
     
     const badge = page.getByTestId('door-status-badge');
+    // We wait up to 10s, but it should happen after ~200ms (simulator delay)
     await expect(badge).toHaveClass(/open/, { timeout: 10000 });
   });
 

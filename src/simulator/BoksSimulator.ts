@@ -478,25 +478,26 @@ export class BoksHardwareSimulator {
    * Internal method to execute the door opening sequence.
    */
   private executeDoorOpen(logOpcode: number, payload: Uint8Array, codeOrTagId: string): void {
-    // 1. Log the source event
+    // 1. Log the source event (Access granted)
     this.addLog(logOpcode, payload);
 
-    // 2. Open the door
-    this.#isOpen = true;
-    this.emit(this.createResponse(BoksOpcode.NOTIFY_DOOR_STATUS, new Uint8Array([0x00, 0x01])));
+    // 2. Simulate the physical spring pushing the door open shortly after strike release.
+    setTimeout(() => {
+      if (!this.#isOpen) {
+        this.setDoorStatus(true);
+        this.addLog(BoksOpcode.LOG_DOOR_OPEN, payload);
+        // Automatically schedule closing since it's a simulator
+        this.scheduleAutoClose();
+      }
+    }, 200);
 
-    // 3. Log the generic door open event (0x91) - Usually follows successful validation
-    this.addLog(BoksOpcode.LOG_DOOR_OPEN, payload);
-
-    // 4. Handle Single-Use Code consumption
+    // 3. Handle Single-Use Code consumption
     if (codeOrTagId && this.#pinCodes.has(codeOrTagId)) {
       if (this.#pinCodes.get(codeOrTagId) === BoksCodeType.Single) {
         this.#pinCodes.delete(codeOrTagId);
         this.saveState('pinCodes');
       }
     }
-
-    this.scheduleAutoClose();
   }
 
   /**
