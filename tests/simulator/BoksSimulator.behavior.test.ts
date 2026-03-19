@@ -65,7 +65,7 @@ describe('BoksHardwareSimulator', () => {
       expect(notifyCount).toBeGreaterThan(0);
     });
 
-    it('should trigger BLE open and consume single-use code', () => {
+    it('should trigger BLE open and consume single-use code', async () => {
       // Find a single use code
       let singleUsePin = '';
       for (const [pin, type] of simulator.getInternalState().pinCodes.entries()) {
@@ -76,6 +76,9 @@ describe('BoksHardwareSimulator', () => {
       }
 
       simulator.triggerBleOpen(singleUsePin);
+      // Wait for delay
+      await new Promise((r) => setTimeout(r, 300));
+      
       expect(simulator.getInternalState().isOpen).toBe(true);
       expect(simulator.getInternalState().pinCodes.has(singleUsePin)).toBe(false);
 
@@ -83,15 +86,19 @@ describe('BoksHardwareSimulator', () => {
       expect(logs.find((l) => l.opcode === BoksOpcode.LOG_CODE_BLE_VALID)).toBeDefined();
     });
 
-    it('should trigger keypad open', () => {
+    it('should trigger keypad open', async () => {
       simulator.triggerKeypadOpen('112233');
+      // Wait for delay
+      await new Promise((r) => setTimeout(r, 300));
       expect(simulator.getInternalState().isOpen).toBe(true);
       const logs = simulator.getInternalState().logs;
       expect(logs.find((l) => l.opcode === BoksOpcode.LOG_CODE_KEY_VALID)).toBeDefined();
     });
 
-    it('should trigger physical key open', () => {
+    it('should trigger physical key open', async () => {
       simulator.triggerPhysicalKeyOpen();
+      // Wait for delay
+      await new Promise((r) => setTimeout(r, 300));
       expect(simulator.getInternalState().isOpen).toBe(true);
       const logs = simulator.getInternalState().logs;
       expect(logs.find((l) => l.opcode === BoksOpcode.LOG_EVENT_KEY_OPENING)).toBeDefined();

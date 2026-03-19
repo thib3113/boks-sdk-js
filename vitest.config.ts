@@ -16,6 +16,7 @@ export default defineConfig({
     globals: true,
     environment: 'node',
     reporters: ['default', 'junit'],
+    include: ['tests/**/*.{test,spec}.ts'],
     outputFile: {
       junit: './junit.xml'
     },
@@ -25,7 +26,8 @@ export default defineConfig({
       reporter: ['text', 'lcov', 'clover'],
       include: ['src/**/*.ts'],
       exclude: ['src/**/*.d.ts', 'src/**/index.ts']
-    }
+    },
+    exclude: [...defineConfig({}).test?.exclude || [], 'tests/e2e/**']
   },
   resolve: {
     alias: {

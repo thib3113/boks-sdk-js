@@ -94,6 +94,9 @@ describe('BoksController Integration with Simulator', () => {
     const openSuccess = await controller.openDoor(TEST_PIN);
     expect(openSuccess).toBe(true);
 
+    // Wait for realistic simulator opening delay (200ms)
+    await new Promise((r) => setTimeout(r, 300));
+
     // 4. Verify Door Status
     const isOpen = await controller.getDoorStatus();
     expect(isOpen).toBe(true);

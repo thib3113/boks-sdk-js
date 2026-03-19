@@ -40,6 +40,9 @@ describe('Boks Hardware Simulator Integrity', () => {
     const opcodes = responseCallback.mock.calls.map((c: any[]) => c[0][0]);
     expect(opcodes).toContain(BoksOpcode.VALID_OPEN_CODE);
     expect(opcodes).toContain(BoksOpcode.NOTIFY_DOOR_STATUS);
+    
+    // Wait for the simulator's delayed door status update
+    await new Promise((r) => setTimeout(r, 300));
     expect(simulator.getInternalState().isOpen).toBe(true);
 
     // Check Logs
@@ -56,18 +59,20 @@ describe('Boks Hardware Simulator Integrity', () => {
     expect(simulator.getInternalState().pinCodes.has('123456')).toBe(false);
   });
 
-  test('Should consume Single-Use codes when triggered via simulator', () => {
+  test('Should consume Single-Use codes when triggered via simulator', async () => {
     simulator.addPinCode('777777', BoksCodeType.Single);
     simulator.triggerKeypadOpen('777777');
 
+    await new Promise((r) => setTimeout(r, 300));
     expect(simulator.getInternalState().isOpen).toBe(true);
     expect(simulator.getInternalState().pinCodes.has('777777')).toBe(false);
   });
 
-  test('Should NOT consume Multi-Use codes when triggered', () => {
+  test('Should NOT consume Multi-Use codes when triggered', async () => {
     simulator.addPinCode('888888', BoksCodeType.Multi);
     simulator.triggerKeypadOpen('888888');
 
+    await new Promise((r) => setTimeout(r, 300));
     expect(simulator.getInternalState().isOpen).toBe(true);
     expect(simulator.getInternalState().pinCodes.has('888888')).toBe(true);
   });
@@ -188,8 +193,12 @@ describe('Boks Hardware Simulator Integrity', () => {
   });
 
   describe('triggerDoorOpen and Logging', () => {
-    test('Should generate correct logs for BLE source', () => {
+    test('Should generate correct logs for BLE source', async () => {
       simulator.triggerBleOpen('123456');
+      
+      // Wait for delay
+      await new Promise((r) => setTimeout(r, 300));
+      
       const logs = simulator.getInternalState().logs;
 
       // Expect 0x86 (BLE Valid) and 0x91 (Door Open)
@@ -199,8 +208,12 @@ describe('Boks Hardware Simulator Integrity', () => {
       expect(simulator.getInternalState().isOpen).toBe(true);
     });
 
-    test('Should generate correct logs for Keypad source', () => {
+    test('Should generate correct logs for Keypad source', async () => {
       simulator.triggerKeypadOpen('654321');
+      
+      // Wait for delay
+      await new Promise((r) => setTimeout(r, 300));
+      
       const logs = simulator.getInternalState().logs;
 
       // Expect 0x87 (Keypad Valid) and 0x91 (Door Open)
@@ -209,8 +222,12 @@ describe('Boks Hardware Simulator Integrity', () => {
       expect(lastLogs[1].opcode).toBe(BoksOpcode.LOG_DOOR_OPEN);
     });
 
-    test('Should generate correct logs for Physical Key source', () => {
+    test('Should generate correct logs for Physical Key source', async () => {
       simulator.triggerPhysicalKeyOpen();
+      
+      // Wait for delay
+      await new Promise((r) => setTimeout(r, 300));
+      
       const logs = simulator.getInternalState().logs;
 
       // Expect 0x99 (Key Opening) and 0x91 (Door Open)
@@ -219,8 +236,12 @@ describe('Boks Hardware Simulator Integrity', () => {
       expect(lastLogs[1].opcode).toBe(BoksOpcode.LOG_DOOR_OPEN);
     });
 
-    test('Should generate correct logs for NFC source', () => {
+    test('Should generate correct logs for NFC source', async () => {
       simulator.triggerNfcOpen('AABBCCDD');
+      
+      // Wait for delay
+      await new Promise((r) => setTimeout(r, 300));
+      
       const logs = simulator.getInternalState().logs;
 
       // Expect 0xA1 (NFC Opening) and 0x91 (Door Open)
