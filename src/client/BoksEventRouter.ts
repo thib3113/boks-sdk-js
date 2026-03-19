@@ -81,7 +81,7 @@ export class BoksEventRouter<TEventMap extends Record<string, unknown> = Record<
         payload !== null &&
         typeof payload === 'object' &&
         'opcode' in payload &&
-        (payload as any).opcode === filter
+        (payload as { opcode: number }).opcode === filter
       );
     }
     if (typeof filter === 'function') {
