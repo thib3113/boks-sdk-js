@@ -7,8 +7,9 @@ import { calculateChecksum, stringToBytes } from '@/utils/converters';
 describe('BoksPacketFactory', () => {
   // Register all packets for tests
   for (const key in Packets) {
-    if (typeof Packets[key] === 'function' && 'opcode' in Packets[key]) {
-      BoksPacketFactory.register(Packets[key] as any);
+    const p = (Packets as any)[key];
+    if (typeof p === 'function' && 'opcode' in p) {
+      BoksPacketFactory.register(p as any);
     }
   }
 

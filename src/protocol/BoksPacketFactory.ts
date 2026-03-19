@@ -230,7 +230,7 @@ export class BoksPacketFactory {
   static createRegeneratePackets(
     configKey: string,
     newMasterKey: Uint8Array | string
-  ): [any, any] {
+  ): [BoksPacket, BoksPacket] {
     const keyBytes = typeof newMasterKey === 'string' ? hexToBytes(newMasterKey) : newMasterKey;
     if (keyBytes.length !== 32) {
       throw new BoksProtocolError(BoksProtocolErrorId.INVALID_VALUE, undefined, {
@@ -240,8 +240,18 @@ export class BoksPacketFactory {
       });
     }
     return [
-      new (this.getConstructor(0x20) || function() { throw new Error('RegeneratePartAPacket not registered') } as any)({ configKey: configKey, part: keyBytes.subarray(0, 16) }),
-      new (this.getConstructor(0x21) || function() { throw new Error('RegeneratePartBPacket not registered') } as any)({ configKey: configKey, part: keyBytes.subarray(16, 32) })
+      new (
+        this.getConstructor(0x20) ||
+        (function () {
+          throw new Error('RegeneratePartAPacket not registered');
+        } as unknown as BoksPacketConstructor)
+      )({ configKey: configKey, part: keyBytes.subarray(0, 16) }),
+      new (
+        this.getConstructor(0x21) ||
+        (function () {
+          throw new Error('RegeneratePartBPacket not registered');
+        } as unknown as BoksPacketConstructor)
+      )({ configKey: configKey, part: keyBytes.subarray(16, 32) })
     ];
   }
 }
