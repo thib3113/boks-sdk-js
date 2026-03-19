@@ -174,7 +174,7 @@ export const precomputeBoksKeyContext = (key: Uint8Array): Uint32Array => {
     compress(h, block32, 64, 0, v);
     return new Uint32Array(h);
   } finally {
-    // Note: don't wipe SHARED_H here as we return a copy, 
+    // Note: don't wipe SHARED_H here as we return a copy,
     // but we wipe temporary calculation buffers
     blockBuffer.fill(0);
     v.fill(0);
