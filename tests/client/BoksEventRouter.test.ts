@@ -113,5 +113,28 @@ describe('BoksEventRouter', () => {
 
     router.emitClientEvent(packet, 'RX');
     expect(rxListener).toHaveBeenCalledTimes(1); // Still 1
+
+    // Explicit off
+    const txListener = vi.fn();
+    router.on('TX', txListener);
+    router.off('TX', txListener);
+    router.emitClientEvent(packet, 'TX');
+    expect(txListener).toHaveBeenCalledTimes(0);
+  });
+
+  it('should handle edge cases in matchesClientFilter', () => {
+    const router = new BoksEventRouter<TestEventMap>();
+    const packet = new AskDoorStatusPacket();
+
+    // Testing missing direction on TX/RX filter
+    // Cast to any to bypass the TS safety net that normally prevents this
+    // to test the defensive coding inside the router
+    expect((router as any).matchesClientFilter('TX', packet, undefined)).toBe(false);
+
+    // Testing a string that isn't TX/RX/*
+    expect((router as any).matchesClientFilter('someRandomString', packet, 'TX')).toBe(false);
+
+    // Testing unhandled types
+    expect((router as any).matchesClientFilter(null, packet, 'TX')).toBe(false);
   });
 });
