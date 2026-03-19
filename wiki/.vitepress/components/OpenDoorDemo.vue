@@ -73,6 +73,7 @@ async function checkStatus() {
             maxlength="6"
             placeholder="123456"
             :disabled="!boksStore.isConnected || isOpening"
+            data-testid="pin-input"
           >
         </div>
 
@@ -80,6 +81,7 @@ async function checkStatus() {
           @click="openDoor"
           :disabled="!boksStore.isConnected || isOpening || pinCode.length !== 6"
           class="primary-btn big-btn"
+          data-testid="open-door-button"
         >
           {{ isOpening ? t.openDoor.openingBtn : t.openDoor.openBtn }}
         </button>
@@ -87,7 +89,7 @@ async function checkStatus() {
 
       <div class="status-display" v-if="boksStore.isConnected && doorStatus !== null">
         {{ t.openDoor.currentState }}
-        <span :class="['badge', doorStatus ? 'open' : 'closed']">
+        <span :class="['badge', doorStatus ? 'open' : 'closed']" data-testid="door-status-badge">
           {{ doorStatus ? 'OPEN' : 'CLOSED' }}
         </span>
         <button @click="checkStatus" class="icon-btn" :title="t.openDoor.refreshStatus">🔄</button>

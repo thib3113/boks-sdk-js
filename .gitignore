@@ -33,6 +33,10 @@ Thumbs.db
 
 # Tests
 coverage/
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
 
 # Misc
 *.tgz

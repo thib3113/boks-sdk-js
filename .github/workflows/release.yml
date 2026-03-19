@@ -45,6 +45,11 @@ jobs:
       - name: Verify Exports & Package
         run: pnpm run check:all
 
+      - name: Smoke Test (Import built ESM)
+        run: |
+          node -e "import { BoksClient, BoksController } from './dist/esm/boks-sdk.js'; console.log('✅ ESM Import Success')"
+          node -e "import { BoksHardwareSimulator } from './dist/esm/simulator.js'; console.log('✅ Simulator Import Success')"
+
       - name: Attest build provenance
         uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32 # v4
         with:

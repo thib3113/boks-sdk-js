@@ -50,7 +50,7 @@ function getBatteryColor(level: number | undefined) {
     <div class="card">
       <div class="header-row">
         <h3>{{ t.battery.title }}</h3>
-        <button @click="refreshData" :disabled="!boksStore.isConnected || isLoading" class="secondary-btn small">
+        <button @click="refreshData" :disabled="!boksStore.isConnected || isLoading" class="secondary-btn small" data-testid="refresh-data-button">
           {{ isLoading ? t.battery.refreshingBtn : t.battery.refreshBtn }}
         </button>
       </div>
@@ -58,22 +58,22 @@ function getBatteryColor(level: number | undefined) {
       <div v-if="boksStore.isConnected && hardwareInfo" class="info-grid">
         <div class="info-item">
           <span class="label">{{ t.battery.hwVersion }}</span>
-          <span class="value">{{ hardwareInfo.hardwareVersion }}</span>
+          <span class="value" data-testid="hw-version-value">{{ hardwareInfo.hardwareVersion }}</span>
         </div>
         <div class="info-item">
           <span class="label">{{ t.battery.fwRevision }}</span>
-          <span class="value">{{ hardwareInfo.firmwareRevision }}</span>
+          <span class="value" data-testid="fw-revision-value">{{ hardwareInfo.firmwareRevision }}</span>
         </div>
         <div class="info-item">
           <span class="label">{{ t.battery.chipset }}</span>
-          <span class="value">{{ hardwareInfo.chipset }}</span>
+          <span class="value" data-testid="chipset-value">{{ hardwareInfo.chipset }}</span>
         </div>
       </div>
 
       <div v-if="boksStore.isConnected" class="battery-section">
         <div class="gauge-container">
           <div class="gauge-fill" :style="{ width: (batteryLevel || 0) + '%', backgroundColor: getBatteryColor(batteryLevel) }"></div>
-          <span class="gauge-text">{{ batteryLevel !== undefined ? batteryLevel + '%' : '??%' }}</span>
+          <span class="gauge-text" data-testid="battery-level-text">{{ batteryLevel !== undefined ? batteryLevel + '%' : '??%' }}</span>
         </div>
 
         <div v-if="batteryStats" class="stats-table">

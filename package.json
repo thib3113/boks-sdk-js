@@ -43,7 +43,7 @@
       },
       "require": {
         "types": "./dist/types/core.d.cts",
-        "default": "./dist/cjs/core.cjs"
+        "default": "./dist/cjs/boks-sdk.cjs"
       }
     },
     "./simulator": {
@@ -53,7 +53,7 @@
       },
       "require": {
         "types": "./dist/types/simulator.d.cts",
-        "default": "./dist/cjs/simulator.cjs"
+        "default": "./dist/cjs/boks-sdk.cjs"
       }
     },
     "./browser": {
@@ -75,6 +75,8 @@
     "docs": "pnpm run docs:build && typedoc",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test",
+    "test:e2e:ci": "playwright test --reporter=list",
     "lint": "eslint src",
     "type-check": "tsc --noEmit",
     "docs:dev": "vitepress dev wiki",
@@ -95,6 +97,7 @@
     "@babel/plugin-proposal-decorators": "7.29.0",
     "@codecov/bundle-analyzer": "1.9.1",
     "@eslint/js": "10.0.1",
+    "@playwright/test": "^1.58.2",
     "@types/node": "24.12.0",
     "@types/web-bluetooth": "0.0.21",
     "@vitest/coverage-v8": "4.1.0",

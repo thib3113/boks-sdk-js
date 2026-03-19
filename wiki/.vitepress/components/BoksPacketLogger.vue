@@ -89,7 +89,7 @@ function exportLogs() {
 <template>
   <div :class="['sdk-dashboard', { expanded: boksStore.isExpanded }]">
     <!-- BAND (Header) -->
-    <div class="dashboard-header" @click="boksStore.isExpanded = !boksStore.isExpanded">
+    <div class="dashboard-header" @click="boksStore.isExpanded = !boksStore.isExpanded" data-testid="dashboard-header">
       <div class="title">
         📡 {{ t.logger.title }}
         <span class="target-name" v-if="boksStore.isConnected"> — {{ boksStore.deviceName }}</span>
@@ -98,13 +98,13 @@ function exportLogs() {
       <div class="header-actions">
         <label class="sim-switch" @click.stop v-if="!boksStore.isConnected" :title="t.logger.simulator">
           <div class="switch-control">
-            <input type="checkbox" v-model="boksStore.useSimulator" id="simToggle">
+            <input type="checkbox" v-model="boksStore.useSimulator" id="simToggle" data-testid="simulator-checkbox">
             <div class="slider round"></div>
           </div>
           <span>{{ t.logger.simulator }}</span>
         </label>
 
-        <button @click.stop="toggleConnection" :class="['action-btn-main', { connected: boksStore.isConnected, loading: boksStore.isConnecting }]">
+        <button @click.stop="toggleConnection" :class="['action-btn-main', { connected: boksStore.isConnected, loading: boksStore.isConnecting }]" data-testid="connect-button">
           <span v-if="boksStore.isConnecting" class="spinner">⏳</span>
           <span :class="{ 'desktop-only': boksStore.isConnecting }">{{ boksStore.isConnecting ? t.logger.working : (boksStore.isConnected ? t.logger.disconnect : (boksStore.useSimulator ? t.logger.start : t.logger.connect)) }}</span>
         </button>
@@ -135,19 +135,19 @@ function exportLogs() {
             <!-- Simulator-only Actions -->
             <template v-if="boksStore.useSimulator">
               <div class="config-item row">
-                <button @click="boksStore.simulator?.setDoorStatus(!simState.isOpen)" :class="['ctrl-btn', { active: simState.isOpen }]">
+                <button @click="boksStore.simulator?.setDoorStatus(!simState.isOpen)" :class="['ctrl-btn', { active: simState.isOpen }]" data-testid="sim-toggle-door-button">
                   {{ simState.isOpen ? t.logger.closeDoor : t.logger.openDoor }}
                 </button>
-                <button @click="boksStore.simulator?.setChaosMode(!simState.chaosMode)" :class="['ctrl-btn', { warning: simState.chaosMode }]">
+                <button @click="boksStore.simulator?.setChaosMode(!simState.chaosMode)" :class="['ctrl-btn', { warning: simState.chaosMode }]" data-testid="sim-toggle-chaos-button">
                   {{ simState.chaosMode ? t.logger.chaosMode : t.logger.normalMode }}
                 </button>
               </div>
 
               <div class="sub-title">{{ t.logger.triggerEvents }}</div>
               <div class="config-item row tri">
-                <button @click="triggerRealisticOpen('keypad')" class="small-btn">{{ t.logger.keypad }}</button>
-                <button @click="triggerRealisticOpen('key')" class="small-btn">{{ t.logger.key }}</button>
-                <button @click="triggerRealisticOpen('nfc')" class="small-btn">{{ t.logger.nfc }}</button>
+                <button @click="triggerRealisticOpen('keypad')" class="small-btn" data-testid="sim-trigger-keypad">{{ t.logger.keypad }}</button>
+                <button @click="triggerRealisticOpen('key')" class="small-btn" data-testid="sim-trigger-key">{{ t.logger.key }}</button>
+                <button @click="triggerRealisticOpen('nfc')" class="small-btn" data-testid="sim-trigger-nfc">{{ t.logger.nfc }}</button>
               </div>
             </template>
 

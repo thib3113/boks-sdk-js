@@ -67,20 +67,22 @@ export class BoksEventRouter<TEventMap extends Record<string, unknown> = Record<
     payload: unknown,
     direction?: BoksPacketDirection
   ): boolean {
-    if (typeof filter === 'string' && ['TX', 'RX', '*'].includes(filter)) {
-      if (!direction) {
-        return false;
-      }
-      if (filter === '*') {
-        return true;
-      }
-      return filter === direction;
-    }
     if (typeof filter === 'string') {
+      if (['TX', 'RX', '*'].includes(filter)) {
+        if (filter === '*') {
+          return true;
+        }
+        return filter === direction;
+      }
       return false;
     }
     if (typeof filter === 'number') {
-      return payload instanceof BoksPacket && payload.opcode === filter;
+      return (
+        payload !== null &&
+        typeof payload === 'object' &&
+        'opcode' in payload &&
+        (payload as any).opcode === filter
+      );
     }
     if (typeof filter === 'function') {
       return payload instanceof filter;

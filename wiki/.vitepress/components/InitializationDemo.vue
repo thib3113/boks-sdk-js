@@ -63,14 +63,14 @@ function copy(text: string) {
     <div class="card">
       <div class="card-header">
         <h3>{{ t.init.activeCredentials }}</h3>
-        <button @click="generateKey" class="secondary-btn small">{{ t.init.generateNew }}</button>
+        <button @click="generateKey" class="secondary-btn small" data-testid="generate-key-button">{{ t.init.generateNew }}</button>
       </div>
 
       <div v-if="boksStore.activeMasterKey" class="key-details">
         <div class="field">
           <label>{{ t.init.masterKey }}</label>
           <div class="value-row">
-            <code>{{ boksStore.activeMasterKey }}</code>
+            <code data-testid="master-key-display">{{ boksStore.activeMasterKey }}</code>
             <button @click="copy(boksStore.activeMasterKey)" class="icon-btn">📋</button>
           </div>
         </div>
@@ -94,6 +94,7 @@ function copy(text: string) {
         @click="initialize" 
         :disabled="!boksStore.isConnected || isInitializing" 
         class="danger-btn big-btn"
+        data-testid="initialize-button"
       >
         {{ isInitializing ? t.init.initializingBtn : t.init.initializeBtn }}
       </button>

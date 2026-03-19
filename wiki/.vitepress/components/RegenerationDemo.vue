@@ -155,6 +155,7 @@ async function provision() {
           @click="generateKey"
           :disabled="isProvisioning"
           class="secondary-btn"
+          data-testid="generate-new-key-button"
         >
           {{ t.provision.generateNew }}
         </button>
@@ -163,14 +164,14 @@ async function provision() {
       <div class="field" style="margin-top: 1rem;">
         <label>{{ t.provision.currentConfigKey || 'Current Config Key (8 chars)' }}</label>
         <div class="value-row">
-          <input type="text" v-model="currentConfigKey" maxlength="8" :placeholder="t.provision.enterConfigKey || 'Enter current 8-char Config Key'" :disabled="isProvisioning" />
+          <input type="text" v-model="currentConfigKey" maxlength="8" :placeholder="t.provision.enterConfigKey || 'Enter current 8-char Config Key'" :disabled="isProvisioning" data-testid="current-config-key-input" />
         </div>
       </div>
 
       <div class="field" style="margin-top: 1rem;">
         <label>{{ t.provision.newKey }}</label>
         <div class="value-row">
-          <input type="text" v-model="newMasterKey" readonly :placeholder="t.provision.clickGenerateAbove" />
+          <input type="text" v-model="newMasterKey" readonly :placeholder="t.provision.clickGenerateAbove" data-testid="new-master-key-input" />
         </div>
       </div>
 
@@ -179,6 +180,7 @@ async function provision() {
         :disabled="!boksStore.isConnected || !isVersionSupported || isProvisioning || !newMasterKey || currentConfigKey.length !== 8"
         class="danger-btn big-btn"
         style="margin-top: 1rem;"
+        data-testid="regenerate-seed-button"
       >
         {{ isProvisioning ? t.provision.provisioningBtn : t.provision.provisionBtn }}
       </button>
@@ -191,7 +193,7 @@ async function provision() {
         <label>{{ t.provision.progress }}</label>
         <div style="display: flex; align-items: center; gap: 1rem;">
           <div class="bar"><div class="fill" :style="{ width: provisionProgress + '%' }"></div></div>
-          <span class="pct">{{ provisionProgress }}%</span>
+          <span class="pct" data-testid="regeneration-progress-pct">{{ provisionProgress }}%</span>
         </div>
       </div>
     </div>

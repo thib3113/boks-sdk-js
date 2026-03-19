@@ -58,16 +58,15 @@ async function build() {
         sourcemap: true,
         target: ['es2022'],
         format: 'esm',
+        splitting: true, // <--- ACTIVE LE PARTAGE DE CODE
         packages: 'external',
     });
 
-    // 3. CJS Bundles
-    console.log('📦 Building CJS Bundles...');
+    // 3. CJS Bundle (Single Flat Bundle for Identity Resilience)
+    console.log('📦 Building CJS Bundle (Full)...');
     await esbuild.build({
         entryPoints: {
-            'boks-sdk': 'src/index.ts',
-            'core': 'src/core.ts',
-            'simulator': 'src/simulator.ts'
+            'boks-sdk': 'src/all.ts'
         },
         bundle: true,
         outdir: 'dist/cjs',
@@ -141,10 +140,8 @@ async function build() {
             { name: `core-esm`, file: 'core.js', dir: 'dist/esm' },
             { name: `simulator-esm`, file: 'simulator.js', dir: 'dist/esm' },
 
-            // CJS
+            // CJS (Single Bundle)
             { name: `${pkg.name}-cjs`, file: 'boks-sdk.cjs', dir: 'dist/cjs' },
-            { name: `core-cjs`, file: 'core.cjs', dir: 'dist/cjs' },
-            { name: `simulator-cjs`, file: 'simulator.cjs', dir: 'dist/cjs' },
         ];
 
         // We create a temporary directory to isolate files for Codecov

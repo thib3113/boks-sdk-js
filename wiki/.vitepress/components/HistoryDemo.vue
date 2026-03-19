@@ -65,12 +65,13 @@ function formatDate(date: any) {
         @click="fetchHistory"
         :disabled="!boksStore.isConnected || isFetching"
         class="primary-btn"
+        data-testid="sync-history-button"
       >
         {{ isFetching ? t.history.fetchingBtn : t.history.syncBtn }}
       </button>
 
       <div v-if="historyEvents.length > 0" class="history-table-container">
-        <table class="history-table">
+        <table class="history-table" data-testid="history-table">
           <thead>
             <tr>
               <th>{{ t.history.date }}</th>
@@ -79,7 +80,7 @@ function formatDate(date: any) {
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(event, idx) in historyEvents" :key="idx">
+            <tr v-for="(event, idx) in historyEvents" :key="idx" data-testid="history-row">
               <td class="date-col">{{ formatDate(event.date) }}</td>
               <td class="icon-col">{{ getEventDetails(event).icon }}</td>
               <td>
