@@ -96,9 +96,12 @@ function exportLogs() {
       </div>
 
       <div class="header-actions">
-        <label class="sim-switch" @click.stop v-if="!boksStore.isConnected">
-          <input type="checkbox" v-model="boksStore.useSimulator">
-          <span>{{ boksStore.useSimulator ? t.logger.simulator : t.logger.realBle }}</span>
+        <label class="sim-switch" @click.stop v-if="!boksStore.isConnected" :title="t.logger.simulator">
+          <div class="switch-control">
+            <input type="checkbox" v-model="boksStore.useSimulator" id="simToggle">
+            <div class="slider round"></div>
+          </div>
+          <span>{{ t.logger.simulator }}</span>
         </label>
 
         <button @click.stop="toggleConnection" :class="['action-btn-main', { connected: boksStore.isConnected, loading: boksStore.isConnecting }]">
@@ -253,6 +256,12 @@ function exportLogs() {
 
 .header-actions { display: flex; align-items: center; gap: 1rem; }
 .sim-switch { font-size: 0.75rem; display: flex; align-items: center; gap: 0.4rem; cursor: pointer; color: var(--vp-c-text-2); background: var(--vp-c-bg); padding: 0.2rem 0.5rem; border-radius: 4px; border: 1px solid var(--vp-c-divider); }
+.switch-control { position: relative; display: inline-block; width: 28px; height: 16px; margin-right: 2px; }
+.switch-control input { opacity: 0; width: 0; height: 0; }
+.slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--vp-c-gray-1); transition: .2s; border-radius: 16px; }
+.slider:before { position: absolute; content: ""; height: 12px; width: 12px; left: 2px; bottom: 2px; background-color: white; transition: .2s; border-radius: 50%; }
+input:checked + .slider { background-color: var(--vp-c-brand-1); }
+input:checked + .slider:before { transform: translateX(12px); }
 .action-btn-main { 
   padding: 0.25rem 0.75rem; border-radius: 6px; border: none; 
   background: var(--vp-c-brand-1); color: white; font-size: 0.75rem; font-weight: bold; cursor: pointer;
