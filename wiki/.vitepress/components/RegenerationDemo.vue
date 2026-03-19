@@ -10,7 +10,20 @@ const t = computed(() => i18n[lang.value as keyof typeof i18n] || i18n.en)
 const isProvisioning = ref(false)
 const provisionProgress = ref(0)
 const newMasterKey = ref('')
+const currentConfigKey = ref('')
 const hasPromptedLogs = ref(false)
+
+onMounted(() => {
+  if (boksStore.activeMasterKey) {
+    currentConfigKey.value = boksStore.deriveConfigKey(boksStore.activeMasterKey)
+  }
+})
+
+watch(() => boksStore.activeMasterKey, (newKey) => {
+  if (newKey && !currentConfigKey.value) {
+    currentConfigKey.value = boksStore.deriveConfigKey(newKey)
+  }
+})
 
 function generateKey() {
   const array = new Uint8Array(32)
@@ -76,11 +89,7 @@ function downloadKey(key: string) {
 
 async function provision() {
   if (!boksStore.controller || !boksStore.isConnected) return
-  if (!newMasterKey.value) return
-  if (!boksStore.activeMasterKey) {
-    boksStore.log('Please set current credentials in Initialization tab first.', 'error')
-    return
-  }
+  if (!newMasterKey.value || !currentConfigKey.value) return
 
   if (!confirm(t.value.provision.confirm)) return
 
@@ -88,6 +97,15 @@ async function provision() {
   provisionProgress.value = 0
   hasPromptedLogs.value = false
   hasAnnouncedAcceptance.value = false
+
+  // Set credentials on controller
+  try {
+    boksStore.controller.setCredentials(currentConfigKey.value)
+  } catch (err: any) {
+    boksStore.log(`Invalid Config Key: ${err.message}`, 'error')
+    isProvisioning.value = false
+    return
+  }
 
   // Anti-Brick Measure 1: Auto-Download Key
   downloadKey(newMasterKey.value)
@@ -143,6 +161,13 @@ async function provision() {
       </div>
 
       <div class="field" style="margin-top: 1rem;">
+        <label>{{ t.provision.currentConfigKey || 'Current Config Key (8 chars)' }}</label>
+        <div class="value-row">
+          <input type="text" v-model="currentConfigKey" maxlength="8" :placeholder="t.provision.enterConfigKey || 'Enter current 8-char Config Key'" :disabled="isProvisioning" />
+        </div>
+      </div>
+
+      <div class="field" style="margin-top: 1rem;">
         <label>{{ t.provision.newKey }}</label>
         <div class="value-row">
           <input type="text" v-model="newMasterKey" readonly :placeholder="t.provision.clickGenerateAbove" />
@@ -151,7 +176,7 @@ async function provision() {
 
       <button
         @click="provision"
-        :disabled="!boksStore.isConnected || !isVersionSupported || isProvisioning || !newMasterKey"
+        :disabled="!boksStore.isConnected || !isVersionSupported || isProvisioning || !newMasterKey || currentConfigKey.length !== 8"
         class="danger-btn big-btn"
         style="margin-top: 1rem;"
       >

@@ -137,7 +137,7 @@ export const boksStore = reactive({
         const client = new BoksClient({ transport });
         this.controller = new BoksController(client);
 
-        client.onPacket("*", (p, dir) => {
+        client.on("*", (p, dir) => {
           this.logPacket(dir, p.opcode, p.rawPayload.length, p);
         });
 
@@ -148,7 +148,7 @@ export const boksStore = reactive({
         const client = new BoksClient();
         this.controller = new BoksController(client);
 
-        client.onPacket("*", (p, dir) => {
+        client.on("*", (p, dir) => {
           this.logPacket(dir, p.opcode, p.rawPayload.length, p);
         });
 
