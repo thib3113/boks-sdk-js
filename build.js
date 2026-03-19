@@ -37,7 +37,7 @@ async function build() {
         outdir: 'dist',
         minify: true,
         sourcemap: true,
-        target: ['es2017'],
+        target: ['es2022'],
         format: 'iife',
         globalName: 'BoksSDK',
         platform: 'browser',
@@ -56,7 +56,7 @@ async function build() {
         outdir: 'dist/esm',
         minify: true,
         sourcemap: true,
-        target: ['esnext'],
+        target: ['es2022'],
         format: 'esm',
         packages: 'external',
     });
@@ -74,7 +74,7 @@ async function build() {
         outExtension: { '.js': '.cjs' },
         minify: true,
         sourcemap: true,
-        target: ['es2017'],
+        target: ['es2022'],
         format: 'cjs',
         packages: 'external',
     });
