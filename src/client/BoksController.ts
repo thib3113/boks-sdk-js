@@ -100,26 +100,12 @@ export class BoksController {
     } else {
       this.#client = new BoksClient(optionsOrClient);
     }
-    this.proxyClientEvents();
-  }
-
-  /**
-   * Internal helper to handle backward compatibility with tests
-   */
-  private proxyClientEvents() {
-    if (typeof this.#client.on === 'function') {
-      this.#client.on('*', (packet, direction) => {
-        if (direction === 'RX') {
-          this.#handleInternalPacket(packet);
-        }
-        this.event.emitClientEvent(packet, direction);
-      });
-    } else if (typeof this.#client.onPacket === 'function') {
-      this.#client.onPacket((packet) => {
+    this.#client.on('*', (packet, direction) => {
+      if (direction === 'RX') {
         this.#handleInternalPacket(packet);
-        this.event.emitClientEvent(packet, 'RX');
-      });
-    }
+      }
+      this.event.emitClientEvent(packet, direction);
+    });
   }
 
   private emit<K extends keyof BoksControllerEvents>(event: K, payload: BoksControllerEvents[K]) {
@@ -192,16 +178,6 @@ export class BoksController {
    */
   on<F extends BoksControllerFilter>(filter: F, callback: BoksControllerListener<F>): () => void {
     return this.event.on(filter, callback as any);
-  }
-
-  /**
-   * Subscribes to all incoming packets.
-   * @deprecated Use `on('*', callback)` instead.
-   * @param callback Function called for every parsed packet received.
-   * @returns A function to unsubscribe.
-   */
-  onPacket(callback: (packet: BoksPacket) => void): () => void {
-    return this.on('*', callback as BoksControllerListener<any>);
   }
 
   /**
@@ -735,12 +711,9 @@ export class BoksController {
     const seedBytes = typeof seed === 'string' ? hexToBytes(seed) : seed;
 
     // Setup listener
-    const cleanup = this.#client.onPacket((packet) => {
-      if (packet.opcode === BoksOpcode.NOTIFY_CODE_GENERATION_PROGRESS) {
-        const progressPacket = packet as NotifyCodeGenerationProgressPacket;
-        if (onProgress) {
-          onProgress(progressPacket.progress);
-        }
+    const cleanup = this.#client.on(NotifyCodeGenerationProgressPacket, (packet) => {
+      if (onProgress) {
+        onProgress(packet.progress);
       }
     });
 
@@ -775,12 +748,9 @@ export class BoksController {
     const partB = keyBytes.subarray(16, 32);
 
     // Setup listener
-    const cleanup = this.#client.onPacket((packet) => {
-      if (packet.opcode === BoksOpcode.NOTIFY_CODE_GENERATION_PROGRESS) {
-        const progressPacket = packet as NotifyCodeGenerationProgressPacket;
-        if (onProgress) {
-          onProgress(progressPacket.progress);
-        }
+    const cleanup = this.#client.on(NotifyCodeGenerationProgressPacket, (packet) => {
+      if (onProgress) {
+        onProgress(packet.progress);
       }
     });
 

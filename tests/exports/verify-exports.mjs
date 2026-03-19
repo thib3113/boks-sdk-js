@@ -41,7 +41,7 @@ async function verifyESM(filePath, expectedExports) {
       }
     }
 
-    if (!hasError) reportSuccess(filePath, `All expected ESM exports found.`);
+    if (!hasError) {reportSuccess(filePath, `All expected ESM exports found.`);}
   } catch (err) {
     reportError(filePath, `Failed to load ESM module: ${err.message}`);
   }
@@ -63,7 +63,7 @@ async function verifyCJS(filePath, expectedExports) {
       }
     }
 
-    if (!hasError) reportSuccess(filePath, `All expected CJS exports found.`);
+    if (!hasError) {reportSuccess(filePath, `All expected CJS exports found.`);}
   } catch (err) {
     reportError(filePath, `Failed to load CJS module: ${err.message}`);
   }
@@ -105,7 +105,7 @@ async function verifyIIFE(filePath, globalVar, expectedExports) {
       }
     }
 
-    if (!hasError) reportSuccess(filePath, `All expected IIFE exports found.`);
+    if (!hasError) {reportSuccess(filePath, `All expected IIFE exports found.`);}
   } catch (err) {
     reportError(filePath, `Failed to evaluate IIFE module: ${err.message}`);
   }

@@ -37,46 +37,26 @@ export type BoksLogger = <K extends keyof BoksLogEvents>(
 /**
  * Direction of a packet (Transmitted or Received).
  */
-export type BoksPacketDirection = 'TX' | 'RX';
+export type {
+  BoksPacketDirection,
+  BoksClientFilterConstructor,
+  BoksClientFilterSingle,
+  BoksClientFilter,
+  InferClientPayloadSingle,
+  InferClientPayload
+} from './types';
+
+import type { BoksPacketDirection, BoksClientFilter, InferClientPayload } from './types';
 
 /**
  * Callback function for packet listeners.
  */
 export type BoksPacketListener = (packet: BoksPacket, direction: BoksPacketDirection) => void;
 
-export type BoksClientFilterConstructor<T extends BoksPacket = BoksPacket> = new (
-  ...args: any[]
-) => T;
-
-export type BoksClientFilterSingle =
-  | BoksPacketDirection
-  | '*'
-  | number
-  | BoksClientFilterConstructor<any>;
-
-export type BoksClientFilter = BoksClientFilterSingle | BoksClientFilterSingle[];
-
-export type InferClientPayloadSingle<F> = F extends BoksPacketDirection | '*'
-  ? BoksPacket
-  : F extends number
-    ? BoksPacket
-    : F extends BoksClientFilterConstructor<infer P>
-      ? P
-      : BoksPacket;
-
-export type InferClientPayload<F> = F extends any[]
-  ? InferClientPayloadSingle<F[number]>
-  : InferClientPayloadSingle<F>;
-
 export type BoksClientListener<F extends BoksClientFilter> = (
   packet: InferClientPayload<F>,
   direction: BoksPacketDirection
 ) => void;
-
-/**
- * @deprecated Use BoksClientFilter instead.
- */
-export type BoksPacketFilter = BoksPacketDirection | '*';
 
 /**
  * Configuration options for the BoksClient.
@@ -141,11 +121,9 @@ export class BoksClient {
    * Internal helper to notify listeners of a packet event.
    */
   private emitPacket(packet: BoksPacket, direction: BoksPacketDirection) {
-    try {
-      this.event.emitClientEvent(packet, direction);
-    } catch (e) {
-      this.log('error', 'listener_error', { opcode: packet.opcode, error: e });
-    }
+    this.event.emitClientEvent(packet, direction, (error) => {
+      this.log('error', 'listener_error', { opcode: packet.opcode, error });
+    });
   }
 
   /**
@@ -197,38 +175,6 @@ export class BoksClient {
    */
   on<F extends BoksClientFilter>(filter: F, callback: BoksClientListener<F>): () => void {
     return this.event.on(filter, callback as any);
-  }
-
-  /**
-   * Subscribes to packets.
-   * @deprecated Use `on()` instead.
-   *
-   * Usage:
-   * client.onPacket((p, dir) => ...) // Listen to everything
-   * client.onPacket('*', (p, dir) => ...) // Listen to everything
-   * client.onPacket('RX', (p) => ...) // Listen to incoming only
-   *
-   * @param filterOrCallback Direction filter ('RX', 'TX', '*') or the callback itself.
-   * @param callback The callback if a filter was provided.
-   * @returns A function to unsubscribe.
-   */
-  onPacket(callback: BoksPacketListener): () => void;
-  onPacket(filter: BoksPacketFilter, callback: BoksPacketListener): () => void;
-  onPacket(
-    filterOrCallback: BoksPacketFilter | BoksPacketListener,
-    callback?: BoksPacketListener
-  ): () => void {
-    let filter: BoksPacketFilter = '*';
-    let actualCallback: BoksPacketListener;
-
-    if (typeof filterOrCallback === 'function') {
-      actualCallback = filterOrCallback;
-    } else {
-      filter = filterOrCallback;
-      actualCallback = callback!;
-    }
-
-    return this.event.on(filter, actualCallback as any);
   }
 
   /**

@@ -70,8 +70,10 @@ describe('BoksController Internal State', () => {
     simulator.triggerPhysicalKeyOpen();
 
     let capturedOpcode: number | null = null;
-    controller.onPacket((p) => {
-      capturedOpcode = p.opcode;
+    controller.on('*', (p) => {
+      if (p && p.opcode !== undefined) {
+         capturedOpcode = p.opcode;
+      }
     });
 
     // 2. Trigger the count request (which also emits NOTIFY_LOGS_COUNT)

@@ -1,7 +1,6 @@
-import { BoksPacketDirection } from './BoksClient';
 import { BoksPacket } from '../protocol/_BoksPacketBase';
 
-export type { BoksPacketDirection };
+export type BoksPacketDirection = 'TX' | 'RX';
 
 export type BoksClientFilterConstructor<T extends BoksPacket = BoksPacket> = new (
   ...args: any[]

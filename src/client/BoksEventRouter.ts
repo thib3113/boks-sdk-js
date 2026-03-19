@@ -1,28 +1,6 @@
 import { BoksPacket } from '../protocol/_BoksPacketBase';
 
-export type BoksPacketDirection = 'TX' | 'RX';
-
-export type BoksPacketConstructor<T extends BoksPacket = BoksPacket> = new (...args: any[]) => T;
-
-export type BoksClientFilterSingle =
-  | BoksPacketDirection
-  | '*'
-  | number
-  | BoksPacketConstructor<any>;
-
-export type BoksClientFilter = BoksClientFilterSingle | BoksClientFilterSingle[];
-
-export type InferClientPayloadSingle<F> = F extends BoksPacketDirection | '*'
-  ? BoksPacket
-  : F extends number
-    ? BoksPacket
-    : F extends BoksPacketConstructor<infer P>
-      ? P
-      : BoksPacket;
-
-export type InferClientPayload<F> = F extends any[]
-  ? InferClientPayloadSingle<F[number]>
-  : InferClientPayloadSingle<F>;
+import { BoksPacketDirection, BoksClientFilterSingle, InferClientPayloadSingle } from './types';
 
 export type BoksEventRouterFilterSingle<TEventMap extends Record<string, any>> =
   | BoksClientFilterSingle
@@ -102,7 +80,11 @@ export class BoksEventRouter<TEventMap extends Record<string, any> = Record<stri
     return false;
   }
 
-  public emitClientEvent(packet: BoksPacket, direction: BoksPacketDirection) {
+  public emitClientEvent(
+    packet: BoksPacket,
+    direction: BoksPacketDirection,
+    onError?: (error: unknown) => void
+  ) {
     this.listeners.forEach((listener) => {
       const matches = Array.isArray(listener.filter)
         ? listener.filter.some((f) => this.matchesClientFilter(f, packet, direction))
@@ -113,7 +95,13 @@ export class BoksEventRouter<TEventMap extends Record<string, any> = Record<stri
           );
 
       if (matches) {
-        listener.callback(packet as any, direction);
+        try {
+          listener.callback(packet as any, direction);
+        } catch (e) {
+          if (onError) {
+            onError(e);
+          }
+        }
       }
     });
   }
