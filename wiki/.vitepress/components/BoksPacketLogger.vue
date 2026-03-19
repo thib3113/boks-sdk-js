@@ -106,7 +106,7 @@ function exportLogs() {
 
         <button @click.stop="toggleConnection" :class="['action-btn-main', { connected: boksStore.isConnected, loading: boksStore.isConnecting }]">
           <span v-if="boksStore.isConnecting" class="spinner">⏳</span>
-          {{ boksStore.isConnecting ? t.logger.working : (boksStore.isConnected ? t.logger.disconnect : (boksStore.useSimulator ? t.logger.start : t.logger.connect)) }}
+          <span :class="{ 'desktop-only': boksStore.isConnecting }">{{ boksStore.isConnecting ? t.logger.working : (boksStore.isConnected ? t.logger.disconnect : (boksStore.useSimulator ? t.logger.start : t.logger.connect)) }}</span>
         </button>
         
         <span class="arrow">{{ boksStore.isExpanded ? '▼' : '▲' }}</span>

@@ -102,7 +102,7 @@ export const i18n = {
       refreshSuccess: 'Battery and Hardware data refreshed.',
     },
     logger: {
-      title: 'SDK Dashboard',
+      title: 'Console',
       simulator: 'Simulator',
       realBle: 'Real BLE',
       connect: 'Connect',
@@ -243,7 +243,7 @@ export const i18n = {
       refreshSuccess: 'Données Batterie et Matériel actualisées.',
     },
     logger: {
-      title: 'Tableau de bord SDK',
+      title: 'Console',
       simulator: 'Simulateur',
       realBle: 'Vrai BLE',
       connect: 'Connecter',

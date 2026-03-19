@@ -10,6 +10,13 @@ import BoksPacketLogger from '../components/BoksPacketLogger.vue';
 export default {
   extends: DefaultTheme,
   enhanceApp({ app }) {
+    if (typeof window !== 'undefined') {
+      const isFrench = navigator.language.startsWith('fr');
+      if (isFrench && window.location.pathname === '/') {
+        window.location.replace('/fr/');
+      }
+    }
+
     // Register global components
     app.component('BoksGlobalProvider', BoksGlobalProvider);
     app.component('InitializationDemo', InitializationDemo);
