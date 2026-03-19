@@ -174,6 +174,7 @@ export class BoksClient {
    * @returns A function to unsubscribe.
    */
   on<F extends BoksClientFilter>(filter: F, callback: BoksClientListener<F>): () => void {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return this.event.on(filter, callback as any);
   }
 

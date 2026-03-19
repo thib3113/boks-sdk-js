@@ -2,40 +2,47 @@ import { BoksPacket } from '../protocol/_BoksPacketBase';
 
 import { BoksPacketDirection, BoksClientFilterSingle, InferClientPayloadSingle } from './types';
 
-export type BoksEventRouterFilterSingle<TEventMap extends Record<string, any>> =
+export type BoksEventRouterFilterSingle<TEventMap extends Record<string | symbol, unknown>> =
   | BoksClientFilterSingle
   | keyof TEventMap;
 
-export type BoksEventRouterFilter<TEventMap extends Record<string, any>> =
+export type BoksEventRouterFilter<TEventMap extends Record<string | symbol, unknown>> =
   | BoksEventRouterFilterSingle<TEventMap>
   | BoksEventRouterFilterSingle<TEventMap>[];
 
 export type InferRouterPayloadSingle<
-  TEventMap extends Record<string, any>,
+  TEventMap extends Record<string | symbol, unknown>,
   F
 > = F extends keyof TEventMap ? TEventMap[F] : InferClientPayloadSingle<F>;
 
-export type InferRouterPayload<TEventMap extends Record<string, any>, F> = F extends any[]
+export type InferRouterPayload<
+  TEventMap extends Record<string | symbol, unknown>,
+  F
+> = F extends unknown[]
   ? InferRouterPayloadSingle<TEventMap, F[number]>
   : InferRouterPayloadSingle<TEventMap, F>;
 
 export type BoksEventRouterListener<
-  TEventMap extends Record<string, any>,
+  TEventMap extends Record<string | symbol, unknown>,
   F extends BoksEventRouterFilter<TEventMap>
 > = (payload: InferRouterPayload<TEventMap, F>, direction: BoksPacketDirection | undefined) => void;
 
-interface RegisteredListener<TEventMap extends Record<string, any>> {
+interface RegisteredListener<TEventMap extends Record<string | symbol, unknown>> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   callback: BoksEventRouterListener<TEventMap, any>;
   filter: BoksEventRouterFilter<TEventMap>;
 }
 
-export class BoksEventRouter<TEventMap extends Record<string, any> = Record<string, never>> {
+export class BoksEventRouter<
+  TEventMap extends Record<string | symbol, unknown> = Record<string | symbol, never>
+> {
   private listeners: Set<RegisteredListener<TEventMap>> = new Set();
 
   public on<F extends BoksEventRouterFilter<TEventMap>>(
     filter: F,
     callback: BoksEventRouterListener<TEventMap, F>
   ): () => void {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const listener = { callback: callback as BoksEventRouterListener<TEventMap, any>, filter };
     this.listeners.add(listener);
     return () => {
@@ -56,7 +63,7 @@ export class BoksEventRouter<TEventMap extends Record<string, any> = Record<stri
 
   private matchesClientFilter(
     filter: BoksEventRouterFilterSingle<TEventMap>,
-    payload: any,
+    payload: unknown,
     direction?: BoksPacketDirection
   ): boolean {
     if (typeof filter === 'string' && ['TX', 'RX', '*'].includes(filter)) {
@@ -96,6 +103,7 @@ export class BoksEventRouter<TEventMap extends Record<string, any> = Record<stri
 
       if (matches) {
         try {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           listener.callback(packet as any, direction);
         } catch (e) {
           if (onError) {
@@ -109,12 +117,14 @@ export class BoksEventRouter<TEventMap extends Record<string, any> = Record<stri
   public emit<K extends keyof TEventMap>(event: K, payload: TEventMap[K]) {
     this.listeners.forEach((listener) => {
       const matches = Array.isArray(listener.filter)
-        ? listener.filter.includes(event as any)
+        ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          listener.filter.includes(event as any)
         : listener.filter === event;
 
       if (matches) {
         try {
-          listener.callback(payload, undefined);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          listener.callback(payload as any, undefined);
         } catch {
           // ignore
         }

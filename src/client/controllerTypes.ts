@@ -14,6 +14,7 @@ export type InferControllerPayloadSingle<F> = F extends keyof BoksControllerEven
   ? BoksControllerEvents[F]
   : InferClientPayloadSingle<F>;
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type InferControllerPayload<F> = F extends readonly any[]
   ? InferControllerPayloadSingle<F[number]>
   : InferControllerPayloadSingle<F>;

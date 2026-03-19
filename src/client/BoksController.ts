@@ -91,8 +91,10 @@ export class BoksController {
   #logCount: number = 0;
   #lastOpenAttempt: number = 0;
 
-  public readonly event: BoksEventRouter<BoksControllerEvents> =
-    new BoksEventRouter<BoksControllerEvents>();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  public readonly event: BoksEventRouter<BoksControllerEvents & Record<string | symbol, any>> =
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    new BoksEventRouter<BoksControllerEvents & Record<string | symbol, any>>();
 
   constructor(optionsOrClient?: BoksClientOptions | BoksClient) {
     if (optionsOrClient instanceof BoksClient) {
@@ -109,7 +111,8 @@ export class BoksController {
   }
 
   private emit<K extends keyof BoksControllerEvents>(event: K, payload: BoksControllerEvents[K]) {
-    this.event.emit(event, payload);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    this.event.emit(event, payload as any);
   }
 
   get doorOpen(): boolean {
@@ -177,6 +180,7 @@ export class BoksController {
    * @returns A function to unsubscribe.
    */
   on<F extends BoksControllerFilter>(filter: F, callback: BoksControllerListener<F>): () => void {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return this.event.on(filter, callback as any);
   }
 
