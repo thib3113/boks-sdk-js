@@ -97,7 +97,7 @@
     "@babel/plugin-proposal-decorators": "7.29.0",
     "@codecov/bundle-analyzer": "1.9.1",
     "@eslint/js": "10.0.1",
-    "@playwright/test": "^1.58.2",
+    "@playwright/test": "1.58.2",
     "@types/node": "24.12.0",
     "@types/web-bluetooth": "0.0.21",
     "@vitest/coverage-v8": "4.1.0",
