@@ -156,7 +156,7 @@ describe('BoksClient Transaction', () => {
     client = new BoksClient({ transport, logger: loggerMock });
     await client.connect();
 
-    client.onPacket(() => {
+    client.on('*', () => {
       throw new Error('Listener error');
     });
 

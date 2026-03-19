@@ -18,7 +18,7 @@ describe('BoksController Resilience (Fuzzing)', () => {
       connect: vi.fn().mockResolvedValue(undefined),
       disconnect: vi.fn().mockResolvedValue(undefined),
       readCharacteristic: vi.fn().mockResolvedValue(new Uint8Array([0])),
-      onPacket: vi.fn().mockReturnValue(() => {}),
+      on: vi.fn().mockReturnValue(() => {}),
       execute: vi.fn(),
       getBatteryLevel: vi.fn().mockResolvedValue(100),
       getBatteryStats: vi.fn().mockResolvedValue({ voltage: 6000, current: 100, temperature: 25 }),

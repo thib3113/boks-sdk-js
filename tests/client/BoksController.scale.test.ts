@@ -23,7 +23,7 @@ describe('Scale Features', () => {
       vi.clearAllMocks();
       mockClientInstance = {
         execute: vi.fn(),
-        onPacket: vi.fn().mockReturnValue(() => {})
+        on: vi.fn().mockReturnValue(() => {})
       };
       (BoksClient as unknown as Mock).mockImplementation(function () {
         return mockClientInstance;

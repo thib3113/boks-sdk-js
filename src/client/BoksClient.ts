@@ -11,6 +11,7 @@ import {
 import { BoksClientError, BoksClientErrorId } from '@/errors/BoksClientError';
 import { fetchBatteryLevel, fetchBatteryStats } from '@/utils/battery';
 import { BoksTransaction } from './BoksTransaction';
+import { BoksEventRouter } from './BoksEventRouter';
 
 /**
  * Mapping of log events to their respective context data types.
@@ -36,22 +37,26 @@ export type BoksLogger = <K extends keyof BoksLogEvents>(
 /**
  * Direction of a packet (Transmitted or Received).
  */
-export type BoksPacketDirection = 'TX' | 'RX';
+export type {
+  BoksPacketDirection,
+  BoksClientFilterConstructor,
+  BoksClientFilterSingle,
+  BoksClientFilter,
+  InferClientPayloadSingle,
+  InferClientPayload
+} from './types';
 
-/**
- * Filter for packet listeners.
- */
-export type BoksPacketFilter = BoksPacketDirection | '*';
+import type { BoksPacketDirection, BoksClientFilter, InferClientPayload } from './types';
 
 /**
  * Callback function for packet listeners.
  */
 export type BoksPacketListener = (packet: BoksPacket, direction: BoksPacketDirection) => void;
 
-interface RegisteredListener {
-  callback: BoksPacketListener;
-  filter: BoksPacketFilter;
-}
+export type BoksClientListener<F extends BoksClientFilter> = (
+  packet: InferClientPayload<F>,
+  direction: BoksPacketDirection
+) => void;
 
 /**
  * Configuration options for the BoksClient.
@@ -77,7 +82,7 @@ interface TransactionContext {
 export class BoksClient {
   private readonly transport: BoksTransport;
   private readonly logger?: BoksLogger;
-  private listeners: Set<RegisteredListener> = new Set();
+  public readonly event: BoksEventRouter<Record<string, never>> = new BoksEventRouter();
   private commandQueue: Promise<void> = Promise.resolve();
   private currentTransactionContext: TransactionContext | null = null;
 
@@ -116,14 +121,8 @@ export class BoksClient {
    * Internal helper to notify listeners of a packet event.
    */
   private emitPacket(packet: BoksPacket, direction: BoksPacketDirection) {
-    this.listeners.forEach((listener) => {
-      if (listener.filter === '*' || listener.filter === direction) {
-        try {
-          listener.callback(packet, direction);
-        } catch (e) {
-          this.log('error', 'listener_error', { opcode: packet.opcode, error: e });
-        }
-      }
+    this.event.emitClientEvent(packet, direction, (error) => {
+      this.log('error', 'listener_error', { opcode: packet.opcode, error });
     });
   }
 
@@ -168,38 +167,15 @@ export class BoksClient {
   }
 
   /**
-   * Subscribes to packets.
+   * Subscribes to events.
    *
-   * Usage:
-   * client.onPacket((p, dir) => ...) // Listen to everything
-   * client.onPacket('*', (p, dir) => ...) // Listen to everything
-   * client.onPacket('RX', (p) => ...) // Listen to incoming only
-   *
-   * @param filterOrCallback Direction filter ('RX', 'TX', '*') or the callback itself.
-   * @param callback The callback if a filter was provided.
+   * @param filter The filter to apply. Can be a direction, opcode, Packet class, or an array of these.
+   * @param callback The callback to invoke when a matching packet is received.
    * @returns A function to unsubscribe.
    */
-  onPacket(callback: BoksPacketListener): () => void;
-  onPacket(filter: BoksPacketFilter, callback: BoksPacketListener): () => void;
-  onPacket(
-    filterOrCallback: BoksPacketFilter | BoksPacketListener,
-    callback?: BoksPacketListener
-  ): () => void {
-    let filter: BoksPacketFilter = '*';
-    let actualCallback: BoksPacketListener;
-
-    if (typeof filterOrCallback === 'function') {
-      actualCallback = filterOrCallback;
-    } else {
-      filter = filterOrCallback;
-      actualCallback = callback!;
-    }
-
-    const listener = { callback: actualCallback, filter };
-    this.listeners.add(listener);
-    return () => {
-      this.listeners.delete(listener);
-    };
+  on<F extends BoksClientFilter>(filter: F, callback: BoksClientListener<F>): () => void {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return this.event.on(filter, callback as any);
   }
 
   /**

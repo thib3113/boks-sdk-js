@@ -1,0 +1,29 @@
+import { BoksClientFilterSingle, BoksPacketDirection, InferClientPayloadSingle } from './types';
+
+export type BoksControllerEvents = Record<string, unknown> & {
+  doorStateChanged: boolean;
+  codesCountUpdated: { masterCount: number; singleCount: number };
+  logsCountUpdated: number;
+};
+
+export type BoksControllerFilterSingle = BoksClientFilterSingle | keyof BoksControllerEvents;
+
+export type BoksControllerFilter = BoksControllerFilterSingle | BoksControllerFilterSingle[];
+
+export type InferControllerPayloadSingle<F> = F extends string
+  ? F extends 'TX' | 'RX' | '*'
+    ? InferClientPayloadSingle<F>
+    : F extends keyof BoksControllerEvents
+      ? BoksControllerEvents[F]
+      : InferClientPayloadSingle<F>
+  : InferClientPayloadSingle<F>;
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type InferControllerPayload<F> = F extends readonly any[]
+  ? InferControllerPayloadSingle<F[number]>
+  : InferControllerPayloadSingle<F>;
+
+export type BoksControllerListener<F extends BoksControllerFilter> = (
+  payload: InferControllerPayload<F>,
+  direction?: BoksPacketDirection
+) => void;

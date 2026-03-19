@@ -1,4 +1,11 @@
 import { BoksClient, BoksClientOptions } from './BoksClient';
+import { BoksEventRouter } from './BoksEventRouter';
+import {
+  BoksControllerEvents,
+  BoksControllerFilter,
+  BoksControllerListener
+} from './controllerTypes';
+
 import {
   BoksPacket,
   BoksOpcode,
@@ -84,13 +91,26 @@ export class BoksController {
   #logCount: number = 0;
   #lastOpenAttempt: number = 0;
 
+  public readonly event: BoksEventRouter<BoksControllerEvents> =
+    new BoksEventRouter<BoksControllerEvents>();
+
   constructor(optionsOrClient?: BoksClientOptions | BoksClient) {
     if (optionsOrClient instanceof BoksClient) {
       this.#client = optionsOrClient;
     } else {
       this.#client = new BoksClient(optionsOrClient);
     }
-    this.#client.onPacket(this.#handleInternalPacket.bind(this));
+    this.#client.on('*', (packet, direction) => {
+      if (direction === 'RX') {
+        this.#handleInternalPacket(packet);
+      }
+      this.event.emitClientEvent(packet, direction);
+    });
+  }
+
+  private emit<K extends keyof BoksControllerEvents>(event: K, payload: BoksControllerEvents[K]) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    this.event.emit(event, payload as any);
   }
 
   get doorOpen(): boolean {
@@ -121,27 +141,45 @@ export class BoksController {
   }
 
   #handleDoorStatus(packet: AnswerDoorStatusPacket | NotifyDoorStatusPacket): void {
-    this.#doorOpen = packet.isOpen;
+    if (this.#doorOpen !== packet.isOpen) {
+      this.#doorOpen = packet.isOpen;
+      this.emit('doorStateChanged', this.#doorOpen);
+    }
   }
 
   #handleCodesCount(packet: NotifyCodesCountPacket): void {
-    this.#codeCount = {
-      master: packet.masterCount,
-      single: packet.otherCount
-    };
+    if (
+      this.#codeCount.master !== packet.masterCount ||
+      this.#codeCount.single !== packet.otherCount
+    ) {
+      this.#codeCount = {
+        master: packet.masterCount,
+        single: packet.otherCount
+      };
+      this.emit('codesCountUpdated', {
+        masterCount: this.#codeCount.master,
+        singleCount: this.#codeCount.single
+      });
+    }
   }
 
   #handleLogsCount(packet: NotifyLogsCountPacket): void {
-    this.#logCount = packet.count;
+    if (this.#logCount !== packet.count) {
+      this.#logCount = packet.count;
+      this.emit('logsCountUpdated', this.#logCount);
+    }
   }
 
   /**
-   * Subscribes to all incoming packets.
-   * @param callback Function called for every parsed packet received.
+   * Subscribes to events.
+   *
+   * @param filter The filter to apply. Can be a high level event string, direction, opcode, Packet class, or an array of these.
+   * @param callback The callback to invoke when a matching event is emitted.
    * @returns A function to unsubscribe.
    */
-  onPacket(callback: (packet: BoksPacket) => void): () => void {
-    return this.#client.onPacket(callback);
+  on<F extends BoksControllerFilter>(filter: F, callback: BoksControllerListener<F>): () => void {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return this.event.on(filter, callback as any);
   }
 
   /**
@@ -675,12 +713,9 @@ export class BoksController {
     const seedBytes = typeof seed === 'string' ? hexToBytes(seed) : seed;
 
     // Setup listener
-    const cleanup = this.#client.onPacket((packet) => {
-      if (packet.opcode === BoksOpcode.NOTIFY_CODE_GENERATION_PROGRESS) {
-        const progressPacket = packet as NotifyCodeGenerationProgressPacket;
-        if (onProgress) {
-          onProgress(progressPacket.progress);
-        }
+    const cleanup = this.#client.on(NotifyCodeGenerationProgressPacket, (packet) => {
+      if (onProgress) {
+        onProgress(packet.progress);
       }
     });
 
@@ -716,12 +751,9 @@ export class BoksController {
     const partB = keyBytes.subarray(16, 32);
 
     // Setup listener
-    const cleanup = this.#client.onPacket((packet) => {
-      if (packet.opcode === BoksOpcode.NOTIFY_CODE_GENERATION_PROGRESS) {
-        const progressPacket = packet as NotifyCodeGenerationProgressPacket;
-        if (onProgress) {
-          onProgress(progressPacket.progress);
-        }
+    const cleanup = this.#client.on(NotifyCodeGenerationProgressPacket, (packet) => {
+      if (onProgress) {
+        onProgress(packet.progress);
       }
     });
 
