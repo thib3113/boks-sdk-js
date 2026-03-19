@@ -12,6 +12,40 @@ import { precomputeBoksKeyContext, generateBoksPinFromContext } from '../crypto/
 import { BoksPacket } from '../protocol/_BoksPacketBase';
 import { BoksPacketFactory } from '../protocol/BoksPacketFactory';
 
+import {
+  OpenDoorPacket, AskDoorStatusPacket, RequestLogsPacket, RebootPacket,
+  GetLogsCountPacket, TestBatteryPacket, MasterCodeEditPacket,
+  SingleToMultiCodePacket, MultiToSingleCodePacket, DeleteMasterCodePacket,
+  DeleteSingleUseCodePacket, DeleteMultiUseCodePacket, ReactivateCodePacket,
+  GenerateCodesPacket, CreateMasterCodePacket, CreateSingleUseCodePacket,
+  CreateMultiUseCodePacket, CountCodesPacket, GenerateCodesSupportPacket,
+  SetConfigurationPacket, RegisterNfcTagScanStartPacket, NfcRegisterPacket,
+  UnregisterNfcTagPacket, RegeneratePartAPacket, RegeneratePartBPacket,
+  ScaleBondPacket, ScaleGetMacPacket, ScaleForgetPacket, ScaleTareEmptyPacket,
+  ScaleTareLoadedPacket, ScaleMeasureWeightPacket, ScalePrepareDfuPacket,
+  ScaleGetRawSensorsPacket, ScaleReconnectPacket
+} from '../protocol/index';
+
+const TX_PACKETS = [
+  OpenDoorPacket, AskDoorStatusPacket, RequestLogsPacket, RebootPacket,
+  GetLogsCountPacket, TestBatteryPacket, MasterCodeEditPacket,
+  SingleToMultiCodePacket, MultiToSingleCodePacket, DeleteMasterCodePacket,
+  DeleteSingleUseCodePacket, DeleteMultiUseCodePacket, ReactivateCodePacket,
+  GenerateCodesPacket, CreateMasterCodePacket, CreateSingleUseCodePacket,
+  CreateMultiUseCodePacket, CountCodesPacket, GenerateCodesSupportPacket,
+  SetConfigurationPacket, RegisterNfcTagScanStartPacket, NfcRegisterPacket,
+  UnregisterNfcTagPacket, RegeneratePartAPacket, RegeneratePartBPacket,
+  ScaleBondPacket, ScaleGetMacPacket, ScaleForgetPacket, ScaleTareEmptyPacket,
+  ScaleTareLoadedPacket, ScaleMeasureWeightPacket, ScalePrepareDfuPacket,
+  ScaleGetRawSensorsPacket, ScaleReconnectPacket
+];
+
+// Register all TX packets in the factory so the simulator can parse them
+for (const packetClass of TX_PACKETS) {
+  BoksPacketFactory.register(packetClass);
+}
+
+
 /**
  * Represents a GATT Characteristic structure for simulation.
  */

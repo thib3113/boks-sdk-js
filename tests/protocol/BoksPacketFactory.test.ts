@@ -5,6 +5,13 @@ import * as Packets from '@/protocol';
 import { calculateChecksum, stringToBytes } from '@/utils/converters';
 
 describe('BoksPacketFactory', () => {
+  // Register all packets for tests
+  for (const key in Packets) {
+    if (typeof Packets[key] === 'function' && 'opcode' in Packets[key]) {
+      BoksPacketFactory.register(Packets[key] as any);
+    }
+  }
+
   describe('createFromPayload with it.each', () => {
     const configKey = 'ABCDEF01';
     const configKeyBytes = Array.from(stringToBytes(configKey));
