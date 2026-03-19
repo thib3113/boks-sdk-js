@@ -145,7 +145,7 @@ async function provision() {
       <div class="field" style="margin-top: 1rem;">
         <label>{{ t.provision.newKey }}</label>
         <div class="value-row">
-          <input type="text" v-model="newMasterKey" readonly placeholder="Click generate button above" />
+          <input type="text" v-model="newMasterKey" readonly :placeholder="t.provision.clickGenerateAbove" />
         </div>
       </div>
 

@@ -9,7 +9,7 @@ const { lang } = useData()
 const t = computed(() => i18n[lang.value as keyof typeof i18n] || i18n.en)
 
 // Simulator local state for UI binding
-const simState = ref<any>({})
+const simState = ref<any>({ batteryLevel: 100 })
 const showSimControls = ref(true)
 const showClearConfirm = ref(false)
 
@@ -96,7 +96,7 @@ function exportLogs() {
       </div>
 
       <div class="header-actions">
-        <label class="sim-switch desktop-only" @click.stop v-if="!boksStore.isConnected">
+        <label class="sim-switch" @click.stop v-if="!boksStore.isConnected">
           <input type="checkbox" v-model="boksStore.useSimulator">
           <span>{{ boksStore.useSimulator ? t.logger.simulator : t.logger.realBle }}</span>
         </label>
@@ -252,7 +252,7 @@ function exportLogs() {
 .target-name { font-size: 0.75rem; color: var(--vp-c-text-2); font-weight: normal; }
 
 .header-actions { display: flex; align-items: center; gap: 1rem; }
-.sim-switch { font-size: 0.75rem; display: flex; align-items: center; gap: 0.4rem; cursor: pointer; color: var(--vp-c-text-2); }
+.sim-switch { font-size: 0.75rem; display: flex; align-items: center; gap: 0.4rem; cursor: pointer; color: var(--vp-c-text-2); background: var(--vp-c-bg); padding: 0.2rem 0.5rem; border-radius: 4px; border: 1px solid var(--vp-c-divider); }
 .action-btn-main { 
   padding: 0.25rem 0.75rem; border-radius: 6px; border: none; 
   background: var(--vp-c-brand-1); color: white; font-size: 0.75rem; font-weight: bold; cursor: pointer;

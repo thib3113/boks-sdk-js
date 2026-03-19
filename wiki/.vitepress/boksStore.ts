@@ -24,7 +24,7 @@ export interface BoksPacketLog {
 export const boksStore = reactive({
   isConnected: false,
   isConnecting: false,
-  useSimulator: true,
+  useSimulator: false,
   isExpanded: false,
   deviceName: '',
   logs: [] as BoksLog[],
