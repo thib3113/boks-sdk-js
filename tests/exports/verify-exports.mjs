@@ -131,10 +131,8 @@ async function runAllChecks() {
   await verifyESM(join(DIST_DIR, 'esm', 'core.js'), coreExports);
   await verifyESM(join(DIST_DIR, 'esm', 'simulator.js'), simulatorExports);
 
-  // Check CJS
-  await verifyCJS(join(DIST_DIR, 'cjs', 'boks-sdk.cjs'), sdkExports);
-  await verifyCJS(join(DIST_DIR, 'cjs', 'core.cjs'), coreExports);
-  await verifyCJS(join(DIST_DIR, 'cjs', 'simulator.cjs'), simulatorExports);
+  // Check CJS (Now a single unified bundle for identity resilience)
+  await verifyCJS(join(DIST_DIR, 'cjs', 'boks-sdk.cjs'), [...sdkExports, ...coreExports, ...simulatorExports]);
 
   // Check IIFE (Browser)
   await verifyIIFE(join(DIST_DIR, 'boks-sdk.js'), 'BoksSDK', sdkExports);
