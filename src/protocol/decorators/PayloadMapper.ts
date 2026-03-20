@@ -630,10 +630,12 @@ const parseHex = (str, start) => {
   if (start >= str.length) return 0;
   let h = -1, l = -1;
   const c1 = str.charCodeAt(start);
+  // 48-57: '0'-'9', 65-70: 'A'-'F', 97-102: 'a'-'f'
   h = c1 >= 48 && c1 <= 57 ? c1 - 48 : c1 >= 65 && c1 <= 70 ? c1 - 55 : c1 >= 97 && c1 <= 102 ? c1 - 87 : -1;
   if (h === -1) return 0;
   if (start + 1 < str.length) {
     const c2 = str.charCodeAt(start + 1);
+    // 48-57: '0'-'9', 65-70: 'A'-'F', 97-102: 'a'-'f'
     l = c2 >= 48 && c2 <= 57 ? c2 - 48 : c2 >= 65 && c2 <= 70 ? c2 - 55 : c2 >= 97 && c2 <= 102 ? c2 - 87 : -1;
   }
   return l === -1 ? h : (h << 4) | l;
