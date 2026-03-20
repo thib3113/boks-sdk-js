@@ -10,31 +10,7 @@ const t = computed(() => i18n[lang.value as keyof typeof i18n] || i18n.en)
 const showClearConfirm = ref(false)
 
 function exportLogs() {
-  const exportedLogs = boksStore.packetLogs.map(log => {
-    const packetData = JSON.parse(JSON.stringify(log.rawData));
-    if (packetData && typeof packetData === 'object') {
-      delete packetData.opcode;
-    }
-
-    return {
-      time: log.time,
-      direction: log.direction,
-      opcode: log.opcode,
-      name: log.name,
-      length: log.length,
-      data: packetData
-    };
-  });
-  const dataStr = JSON.stringify(exportedLogs, null, 2);
-  const blob = new Blob([dataStr], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `boks-packet-logs-${new Date().toISOString().replace(/[:.]/g, '-')}.json`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  boksStore.exportLogs();
 }
 </script>
 
