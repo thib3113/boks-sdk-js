@@ -132,7 +132,7 @@
     "@types/web-bluetooth": "0.0.21",
     "@vitest/coverage-v8": "4.1.0",
     "esbuild": "0.27.4",
-    "eslint": "10.0.3",
+    "eslint": "10.1.0",
     "eslint-config-prettier": "10.1.8",
     "eslint-plugin-prettier": "5.5.5",
     "fast-check": "4.6.0",
