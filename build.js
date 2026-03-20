@@ -50,7 +50,10 @@ async function build() {
         entryPoints: {
             'boks-sdk': 'src/index.ts',
             'core': 'src/core.ts',
-            'simulator': 'src/simulator.ts'
+            'simulator': 'src/simulator.ts',
+            'client': 'src/client.ts',
+            'crypto': 'src/crypto.ts',
+            'protocol': 'src/protocol.ts'
         },
         bundle: true,
         outdir: 'dist/esm',
@@ -139,6 +142,9 @@ async function build() {
             { name: `${pkg.name}-esm`, file: 'boks-sdk.js', dir: 'dist/esm' },
             { name: `core-esm`, file: 'core.js', dir: 'dist/esm' },
             { name: `simulator-esm`, file: 'simulator.js', dir: 'dist/esm' },
+            { name: `client-esm`, file: 'client.js', dir: 'dist/esm' },
+            { name: `crypto-esm`, file: 'crypto.js', dir: 'dist/esm' },
+            { name: `protocol-esm`, file: 'protocol.js', dir: 'dist/esm' },
 
             // CJS (Single Bundle)
             { name: `${pkg.name}-cjs`, file: 'boks-sdk.cjs', dir: 'dist/cjs' },

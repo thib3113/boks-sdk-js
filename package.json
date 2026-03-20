@@ -63,6 +63,36 @@
     "./browser-core": {
       "types": "./dist/types/core.d.ts",
       "default": "./dist/boks-core.js"
+    },
+    "./client": {
+      "import": {
+        "types": "./dist/types/client.d.ts",
+        "default": "./dist/esm/client.js"
+      },
+      "require": {
+        "types": "./dist/types/client.d.cts",
+        "default": "./dist/cjs/boks-sdk.cjs"
+      }
+    },
+    "./crypto": {
+      "import": {
+        "types": "./dist/types/crypto.d.ts",
+        "default": "./dist/esm/crypto.js"
+      },
+      "require": {
+        "types": "./dist/types/crypto.d.cts",
+        "default": "./dist/cjs/boks-sdk.cjs"
+      }
+    },
+    "./protocol": {
+      "import": {
+        "types": "./dist/types/protocol.d.ts",
+        "default": "./dist/esm/protocol.js"
+      },
+      "require": {
+        "types": "./dist/types/protocol.d.cts",
+        "default": "./dist/cjs/boks-sdk.cjs"
+      }
     }
   },
   "unpkg": "dist/boks-sdk.js",

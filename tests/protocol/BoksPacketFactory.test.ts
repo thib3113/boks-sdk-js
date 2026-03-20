@@ -5,6 +5,14 @@ import * as Packets from '@/protocol';
 import { calculateChecksum, stringToBytes } from '@/utils/converters';
 
 describe('BoksPacketFactory', () => {
+  // Register all packets for tests
+  for (const key in Packets) {
+    const p = (Packets as any)[key];
+    if (typeof p === 'function' && 'opcode' in p) {
+      BoksPacketFactory.register(p as any);
+    }
+  }
+
   describe('createFromPayload with it.each', () => {
     const configKey = 'ABCDEF01';
     const configKeyBytes = Array.from(stringToBytes(configKey));
@@ -474,39 +482,15 @@ describe('BoksPacketFactory', () => {
     });
   });
 
-  describe('createRegeneratePackets', () => {
-    it('should correctly create PartA and PartB packets from a valid 32-byte hex string key', () => {
-      const configKey = 'ABCDEF01';
-      const masterKeyString = '00112233445566778899AABBCCDDEEFF00112233445566778899AABBCCDDEEFF';
 
-      const [partA, partB] = BoksPacketFactory.createRegeneratePackets(configKey, masterKeyString);
 
-      expect(partA).toBeInstanceOf(Packets.RegeneratePartAPacket);
-      expect(partB).toBeInstanceOf(Packets.RegeneratePartBPacket);
-    });
 
-    it('should correctly create PartA and PartB packets from a valid 32-byte Uint8Array key', () => {
-      const configKey = 'ABCDEF01';
-      const masterKeyBytes = new Uint8Array(32).fill(1); // 32 bytes array
 
-      const [partA, partB] = BoksPacketFactory.createRegeneratePackets(configKey, masterKeyBytes);
 
-      expect(partA).toBeInstanceOf(Packets.RegeneratePartAPacket);
-      expect(partB).toBeInstanceOf(Packets.RegeneratePartBPacket);
-    });
 
-    it('should throw INVALID_VALUE error if the key length is not exactly 32 bytes', () => {
-      const configKey = 'ABCDEF01';
-      const invalidMasterKeyString = '00112233445566778899AABBCCDDEEFF'; // 16 bytes, not 32
-      const invalidMasterKeyBytes = new Uint8Array(16).fill(1);
-
-      expect(() => {
-        BoksPacketFactory.createRegeneratePackets(configKey, invalidMasterKeyString);
-      }).toThrowError(/INVALID_VALUE/);
-
-      expect(() => {
-        BoksPacketFactory.createRegeneratePackets(configKey, invalidMasterKeyBytes);
-      }).toThrowError(/INVALID_VALUE/);
-    });
+    it('should silently ignore register with an undefined class', () => {
+      BoksPacketFactory.register(undefined as any);
+      // Ensure it doesn't throw. If it does, test fails.
+      expect(true).toBe(true);
   });
 });

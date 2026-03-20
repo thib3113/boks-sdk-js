@@ -1,40 +1,4 @@
 import { BoksPacket, BoksPacketConstructor } from './_BoksPacketBase';
-import { OpenDoorPacket } from './downlink/OpenDoorPacket';
-import { AskDoorStatusPacket } from './downlink/AskDoorStatusPacket';
-import { RequestLogsPacket } from './downlink/RequestLogsPacket';
-import { RebootPacket } from './downlink/RebootPacket';
-import { GetLogsCountPacket } from './downlink/GetLogsCountPacket';
-import { TestBatteryPacket } from './downlink/TestBatteryPacket';
-import { MasterCodeEditPacket } from './downlink/MasterCodeEditPacket';
-import { SingleToMultiCodePacket } from './downlink/SingleToMultiCodePacket';
-import { MultiToSingleCodePacket } from './downlink/MultiToSingleCodePacket';
-import { DeleteMasterCodePacket } from './downlink/DeleteMasterCodePacket';
-import { DeleteSingleUseCodePacket } from './downlink/DeleteSingleUseCodePacket';
-import { DeleteMultiUseCodePacket } from './downlink/DeleteMultiUseCodePacket';
-import { ReactivateCodePacket } from './downlink/ReactivateCodePacket';
-import { GenerateCodesPacket } from './downlink/GenerateCodesPacket';
-import { CreateMasterCodePacket } from './downlink/CreateMasterCodePacket';
-import { CreateSingleUseCodePacket } from './downlink/CreateSingleUseCodePacket';
-import { CreateMultiUseCodePacket } from './downlink/CreateMultiUseCodePacket';
-import { CountCodesPacket } from './downlink/CountCodesPacket';
-import { GenerateCodesSupportPacket } from './downlink/GenerateCodesSupportPacket';
-import { SetConfigurationPacket } from './downlink/SetConfigurationPacket';
-import { RegisterNfcTagScanStartPacket } from './downlink/RegisterNfcTagScanStartPacket';
-import { NfcRegisterPacket } from './downlink/NfcRegisterPacket';
-import { UnregisterNfcTagPacket } from './downlink/UnregisterNfcTagPacket';
-import { RegeneratePartAPacket } from './downlink/RegeneratePartAPacket';
-import { RegeneratePartBPacket } from './downlink/RegeneratePartBPacket';
-
-// Scale
-import { ScaleBondPacket } from './scale/ScaleBondPacket';
-import { ScaleGetMacPacket } from './scale/ScaleGetMacPacket';
-import { ScaleForgetPacket } from './scale/ScaleForgetPacket';
-import { ScaleTareEmptyPacket } from './scale/ScaleTareEmptyPacket';
-import { ScaleTareLoadedPacket } from './scale/ScaleTareLoadedPacket';
-import { ScaleMeasureWeightPacket } from './scale/ScaleMeasureWeightPacket';
-import { ScalePrepareDfuPacket } from './scale/ScalePrepareDfuPacket';
-import { ScaleGetRawSensorsPacket } from './scale/ScaleGetRawSensorsPacket';
-import { ScaleReconnectPacket } from './scale/ScaleReconnectPacket';
 
 // Scale Notifications
 import { NotifyScaleBondingSuccessPacket } from './scale/NotifyScaleBondingSuccessPacket';
@@ -91,54 +55,17 @@ import { ErrorHistoryPacket } from './uplink/history/ErrorHistoryPacket';
 import { NfcOpeningHistoryPacket } from './uplink/history/NfcOpeningHistoryPacket';
 import { NfcRegisteringHistoryPacket } from './uplink/history/NfcRegisteringHistoryPacket';
 
-import { hexToBytes, calculateChecksum } from '@/utils/converters';
+import { calculateChecksum } from '@/utils/converters';
 import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';
 import { BoksExpectedReason } from '@/errors/BoksExpectedReason';
 import { freeze } from '@/utils/security';
 
 /**
- * List of all supported packet classes.
- * We use an array and map it to a registry for cleaner management.
+ * List of base RX (Notification) packet classes.
+ * These are pre-registered because the client needs them to parse incoming data.
+ * Other packets (like TX commands) can be dynamically registered via `BoksPacketFactory.register()`.
  */
 const PACKET_CLASSES: BoksPacketConstructor[] = [
-  // Downlink
-  OpenDoorPacket,
-  AskDoorStatusPacket,
-  RequestLogsPacket,
-  RebootPacket,
-  GetLogsCountPacket,
-  TestBatteryPacket,
-  MasterCodeEditPacket,
-  SingleToMultiCodePacket,
-  MultiToSingleCodePacket,
-  DeleteMasterCodePacket,
-  DeleteSingleUseCodePacket,
-  DeleteMultiUseCodePacket,
-  ReactivateCodePacket,
-  GenerateCodesPacket,
-  CreateMasterCodePacket,
-  CreateSingleUseCodePacket,
-  CreateMultiUseCodePacket,
-  CountCodesPacket,
-  GenerateCodesSupportPacket,
-  SetConfigurationPacket,
-  RegisterNfcTagScanStartPacket,
-  NfcRegisterPacket,
-  UnregisterNfcTagPacket,
-  RegeneratePartAPacket,
-  RegeneratePartBPacket,
-
-  // Scale Commands
-  ScaleBondPacket,
-  ScaleGetMacPacket,
-  ScaleForgetPacket,
-  ScaleTareEmptyPacket,
-  ScaleTareLoadedPacket,
-  ScaleMeasureWeightPacket,
-  ScalePrepareDfuPacket,
-  ScaleGetRawSensorsPacket,
-  ScaleReconnectPacket,
-
   // Scale Notifications
   NotifyScaleBondingSuccessPacket,
   NotifyScaleBondingErrorPacket,
@@ -209,6 +136,15 @@ export class BoksPacketFactory {
     }
     return arr;
   })();
+
+  /**
+   * Register an additional packet dynamically. Useful for Simulator or dynamically injected TX commands.
+   */
+  static register(ctor: BoksPacketConstructor): void {
+    if (ctor && ctor.opcode !== undefined) {
+      this.registry[ctor.opcode] = ctor;
+    }
+  }
 
   /**
    * Creates a packet instance from a full raw Bluetooth payload.
@@ -285,26 +221,5 @@ export class BoksPacketFactory {
     }
 
     return Ctor.fromPayload(payload);
-  }
-
-  /**
-   * Helper to create regeneration packets from a 32-byte key.
-   */
-  static createRegeneratePackets(
-    configKey: string,
-    newMasterKey: Uint8Array | string
-  ): [RegeneratePartAPacket, RegeneratePartBPacket] {
-    const keyBytes = typeof newMasterKey === 'string' ? hexToBytes(newMasterKey) : newMasterKey;
-    if (keyBytes.length !== 32) {
-      throw new BoksProtocolError(BoksProtocolErrorId.INVALID_VALUE, undefined, {
-        field: 'newMasterKey',
-        received: keyBytes.length,
-        expected: 32
-      });
-    }
-    return [
-      new RegeneratePartAPacket({ configKey: configKey, part: keyBytes.subarray(0, 16) }),
-      new RegeneratePartBPacket({ configKey: configKey, part: keyBytes.subarray(16, 32) })
-    ];
   }
 }
