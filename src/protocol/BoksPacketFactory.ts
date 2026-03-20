@@ -57,7 +57,7 @@ import { ErrorHistoryPacket } from './uplink/history/ErrorHistoryPacket';
 import { NfcOpeningHistoryPacket } from './uplink/history/NfcOpeningHistoryPacket';
 import { NfcRegisteringHistoryPacket } from './uplink/history/NfcRegisteringHistoryPacket';
 
-import { hexToBytes, calculateChecksum } from '@/utils/converters';
+import { calculateChecksum } from '@/utils/converters';
 import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';
 import { BoksExpectedReason } from '@/errors/BoksExpectedReason';
 import { freeze } from '@/utils/security';
@@ -222,36 +222,5 @@ export class BoksPacketFactory {
     }
 
     return Ctor.fromPayload(payload);
-  }
-
-  /**
-   * Helper to create regeneration packets from a 32-byte key.
-   */
-  static createRegeneratePackets(
-    configKey: string,
-    newMasterKey: Uint8Array | string
-  ): [BoksPacket, BoksPacket] {
-    const keyBytes = typeof newMasterKey === 'string' ? hexToBytes(newMasterKey) : newMasterKey;
-    if (keyBytes.length !== 32) {
-      throw new BoksProtocolError(BoksProtocolErrorId.INVALID_VALUE, undefined, {
-        field: 'newMasterKey',
-        received: keyBytes.length,
-        expected: 32
-      });
-    }
-    return [
-      new (
-        this.getConstructor(0x20) ||
-        (function () {
-          throw new Error('RegeneratePartAPacket not registered');
-        } as unknown as BoksPacketConstructor)
-      )({ configKey: configKey, part: keyBytes.subarray(0, 16) }),
-      new (
-        this.getConstructor(0x21) ||
-        (function () {
-          throw new Error('RegeneratePartBPacket not registered');
-        } as unknown as BoksPacketConstructor)
-      )({ configKey: configKey, part: keyBytes.subarray(16, 32) })
-    ];
   }
 }

@@ -482,72 +482,15 @@ describe('BoksPacketFactory', () => {
     });
   });
 
-  describe('createRegeneratePackets', () => {
-    it('should correctly create PartA and PartB packets from a valid 32-byte hex string key', () => {
-      const configKey = 'ABCDEF01';
-      const masterKeyString = '00112233445566778899AABBCCDDEEFF00112233445566778899AABBCCDDEEFF';
 
-      const [partA, partB] = BoksPacketFactory.createRegeneratePackets(configKey, masterKeyString);
 
-      expect(partA).toBeInstanceOf(Packets.RegeneratePartAPacket);
-      expect(partB).toBeInstanceOf(Packets.RegeneratePartBPacket);
-    });
 
-    it('should correctly create PartA and PartB packets from a valid 32-byte Uint8Array key', () => {
-      const configKey = 'ABCDEF01';
-      const masterKeyBytes = new Uint8Array(32).fill(1); // 32 bytes array
 
-      const [partA, partB] = BoksPacketFactory.createRegeneratePackets(configKey, masterKeyBytes);
 
-      expect(partA).toBeInstanceOf(Packets.RegeneratePartAPacket);
-      expect(partB).toBeInstanceOf(Packets.RegeneratePartBPacket);
-    });
-
-    it('should throw INVALID_VALUE error if the key length is not exactly 32 bytes', () => {
-      const configKey = 'ABCDEF01';
-      const newMasterKey = new Uint8Array([1, 2, 3]);
-
-      expect(() => {
-        BoksPacketFactory.createRegeneratePackets(configKey, newMasterKey);
-      }).toThrowError(
-        expect.objectContaining({
-          id: BoksProtocolErrorId.INVALID_VALUE
-        })
-      );
-    });
 
     it('should silently ignore register with an undefined class', () => {
       BoksPacketFactory.register(undefined as any);
       // Ensure it doesn't throw. If it does, test fails.
       expect(true).toBe(true);
-    });
-
-    it('should throw an error if RegeneratePartA or PartB is missing when creating regenerate packets', () => {
-      // First, let's keep a backup of the registry
-      const originalA = BoksPacketFactory.getConstructor(0x20);
-      const originalB = BoksPacketFactory.getConstructor(0x21);
-
-      // Now, let's clear it
-      (BoksPacketFactory as any).registry[0x20] = undefined;
-      (BoksPacketFactory as any).registry[0x21] = undefined;
-
-      const newMasterKey = '0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF';
-
-      expect(() => {
-        BoksPacketFactory.createRegeneratePackets('ABCDEF01', newMasterKey);
-      }).toThrowError('RegeneratePartAPacket not registered');
-
-      // Add back A, so B throws
-      if (originalA) BoksPacketFactory.register(originalA);
-
-      expect(() => {
-        BoksPacketFactory.createRegeneratePackets('ABCDEF01', newMasterKey);
-      }).toThrowError('RegeneratePartBPacket not registered');
-
-      // Restore both
-      if (originalA) BoksPacketFactory.register(originalA);
-      if (originalB) BoksPacketFactory.register(originalB);
-    });
-
   });
 });
