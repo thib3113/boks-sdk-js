@@ -12,6 +12,12 @@ const t = computed(() => i18n[lang.value as keyof typeof i18n] || i18n.en)
 const simState = ref<any>({ batteryLevel: 100 })
 const showSimControls = ref(true)
 const showClearConfirm = ref(false)
+const showEditSim = ref(false)
+const editSimForm = ref({
+  software: '',
+  firmware: '',
+  masterKey: ''
+})
 
 function refreshSimState() {
   if (boksStore.simulator) {
@@ -51,6 +57,17 @@ function triggerRealisticOpen(type: 'keypad' | 'key' | 'nfc') {
   }
   
   boksStore.log(t.value.logger.simTriggered.replace('{type}', type), 'success');
+}
+
+function saveSimEdit() {
+  if (boksStore.simulator) {
+    const sim = boksStore.simulator;
+    sim.setSoftwareVersion(editSimForm.value.software || '0.0.0');
+    sim.setFirmwareVersion(editSimForm.value.firmware || '0.0.0');
+    if (editSimForm.value.masterKey) sim.setMasterKey(editSimForm.value.masterKey);
+    simState.value = sim.getPublicState();
+  }
+  showEditSim.value = false;
 }
 
 function exportLogs() {
