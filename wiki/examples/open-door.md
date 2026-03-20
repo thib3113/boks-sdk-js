@@ -48,4 +48,4 @@ async function openDoorExample() {
 }
 ```
 
-<BoksPacketLogger />
+<BoksDashboard />

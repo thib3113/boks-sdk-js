@@ -55,4 +55,4 @@ if (stats) {
 Les statistiques de batterie sont lues depuis une caractéristique personnalisée et fournissent plus d'informations que le service standard, notamment la température et l'historique des mesures.
 :::
 
-<BoksPacketLogger />
+<BoksDashboard />

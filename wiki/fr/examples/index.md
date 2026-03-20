@@ -17,4 +17,4 @@ L'état de la connexion et les données simulées sont partagés sur toutes les 
 - [**Gestion NFC**](./nfc) : Enregistrez et supprimez des badges NFC (pour les Boks v4+).
 - [**Batterie & Matériel**](./battery) : Lisez les niveaux de batterie et les statistiques détaillées.
 
-<BoksPacketLogger />
+<BoksDashboard />

@@ -12,4 +12,4 @@ Utilisez cette démo interactive pour remplacer la Clé Maître actuelle par une
 
 <RegenerationDemo />
 
-<BoksPacketLogger />
+<BoksDashboard />
