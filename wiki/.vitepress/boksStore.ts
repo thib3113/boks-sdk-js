@@ -143,6 +143,12 @@ export const boksStore = reactive({
 
         await this.controller.connect();
         this.deviceName = 'Boks Simulator';
+        // Auto-set the active master key to the simulator's default so ConfigKey pre-fills
+        if (sim) {
+          const state = sim.getInternalState();
+          const masterKeyHex = Array.from(state.masterKey).map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
+          this.setActiveKey(masterKeyHex);
+        }
       } else {
         this.log('Requesting Bluetooth device...', 'info');
         const client = new BoksClient();

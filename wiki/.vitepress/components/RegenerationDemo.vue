@@ -20,7 +20,7 @@ onMounted(() => {
 })
 
 watch(() => boksStore.activeMasterKey, (newKey) => {
-  if (newKey && !currentConfigKey.value) {
+  if (newKey) {
     currentConfigKey.value = boksStore.deriveConfigKey(newKey)
   }
 })

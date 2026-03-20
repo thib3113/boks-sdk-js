@@ -53,6 +53,26 @@ function triggerRealisticOpen(type: 'keypad' | 'key' | 'nfc') {
   boksStore.log(t.value.logger.simTriggered.replace('{type}', type), 'success');
 }
 
+
+function openEditSim() {
+  if (boksStore.simulator) {
+    const sim = boksStore.simulator;
+    const state = sim.getInternalState();
+    editSimForm.value = {
+      software: sim.getPublicState().softwareVersion || '',
+      firmware: sim.getPublicState().firmwareVersion || '',
+      masterKey: Array.from(state.masterKey).map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase()
+    };
+  }
+  showEditSim.value = true;
+}
+
+function generateRandomKey() {
+  const randomBytes = new Uint8Array(32);
+  crypto.getRandomValues(randomBytes);
+  editSimForm.value.masterKey = Array.from(randomBytes).map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
+}
+
 function saveSimEdit() {
   if (boksStore.simulator) {
     const sim = boksStore.simulator;
@@ -102,7 +122,7 @@ function saveSimEdit() {
 
         <!-- Metadata for both -->
         <div class="debug-info">
-          <span v-if="boksStore.useSimulator" class="edit-icon" @click="showEditSim = true" title="Edit simulator config">✏️</span>
+          <span v-if="boksStore.useSimulator" class="edit-icon" @click="openEditSim()" title="Edit simulator config">✏️</span>
           <div class="debug-row">
             <span class="label">{{ t.logger.software }}</span>
             <span class="value">{{ boksStore.useSimulator ? simState.softwareVersion : boksStore.softwareVersion }}</span>
@@ -137,7 +157,10 @@ function saveSimEdit() {
         </div>
         <div class="field" style="margin-bottom: 1rem">
           <label>Master Key (hex)</label>
-          <input type="text" v-model="editSimForm.masterKey" class="sim-edit-input" placeholder="e.g. 01020304..." data-testid="sim-edit-masterkey" />
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <input type="text" v-model="editSimForm.masterKey" class="sim-edit-input" placeholder="e.g. 01020304..." data-testid="sim-edit-masterkey" />
+            <button @click="generateRandomKey" style="background: var(--vp-c-bg-alt); border: 1px solid var(--vp-c-divider); border-radius: 4px; cursor: pointer; padding: 0.4rem; font-size: 1rem;" title="Generate random key">🎲</button>
+          </div>
         </div>
         <div class="modal-actions">
           <button @click="showEditSim = false" class="modal-btn cancel">{{ t.logger.cancel }}</button>
