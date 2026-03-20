@@ -221,29 +221,6 @@ function exportLogs() {
 
     </div>
 
-    <!-- SIMULATOR EDIT MODAL -->
-    <div v-if="showEditSim" class="modal-overlay">
-      <div class="modal-content">
-        <h4>Edit Simulator</h4>
-        <div class="field" style="margin-bottom: 0.5rem">
-          <label>Software Version</label>
-          <input type="text" v-model="editSimForm.software" class="sim-edit-input" data-testid="sim-edit-software" />
-        </div>
-        <div class="field" style="margin-bottom: 0.5rem">
-          <label>Firmware Version</label>
-          <input type="text" v-model="editSimForm.firmware" class="sim-edit-input" data-testid="sim-edit-firmware" />
-        </div>
-        <div class="field" style="margin-bottom: 1rem">
-          <label>Master Key (hex)</label>
-          <input type="text" v-model="editSimForm.masterKey" class="sim-edit-input" placeholder="e.g. 01020304..." data-testid="sim-edit-masterkey" />
-        </div>
-        <div class="modal-actions">
-          <button @click="showEditSim = false" class="modal-btn cancel">{{ t.logger.cancel }}</button>
-          <button @click="saveSimEdit" class="modal-btn confirm" data-testid="sim-edit-save">Save</button>
-        </div>
-      </div>
-    </div>
-
     <!-- CLEAR CONFIRMATION MODAL -->
     <div v-if="showClearConfirm" class="modal-overlay">
       <div class="modal-content">
