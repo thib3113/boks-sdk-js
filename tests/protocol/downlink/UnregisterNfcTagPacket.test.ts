@@ -18,9 +18,9 @@ describe('UnregisterNfcTagPacket', () => {
   it('should encode correctly', () => {
     const packet = new UnregisterNfcTagPacket({ configKey: validKey, uid: validUid });
     const encoded = packet.encode();
-    // 0x19 + 13 + Key + Len + UID
+    // length is calculated dynamically. For '04:A1:B2:C3', length of hex is 8 / 2 = 4 bytes.
     expect(encoded[0]).toBe(0x19);
-    expect(encoded[1]).toBe(13);
+    expect(encoded[1]).toBe(13); // Wait, if the payload is exactly 13 bytes. 8(key) + 1(len) + 4(uid) = 13.
 
     // Key "12345678" -> 3132333435363738
     // Len: 04

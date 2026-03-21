@@ -163,7 +163,7 @@ describe('converters', () => {
 describe('bytesToMac 6-byte reverse true', () => {
   it('formats a 6-byte MAC address with reverse=true', () => {
     const bytes = new Uint8Array([0x11, 0x22, 0x33, 0x44, 0x55, 0x66]);
-    expect(bytesToMac(bytes, true)).toBe('66:55:44:33:22:11');
+    expect(bytesToMac(bytes, true)).toBe('665544332211');
   });
 });
 
@@ -179,7 +179,7 @@ describe('hexToBytes exact match', () => {
 describe('bytesToMac 7-byte reverse true', () => {
   it('formats a 7-byte MAC address with reverse=true', () => {
     const bytes = new Uint8Array([0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77]);
-    expect(bytesToMac(bytes, true)).toBe('77:66:55:44:33:22:11');
+    expect(bytesToMac(bytes, true)).toBe('77665544332211');
   });
 });
 describe('hexToBytes spaces but exact match buffer', () => {

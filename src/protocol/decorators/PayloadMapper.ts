@@ -398,14 +398,14 @@ export class PayloadMapper {
           }
           break;
         case 'mac_address':
-          // Reverse Little Endian to Big Endian (Standard Format: XX:XX:XX:XX:XX:XX)
+          // Reverse Little Endian to Big Endian (Standard Format: XXXXXXXXXXXX)
           fnBody += `
             result['${prop}'] =
-              HEX_TABLE[payload[${o + 5}]] + ':' +
-              HEX_TABLE[payload[${o + 4}]] + ':' +
-              HEX_TABLE[payload[${o + 3}]] + ':' +
-              HEX_TABLE[payload[${o + 2}]] + ':' +
-              HEX_TABLE[payload[${o + 1}]] + ':' +
+              HEX_TABLE[payload[${o + 5}]] +
+              HEX_TABLE[payload[${o + 4}]] +
+              HEX_TABLE[payload[${o + 3}]] +
+              HEX_TABLE[payload[${o + 2}]] +
+              HEX_TABLE[payload[${o + 1}]] +
               HEX_TABLE[payload[${o}]];
           `;
           break;
@@ -653,7 +653,7 @@ const parseHex = (str, start) => {
       const prop = field.propertyName;
 
       if (field.type === 'var_len_hex') {
-        dynamicSizeCalc += ` + (instance['${prop}'] && typeof instance['${prop}'] === 'string' ? Math.floor(instance['${prop}'].length / 2) : 0)`;
+        dynamicSizeCalc += ` + (instance['${prop}'] && typeof instance['${prop}'] === 'string' ? Math.floor(instance['${prop}'].replace(/:/g, '').length / 2) : 0)`;
       } else if (
         (field.type === 'hex_string' || field.type === 'byte_array') &&
         typeof field.length !== 'number'
@@ -753,14 +753,16 @@ const parseHex = (str, start) => {
         case 'mac_address':
           fnBody += `
             if (typeof instance['${prop}'] === 'string') {
-              const parts = instance['${prop}'].split(':');
-              if (parts.length === 6) {
-                payload[${o} + 5] = parseHex(parts[0], 0);
-                payload[${o} + 4] = parseHex(parts[1], 0);
-                payload[${o} + 3] = parseHex(parts[2], 0);
-                payload[${o} + 2] = parseHex(parts[3], 0);
-                payload[${o} + 1] = parseHex(parts[4], 0);
-                payload[${o}] = parseHex(parts[5], 0);
+              let j = 5;
+              let s = instance['${prop}'];
+              for (let i = 0; i < s.length && j >= 0; ) {
+                if (s.charCodeAt(i) === 58) {
+                  i++;
+                  continue;
+                }
+                payload[${o} + j] = parseHex(s, i);
+                i += 2;
+                j--;
               }
             }
           `;
@@ -805,12 +807,22 @@ const parseHex = (str, start) => {
         case 'var_len_hex':
           fnBody += `
             if (typeof instance['${prop}'] === 'string') {
-              const s = instance['${prop}'];
-              const len = Math.floor(s.length / 2);
-              payload[${o}] = len;
-              for (let i = 0; i < len; i++) {
-                payload[${o} + 1 + i] = parseHex(s, i * 2);
+              let j = 0;
+              let s = instance['${prop}'];
+              for (let i = 0; i < s.length; ) {
+                if (s.charCodeAt(i) === 58) {
+                  i++;
+                  continue;
+                }
+                if (i + 1 < s.length) {
+                  payload[${o} + 1 + j] = parseHex(s, i);
+                  i += 2;
+                  j++;
+                } else {
+                  break; // Wait, should be even length without colons
+                }
               }
+              payload[${o}] = j;
             } else {
               payload[${o}] = 0;
             }

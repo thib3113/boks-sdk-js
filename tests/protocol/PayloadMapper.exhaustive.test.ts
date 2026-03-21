@@ -91,7 +91,7 @@ describe('PayloadMapper Exhaustive Coverage', () => {
     expect(result.ascii4).toBe('BOKS');
     expect(result.configKey).toBe('12345678');
     expect(result.pin).toBe('123456');
-    expect(result.mac).toBe('55:44:33:22:11:00');
+    expect(result.mac).toBe('554433221100');
     expect(result.varLenHex).toBe('AABB');
   });
 

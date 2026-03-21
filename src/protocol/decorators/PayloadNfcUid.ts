@@ -32,8 +32,14 @@ export function PayloadNfcUid(offset: number) {
         }
         const strVal = String(val);
         validateNfcUid(strVal);
-        const formatted = strVal.replace(/:/g, '').toUpperCase();
-        target.set.call(this, formatted as V);
+        // Optimization: Removing colons manually avoids regex overhead and string allocation
+        let formatted = '';
+        for (let i = 0; i < strVal.length; i++) {
+          if (strVal.charCodeAt(i) !== 58) {
+            formatted += strVal[i];
+          }
+        }
+        target.set.call(this, formatted.toUpperCase() as V);
       },
       init(initialValue: V): V {
         return initialValue;
