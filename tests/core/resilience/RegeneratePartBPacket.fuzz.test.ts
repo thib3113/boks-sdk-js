@@ -1,3 +1,4 @@
+import { bytesToHex } from '../../../src/utils/converters';
 import { describe, it, expect } from 'vitest';
 import fc from 'fast-check';
 import { RegeneratePartBPacket } from '../../../src/protocol/downlink/RegeneratePartBPacket';
@@ -12,7 +13,7 @@ describe('RegeneratePartBPacket Resilience (Fuzzing)', () => {
         fc.uint8Array({ minLength: 0, maxLength: 256 }), // part
         (configKey, part) => {
           try {
-            const packet = new RegeneratePartBPacket({ configKey: configKey, part: part });
+            const packet = new RegeneratePartBPacket({ configKey: configKey, part: bytesToHex(part).toUpperCase() });
 
             // If it succeeds, the inputs MUST have matched strict validation:
             expect(configKey.length).toBe(8);

@@ -747,8 +747,8 @@ export class BoksController {
 
     const keyBytes = typeof newMasterKey === 'string' ? hexToBytes(newMasterKey) : newMasterKey;
 
-    const partA = keyBytes.subarray(0, 16);
-    const partB = keyBytes.subarray(16, 32);
+    const partA = bytesToHex(keyBytes.subarray(0, 16)).toUpperCase();
+    const partB = bytesToHex(keyBytes.subarray(16, 32)).toUpperCase();
 
     // Setup listener
     const cleanup = this.#client.on(NotifyCodeGenerationProgressPacket, (packet) => {

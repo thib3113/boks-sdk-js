@@ -12,7 +12,7 @@ describe('RegeneratePartBPacket', () => {
     const packet = new RegeneratePartBPacket({ configKey: validKey, part: validPart });
     expect(packet.opcode).toBe(BoksOpcode.RE_GENERATE_CODES_PART2);
     expect(packet.configKey).toBe(validKey);
-    expect(packet.part).toEqual('101112131415161718191A1B1C1D1E1F'.toLowerCase());
+    expect(packet.part).toEqual('101112131415161718191A1B1C1D1E1F');
   });
 
   it('should encode correctly', () => {
@@ -67,7 +67,7 @@ describe('RegeneratePartBPacket', () => {
     expect(json).toStrictEqual({
         "configKey": "12345678",
         "opcode": 33,
-        "part": "101112131415161718191a1b1c1d1e1f",
+        "part": "101112131415161718191A1B1C1D1E1F",
       });
   });
 });
