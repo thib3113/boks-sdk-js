@@ -34,6 +34,41 @@ for (let i = 0; i < 6; i++) {
 // Lowercase hex is not supported per project requirements.
 // Keys are always uppercase.
 
+/**
+ * Quickly strips whitespace and specified delimiters (e.g., colons, dashes) from a hexadecimal string.
+ * This is heavily optimized to avoid regexes and intermediate array allocations.
+ */
+export const cleanHexString = (hex: string): string => {
+  const len = hex.length;
+  let clean = '';
+  let isDirty = false;
+
+  for (let i = 0; i < len; i++) {
+    const code = hex.charCodeAt(i);
+    // Ignored chars: 32 (space), 9 (tab), 10 (LF), 13 (CR), 58 (:), 45 (-)
+    if (
+      code === 32 ||
+      code === 9 ||
+      code === 10 ||
+      code === 13 ||
+      code === 58 ||
+      code === 45
+    ) {
+      if (!isDirty) {
+        // First time finding a dirty char: we copy everything valid up to this point
+        clean = hex.substring(0, i);
+        isDirty = true;
+      }
+      continue;
+    }
+    if (isDirty) {
+      clean += hex[i];
+    }
+  }
+
+  return isDirty ? clean.toUpperCase() : hex.toUpperCase();
+};
+
 export const hexToBytes = (hex: string): Uint8Array => {
   const len = hex.length;
   // Optimization: fast path for clean hex strings (no spaces)

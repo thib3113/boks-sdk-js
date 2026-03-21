@@ -744,12 +744,12 @@ export class PayloadMapper {
             if (typeof instance['${prop}'] === 'string') {
               const bytes = hexToBytes(instance['${prop}']);
               if (bytes.length === 6) {
-                payload[${o} + 5] = bytes[0];
-                payload[${o} + 4] = bytes[1];
-                payload[${o} + 3] = bytes[2];
-                payload[${o} + 2] = bytes[3];
-                payload[${o} + 1] = bytes[4];
                 payload[${o}] = bytes[5];
+                payload[${o} + 1] = bytes[4];
+                payload[${o} + 2] = bytes[3];
+                payload[${o} + 3] = bytes[2];
+                payload[${o} + 4] = bytes[1];
+                payload[${o} + 5] = bytes[0];
               }
             }
           `;
