@@ -23,7 +23,6 @@ describe('NfcOpeningHistoryPacket', () => {
       uid: '04050607'
     });
     const encoded = packet.encode();
-    // 0xA1 + 9 + 00000A + 02 + 04 + 04050607
     expect(encoded[0]).toBe(0xa1);
     expect(encoded[1]).toBe(9);
     expect(bytesToHex(encoded.subarray(2, 5))).toBe('00000A');

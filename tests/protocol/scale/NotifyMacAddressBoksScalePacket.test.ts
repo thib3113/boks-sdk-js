@@ -11,7 +11,7 @@ describe('NotifyMacAddressBoksScalePacket', () => {
     const packet = NotifyMacAddressBoksScalePacket.fromPayload(payload);
 
     expect(packet.opcode).toBe(BoksOpcode.NOTIFY_MAC_ADDRESS_BOKS_SCALE);
-    expect(packet.macAddress).toBe('FF:EE:DD:CC:BB:AA');
+    expect(packet.macAddress).toBe('FFEEDDCCBBAA');
   });
 
   it('should match fixed hexadecimal reference encoding', () => {
@@ -36,7 +36,7 @@ describe('NotifyMacAddressBoksScalePacket', () => {
     const packet = NotifyMacAddressBoksScalePacket.fromPayload(new Uint8Array([0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff]));
     const json = packet.toJSON();
     expect(json).toStrictEqual({
-        "macAddress": "FF:EE:DD:CC:BB:AA",
+        "macAddress": "FFEEDDCCBBAA",
         "opcode": 178,
       });
   });

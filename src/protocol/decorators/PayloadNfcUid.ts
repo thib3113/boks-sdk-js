@@ -3,6 +3,7 @@ import { getOrCreateMetadata } from './PayloadMapper';
 import { assertSafeBounds } from './PayloadMetadata';
 import { BoksProtocolError, BoksProtocolErrorId } from '../../errors/BoksProtocolError';
 import { BoksExpectedReason } from '../../errors/BoksExpectedReason';
+import { cleanHexString } from '../../utils/converters';
 
 export function PayloadNfcUid(offset: number) {
   assertSafeBounds(offset, 1);
@@ -32,7 +33,7 @@ export function PayloadNfcUid(offset: number) {
         }
         const strVal = String(val);
         validateNfcUid(strVal);
-        const formatted = strVal.replace(/:/g, '').toUpperCase();
+        const formatted = cleanHexString(strVal);
         target.set.call(this, formatted as V);
       },
       init(initialValue: V): V {

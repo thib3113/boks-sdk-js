@@ -34,6 +34,34 @@ for (let i = 0; i < 6; i++) {
 // Lowercase hex is not supported per project requirements.
 // Keys are always uppercase.
 
+/**
+ * Quickly strips whitespace and specified delimiters (e.g., colons, dashes) from a hexadecimal string.
+ * This is heavily optimized to avoid regexes and intermediate array allocations.
+ */
+export const cleanHexString = (hex: string): string => {
+  const len = hex.length;
+  let clean = '';
+  let isDirty = false;
+
+  for (let i = 0; i < len; i++) {
+    const code = hex.charCodeAt(i);
+    // Ignored chars: 32 (space), 9 (tab), 10 (LF), 13 (CR), 58 (:), 45 (-)
+    if (code === 32 || code === 9 || code === 10 || code === 13 || code === 58 || code === 45) {
+      if (!isDirty) {
+        // First time finding a dirty char: we copy everything valid up to this point
+        clean = hex.substring(0, i);
+        isDirty = true;
+      }
+      continue;
+    }
+    if (isDirty) {
+      clean += hex[i];
+    }
+  }
+
+  return isDirty ? clean.toUpperCase() : hex.toUpperCase();
+};
+
 export const hexToBytes = (hex: string): Uint8Array => {
   const len = hex.length;
   // Optimization: fast path for clean hex strings (no spaces)
@@ -285,36 +313,26 @@ export const bytesToString = (bytes: Uint8Array): string => {
 };
 
 /**
- * Formats a byte array as a MAC address (XX:XX:XX:XX:XX:XX).
+ * Formats a byte array as a MAC address string (XXXXXXXXXXXX).
  * Boks firmware sends MAC addresses in Little Endian, so we reverse by default for Big Endian display.
  */
 const formatMac6 = (bytes: Uint8Array, reverse: boolean): string => {
   if (reverse) {
     return (
       HEX_TABLE[bytes[5]] +
-      ':' +
       HEX_TABLE[bytes[4]] +
-      ':' +
       HEX_TABLE[bytes[3]] +
-      ':' +
       HEX_TABLE[bytes[2]] +
-      ':' +
       HEX_TABLE[bytes[1]] +
-      ':' +
       HEX_TABLE[bytes[0]]
     );
   } else {
     return (
       HEX_TABLE[bytes[0]] +
-      ':' +
       HEX_TABLE[bytes[1]] +
-      ':' +
       HEX_TABLE[bytes[2]] +
-      ':' +
       HEX_TABLE[bytes[3]] +
-      ':' +
       HEX_TABLE[bytes[4]] +
-      ':' +
       HEX_TABLE[bytes[5]]
     );
   }
@@ -337,13 +355,13 @@ export const bytesToMac = (bytes: Uint8Array, reverse: boolean = true): string =
   if (reverse) {
     let result = HEX_TABLE[bytes[len - 1]];
     for (let i = len - 2; i >= 0; i--) {
-      result += ':' + HEX_TABLE[bytes[i]];
+      result += HEX_TABLE[bytes[i]];
     }
     return result;
   } else {
     let result = HEX_TABLE[bytes[0]];
     for (let i = 1; i < len; i++) {
-      result += ':' + HEX_TABLE[bytes[i]];
+      result += HEX_TABLE[bytes[i]];
     }
     return result;
   }

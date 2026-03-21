@@ -18,7 +18,6 @@ describe('UnregisterNfcTagPacket', () => {
   it('should encode correctly', () => {
     const packet = new UnregisterNfcTagPacket({ configKey: validKey, uid: validUid });
     const encoded = packet.encode();
-    // 0x19 + 13 + Key + Len + UID
     expect(encoded[0]).toBe(0x19);
     expect(encoded[1]).toBe(13);
 

@@ -39,9 +39,6 @@ describe('NfcRegisterPacket', () => {
 
   it('should match fixed hexadecimal reference encoding', () => {
     const packet = new NfcRegisterPacket({ configKey: '12345678', uid: '04A1B2C3' });
-    // Opcode 0x18, Len 13, Key '12345678', Len 4, UID '04A1B2C3', Checksum 0x38 (Wait, recalculating...)
-    // Let's use the actual output from the test runner to set the exact checksum.
-    // Actually from previous run: `Received: "180D31323334353637380404A1B2C3AE"`
     expect(bytesToHex(packet.encode())).toBe('180D31323334353637380404A1B2C3E7');
   });
 
