@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import fc from 'fast-check';
 import { BoksEventRouter } from '../../../src/client/BoksEventRouter';
-import { BoksOpcode, BoksPacket, AskDoorStatusPacket, AnswerDoorStatusPacket, NotifyDoorStatusPacket } from '../../../src/protocol';
+import { BoksOpcode, BoksPacket } from '../../../src/protocol';
 
 class MockPacket extends BoksPacket {
   constructor(public opcode: BoksOpcode, private payload: Uint8Array = new Uint8Array(0)) {
