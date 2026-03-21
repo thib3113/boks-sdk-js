@@ -659,7 +659,7 @@ const parseHex = (str, start) => {
         typeof field.length !== 'number'
       ) {
         if (field.type === 'hex_string') {
-          dynamicSizeCalc += ` + (instance['${prop}'] && typeof instance['${prop}'] === 'string' ? Math.floor(instance['${prop}'].length / 2) : 0)`;
+          dynamicSizeCalc += ` + (instance['${prop}'] && typeof instance['${prop}'] === 'string' ? Math.floor(instance['${prop}'].length / 2) : (instance['${prop}'] instanceof Uint8Array ? instance['${prop}'].length : 0))`;
         } else {
           dynamicSizeCalc += ` + (instance['${prop}'] && instance['${prop}'] instanceof Uint8Array ? instance['${prop}'].length : 0)`;
         }
@@ -785,6 +785,8 @@ const parseHex = (str, start) => {
                     payload[${o} + i] = parseHex(s, i * 2);
                   }
                 }
+              } else if (instance['${prop}'] instanceof Uint8Array) {
+                payload.set(instance['${prop}'].subarray(0, ${field.length}), ${o});
               }
             `;
           } else {
@@ -794,6 +796,8 @@ const parseHex = (str, start) => {
                 for (let i = 0; i < Math.floor(s.length / 2); i++) {
                   payload[${o} + i] = parseHex(s, i * 2);
                 }
+              } else if (instance['${prop}'] instanceof Uint8Array) {
+                payload.set(instance['${prop}'], ${o});
               }
             `;
           }
