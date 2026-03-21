@@ -44,6 +44,16 @@ class DummyPacket {
 class EmptyPacket {}
 
 describe('PayloadMapper Resilience Exhaustive', () => {
+  it('should throw BoksProtocolError for PayloadHexString when string contains invalid hex characters', () => {
+    class HexPacket {
+      @PayloadHexString(0, 5) public accessor valHex!: string;
+    }
+    const pkt = new HexPacket();
+    expect(() => {
+      pkt.valHex = '012345678G';
+    }).toThrow(BoksProtocolError);
+  });
+
   it('should throw BoksProtocolError for PayloadHexString when type is invalid', () => {
     class HexPacket {
       @PayloadHexString(0, 5) public accessor valHex!: string;
