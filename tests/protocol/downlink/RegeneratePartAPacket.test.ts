@@ -12,7 +12,7 @@ describe('RegeneratePartAPacket', () => {
     const packet = new RegeneratePartAPacket({ configKey: validKey, part: validPart });
     expect(packet.opcode).toBe(BoksOpcode.RE_GENERATE_CODES_PART1);
     expect(packet.configKey).toBe(validKey);
-    expect(packet.part).toEqual(validPart);
+    expect(packet.part).toEqual('000102030405060708090A0B0C0D0E0F');
   });
 
   it('should encode correctly', () => {
@@ -25,7 +25,7 @@ describe('RegeneratePartAPacket', () => {
     // Key "12345678" -> 3132333435363738
     // Part -> 000102030405060708090A0B0C0D0E0F
     const expectedPayload = '3132333435363738000102030405060708090A0B0C0D0E0F';
-    expect(bytesToHex(encoded.subarray(2, 26))).toBe(expectedPayload);
+    expect(bytesToHex(encoded.subarray(2, 26)).toUpperCase()).toBe(expectedPayload);
   });
 
   it('should parse from payload correctly', () => {
@@ -35,7 +35,7 @@ describe('RegeneratePartAPacket', () => {
 
     const packet = RegeneratePartAPacket.fromPayload(payload);
     expect(packet.configKey).toBe(validKey);
-    expect(packet.part).toEqual(validPart);
+    expect(packet.part).toEqual('000102030405060708090A0B0C0D0E0F');
   });
 
   it('should throw INVALID_CONFIG_KEY for invalid config key format', () => {
@@ -71,24 +71,7 @@ describe('RegeneratePartAPacket', () => {
     expect(json).toStrictEqual({
         "configKey": "12345678",
         "opcode": 32,
-        "part": new Uint8Array([
-          0,
-          1,
-          2,
-          3,
-          4,
-          5,
-          6,
-          7,
-          8,
-          9,
-          10,
-          11,
-          12,
-          13,
-          14,
-          15,
-        ]),
+        "part": "000102030405060708090A0B0C0D0E0F",
       });
   });
 });
