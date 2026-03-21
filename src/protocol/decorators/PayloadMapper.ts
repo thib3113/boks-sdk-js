@@ -4,7 +4,7 @@ export type PayloadConstructor = abstract new (...args: any[]) => any;
 import { BoksProtocolError, BoksProtocolErrorId } from '../../errors/BoksProtocolError';
 import { BoksExpectedReason } from '../../errors/BoksExpectedReason';
 import { EMPTY_BUFFER } from '../constants';
-import { hexToBytes, bytesToHex } from '../../utils/converters';
+import { hexToBytes } from '../../utils/converters';
 
 /**
  * Metadata key used to store field definitions on the class constructor.
@@ -909,7 +909,13 @@ const parseHex = (str, start) => {
       serializer = this.compileSerializer(targetClass as PayloadConstructor);
       this.compiledSerializers.set(targetClass as PayloadConstructor, serializer);
     }
-    return serializer(instance, BoksProtocolError, BoksProtocolErrorId, BoksExpectedReason, hexToBytes);
+    return serializer(
+      instance,
+      BoksProtocolError,
+      BoksProtocolErrorId,
+      BoksExpectedReason,
+      hexToBytes
+    );
   }
 
   /**
