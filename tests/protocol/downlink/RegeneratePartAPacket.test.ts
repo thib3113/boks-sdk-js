@@ -6,7 +6,7 @@ import { bytesToHex, stringToBytes } from '@/utils/converters';
 
 describe('RegeneratePartAPacket', () => {
   const validKey = '12345678';
-  const validPart = new Uint8Array(16).map((_, i) => i);
+  const validPart = '000102030405060708090A0B0C0D0E0F';
 
   it('should construct with valid parameters', () => {
     const packet = new RegeneratePartAPacket({ configKey: validKey, part: validPart });
@@ -31,7 +31,7 @@ describe('RegeneratePartAPacket', () => {
   it('should parse from payload correctly', () => {
     const payload = new Uint8Array(24);
     payload.set(stringToBytes(validKey), 0);
-    payload.set(validPart, 8);
+    payload.set(new Uint8Array(16).map((_, i) => i), 8);
 
     const packet = RegeneratePartAPacket.fromPayload(payload);
     expect(packet.configKey).toBe(validKey);
@@ -45,7 +45,7 @@ describe('RegeneratePartAPacket', () => {
   });
 
   it('should throw INVALID_VALUE for invalid part length', () => {
-    const shortPart = new Uint8Array(15);
+    const shortPart = '000102030405060708090a0b0c0d0e';
     expect(() => new RegeneratePartAPacket({ configKey: validKey, part: shortPart })).toThrowError(
       BoksProtocolError
     );
@@ -71,24 +71,7 @@ describe('RegeneratePartAPacket', () => {
     expect(json).toStrictEqual({
         "configKey": "12345678",
         "opcode": 32,
-        "part": new Uint8Array([
-          0,
-          1,
-          2,
-          3,
-          4,
-          5,
-          6,
-          7,
-          8,
-          9,
-          10,
-          11,
-          12,
-          13,
-          14,
-          15,
-        ]),
+        "part": validPart,
       });
   });
 });

@@ -1,4 +1,4 @@
-import { PayloadMapper, PayloadByteArray } from '@/protocol/decorators';
+import { PayloadMapper, PayloadHexString } from '@/protocol/decorators';
 import { AuthPacket, AuthPacketProps } from '@/protocol/downlink/_AuthPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
 
@@ -7,7 +7,7 @@ import { BoksOpcode } from '@/protocol/constants';
  * Provisioning / Regeneration part B (0x21).
  */
 export interface RegeneratePartBPacketProps extends AuthPacketProps {
-  part: Uint8Array;
+  part: string;
 }
 
 export class RegeneratePartBPacket extends AuthPacket {
@@ -16,8 +16,8 @@ export class RegeneratePartBPacket extends AuthPacket {
     return RegeneratePartBPacket.opcode;
   }
 
-  @PayloadByteArray(8, 16)
-  public accessor part!: Uint8Array;
+  @PayloadHexString(8, 16)
+  public accessor part!: string;
 
   constructor(props: RegeneratePartBPacketProps, rawPayload?: Uint8Array) {
     super(props, rawPayload);

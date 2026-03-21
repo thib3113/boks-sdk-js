@@ -28,6 +28,18 @@ export function PayloadHexString(offset: number, length?: number) {
             }
           );
         }
+
+        if (length !== undefined && (val as string).length !== length * 2) {
+          throw new BoksProtocolError(
+            BoksProtocolErrorId.INVALID_PAYLOAD_LENGTH,
+            `Hex string length must be exactly ${length * 2} characters`,
+            {
+              field: context.name as string,
+              received: (val as string).length,
+              expected: length * 2
+            }
+          );
+        }
         target.set.call(this, val);
       },
       init(initialValue: V): V {
