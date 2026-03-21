@@ -17,11 +17,11 @@ export class RegeneratePartBPacket extends AuthPacket {
   }
 
   @PayloadHexString(8, 16)
-  public accessor part!: Uint8Array | string;
+  public accessor part!: string;
 
   constructor(props: RegeneratePartBPacketProps, rawPayload?: Uint8Array) {
     super(props, rawPayload);
-    this.part = props.part;
+    this.part = props.part as string;
   }
 
   static fromPayload(payload: Uint8Array): RegeneratePartBPacket {
