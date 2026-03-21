@@ -10,6 +10,12 @@ Use at your own risk. This is reverse-engineered software.
 
 Use this interactive demo to replace the current Master Key with a new known seed, allowing you to generate offline codes. You can enter your current 8-character **Config Key** manually below, or have it automatically filled if you already connected to a session.
 
+### Automatic Downloads during this process
+
+To ensure your safety and provide the ability to investigate potential issues, this demo will trigger two automatic downloads:
+1. **Before regeneration starts:** A `.txt` file containing your new Master Key will be downloaded. **Keep this file safe!** It is your only way to recover access if the process fails mid-way.
+2. **Right after sending the key:** A log file containing the Bluetooth exchange will be downloaded automatically. If the process hangs, you can use this file to understand where it failed.
+
 <RegenerationDemo />
 
 <BoksDashboard />
