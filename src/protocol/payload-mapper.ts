@@ -210,6 +210,7 @@ export class PayloadMapper {
 
   private static getFields(targetClass: any): FieldDefinition[] {
     const allFields: FieldDefinition[] = [];
+    const seen = new Set<string>();
     let currentClass = targetClass;
     while (
       currentClass &&
@@ -233,8 +234,9 @@ export class PayloadMapper {
       if (fields && Array.isArray(fields)) {
         // Add fields that aren't already mapped
         for (const f of fields) {
-          if (!allFields.find((existing) => existing.propertyName === f.propertyName)) {
+          if (!seen.has(f.propertyName)) {
             allFields.push(f);
+            seen.add(f.propertyName);
           }
         }
       }
