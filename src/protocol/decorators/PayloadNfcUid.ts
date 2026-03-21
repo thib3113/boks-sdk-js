@@ -32,14 +32,9 @@ export function PayloadNfcUid(offset: number) {
         }
         const strVal = String(val);
         validateNfcUid(strVal);
-        // Optimization: Removing colons manually avoids regex overhead and string allocation
-        let formatted = '';
-        for (let i = 0; i < strVal.length; i++) {
-          if (strVal.charCodeAt(i) !== 58) {
-            formatted += strVal[i];
-          }
-        }
-        target.set.call(this, formatted.toUpperCase() as V);
+        const { bytesToHex, hexToBytes } = require('../../utils/converters');
+        const formatted = bytesToHex(hexToBytes(strVal));
+        target.set.call(this, formatted as V);
       },
       init(initialValue: V): V {
         return initialValue;

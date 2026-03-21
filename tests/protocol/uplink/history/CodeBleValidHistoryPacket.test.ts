@@ -21,12 +21,6 @@ describe('CodeBleValidHistoryPacket', () => {
       connectedMac: '000000000000'
     });
     const encoded = packet.encode();
-    // Opcode 0x86, Len 15 (0x0F), Age 100 (000064), PIN 313233343536, MAC 000000000000, Checksum 0x03
-    // Sum: 134 + 15 + 100 + (49+50+51+52+53+54) + 0 = 134 + 15 + 100 + 309 = 558, 558%256 = 46 = 0x2E ? Wait
-    // Let me re-calculate Sum carefully:
-    // 0x86 (134) + 0x0F (15) + 0x00 (0) + 0x00 (0) + 0x64 (100) + 0x31(49) + 0x32(50) + 0x33(51) + 0x34(52) + 0x35(53) + 0x36(54) + 6*0x00(0)
-    // 134 + 15 + 0 + 0 + 100 + 49 + 50 + 51 + 52 + 53 + 54 + 0 = 558
-    // 558 / 256 = 2, reste 46 (0x2E)
     expect(bytesToHex(encoded)).toBe('8611000064313233343536000000000000000030');
   });
 
