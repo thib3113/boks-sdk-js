@@ -130,3 +130,7 @@
 **Bottleneck:** Using \`s.substring(i * 2, i * 2 + 2)\` and \`parseInt(..., 16)\` inside a dynamically generated function loop caused significant string allocation overhead and slow execution paths during packet decoding (e.g., MAC Addresses and NFC UIDs).
 **Solution:** Injected a fast inline \`parseHex\` utility directly into the generated `fnBody` for the \`mac_address\`, \`hex_string\`, and \`var_len_hex\` decorators. This function relies on basic \`charCodeAt\` math and bitwise operations instead of string allocations, yielding up to a ~5.5x speedup during payload deserialization without adding dependency overhead to the generated function.
 **Action:** When dynamically generating code strings that parse hexadecimal data, always prefer embedding a small inline parsing block over native \`parseInt\` + \`substring\` combinations.
+
+## 2025-03-21 - Optimize dynamic hex payload parsing
+**Learning:** JIT-compiled mappers (like `PayloadMapper.ts`) can heavily bottleneck on string operations when parsing variable or large fixed-length byte arrays. The codebase previously used an 8-bit lookup for `hex_string` and `var_len_hex`.
+**Action:** Always look for opportunities to process bytes in pairs (or larger chunks) when generating hex strings. Injecting a pre-computed 16-bit lookup table (`HEX_TABLE_16`) into dynamically generated parsing functions cuts iteration count and string allocations in half for hex properties.

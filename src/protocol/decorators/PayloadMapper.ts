@@ -74,6 +74,19 @@ export class PayloadMapper {
   );
 
   /**
+   * Pre-computed 16-bit hex lookup table (4 chars) to process 2 bytes per iteration
+   */
+  private static readonly HEX_TABLE_16 = (() => {
+    const table = new Array<string>(65536);
+    for (let i = 0; i < 256; i++) {
+      for (let j = 0; j < 256; j++) {
+        table[(i << 8) | j] = PayloadMapper.HEX_TABLE[i] + PayloadMapper.HEX_TABLE[j];
+      }
+    }
+    return table;
+  })();
+
+  /**
    * Security check: Validates that property names are safe identifiers
    * to prevent code injection into the JIT compiler via new Function().
    */
@@ -446,8 +459,11 @@ export class PayloadMapper {
         case 'hex_string': {
           if (typeof field.length === 'number') {
             const hexArgs = [];
-            for (let i = 0; i < field.length; i++) {
-              hexArgs.push(`HEX_TABLE[payload[${o + i}]]`);
+            for (let i = 0; i < field.length - 1; i += 2) {
+              hexArgs.push(`HEX_TABLE_16[(payload[${o + i}] << 8) | payload[${o + i + 1}]]`);
+            }
+            if (field.length % 2 !== 0) {
+              hexArgs.push(`HEX_TABLE[payload[${o + field.length - 1}]]`);
             }
             if (hexArgs.length > 0) {
               fnBody += `result['${prop}'] = ${hexArgs.join(' + ')};\n`;
@@ -458,7 +474,11 @@ export class PayloadMapper {
             fnBody += `
             {
                let s = '';
-               for (let i = ${o}; i < payload.length; i++) {
+               let i = ${o};
+               for (; i <= payload.length - 2; i += 2) {
+                 s += HEX_TABLE_16[(payload[i] << 8) | payload[i + 1]];
+               }
+               if (i < payload.length) {
                  s += HEX_TABLE[payload[i]];
                }
                result['${prop}'] = s;
@@ -479,7 +499,11 @@ export class PayloadMapper {
                );
              }
              let s = '';
-             for (let i = 0; i < len; i++) {
+             let i = 0;
+             for (; i <= len - 2; i += 2) {
+               s += HEX_TABLE_16[(payload[${o + 1} + i] << 8) | payload[${o + 1} + i + 1]];
+             }
+             if (i < len) {
                s += HEX_TABLE[payload[${o + 1} + i]];
              }
              result['${prop}'] = s;
@@ -503,6 +527,7 @@ export class PayloadMapper {
       'BoksProtocolErrorId',
       'BoksExpectedReason',
       'HEX_TABLE',
+      'HEX_TABLE_16',
       fnBody
     ) as (...args: any[]) => any;
   }
@@ -873,7 +898,8 @@ const parseHex = (str, start) => {
       BoksProtocolError,
       BoksProtocolErrorId,
       BoksExpectedReason,
-      this.HEX_TABLE
+      this.HEX_TABLE,
+      this.HEX_TABLE_16
     );
     return result as unknown as T;
   }
