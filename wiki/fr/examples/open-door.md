@@ -16,4 +16,4 @@ Cette démo interactive permet de déverrouiller une Boks en utilisant un code P
 Si vous utilisez le simulateur, le code par défaut est `123456`.
 :::
 
-<BoksPacketLogger />
+<BoksDashboard />

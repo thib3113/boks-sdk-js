@@ -23,4 +23,4 @@ If you clear your browser data or lose this key, you will permanently lose admin
 This tool uses the Web Bluetooth API and requires a compatible browser (Chrome, Edge, Opera) and Bluetooth hardware.
 :::
 
-<BoksPacketLogger />
+<BoksDashboard />

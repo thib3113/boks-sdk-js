@@ -16,4 +16,4 @@ The connection state and simulated data are shared across all pages in this sect
 - [**History Sync**](./history): Download and parse the internal event log.
 - [**Battery & Hardware**](./battery): Read battery levels and detailed statistics.
 
-<BoksPacketLogger />
+<BoksDashboard />

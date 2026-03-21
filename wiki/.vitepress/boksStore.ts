@@ -95,7 +95,36 @@ export const boksStore = reactive({
       msg,
       type
     });
-    if (this.logs.length > 100) this.logs.pop();
+
+  },
+
+
+  exportLogs() {
+    if (typeof document === 'undefined') return;
+    const exportedLogs = this.packetLogs.map(log => {
+      const packetData = JSON.parse(JSON.stringify(log.rawData));
+      if (packetData && typeof packetData === 'object') {
+        delete packetData.opcode;
+      }
+      return {
+        time: log.time,
+        direction: log.direction,
+        opcode: log.opcode,
+        name: log.name,
+        length: log.length,
+        data: packetData
+      };
+    });
+    const dataStr = JSON.stringify(exportedLogs, null, 2);
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `boks-packet-logs-${new Date().toISOString().replace(/[:.]/g, '-')}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   },
 
   logPacket(direction: 'TX' | 'RX', opcode: number, length: number, packet?: any) {
@@ -121,7 +150,7 @@ export const boksStore = reactive({
       data: Object.keys(data).length > 0 ? data : undefined,
       rawData: rawPacket ? markRaw(rawPacket) : undefined
     });
-    if (this.packetLogs.length > 50) this.packetLogs.pop();
+
   },
 
   async connect() {
@@ -143,6 +172,12 @@ export const boksStore = reactive({
 
         await this.controller.connect();
         this.deviceName = 'Boks Simulator';
+        // Auto-set the active master key to the simulator's default so ConfigKey pre-fills
+        if (sim) {
+          const state = sim.getInternalState();
+          const masterKeyHex = Array.from(state.masterKey).map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
+          this.setActiveKey(masterKeyHex);
+        }
       } else {
         this.log('Requesting Bluetooth device...', 'info');
         const client = new BoksClient();

@@ -97,4 +97,4 @@ function getOpenSourceLabel(opcode: BoksOpcode): string {
 }
 ```
 
-<BoksPacketLogger />
+<BoksDashboard />

@@ -12,4 +12,4 @@ Use this interactive demo to replace the current Master Key with a new known see
 
 <RegenerationDemo />
 
-<BoksPacketLogger />
+<BoksDashboard />

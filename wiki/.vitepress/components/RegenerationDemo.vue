@@ -20,7 +20,7 @@ onMounted(() => {
 })
 
 watch(() => boksStore.activeMasterKey, (newKey) => {
-  if (newKey && !currentConfigKey.value) {
+  if (newKey) {
     currentConfigKey.value = boksStore.deriveConfigKey(newKey)
   }
 })
@@ -59,7 +59,7 @@ const hasAnnouncedAcceptance = ref(false)
 watch(provisionProgress, (newVal) => {
   if (newVal > 0 && !hasPromptedLogs.value) {
     hasPromptedLogs.value = true
-    alert(t.value.provision.saveLogsAlert)
+    boksStore.exportLogs()
   }
   if (newVal > 0 && !hasAnnouncedAcceptance.value) {
     hasAnnouncedAcceptance.value = true

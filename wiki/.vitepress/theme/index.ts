@@ -5,7 +5,7 @@ import OpenDoorDemo from '../components/OpenDoorDemo.vue';
 import HistoryDemo from '../components/HistoryDemo.vue';
 import BatteryDemo from '../components/BatteryDemo.vue';
 import RegenerationDemo from '../components/RegenerationDemo.vue';
-import BoksPacketLogger from '../components/BoksPacketLogger.vue';
+import BoksDashboard from '../components/BoksDashboard.vue';
 
 export default {
   extends: DefaultTheme,
@@ -24,6 +24,6 @@ export default {
     app.component('HistoryDemo', HistoryDemo);
     app.component('BatteryDemo', BatteryDemo);
     app.component('RegenerationDemo', RegenerationDemo);
-    app.component('BoksPacketLogger', BoksPacketLogger);
+    app.component('BoksDashboard', BoksDashboard);
   }
 };

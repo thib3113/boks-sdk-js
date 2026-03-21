@@ -23,4 +23,4 @@ Si vous effacez les données de votre navigateur ou perdez cette clé, vous perd
 Cet outil utilise l'API Web Bluetooth et nécessite un navigateur compatible (Chrome, Edge, Opera) et du matériel Bluetooth fonctionnel.
 :::
 
-<BoksPacketLogger />
+<BoksDashboard />

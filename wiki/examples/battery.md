@@ -55,4 +55,4 @@ if (stats) {
 Battery statistics are read from a custom characteristic and provide more insight than the standard service, including temperature and historical measures.
 :::
 
-<BoksPacketLogger />
+<BoksDashboard />
