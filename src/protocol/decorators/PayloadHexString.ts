@@ -2,6 +2,7 @@ import { getOrCreateMetadata } from './PayloadMapper';
 import { assertSafeBounds } from './PayloadMetadata';
 import { BoksProtocolError, BoksProtocolErrorId } from '../../errors/BoksProtocolError';
 import { BoksExpectedReason } from '../../errors/BoksExpectedReason';
+import { bytesToHex } from '@/utils/converters';
 
 export function PayloadHexString(offset: number, length?: number) {
   assertSafeBounds(offset, length || 0);
@@ -29,18 +30,23 @@ export function PayloadHexString(offset: number, length?: number) {
           );
         }
 
-        if (length !== undefined && (val as string).length !== length * 2) {
+        let strVal = val as unknown as string;
+        if (val instanceof Uint8Array) {
+          strVal = bytesToHex(val).toLowerCase();
+        }
+
+        if (length !== undefined && strVal.length !== length * 2) {
           throw new BoksProtocolError(
             BoksProtocolErrorId.INVALID_PAYLOAD_LENGTH,
             `Hex string length must be exactly ${length * 2} characters`,
             {
               field: context.name as string,
-              received: (val as string).length,
+              received: strVal.length,
               expected: length * 2
             }
           );
         }
-        target.set.call(this, val);
+        target.set.call(this, strVal as unknown as V);
       },
       init(initialValue: V): V {
         return initialValue;

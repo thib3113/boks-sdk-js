@@ -6,13 +6,13 @@ import { bytesToHex, stringToBytes } from '@/utils/converters';
 
 describe('RegeneratePartBPacket', () => {
   const validKey = '12345678';
-  const validPart = '000102030405060708090A0B0C0D0E0F';
+  const validPart = new Uint8Array(16).map((_, i) => i + 16);
 
   it('should construct with valid parameters', () => {
     const packet = new RegeneratePartBPacket({ configKey: validKey, part: validPart });
     expect(packet.opcode).toBe(BoksOpcode.RE_GENERATE_CODES_PART2);
     expect(packet.configKey).toBe(validKey);
-    expect(packet.part).toEqual(validPart);
+    expect(packet.part).toEqual('101112131415161718191A1B1C1D1E1F'.toLowerCase());
   });
 
   it('should encode correctly', () => {
@@ -22,18 +22,18 @@ describe('RegeneratePartBPacket', () => {
     expect(encoded[0]).toBe(0x21);
     expect(encoded[1]).toBe(24);
 
-    const expectedPayload = '3132333435363738000102030405060708090A0B0C0D0E0F';
-    expect(bytesToHex(encoded.subarray(2, 26))).toBe(expectedPayload);
+    const expectedPayload = '3132333435363738101112131415161718191A1B1C1D1E1F';
+    expect(bytesToHex(encoded.subarray(2, 26)).toUpperCase()).toBe(expectedPayload);
   });
 
   it('should parse from payload correctly', () => {
     const payload = new Uint8Array(24);
     payload.set(stringToBytes(validKey), 0);
-    payload.set(new Uint8Array(16).map((_, i) => i), 8);
+    payload.set(validPart, 8);
 
     const packet = RegeneratePartBPacket.fromPayload(payload);
     expect(packet.configKey).toBe(validKey);
-    expect(packet.part).toEqual(validPart);
+    expect(packet.part).toEqual('101112131415161718191A1B1C1D1E1F');
   });
 
   it('should throw INVALID_CONFIG_KEY for invalid config key format', () => {
@@ -43,7 +43,7 @@ describe('RegeneratePartBPacket', () => {
   });
 
   it('should throw INVALID_VALUE for invalid part length', () => {
-    const shortPart = '000102030405060708090a0b0c0d0e';
+    const shortPart = new Uint8Array(15);
     expect(() => new RegeneratePartBPacket({ configKey: validKey, part: shortPart })).toThrowError(
       BoksProtocolError
     );
@@ -67,7 +67,7 @@ describe('RegeneratePartBPacket', () => {
     expect(json).toStrictEqual({
         "configKey": "12345678",
         "opcode": 33,
-        "part": validPart,
+        "part": "101112131415161718191a1b1c1d1e1f",
       });
   });
 });

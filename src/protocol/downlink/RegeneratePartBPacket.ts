@@ -7,7 +7,7 @@ import { BoksOpcode } from '@/protocol/constants';
  * Provisioning / Regeneration part B (0x21).
  */
 export interface RegeneratePartBPacketProps extends AuthPacketProps {
-  part: string;
+  part: Uint8Array | string;
 }
 
 export class RegeneratePartBPacket extends AuthPacket {
@@ -17,7 +17,7 @@ export class RegeneratePartBPacket extends AuthPacket {
   }
 
   @PayloadHexString(8, 16)
-  public accessor part!: string;
+  public accessor part!: Uint8Array | string;
 
   constructor(props: RegeneratePartBPacketProps, rawPayload?: Uint8Array) {
     super(props, rawPayload);

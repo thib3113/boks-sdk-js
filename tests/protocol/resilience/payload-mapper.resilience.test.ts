@@ -44,6 +44,16 @@ class DummyPacket {
 class EmptyPacket {}
 
 describe('PayloadMapper Resilience Exhaustive', () => {
+  it('should throw BoksProtocolError for PayloadByteArray when length is invalid', () => {
+    class BytePacket {
+      @PayloadByteArray(0, 5) public accessor valBytes!: Uint8Array;
+    }
+    const pkt = new BytePacket();
+    expect(() => {
+      pkt.valBytes = new Uint8Array(2);
+    }).toThrow(BoksProtocolError);
+  });
+
   it('should throw BoksProtocolError when parsing invalid object types', () => {
     expect(() => PayloadMapper.parse(null, new Uint8Array(2))).toThrow(BoksProtocolError);
     expect(() => PayloadMapper.parse(undefined, new Uint8Array(2))).toThrow(BoksProtocolError);
