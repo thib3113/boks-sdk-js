@@ -32,7 +32,7 @@ export function PayloadHexString(offset: number, length?: number) {
           );
         }
 
-        let strVal = val as unknown as string;
+        let strVal: string;
         if (val instanceof Uint8Array) {
           strVal = bytesToHex(val).toUpperCase();
         } else if (typeof val === 'string') {
