@@ -5,7 +5,7 @@ import { MAX_MASTER_CODE_INDEX } from '@/protocol/constants';
 /**
  * Helper to check if a character code represents a case-insensitive hexadecimal character
  */
-function isHexCode(code: number): boolean {
+export function isHexCode(code: number): boolean {
   // '0'-'9' (48-57) or 'A'-'F' (65-70) or 'a'-'f' (97-102)
   return (code >= 48 && code <= 57) || (code >= 65 && code <= 70) || (code >= 97 && code <= 102);
 }
