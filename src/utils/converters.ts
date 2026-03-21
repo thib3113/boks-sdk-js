@@ -46,14 +46,7 @@ export const cleanHexString = (hex: string): string => {
   for (let i = 0; i < len; i++) {
     const code = hex.charCodeAt(i);
     // Ignored chars: 32 (space), 9 (tab), 10 (LF), 13 (CR), 58 (:), 45 (-)
-    if (
-      code === 32 ||
-      code === 9 ||
-      code === 10 ||
-      code === 13 ||
-      code === 58 ||
-      code === 45
-    ) {
+    if (code === 32 || code === 9 || code === 10 || code === 13 || code === 58 || code === 45) {
       if (!isDirty) {
         // First time finding a dirty char: we copy everything valid up to this point
         clean = hex.substring(0, i);
