@@ -146,6 +146,7 @@ async function unregisterTag() {
         <h4>{{ t.nfc.scanTitle }}</h4>
         <p class="desc-small">{{ t.nfc.scanDesc }}</p>
 
+
         <div class="control-row">
           <button
             @click="startScan"
@@ -154,7 +155,18 @@ async function unregisterTag() {
           >
             {{ isScanning ? t.nfc.scanningBtn : t.nfc.scanBtn }}
           </button>
+
+          <button
+            v-if="boksStore.simulator && isScanning"
+            @click="boksStore.simulator.simulateNfcScan('04:A1:B2:C3:D4:E5:F6')"
+            class="secondary-btn"
+            style="margin-left: auto;"
+            title="Inject a fake NFC tag to test scanning"
+          >
+            💳 {{ t.nfc.simBtn || 'Simuler un Tag (Simulateur)' }}
+          </button>
         </div>
+
 
         <div v-if="scanStatus" :class="['status-box', scanStatus.type]">
           {{ scanStatus.message }}
@@ -230,4 +242,17 @@ async function unregisterTag() {
 .status-box.error { background-color: rgba(239, 68, 68, 0.1); color: var(--vp-c-red-1); border: 1px solid var(--vp-c-red-1); }
 
 .register-action { margin-top: 0.8rem; }
+</style>
+
+<style scoped>
+.secondary-btn {
+  background-color: var(--vp-c-bg-mute);
+  color: var(--vp-c-text-1);
+  border: 1px solid var(--vp-c-divider);
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+}
+.secondary-btn:hover { background-color: var(--vp-c-bg-soft); }
 </style>
