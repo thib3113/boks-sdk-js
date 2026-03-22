@@ -1,5 +1,12 @@
 # Gestion NFC
 
+<BoksGlobalProvider />
+
+Cette démo interactive vous permet de rechercher de nouveaux tags NFC ou de supprimer ceux existants directement depuis votre navigateur.
+
+<NfcDemo />
+
+
 
 Les appareils Boks équipés de la version matérielle 4.0 ou supérieure prennent en charge les tags NFC. Cela signifie que vous pouvez utiliser un badge ou un tag NFC pour ouvrir la boîte à colis au lieu d'un code sur le clavier ou d'une application mobile.
 
@@ -56,3 +63,6 @@ try {
   console.error('Échec du désenregistrement du tag NFC :', error);
 }
 ```
+
+
+<BoksDashboard />
