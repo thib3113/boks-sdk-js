@@ -18,6 +18,10 @@ const isRegistering = ref(false)
 const unregisterUid = ref('')
 const isUnregistering = ref(false)
 
+// Config Key State
+const configKeyInput = ref(boksStore.deriveConfigKey(boksStore.activeMasterKey))
+
+
 // Computed requirement check (basic)
 const isSupported = computed(() => {
   if (!boksStore.isConnected || !boksStore.controller) return false
@@ -31,6 +35,7 @@ async function startScan() {
     return
   }
 
+  if (configKeyInput.value) { boksStore.controller.setCredentials(configKeyInput.value) }
   isScanning.value = true
   scanResult.value = null
   scanStatus.value = { message: t.value.nfc.scanningBtn, type: 'info' }
@@ -86,6 +91,7 @@ async function unregisterTag() {
     return
   }
 
+  if (configKeyInput.value) { boksStore.controller.setCredentials(configKeyInput.value) }
   isUnregistering.value = true
   try {
     const uid = unregisterUid.value.trim()
@@ -111,6 +117,21 @@ async function unregisterTag() {
     <div class="card" :class="{ disabled: !boksStore.isConnected || !isSupported }">
       <h3>{{ t.nfc.title }}</h3>
       <p class="desc">{{ t.nfc.desc }}</p>
+
+
+      <!-- Config Key Override -->
+      <div class="section config-key-section">
+        <div class="input-group">
+          <label>{{ t.nfc.configKeyLabel }}</label>
+          <input
+            v-model="configKeyInput"
+            type="text"
+            maxlength="8"
+            :placeholder="t.nfc.configKeyPlaceholder"
+            :disabled="!boksStore.isConnected || !isSupported || isScanning || isRegistering || isUnregistering"
+          >
+        </div>
+      </div>
 
       <!-- 1. Scan Section -->
       <div class="section">

@@ -94,7 +94,9 @@ export const i18n = {
       unregisterSuccess: 'Tag {uid} unregistered successfully!',
       unregisterError: 'Failed to unregister: {error}',
       uidRequired: 'Please enter a valid UID.',
-      unsupported: 'NFC Management requires Hardware 4.0+ and Software 4.3.3+.'
+      unsupported: 'NFC Management requires Hardware 4.0+ and Software 4.3.3+.',
+      configKeyLabel: 'Config Key (Override)',
+      configKeyPlaceholder: 'e.g. A1B2C3D4'
     },
 
     nfc: {
@@ -118,7 +120,9 @@ export const i18n = {
       unregisterSuccess: 'Tag {uid} désenregistré avec succès !',
       unregisterError: 'Échec de la suppression : {error}',
       uidRequired: 'Veuillez entrer un UID valide.',
-      unsupported: 'La gestion NFC nécessite le Matériel 4.0+ et le Logiciel 4.3.3+.'
+      unsupported: 'La gestion NFC nécessite le Matériel 4.0+ et le Logiciel 4.3.3+.',
+      configKeyLabel: 'Clé de Config (Surcharge)',
+      configKeyPlaceholder: 'ex: A1B2C3D4'
     },
 
     nfc: {
