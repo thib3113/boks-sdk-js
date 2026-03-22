@@ -91,7 +91,7 @@ async function provision() {
   if (!boksStore.controller || !boksStore.isConnected) return
   if (!newMasterKey.value || !currentConfigKey.value) return
 
-  if (!confirm(t.value.provision.confirm)) return
+  if (!confirm(`${t.value.provision.confirm}\n\n${t.value.provision.confirmMultipleDownloads}`)) return
 
   isProvisioning.value = true
   provisionProgress.value = 0
