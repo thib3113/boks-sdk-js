@@ -451,7 +451,7 @@ export class BoksController {
    * @returns A promise resolving to an NfcScanResult containing the tagId and a register method.
    * @throws BoksClientError if timeout occurs or tag already exists.
    */
-  async scanNFCTags(timeoutMs: number = 10000): Promise<NfcScanResult> {
+  async scanNFCTags(timeoutMs: number = 30000): Promise<NfcScanResult> {
     const configKey = this.getConfigKeyOrThrow();
     this.checkRequirements({
       minHw: '4.0',

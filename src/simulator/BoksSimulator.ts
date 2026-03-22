@@ -242,6 +242,7 @@ export class BoksHardwareSimulator {
   #nfcTags: Set<string> = new Set();
   #configuration: { laPosteEnabled: boolean } = { laPosteEnabled: false };
   #isNfcScanning: boolean = false;
+  #nfcScanTimeout: NodeJS.Timeout | null = null;
   #pendingNfcTag: string | null = null;
 
   // Simulation Parameters
@@ -387,6 +388,9 @@ export class BoksHardwareSimulator {
       payload[0] = uidBytes.length;
       payload.set(uidBytes, 1);
       this.emit(this.createResponse(BoksOpcode.NOTIFY_NFC_TAG_FOUND, payload));
+      if (this.#nfcScanTimeout) {
+        clearTimeout(this.#nfcScanTimeout);
+      }
     } else {
       this.#pendingNfcTag = cleanUid;
     }
@@ -1143,6 +1147,17 @@ export class BoksHardwareSimulator {
       payload.set(uidBytes, 1);
       this.emit(this.createResponse(BoksOpcode.NOTIFY_NFC_TAG_FOUND, payload));
       this.#pendingNfcTag = null;
+    } else {
+      // Simulate hardware timeout
+      if (this.#nfcScanTimeout) {
+        clearTimeout(this.#nfcScanTimeout);
+      }
+      this.#nfcScanTimeout = setTimeout(() => {
+        if (this.#isNfcScanning) {
+          this.#isNfcScanning = false;
+          this.emit(this.createResponse(BoksOpcode.ERROR_NFC_SCAN_TIMEOUT, EMPTY_BUFFER));
+        }
+      }, 10000); // Hardware typically times out after 10s
     }
     return this.createResponse(BoksOpcode.CODE_OPERATION_SUCCESS, EMPTY_BUFFER);
   }
