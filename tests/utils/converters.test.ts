@@ -58,17 +58,17 @@ describe('converters', () => {
   describe('bytesToHex fast paths and reverse', () => {
     it('formats a 6-byte MAC address with reverse=true', () => {
       const bytes = new Uint8Array([0x11, 0x22, 0x33, 0x44, 0x55, 0x66]);
-      expect(bytesToHex(bytes, true)).toBe('665544332211');
+      expect(bytesToHex(bytes, { reverse: true })).toBe('665544332211');
     });
 
     it('formats a 7-byte MAC address with reverse=true', () => {
       const bytes = new Uint8Array([0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77]);
-      expect(bytesToHex(bytes, true)).toBe('77665544332211');
+      expect(bytesToHex(bytes, { reverse: true })).toBe('77665544332211');
     });
 
     it('formats odd length arrays with reverse=true', () => {
       const bytes = new Uint8Array([0x11, 0x22, 0x33]);
-      expect(bytesToHex(bytes, true)).toBe('332211');
+      expect(bytesToHex(bytes, { reverse: true })).toBe('332211');
     });
 
     it('formats exact fast-path lengths correctly', () => {
@@ -205,7 +205,7 @@ describe('converters', () => {
 describe('bytesToMac 6-byte reverse true', () => {
   it('formats a 6-byte MAC address with reverse=true', () => {
     const bytes = new Uint8Array([0x11, 0x22, 0x33, 0x44, 0x55, 0x66]);
-    expect(bytesToHex(bytes, true)).toBe('665544332211');
+    expect(bytesToHex(bytes, { reverse: true })).toBe('665544332211');
   });
 });
 
@@ -221,7 +221,7 @@ describe('hexToBytes exact match', () => {
 describe('bytesToMac 7-byte reverse true', () => {
   it('formats a 7-byte MAC address with reverse=true', () => {
     const bytes = new Uint8Array([0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77]);
-    expect(bytesToHex(bytes, true)).toBe('77665544332211');
+    expect(bytesToHex(bytes, { reverse: true })).toBe('77665544332211');
   });
 });
 describe('hexToBytes spaces but exact match buffer', () => {

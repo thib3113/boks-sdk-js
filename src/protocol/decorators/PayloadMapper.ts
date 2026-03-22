@@ -436,10 +436,10 @@ export class PayloadMapper {
           break;
         case 'hex_string': {
           if (typeof field.length === 'number') {
-            fnBody += `result['${prop}'] = bytesToHex(payload.subarray(${o}, ${o} + ${field.length}));\n`;
+            fnBody += `result['${prop}'] = bytesToHex(payload, { start: ${o}, end: ${o} + ${field.length} });\n`;
           } else {
             fnBody += `
-            result['${prop}'] = bytesToHex(payload.subarray(${o}));
+            result['${prop}'] = bytesToHex(payload, { start: ${o} });
             `;
           }
           break;
@@ -455,7 +455,7 @@ export class PayloadMapper {
                  { field: '${prop}', received: payload.length, expected: ${o + 1} + len }
                );
              }
-             result['${prop}'] = bytesToHex(payload.subarray(${o + 1}, ${o + 1} + len));
+             result['${prop}'] = bytesToHex(payload, { start: ${o + 1}, end: ${o + 1} + len });
           }
           `;
           break;

@@ -90,62 +90,76 @@ export const hexToBytes = (hex: string): Uint8Array => {
   return bytes;
 };
 
-export const bytesToHex = (bytes: Uint8Array, reverse: boolean = false): string => {
-  const len = bytes.length;
-  if (len === 0) {
+export interface BytesToHexOptions {
+  reverse?: boolean;
+  start?: number;
+  end?: number;
+}
+
+export const bytesToHex = (bytes: Uint8Array, options?: BytesToHexOptions): string => {
+  const start = options?.start ?? 0;
+  const end = options?.end ?? bytes.length;
+  const reverse = options?.reverse ?? false;
+  const len = end - start;
+
+  if (len <= 0) {
     return '';
   }
 
+  // Fast paths for common lengths to avoid loop overhead
   if (reverse) {
     if (len === 6) {
       return (
-        HEX_TABLE[bytes[5]] +
-        HEX_TABLE[bytes[4]] +
-        HEX_TABLE[bytes[3]] +
-        HEX_TABLE[bytes[2]] +
-        HEX_TABLE[bytes[1]] +
-        HEX_TABLE[bytes[0]]
+        HEX_TABLE[bytes[start + 5]] +
+        HEX_TABLE[bytes[start + 4]] +
+        HEX_TABLE[bytes[start + 3]] +
+        HEX_TABLE[bytes[start + 2]] +
+        HEX_TABLE[bytes[start + 1]] +
+        HEX_TABLE[bytes[start]]
       );
     }
 
     let result = '';
-    for (let i = len - 1; i >= 0; i--) {
+    for (let i = end - 1; i >= start; i--) {
       result += HEX_TABLE[bytes[i]];
     }
     return result;
   }
 
   if (len === 4) {
-    return HEX_TABLE_16[(bytes[0] << 8) | bytes[1]] + HEX_TABLE_16[(bytes[2] << 8) | bytes[3]];
+    return (
+      HEX_TABLE_16[(bytes[start] << 8) | bytes[start + 1]] +
+      HEX_TABLE_16[(bytes[start + 2] << 8) | bytes[start + 3]]
+    );
   } else if (len === 6) {
     return (
-      HEX_TABLE_16[(bytes[0] << 8) | bytes[1]] +
-      HEX_TABLE_16[(bytes[2] << 8) | bytes[3]] +
-      HEX_TABLE_16[(bytes[4] << 8) | bytes[5]]
+      HEX_TABLE_16[(bytes[start] << 8) | bytes[start + 1]] +
+      HEX_TABLE_16[(bytes[start + 2] << 8) | bytes[start + 3]] +
+      HEX_TABLE_16[(bytes[start + 4] << 8) | bytes[start + 5]]
     );
   } else if (len === 7) {
     return (
-      HEX_TABLE_16[(bytes[0] << 8) | bytes[1]] +
-      HEX_TABLE_16[(bytes[2] << 8) | bytes[3]] +
-      HEX_TABLE_16[(bytes[4] << 8) | bytes[5]] +
-      HEX_TABLE[bytes[6]]
+      HEX_TABLE_16[(bytes[start] << 8) | bytes[start + 1]] +
+      HEX_TABLE_16[(bytes[start + 2] << 8) | bytes[start + 3]] +
+      HEX_TABLE_16[(bytes[start + 4] << 8) | bytes[start + 5]] +
+      HEX_TABLE[bytes[start + 6]]
     );
   } else if (len === 10) {
     return (
-      HEX_TABLE_16[(bytes[0] << 8) | bytes[1]] +
-      HEX_TABLE_16[(bytes[2] << 8) | bytes[3]] +
-      HEX_TABLE_16[(bytes[4] << 8) | bytes[5]] +
-      HEX_TABLE_16[(bytes[6] << 8) | bytes[7]] +
-      HEX_TABLE_16[(bytes[8] << 8) | bytes[9]]
+      HEX_TABLE_16[(bytes[start] << 8) | bytes[start + 1]] +
+      HEX_TABLE_16[(bytes[start + 2] << 8) | bytes[start + 3]] +
+      HEX_TABLE_16[(bytes[start + 4] << 8) | bytes[start + 5]] +
+      HEX_TABLE_16[(bytes[start + 6] << 8) | bytes[start + 7]] +
+      HEX_TABLE_16[(bytes[start + 8] << 8) | bytes[start + 9]]
     );
   }
 
   let result = '';
-  let i = 0;
-  for (; i <= len - 2; i += 2) {
+  let i = start;
+  for (; i <= end - 2; i += 2) {
     result += HEX_TABLE_16[(bytes[i] << 8) | bytes[i + 1]];
   }
-  if (i < len) {
+  if (i < end) {
     result += HEX_TABLE[bytes[i]];
   }
   return result;

@@ -39,7 +39,7 @@ describe('Converters Utils Resilience (Fuzzing)', () => {
   it('FEATURE REGRESSION:  should safely handle arbitrary lengths', () => {
     fc.assert(
       fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), fc.boolean(), (arr, reverse) => {
-        const result = bytesToHex(arr, reverse);
+        const result = bytesToHex(arr, { reverse });
         expect(typeof result).toBe('string');
       }),
       { numRuns: 1000 }

@@ -42,7 +42,7 @@ describe('converters Resilience (Fuzzing)', () => {
   it('FEATURE REGRESSION:  should not crash on arbitrary arrays', () => {
     fc.assert(
       fc.property(fc.uint8Array({ maxLength: 1000 }), fc.boolean(), (bytes, reverse) => {
-        const mac = bytesToHex(bytes, reverse);
+        const mac = bytesToHex(bytes, { reverse });
         expect(typeof mac).toBe('string');
         if (bytes.length === 0) {
           expect(mac).toBe('');
