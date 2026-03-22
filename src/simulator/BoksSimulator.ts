@@ -388,7 +388,9 @@ export class BoksHardwareSimulator {
       payload[0] = uidBytes.length;
       payload.set(uidBytes, 1);
       this.emit(this.createResponse(BoksOpcode.NOTIFY_NFC_TAG_FOUND, payload));
-      if (this.#nfcScanTimeout) clearTimeout(this.#nfcScanTimeout);
+      if (this.#nfcScanTimeout) {
+        clearTimeout(this.#nfcScanTimeout);
+      }
     } else {
       this.#pendingNfcTag = cleanUid;
     }
@@ -1147,7 +1149,9 @@ export class BoksHardwareSimulator {
       this.#pendingNfcTag = null;
     } else {
       // Simulate hardware timeout
-      if (this.#nfcScanTimeout) clearTimeout(this.#nfcScanTimeout);
+      if (this.#nfcScanTimeout) {
+        clearTimeout(this.#nfcScanTimeout);
+      }
       this.#nfcScanTimeout = setTimeout(() => {
         if (this.#isNfcScanning) {
           this.#isNfcScanning = false;
