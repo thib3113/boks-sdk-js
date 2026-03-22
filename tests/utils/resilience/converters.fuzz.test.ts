@@ -3,8 +3,7 @@ import fc from 'fast-check';
 import {
   hexToBytes,
   bytesToHex,
-  bytesToMac,
-  stringToBytes,
+    stringToBytes,
   bytesToString,
   calculateChecksum,
   writeConfigKeyToBuffer,
@@ -40,10 +39,10 @@ describe('converters Resilience (Fuzzing)', () => {
     );
   });
 
-  it('FEATURE REGRESSION: bytesToMac should not crash on arbitrary arrays', () => {
+  it('FEATURE REGRESSION:  should not crash on arbitrary arrays', () => {
     fc.assert(
       fc.property(fc.uint8Array({ maxLength: 1000 }), fc.boolean(), (bytes, reverse) => {
-        const mac = bytesToMac(bytes, reverse);
+        const mac = bytesToHex(bytes, { reverse });
         expect(typeof mac).toBe('string');
         if (bytes.length === 0) {
           expect(mac).toBe('');

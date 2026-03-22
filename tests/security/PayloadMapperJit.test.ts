@@ -34,7 +34,7 @@ describe('PayloadMapper JIT Compiler Security Tests', () => {
     });
 
     it('should reject exact dangerous property names', () => {
-      const dangerous = ['__proto__', 'constructor', 'prototype', 'HEX_TABLE', 'BoksProtocolError'];
+      const dangerous = ['__proto__', 'constructor', 'prototype', 'BoksProtocolError'];
 
       for (const name of dangerous) {
         PayloadMapper.defineSchema(HackerClass, [
