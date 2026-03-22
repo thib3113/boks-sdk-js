@@ -4,7 +4,7 @@ export type PayloadConstructor = abstract new (...args: any[]) => any;
 import { BoksProtocolError, BoksProtocolErrorId } from '../../errors/BoksProtocolError';
 import { BoksExpectedReason } from '../../errors/BoksExpectedReason';
 import { EMPTY_BUFFER } from '../constants';
-import { hexToBytes } from '../../utils/converters';
+import { hexToBytes, bytesToHex } from '../../utils/converters';
 
 /**
  * Metadata key used to store field definitions on the class constructor.
@@ -446,24 +446,10 @@ export class PayloadMapper {
           break;
         case 'hex_string': {
           if (typeof field.length === 'number') {
-            const hexArgs = [];
-            for (let i = 0; i < field.length; i++) {
-              hexArgs.push(`HEX_TABLE[payload[${o + i}]]`);
-            }
-            if (hexArgs.length > 0) {
-              fnBody += `result['${prop}'] = ${hexArgs.join(' + ')};\n`;
-            } else {
-              fnBody += `result['${prop}'] = '';\n`;
-            }
+            fnBody += `result['${prop}'] = bytesToHex(payload.subarray(${o}, ${o} + ${field.length}));\n`;
           } else {
             fnBody += `
-            {
-               let s = '';
-               for (let i = ${o}; i < payload.length; i++) {
-                 s += HEX_TABLE[payload[i]];
-               }
-               result['${prop}'] = s;
-            }
+            result['${prop}'] = bytesToHex(payload.subarray(${o}));
             `;
           }
           break;
@@ -479,11 +465,7 @@ export class PayloadMapper {
                  { field: '${prop}', received: payload.length, expected: ${o + 1} + len }
                );
              }
-             let s = '';
-             for (let i = 0; i < len; i++) {
-               s += HEX_TABLE[payload[${o + 1} + i]];
-             }
-             result['${prop}'] = s;
+             result['${prop}'] = bytesToHex(payload.subarray(${o + 1}, ${o + 1} + len));
           }
           `;
           break;
@@ -504,6 +486,7 @@ export class PayloadMapper {
       'BoksProtocolErrorId',
       'BoksExpectedReason',
       'HEX_TABLE',
+      'bytesToHex',
       fnBody
     ) as (...args: any[]) => any;
   }
@@ -860,7 +843,8 @@ export class PayloadMapper {
       BoksProtocolError,
       BoksProtocolErrorId,
       BoksExpectedReason,
-      this.HEX_TABLE
+      this.HEX_TABLE,
+      bytesToHex
     );
     return result as unknown as T;
   }
