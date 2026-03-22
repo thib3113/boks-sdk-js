@@ -6,6 +6,7 @@ import HistoryDemo from '../components/HistoryDemo.vue';
 import BatteryDemo from '../components/BatteryDemo.vue';
 import RegenerationDemo from '../components/RegenerationDemo.vue';
 import BoksDashboard from '../components/BoksDashboard.vue';
+import NfcDemo from '../components/NfcDemo.vue';
 
 export default {
   extends: DefaultTheme,
@@ -25,5 +26,6 @@ export default {
     app.component('BatteryDemo', BatteryDemo);
     app.component('RegenerationDemo', RegenerationDemo);
     app.component('BoksDashboard', BoksDashboard);
+    app.component('NfcDemo', NfcDemo);
   }
 };
