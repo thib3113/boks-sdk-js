@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
 import { boksStore } from '../boksStore'
 import { useData } from 'vitepress'
 import { i18n } from '../i18n'
@@ -67,6 +67,12 @@ function openEditSim() {
   showEditSim.value = true;
 }
 
+watch(() => boksStore.simulator?.getInternalState().masterKey, (newVal) => {
+    if(newVal && showEditSim.value) {
+         editSimForm.value.masterKey = Array.from(newVal).map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase()
+    }
+}, {deep: true})
+
 function generateRandomKey() {
   const randomBytes = new Uint8Array(32);
   crypto.getRandomValues(randomBytes);
@@ -78,7 +84,10 @@ function saveSimEdit() {
     const sim = boksStore.simulator;
     sim.setSoftwareVersion(editSimForm.value.software || '0.0.0');
     sim.setFirmwareVersion(editSimForm.value.firmware || '0.0.0');
-    if (editSimForm.value.masterKey) sim.setMasterKey(editSimForm.value.masterKey);
+    if (editSimForm.value.masterKey) {
+      sim.setMasterKey(editSimForm.value.masterKey);
+      boksStore.setActiveKey(editSimForm.value.masterKey);
+    }
     simState.value = sim.getPublicState();
   }
   showEditSim.value = false;
