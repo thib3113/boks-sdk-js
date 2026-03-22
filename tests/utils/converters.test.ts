@@ -8,7 +8,7 @@ import {
 
   readConfigKeyFromBuffer,
   readPinFromBuffer
-} from '../../src/utils/converters';
+, writeConfigKeyToBuffer } from '../../src/utils/converters';
 import { BoksProtocolErrorId } from '../../src/errors/BoksProtocolError';
 
 describe('converters', () => {
@@ -40,7 +40,56 @@ describe('converters', () => {
 
 
 
+    it('should correctly process lowercase characters', () => {
+      const bytes = hexToBytes('a1B2c3D4');
+      expect(bytes).toEqual(new Uint8Array([0xA1, 0xB2, 0xC3, 0xD4]));
+    });
+    it('should gracefully ignore invalid characters', () => {
+      expect(() => hexToBytes('G1')).toThrow(BoksProtocolErrorId.INVALID_VALUE); // '1' is odd length
+      const bytes2 = hexToBytes('G12');
+      expect(bytes2).toEqual(new Uint8Array([0x12]));
+    });
+    it('should gracefully ignore unicode characters', () => {
+      const bytes = hexToBytes('€€12');
+      expect(bytes).toEqual(new Uint8Array([0x12]));
+    });
   });
+
+  describe('bytesToHex fast paths and reverse', () => {
+    it('formats a 6-byte MAC address with reverse=true', () => {
+      const bytes = new Uint8Array([0x11, 0x22, 0x33, 0x44, 0x55, 0x66]);
+      expect(bytesToHex(bytes, true)).toBe('665544332211');
+    });
+
+    it('formats a 7-byte MAC address with reverse=true', () => {
+      const bytes = new Uint8Array([0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77]);
+      expect(bytesToHex(bytes, true)).toBe('77665544332211');
+    });
+
+    it('formats odd length arrays with reverse=true', () => {
+      const bytes = new Uint8Array([0x11, 0x22, 0x33]);
+      expect(bytesToHex(bytes, true)).toBe('332211');
+    });
+
+    it('formats exact fast-path lengths correctly', () => {
+      expect(bytesToHex(new Uint8Array([0x11, 0x22, 0x33, 0x44]))).toBe('11223344');
+      expect(bytesToHex(new Uint8Array([0x11, 0x22, 0x33, 0x44, 0x55, 0x66]))).toBe('112233445566');
+      expect(bytesToHex(new Uint8Array([0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77]))).toBe('11223344556677');
+      expect(bytesToHex(new Uint8Array([0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xAA]))).toBe('112233445566778899AA');
+      expect(bytesToHex(new Uint8Array([0x11, 0x22, 0x33, 0x44, 0x55]))).toBe('1122334455');
+    });
+    it('formats empty array as empty string', () => {
+      expect(bytesToHex(new Uint8Array([]))).toBe('');
+    });
+
+  });
+
+  describe('writeConfigKeyToBuffer', () => {
+    it('writes a config key to buffer at specific offset', () => {
+      const payload = new Uint8Array(10);
+      writeConfigKeyToBuffer(payload, 1, '12345678');
+      expect(payload.subarray(1, 9)).toEqual(new Uint8Array([49, 50, 51, 52, 53, 54, 55, 56]));
+    });
 
   describe('bytesToHex', () => {
     it('should convert bytes to hex string', () => {
@@ -183,4 +232,6 @@ describe('hexToBytes spaces but exact match buffer', () => {
     const result = hexToBytes(hex);
     expect(result.length).toBe(34);
   });
+});
+
 });

@@ -1,6 +1,5 @@
 import { CHECKSUM_MASK } from '../protocol/constants';
 import { BoksProtocolError, BoksProtocolErrorId } from '../errors/BoksProtocolError';
-import { BoksExpectedReason } from '../errors/BoksExpectedReason';
 
 /**
  * Utility functions for Boks SDK
@@ -37,7 +36,11 @@ for (let i = 0; i < 6; i++) {
 }
 
 /**
- * Quickly strips whitespace and specified delimiters (e.g., colons, dashes) from a hexadecimal string.
+ * Strips all non-hexadecimal characters from a string and returns an uppercase hex string.
+ * This is heavily optimized to avoid regexes and intermediate array allocations.
+ */
+/**
+ * Strips all non-hexadecimal characters from a string and returns an uppercase hex string.
  * This is heavily optimized to avoid regexes and intermediate array allocations.
  */
 export const cleanHexString = (hex: string): string => {
@@ -47,95 +50,44 @@ export const cleanHexString = (hex: string): string => {
 
   for (let i = 0; i < len; i++) {
     const code = hex.charCodeAt(i);
-    // Ignored chars: 32 (space), 9 (tab), 10 (LF), 13 (CR), 58 (:), 45 (-)
-    if (code === 32 || code === 9 || code === 10 || code === 13 || code === 58 || code === 45) {
+    const val = HEX_DECODE_TABLE[code];
+
+    if (val === 255 || val === undefined) {
       if (!isDirty) {
-        // First time finding a dirty char: we copy everything valid up to this point
         clean = hex.substring(0, i);
         isDirty = true;
       }
       continue;
     }
+
     if (isDirty) {
-      clean += hex[i];
+      const upperChar = code >= 97 && code <= 102 ? String.fromCharCode(code - 32) : hex[i];
+      clean += upperChar;
     }
   }
 
-  return isDirty ? clean.toUpperCase() : hex.toUpperCase();
+  return isDirty ? clean : hex.toUpperCase();
 };
 
 export const hexToBytes = (hex: string): Uint8Array => {
-  const len = hex.length;
-  // Optimization: fast path for clean hex strings (no spaces)
-  // This avoids allocation of a new string via replace() for the common case.
-  if ((len & 1) === 0) {
-    const bytes = new Uint8Array(len >>> 1);
-    let isClean = true;
+  const cleanHex = cleanHexString(hex);
+  const len = cleanHex.length;
 
-    for (let i = 0, j = 0; i < len; i += 2, j++) {
-      const high = HEX_DECODE_TABLE[hex.charCodeAt(i)];
-      const low = HEX_DECODE_TABLE[hex.charCodeAt(i + 1)];
-
-      if (high === 255 || high === undefined || low === 255 || low === undefined) {
-        isClean = false;
-        break;
-      }
-      bytes[j] = (high << 4) | low;
-    }
-
-    if (isClean) {
-      return bytes;
-    }
-  }
-
-  // Slow path: contains whitespace or invalid characters
-  // We decode in a single pass ignoring whitespace (space, tab, LF, CR, etc.)
-  // Optimization: Avoiding .replace(/\s/g, '') prevents creating a new string.
-  const bytes = new Uint8Array(len >>> 1); // Max possible length
-  let j = 0;
-  let high = -1;
-  let skippedChars = 0;
-
-  for (let i = 0; i < len; i++) {
-    const charCode = hex.charCodeAt(i);
-    // Ignored chars: 32 (space), 9 (tab), 10 (LF), 13 (CR), 58 (:), 45 (-)
-    if (
-      charCode === 32 ||
-      charCode === 9 ||
-      charCode === 10 ||
-      charCode === 13 ||
-      charCode === 58 ||
-      charCode === 45
-    ) {
-      skippedChars++;
-      continue;
-    }
-
-    const val = HEX_DECODE_TABLE[charCode];
-    if (val === 255 || val === undefined) {
-      throw new BoksProtocolError(BoksProtocolErrorId.INVALID_VALUE, undefined, {
-        received: hex[i],
-        expected: BoksExpectedReason.VALID_HEX_CHAR
-      });
-    }
-
-    if (high === -1) {
-      high = val;
-    } else {
-      bytes[j++] = (high << 4) | val;
-      high = -1;
-    }
-  }
-
-  if (high !== -1) {
+  if ((len & 1) !== 0) {
     throw new BoksProtocolError(BoksProtocolErrorId.INVALID_VALUE, undefined, {
-      received: len - skippedChars,
+      received: len,
       reason: 'ODD_LENGTH'
     });
   }
 
-  // If we skipped spaces, the array might be longer than needed
-  return j === bytes.length ? bytes : bytes.subarray(0, j);
+  const bytes = new Uint8Array(len >>> 1);
+  for (let i = 0, j = 0; i < len; i += 2, j++) {
+    const high = HEX_DECODE_TABLE[cleanHex.charCodeAt(i)];
+    const low = HEX_DECODE_TABLE[cleanHex.charCodeAt(i + 1)];
+    bytes[j] = (high << 4) | low;
+  }
+
+  return bytes;
 };
 
 export const bytesToHex = (bytes: Uint8Array, reverse: boolean = false): string => {
@@ -334,61 +286,6 @@ export const bytesToString = (bytes: Uint8Array): string => {
     }
   }
   return s;
-};
-
-/**
- * Formats a byte array as a MAC address string (XXXXXXXXXXXX).
- * Boks firmware sends MAC addresses in Little Endian, so we reverse by default for Big Endian display.
- */
-const formatMac6 = (bytes: Uint8Array, reverse: boolean): string => {
-  if (reverse) {
-    return (
-      HEX_TABLE[bytes[5]] +
-      HEX_TABLE[bytes[4]] +
-      HEX_TABLE[bytes[3]] +
-      HEX_TABLE[bytes[2]] +
-      HEX_TABLE[bytes[1]] +
-      HEX_TABLE[bytes[0]]
-    );
-  } else {
-    return (
-      HEX_TABLE[bytes[0]] +
-      HEX_TABLE[bytes[1]] +
-      HEX_TABLE[bytes[2]] +
-      HEX_TABLE[bytes[3]] +
-      HEX_TABLE[bytes[4]] +
-      HEX_TABLE[bytes[5]]
-    );
-  }
-};
-
-export const bytesToMac = (bytes: Uint8Array, reverse: boolean = true): string => {
-  const len = bytes.length;
-  if (len === 0) {
-    return '';
-  }
-
-  // Optimization: fast path for standard 6-byte MAC addresses.
-  // Directly concatenating the 6 hex strings avoids loop overhead
-  // and branching, resulting in an ~8-9x performance speedup in V8.
-  if (len === 6) {
-    return formatMac6(bytes, reverse);
-  }
-
-  // Slow path for non-standard lengths
-  if (reverse) {
-    let result = HEX_TABLE[bytes[len - 1]];
-    for (let i = len - 2; i >= 0; i--) {
-      result += HEX_TABLE[bytes[i]];
-    }
-    return result;
-  } else {
-    let result = HEX_TABLE[bytes[0]];
-    for (let i = 1; i < len; i++) {
-      result += HEX_TABLE[bytes[i]];
-    }
-    return result;
-  }
 };
 
 export const calculateChecksum = (data: Uint8Array, start = 0, end = data.length): number => {
