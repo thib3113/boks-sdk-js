@@ -1402,5 +1402,6 @@ export class BoksHardwareSimulator {
     }
 
     this.emit(this.createResponse(BoksOpcode.NOTIFY_CODE_GENERATION_SUCCESS, EMPTY_BUFFER));
-    return null;  }
+    return null;
+  }
 }
