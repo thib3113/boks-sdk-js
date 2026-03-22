@@ -21,7 +21,7 @@ const isUnregistering = ref(false)
 // Computed requirement check (basic)
 const isSupported = computed(() => {
   if (!boksStore.isConnected || !boksStore.controller) return false
-  const hwVersion = boksStore.controller.deviceInfo?.hwVersion || '0.0'
+  const hwVersion = boksStore.controller.hardwareInfo?.hardwareVersion || '0.0'
   return parseFloat(hwVersion) >= 4.0
 })
 
