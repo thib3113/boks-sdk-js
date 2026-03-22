@@ -4,7 +4,6 @@ import {
   readConfigKeyFromBuffer,
   readPinFromBuffer,
   bytesToHex,
-  bytesToMac,
   stringToBytes,
   hexToBytes
 } from '../utils/converters';
@@ -1175,7 +1174,7 @@ export class BoksHardwareSimulator {
       return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, EMPTY_BUFFER);
     }
     const uidBytes = payload.subarray(9, 9 + len);
-    const uid = bytesToMac(uidBytes, false);
+    const uid = bytesToHex(uidBytes);
     this.#nfcTags.add(uid);
     this.#isNfcScanning = false;
     this.saveState('nfcTags');
@@ -1195,7 +1194,7 @@ export class BoksHardwareSimulator {
       return this.createResponse(BoksOpcode.CODE_OPERATION_ERROR, EMPTY_BUFFER);
     }
     const uidBytes = payload.subarray(9, 9 + len);
-    const uid = bytesToMac(uidBytes, false);
+    const uid = bytesToHex(uidBytes);
     if (this.#nfcTags.has(uid)) {
       this.#nfcTags.delete(uid);
       this.saveState('nfcTags');
