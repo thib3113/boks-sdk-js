@@ -55,11 +55,12 @@ export class BoksEventRouter<TEventMap extends Record<string, unknown> = Record<
     filter: F,
     callback: BoksEventRouterListener<TEventMap, F>
   ): void {
-    this.listeners.forEach((listener) => {
+    // Optimization: Standard `for...of` loop is significantly faster than Set.prototype.forEach()
+    for (const listener of this.listeners) {
       if (listener.filter === filter && listener.callback === callback) {
         this.listeners.delete(listener);
       }
-    });
+    }
   }
 
   private matchesClientFilter(
@@ -95,14 +96,26 @@ export class BoksEventRouter<TEventMap extends Record<string, unknown> = Record<
     direction: BoksPacketDirection,
     onError?: (error: unknown) => void
   ) {
-    this.listeners.forEach((listener) => {
-      const matches = Array.isArray(listener.filter)
-        ? listener.filter.some((f) => this.matchesClientFilter(f, packet, direction))
-        : this.matchesClientFilter(
-            listener.filter as BoksEventRouterFilterSingle<TEventMap>,
-            packet,
-            direction
-          );
+    // Optimization: Standard `for...of` loop avoids callback overhead in high-frequency path
+    for (const listener of this.listeners) {
+      let matches = false;
+      const filter = listener.filter;
+
+      if (Array.isArray(filter)) {
+        // Optimization: Standard `for` loop is faster than Array.prototype.some()
+        for (let i = 0; i < filter.length; i++) {
+          if (this.matchesClientFilter(filter[i], packet, direction)) {
+            matches = true;
+            break;
+          }
+        }
+      } else {
+        matches = this.matchesClientFilter(
+          filter as BoksEventRouterFilterSingle<TEventMap>,
+          packet,
+          direction
+        );
+      }
 
       if (matches) {
         try {
@@ -114,15 +127,27 @@ export class BoksEventRouter<TEventMap extends Record<string, unknown> = Record<
           }
         }
       }
-    });
+    }
   }
 
   public emit<K extends keyof TEventMap>(event: K, payload: TEventMap[K]) {
-    this.listeners.forEach((listener) => {
-      const matches = Array.isArray(listener.filter)
-        ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          listener.filter.includes(event as any)
-        : listener.filter === event;
+    // Optimization: Standard `for...of` loop avoids callback overhead in high-frequency path
+    for (const listener of this.listeners) {
+      let matches = false;
+      const filter = listener.filter;
+
+      if (Array.isArray(filter)) {
+        // Optimization: Standard `for` loop is faster than Array.prototype.includes()
+        for (let i = 0; i < filter.length; i++) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          if (filter[i] === (event as any)) {
+            matches = true;
+            break;
+          }
+        }
+      } else {
+        matches = filter === event;
+      }
 
       if (matches) {
         try {
@@ -132,6 +157,6 @@ export class BoksEventRouter<TEventMap extends Record<string, unknown> = Record<
           // ignore
         }
       }
-    });
+    }
   }
 }
