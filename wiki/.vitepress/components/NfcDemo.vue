@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { boksStore } from '../boksStore'
 import { useData } from 'vitepress'
 import { i18n } from '../i18n'
@@ -20,6 +20,14 @@ const isUnregistering = ref(false)
 
 // Config Key State
 const configKeyInput = ref(boksStore.deriveConfigKey(boksStore.activeMasterKey))
+
+// Automatically pre-fill the Config Key if it becomes available (e.g. after connection)
+watch(() => boksStore.activeMasterKey, (newVal) => {
+  if (newVal && (!configKeyInput.value || configKeyInput.value === '')) {
+    configKeyInput.value = boksStore.deriveConfigKey(newVal);
+  }
+}, { immediate: true });
+
 
 
 // Computed requirement check (basic)
