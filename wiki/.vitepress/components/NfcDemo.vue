@@ -50,7 +50,7 @@ async function startScan() {
 
   try {
     // Start scan with 6s timeout
-    const result = await boksStore.controller.scanNFCTags(6000)
+    const result = await boksStore.controller.scanNFCTags()
     scanResult.value = result
     scanStatus.value = { message: `${t.value.nfc.scanSuccess} UID: ${result.tagId}`, type: 'success' }
     boksStore.log(`NFC Scan Success: ${result.tagId}`, 'success')
