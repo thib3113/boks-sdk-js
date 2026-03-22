@@ -1384,19 +1384,23 @@ export class BoksHardwareSimulator {
     fullKey.set(this.#pendingProvisioningPartA, 0);
     fullKey.set(partB, 16);
     this.#pendingProvisioningPartA = null;
-    for (let i = 0; i <= 100; i += 1) {
-      if (this.#progressDelayMs > 0) {
-        await new Promise((resolve) => setTimeout(resolve, this.#progressDelayMs));
-      }
-      this.emit(
-        this.createResponse(BoksOpcode.NOTIFY_CODE_GENERATION_PROGRESS, new Uint8Array([i]))
-      );
-    }
+
+    // On real hardware, the Master Key is saved to flash memory BEFORE generation begins.
     this.masterKey = fullKey;
     this.saveState('masterKey');
     this.saveState('pinCodes');
     this.saveState('masterCodes');
+
+    // Now start the slow generation process
+    for (let i = 0; i <= 100; i += 1) {
+      this.emit(
+        this.createResponse(BoksOpcode.NOTIFY_CODE_GENERATION_PROGRESS, new Uint8Array([i]))
+      );
+      if (this.#progressDelayMs > 0 && i < 100) {
+        await new Promise((resolve) => setTimeout(resolve, this.#progressDelayMs));
+      }
+    }
+
     this.emit(this.createResponse(BoksOpcode.NOTIFY_CODE_GENERATION_SUCCESS, EMPTY_BUFFER));
-    return null;
-  }
+    return null;  }
 }
