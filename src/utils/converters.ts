@@ -2,7 +2,6 @@ import { CHECKSUM_MASK } from '../protocol/constants';
 import { BoksProtocolError, BoksProtocolErrorId } from '../errors/BoksProtocolError';
 import { BoksExpectedReason } from '../errors/BoksExpectedReason';
 
-
 /**
  * Utility functions for Boks SDK
  */
