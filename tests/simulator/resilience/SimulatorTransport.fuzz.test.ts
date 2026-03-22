@@ -34,7 +34,7 @@ describe('SimulatorTransport Resilience (Fuzzing)', () => {
         const transport = new SimulatorTransport(simulator);
 
         try {
-          const callback = (data: Uint8Array) => {};
+          const callback = (_data: Uint8Array) => {};
           // Regular subscribe
           await transport.subscribe(callback);
           // GATT subscribe
