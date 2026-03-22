@@ -115,11 +115,21 @@ async function provision() {
 
   boksStore.log('Starting provisioning...', 'warning')
 
+  let hasProgress = false
+  const progressTimer = setTimeout(() => {
+    if (!hasProgress) {
+      alert(t.value.provision.noProgressError || 'No response from the box after 5 seconds.\nPlease double-check that your Config Key is correct.\nNote: The box ignores invalid keys silently. You can use an NFC tag to easily retrieve the correct Config Key (NFC demo coming soon!).')
+    }
+  }, 5000)
+
   try {
     const success = await boksStore.controller.regenerateMasterKey(newMasterKey.value, (p) => {
+      hasProgress = true
       provisionProgress.value = p
       boksStore.log(`Provisioning: ${p}%`, 'info')
     })
+
+    clearTimeout(progressTimer)
 
     if (success) {
       boksStore.log('Provisioning complete! The device has a new Master Key.', 'success')
