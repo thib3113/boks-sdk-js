@@ -1,0 +1,26 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.BoksExpectedReason = void 0;
+var BoksExpectedReason;
+(function (BoksExpectedReason) {
+    BoksExpectedReason["VALID_HEX_CHAR"] = "VALID_HEX_CHAR";
+    BoksExpectedReason["PIN_CODE_FORMAT"] = "PIN_CODE_FORMAT";
+    BoksExpectedReason["EXACT_LENGTH"] = "EXACT_LENGTH";
+    BoksExpectedReason["MIN_LENGTH"] = "MIN_LENGTH";
+    BoksExpectedReason["MAX_LENGTH"] = "MAX_LENGTH";
+    BoksExpectedReason["KNOWN_OPCODE"] = "KNOWN_OPCODE";
+    BoksExpectedReason["CONFIG_KEY_FORMAT"] = "CONFIG_KEY_FORMAT";
+    BoksExpectedReason["POSITIVE_INTEGER"] = "POSITIVE_INTEGER";
+    BoksExpectedReason["MAC_ADDRESS_FORMAT"] = "MAC_ADDRESS_FORMAT";
+    BoksExpectedReason["NFC_UID_FORMAT"] = "NFC_UID_FORMAT";
+    BoksExpectedReason["UINT8"] = "UINT8";
+    BoksExpectedReason["UINT16"] = "UINT16";
+    BoksExpectedReason["UINT32"] = "UINT32";
+    BoksExpectedReason["UINT8_ARRAY"] = "UINT8_ARRAY";
+    BoksExpectedReason["OBJECT"] = "OBJECT";
+    BoksExpectedReason["FUNCTION"] = "FUNCTION";
+    BoksExpectedReason["CONSTRUCTOR"] = "CONSTRUCTOR";
+    BoksExpectedReason["NUMBER"] = "NUMBER";
+    BoksExpectedReason["BUFFER_SIZE"] = "BUFFER_SIZE";
+    BoksExpectedReason["BIT_INDEX"] = "BIT_INDEX";
+})(BoksExpectedReason || (exports.BoksExpectedReason = BoksExpectedReason = {}));

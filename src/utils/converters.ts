@@ -2,6 +2,7 @@ import { CHECKSUM_MASK } from '../protocol/constants';
 import { BoksProtocolError, BoksProtocolErrorId } from '../errors/BoksProtocolError';
 import { BoksExpectedReason } from '../errors/BoksExpectedReason';
 
+
 /**
  * Utility functions for Boks SDK
  */
@@ -31,8 +32,10 @@ for (let i = 0; i < 10; i++) {
 for (let i = 0; i < 6; i++) {
   HEX_DECODE_TABLE[65 + i] = 10 + i;
 }
-// Lowercase hex is not supported per project requirements.
-// Keys are always uppercase.
+// 'a'-'f'
+for (let i = 0; i < 6; i++) {
+  HEX_DECODE_TABLE[97 + i] = 10 + i;
+}
 
 /**
  * Quickly strips whitespace and specified delimiters (e.g., colons, dashes) from a hexadecimal string.
@@ -136,14 +139,39 @@ export const hexToBytes = (hex: string): Uint8Array => {
   return j === bytes.length ? bytes : bytes.subarray(0, j);
 };
 
-export const bytesToHex = (bytes: Uint8Array): string => {
+export const bytesToHex = (bytes: Uint8Array, reverse: boolean = false): string => {
   const len = bytes.length;
+  if (len === 0) {
+    return '';
+  }
 
-  // Optimization: fast paths for common lengths (like 4, 7, 10 for NFC UIDs, etc.).
-  // Directly concatenating the 16-bit lookup values avoids loop overhead
-  // and branching, resulting in an ~3x performance speedup in V8.
+  if (reverse) {
+    if (len === 6) {
+      return (
+        HEX_TABLE[bytes[5]] +
+        HEX_TABLE[bytes[4]] +
+        HEX_TABLE[bytes[3]] +
+        HEX_TABLE[bytes[2]] +
+        HEX_TABLE[bytes[1]] +
+        HEX_TABLE[bytes[0]]
+      );
+    }
+
+    let result = '';
+    for (let i = len - 1; i >= 0; i--) {
+      result += HEX_TABLE[bytes[i]];
+    }
+    return result;
+  }
+
   if (len === 4) {
     return HEX_TABLE_16[(bytes[0] << 8) | bytes[1]] + HEX_TABLE_16[(bytes[2] << 8) | bytes[3]];
+  } else if (len === 6) {
+    return (
+      HEX_TABLE_16[(bytes[0] << 8) | bytes[1]] +
+      HEX_TABLE_16[(bytes[2] << 8) | bytes[3]] +
+      HEX_TABLE_16[(bytes[4] << 8) | bytes[5]]
+    );
   } else if (len === 7) {
     return (
       HEX_TABLE_16[(bytes[0] << 8) | bytes[1]] +
@@ -163,12 +191,9 @@ export const bytesToHex = (bytes: Uint8Array): string => {
 
   let result = '';
   let i = 0;
-  // Optimization: process 2 bytes at a time using a 16-bit lookup table
-  // to halve the number of iterations and string concatenations.
   for (; i <= len - 2; i += 2) {
     result += HEX_TABLE_16[(bytes[i] << 8) | bytes[i + 1]];
   }
-  // Handle remaining byte for odd lengths
   if (i < len) {
     result += HEX_TABLE[bytes[i]];
   }
