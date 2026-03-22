@@ -202,7 +202,7 @@ describe('converters', () => {
     });
   });
 });
-describe('bytesToMac 6-byte reverse true', () => {
+describe('bytesToHex 6-byte reverse true', () => {
   it('formats a 6-byte MAC address with reverse=true', () => {
     const bytes = new Uint8Array([0x11, 0x22, 0x33, 0x44, 0x55, 0x66]);
     expect(bytesToHex(bytes, { reverse: true })).toBe('665544332211');
@@ -218,7 +218,7 @@ describe('hexToBytes exact match', () => {
     expect(result.length).toBe(34);
   });
 });
-describe('bytesToMac 7-byte reverse true', () => {
+describe('bytesToHex 7-byte reverse true', () => {
   it('formats a 7-byte MAC address with reverse=true', () => {
     const bytes = new Uint8Array([0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77]);
     expect(bytesToHex(bytes, { reverse: true })).toBe('77665544332211');

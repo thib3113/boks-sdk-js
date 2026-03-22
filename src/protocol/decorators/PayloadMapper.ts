@@ -397,7 +397,7 @@ export class PayloadMapper {
         case 'mac_address':
           // Reverse Little Endian to Big Endian (Standard Format: XXXXXXXXXXXX)
           fnBody += `
-            result['${prop}'] = bytesToHex(payload.subarray(${o}, ${o} + 6), true);
+            result['${prop}'] = bytesToHex(payload, { reverse: true, start: ${o}, end: ${o} + 6 });
           `;
           break;
         case 'pin_code':
