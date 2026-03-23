@@ -4,6 +4,7 @@ import { BoksClient } from '../../src/client/BoksClient';
 import { BoksHardwareSimulator } from '../../src/simulator/BoksSimulator';
 import { SimulatorTransport } from '../../src/simulator/SimulatorTransport';
 import { BoksCodeType, BoksOpcode } from '../../src/protocol/constants';
+import { bytesToHex } from '../../src/utils/converters';
 
 export interface BoksLog {
   time: string;
@@ -102,7 +103,16 @@ export const boksStore = reactive({
   exportLogs() {
     if (typeof document === 'undefined') return;
     const exportedLogs = this.packetLogs.map(log => {
-      const packetData = JSON.parse(JSON.stringify(log.rawData));
+      let packetData;
+      let rawPayloadHex;
+
+      if (log.rawData) {
+        packetData = log.rawData.toJSON ? log.rawData.toJSON() : JSON.parse(JSON.stringify(log.rawData));
+        if (log.rawData.rawPayload) {
+          rawPayloadHex = bytesToHex(log.rawData.rawPayload);
+        }
+      }
+
       if (packetData && typeof packetData === 'object') {
         delete packetData.opcode;
       }
@@ -112,7 +122,8 @@ export const boksStore = reactive({
         opcode: log.opcode,
         name: log.name,
         length: log.length,
-        data: packetData
+        data: packetData,
+        rawPayload: rawPayloadHex
       };
     });
     const dataStr = JSON.stringify(exportedLogs, null, 2);
