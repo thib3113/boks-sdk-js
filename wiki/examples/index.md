@@ -18,5 +18,6 @@ The connection state and simulated data are shared across all pages in this sect
 - [**Hardware Health**](./hardware-health): Real-time diagnostic data from battery and temperature sensors.
 - [**NFC Management**](./nfc): Scan and register NFC tags.
 - [**Battery & Hardware**](./battery): Read battery levels and detailed statistics.
+- [**Firmware Update (DFU)**](./dfu): Update device firmware via Nordic's DFU protocols using Web Bluetooth.
 
 <BoksDashboard />

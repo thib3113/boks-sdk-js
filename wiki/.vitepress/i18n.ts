@@ -1,6 +1,16 @@
 export const i18n = {
   en: {
 
+    dfu: {
+      title: 'Firmware Update (DFU)',
+      desc: 'Select a valid firmware .zip package and flash it onto your Boks device.',
+      selectFile: 'Select Firmware (.zip)',
+      deviceInfo: 'Device Info',
+      connectBtn: 'Connect & Read Info',
+      flashBtn: 'Start DFU Update',
+      progress: 'Progress',
+    },
+
     provision: {
       title: 'Seed Regeneration',
       desc: 'Replace the current Master Key with a new known seed to generate offline codes.',
@@ -218,6 +228,16 @@ export const i18n = {
     }
   },
   fr: {
+
+    dfu: {
+      title: 'Mise à jour du Firmware (DFU)',
+      desc: 'Sélectionnez un package de firmware .zip valide et installez-le sur votre Boks.',
+      selectFile: 'Sélectionner le Firmware (.zip)',
+      deviceInfo: 'Infos Appareil',
+      connectBtn: 'Connecter et Lire les Infos',
+      flashBtn: 'Démarrer la Mise à Jour DFU',
+      progress: 'Progression',
+    },
 
     provision: {
       title: 'Régénération de Seed',
