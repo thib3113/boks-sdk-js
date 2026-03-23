@@ -23,3 +23,5 @@ export * from './ValidOpenCodePacket';
 export * from './InvalidOpenCodePacket';
 
 export * from './history';
+
+export * from './UnknownPacket';

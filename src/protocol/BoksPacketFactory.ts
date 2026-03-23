@@ -36,6 +36,7 @@ import { NotifySetConfigurationSuccessPacket } from './uplink/NotifySetConfigura
 import { ErrorCrcPacket } from './uplink/ErrorCrcPacket';
 import { ErrorUnauthorizedPacket } from './uplink/ErrorUnauthorizedPacket';
 import { ErrorBadRequestPacket } from './uplink/ErrorBadRequestPacket';
+import { UnknownPacket } from './uplink/UnknownPacket';
 
 // Logs
 import { CodeBleValidHistoryPacket } from './uplink/history/CodeBleValidHistoryPacket';
@@ -57,7 +58,6 @@ import { NfcRegisteringHistoryPacket } from './uplink/history/NfcRegisteringHist
 
 import { calculateChecksum } from '@/utils/converters';
 import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';
-import { BoksExpectedReason } from '@/errors/BoksExpectedReason';
 import { freeze } from '@/utils/security';
 
 /**
@@ -213,11 +213,7 @@ export class BoksPacketFactory {
   static fromResponse(opcode: number, payload: Uint8Array): BoksPacket {
     const Ctor = this.getConstructor(opcode);
     if (!Ctor) {
-      throw new BoksProtocolError(
-        BoksProtocolErrorId.MALFORMED_DATA,
-        'Unknown or unregistered opcode',
-        { opcode, expected: BoksExpectedReason.KNOWN_OPCODE }
-      );
+      return UnknownPacket.fromUnknownPayload(opcode, payload);
     }
 
     return Ctor.fromPayload(payload);
