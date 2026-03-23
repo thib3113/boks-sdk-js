@@ -60,10 +60,12 @@ export abstract class BoksPacket {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const result: any = { opcode: this.opcode };
 
-    for (const field of fields) {
-      if (field.propertyName in this) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        result[field.propertyName] = (this as any)[field.propertyName];
+    for (let i = 0; i < fields.length; i++) {
+      const field = fields[i];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const value = (this as any)[field.propertyName];
+      if (value !== undefined) {
+        result[field.propertyName] = value;
       }
     }
 

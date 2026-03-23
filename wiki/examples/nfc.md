@@ -1,5 +1,12 @@
 # NFC Management
 
+<BoksGlobalProvider />
+
+This interactive demo allows you to scan for new NFC tags or unregister existing ones directly from your browser.
+
+<NfcDemo />
+
+
 
 Boks devices with hardware version 4.0 or higher support NFC tags. This means you can use an NFC badge or tag to open the parcel box instead of a keypad code or a mobile application.
 
@@ -56,3 +63,6 @@ try {
   console.error('Failed to unregister NFC tag:', error);
 }
 ```
+
+
+<BoksDashboard />

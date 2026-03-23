@@ -70,6 +70,9 @@ export class PayloadMapper {
   /**
    * Pre-computed hex table for JIT compilers
    */
+  private static readonly HEX_TABLE = Array.from({ length: 256 }, (_, i) =>
+    i.toString(16).padStart(2, '0').toUpperCase()
+  );
 
   /**
    * Security check: Validates that property names are safe identifiers
@@ -122,6 +125,7 @@ export class PayloadMapper {
       'prototype',
       'payload',
       'instance',
+      'HEX_TABLE',
       'BoksProtocolError',
       'BoksProtocolErrorId',
       'result',
@@ -397,7 +401,13 @@ export class PayloadMapper {
         case 'mac_address':
           // Reverse Little Endian to Big Endian (Standard Format: XXXXXXXXXXXX)
           fnBody += `
-            result['${prop}'] = bytesToHex(payload, { reverse: true, start: ${o}, end: ${o} + 6 });
+            result['${prop}'] =
+              HEX_TABLE[payload[${o + 5}]] +
+              HEX_TABLE[payload[${o + 4}]] +
+              HEX_TABLE[payload[${o + 3}]] +
+              HEX_TABLE[payload[${o + 2}]] +
+              HEX_TABLE[payload[${o + 1}]] +
+              HEX_TABLE[payload[${o}]];
           `;
           break;
         case 'pin_code':
@@ -436,10 +446,10 @@ export class PayloadMapper {
           break;
         case 'hex_string': {
           if (typeof field.length === 'number') {
-            fnBody += `result['${prop}'] = bytesToHex(payload, { start: ${o}, end: ${o} + ${field.length} });\n`;
+            fnBody += `result['${prop}'] = bytesToHex(payload.subarray(${o}, ${o} + ${field.length}));\n`;
           } else {
             fnBody += `
-            result['${prop}'] = bytesToHex(payload, { start: ${o} });
+            result['${prop}'] = bytesToHex(payload.subarray(${o}));
             `;
           }
           break;
@@ -455,7 +465,7 @@ export class PayloadMapper {
                  { field: '${prop}', received: payload.length, expected: ${o + 1} + len }
                );
              }
-             result['${prop}'] = bytesToHex(payload, { start: ${o + 1}, end: ${o + 1} + len });
+             result['${prop}'] = bytesToHex(payload.subarray(${o + 1}, ${o + 1} + len));
           }
           `;
           break;
@@ -475,6 +485,7 @@ export class PayloadMapper {
       'BoksProtocolError',
       'BoksProtocolErrorId',
       'BoksExpectedReason',
+      'HEX_TABLE',
       'bytesToHex',
       fnBody
     ) as (...args: any[]) => any;
@@ -832,6 +843,7 @@ export class PayloadMapper {
       BoksProtocolError,
       BoksProtocolErrorId,
       BoksExpectedReason,
+      this.HEX_TABLE,
       bytesToHex
     );
     return result as unknown as T;

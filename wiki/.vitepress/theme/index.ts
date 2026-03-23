@@ -7,6 +7,7 @@ import BatteryDemo from '../components/BatteryDemo.vue';
 import RegenerationDemo from '../components/RegenerationDemo.vue';
 import OfflinePinDemo from '../components/OfflinePinDemo.vue';
 import BoksDashboard from '../components/BoksDashboard.vue';
+import NfcDemo from '../components/NfcDemo.vue';
 
 export default {
   extends: DefaultTheme,
@@ -33,5 +34,6 @@ export default {
     app.component('RegenerationDemo', RegenerationDemo);
     app.component('OfflinePinDemo', OfflinePinDemo);
     app.component('BoksDashboard', BoksDashboard);
+    app.component('NfcDemo', NfcDemo);
   }
 };

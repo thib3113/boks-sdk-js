@@ -295,6 +295,21 @@ describe('WebBluetoothTransport', () => {
         new BoksClientError(BoksClientErrorId.DISCONNECT_FAILED, 'Failed to disconnect', { error })
       );
     });
+
+    it('should catch errors if checking server.connected fails', async () => {
+      const transport = new WebBluetoothTransport();
+      const error = new Error('GATT Error');
+
+      (transport as any).server = {
+        get connected() {
+          throw error;
+        }
+      };
+
+      await expect(transport.disconnect()).rejects.toThrowError(
+        new BoksClientError(BoksClientErrorId.DISCONNECT_FAILED, 'Failed to disconnect', { error })
+      );
+    });
   });
 
   describe('write', () => {
