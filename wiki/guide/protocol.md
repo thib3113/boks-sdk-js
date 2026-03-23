@@ -35,7 +35,7 @@ All packets follow a consistent binary format:
 ### 1. Code Management
 The device handles three distinct types of access codes:
 
-*   **Master Codes**: Permanent PINs. By default, the initialization routine generates 5 codes (indices 0 to 4). However, the protocol formally supports creating up to 256 distinct Master Codes (indices 0 to 255) without any internal restriction. *Known quirk: The firmware does not prevent creating multiple codes on the exact same index. If this happens, a single deletion command will only remove one code at a time (always the oldest one created, due to sequential database iteration), meaning you will have to send the delete command multiple times to fully clear the index.*
+*   **Master Codes**: Permanent PINs. By default, the initialization routine generates 5 codes (indices 0 to 4). However, the protocol formally supports creating up to 256 distinct Master Codes (indices 0 to 255). *See [Known Quirks](./quirks#multiple-codes-on-the-same-index) regarding a bug with duplicate indices.*
 *   **Single-Use Codes**: Temporary PINs that expire immediately after one successful opening.
 *   **Multi-Use Codes**: Reusable temporary PINs. *Note: Generation of these codes is disabled in firmware versions > 4.3.3.*
 

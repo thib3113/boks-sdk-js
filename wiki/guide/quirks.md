@@ -36,10 +36,16 @@ As noted in the [Protocol Guide](./protocol), firmware versions strictly greater
 
 - **The Quirk**: Sending a `CREATE_MULTI_USE_CODE` (`0x13`) on these versions will return an error, even if the payload and authentication are correct.
 
-## 6. Multiple Deletion of Single-Use Codes (> 3326 codes)
+## 6. Multiple Codes on the Same Index {#multiple-codes-on-the-same-index}
+
+There is a behavior in the Boks firmware related to the storage of permanent codes.
+
+- **The Quirk**: The firmware does not prevent creating multiple codes on the exact same index.
+- **Consequence**: A single deletion command will only remove one code at a time (always the oldest one created, due to sequential database iteration), meaning you will have to send the delete command multiple times to fully clear the index.
+
+## 7. Multiple Deletion of Single-Use Codes (> 3326 codes)
 
 There is a memory management bug in the Boks firmware related to the storage of single-use codes.
 
 - **The Quirk**: Usually, attempting to delete an already deleted PIN returns an error. However, if the Boks stores **more than 3,326 single-use codes**, it allows the same valid code to be deleted multiple times successfully.
 - **Consequence**: While rare in normal use, this behavior suggests an internal overflow or incorrect index tracking that could potentially affect the integrity of other stored codes.
-

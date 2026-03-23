@@ -36,10 +36,16 @@ Comme indiqué dans le [Guide du Protocole](./protocol), les versions de firmwar
 
 - **La Particularité** : Envoyer un `CREATE_MULTI_USE_CODE` (`0x13`) sur ces versions retournera une erreur, même si la charge utile et l'authentification sont correctes.
 
-## 6. Suppression Multiple de Codes à Usage Unique (> 3 326 codes)
+## 6. Plusieurs Codes sur le même Index {#plusieurs-codes-sur-le-meme-index}
+
+Il existe un comportement dans le firmware Boks lié au stockage des codes permanents.
+
+- **La Particularité** : Le firmware n'empêche pas de créer plusieurs codes sur le même index.
+- **Conséquence** : Une commande de suppression ne retirera qu'un seul code à la fois (systématiquement le plus ancien créé, car la base de données interne itère séquentiellement). Il faudra envoyer la commande plusieurs fois pour vider l'index.
+
+## 7. Suppression Multiple de Codes à Usage Unique (> 3 326 codes)
 
 Il existe un bug de gestion de mémoire dans le firmware Boks lié au stockage des codes à usage unique.
 
 - **La Particularité** : Habituellement, tenter de supprimer un PIN déjà supprimé renvoie une erreur. Cependant, si la Boks stocke **plus de 3 326 codes à usage unique**, elle permet de supprimer plusieurs fois le même code valide avec succès.
 - **Conséquence** : Bien que rare en usage normal, ce comportement suggère un dépassement interne ou un suivi d'index incorrect qui pourrait potentiellement affecter l'intégrité d'autres codes stockés.
-

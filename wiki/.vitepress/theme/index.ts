@@ -15,13 +15,18 @@ export default {
     if (typeof window !== 'undefined') {
       const isFrench = navigator.language.startsWith('fr');
       const path = window.location.pathname;
-      console.log('[Redirection Debug]', { lang: navigator.language, isFrench, path });
+      const base = import.meta.env.BASE_URL || '/';
       
-      // If we are at the root (considering base path if any), redirect to /fr/
-      // On GH Pages, path might be "/boks-sdk-js/" instead of "/"
-      if (isFrench && (path === '/' || path === '/index.html')) {
-        console.log('[Redirection Debug] Redirecting to /fr/');
-        window.location.replace('/fr/');
+      console.log('[Redirection Debug]', { lang: navigator.language, isFrench, path, base });
+      
+      // Normalize paths to ensure trailing slash consistency for comparison
+      const normalizedPath = path.endsWith('/') ? path : path + '/';
+      const normalizedBase = base.endsWith('/') ? base : base + '/';
+
+      if (isFrench && (normalizedPath === normalizedBase || normalizedPath === normalizedBase + 'index.html/')) {
+        const target = normalizedBase + 'fr/';
+        console.log(`[Redirection Debug] Redirecting to ${target}`);
+        window.location.replace(target);
       }
     }
 

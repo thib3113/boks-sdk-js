@@ -53,10 +53,28 @@ La Boks ne lit pas n'importe quel badge. Pour être détecté, le badge doit pos
 
 ## Utilisation avec le Boks SDK
 
-Une fois votre badge préparé :
+Une fois votre badge préparé, vous pouvez l'enregistrer en utilisant le flux suivant :
 
-1.  Utilisez la méthode `controller.scanNFCTags()`.
-2.  Posez votre badge sur la Boks (la LED bleue clignote).
-3.  Vous devriez recevoir une notification `NotifyNfcTagFoundPacket` avec l'UID du badge (ex: `A1B2C3D4`).
-4.  Utilisez la méthode `controller.registerNfcTag()` avec cet UID pour l'ajouter à la mémoire de la Boks.
-5.  C'est fini ! Votre badge ouvre maintenant la porte.
+```typescript
+import { BoksController } from '@thib3113/boks-sdk';
+
+// 1. Connectez-vous à votre Boks (La LED bleue s'allume une fois connecté)
+await controller.connect();
+
+// 2. Lancez le scan de découverte
+console.log('Posez votre badge DIY sur le lecteur de la Boks...');
+const scanResult = await controller.scanNFCTags(20000); // Timeout de 20s
+
+if (scanResult.found) {
+  console.log(`Badge détecté ! UID : ${scanResult.tagId}`);
+  
+  // 3. Enregistrez le badge dans la mémoire de la Boks
+  const success = await controller.registerNfcTag(scanResult.tagId);
+  
+  if (success) {
+    console.log('✅ Badge enregistré avec succès et prêt à l\'emploi !');
+  }
+}
+```
+
+*Note : La LED bleue s'allume dès que la connexion Bluetooth est établie et reste allumée durant toute la phase de scan et d'enregistrement.*

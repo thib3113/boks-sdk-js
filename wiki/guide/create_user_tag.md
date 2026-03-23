@@ -53,10 +53,28 @@ The Boks doesn't read just any tag. To be detected, the tag must have a **specif
 
 ## Usage with Boks SDK
 
-Once your tag is prepared:
+Once your tag is prepared, you can register it using the following workflow:
 
-1.  Use the `controller.scanNFCTags()` method.
-2.  Place your tag on the Boks (blue LED flashes).
-3.  You should receive a `NotifyNfcTagFoundPacket` notification with the tag's UID (e.g., `A1B2C3D4`).
-4.  Use the `controller.registerNfcTag()` method with this UID to add it to the Boks memory.
-5.  You're done! Your tag now opens the door.
+```typescript
+import { BoksController } from '@thib3113/boks-sdk';
+
+// 1. Connect to your Boks (Blue LED will light up once connected)
+await controller.connect();
+
+// 2. Start the discovery scan
+console.log('Place your DIY tag on the Boks reader...');
+const scanResult = await controller.scanNFCTags(20000); // 20s timeout
+
+if (scanResult.found) {
+  console.log(`Tag detected! UID: ${scanResult.tagId}`);
+  
+  // 3. Register the tag to the Boks memory
+  const success = await controller.registerNfcTag(scanResult.tagId);
+  
+  if (success) {
+    console.log('✅ Tag successfully registered and ready to use!');
+  }
+}
+```
+
+*Note: The blue LED lights up as soon as the Bluetooth connection is established and remains on during the entire scan and registration process.*

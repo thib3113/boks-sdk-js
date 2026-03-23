@@ -35,7 +35,7 @@ Tous les paquets suivent un format binaire cohérent :
 ### 1. Gestion des Codes
 L'appareil gère trois types distincts de codes d'accès :
 
-*   **Codes permanents** : PINs permanents. Par défaut, la routine d'initialisation génère 5 codes (indices 0 à 4). Cependant, le protocole supporte formellement la création de jusqu'à 256 codes distincts (indices 0 à 255) sans aucune restriction interne. *Particularité connue : Le firmware n'empêche pas de créer plusieurs codes sur le même index. Si cela se produit, une commande de suppression ne retirera qu'un seul code à la fois (systématiquement le plus ancien créé, car la base de données interne itère séquentiellement). Il faudra envoyer la commande plusieurs fois pour vider l'index.*
+*   **Codes permanents** : PINs permanents. Par défaut, la routine d'initialisation génère 5 codes (indices 0 à 4). Cependant, le protocole supporte formellement la création de jusqu'à 256 codes distincts (indices 0 à 255). *Voir [Bugs & Particularités](./quirks#plusieurs-codes-sur-le-meme-index) concernant un bug lié aux index en doublon.*
 *   **Single-Use Codes** : PINs temporaires qui expirent immédiatement après une ouverture réussie.
 *   **Multi-Use Codes** : PINs temporaires réutilisables. *Note : La génération de ces codes est désactivée dans les versions de firmware > 4.3.3.*
 
