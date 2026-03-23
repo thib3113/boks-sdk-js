@@ -175,6 +175,47 @@ export const i18n = {
       readingLevels: 'Reading battery levels...',
       refreshSuccess: 'Battery and Hardware data refreshed.',
     },
+    dfu: {
+      title: 'Firmware Update (DFU)',
+      desc: 'Wirelessly update your Boks firmware using Web Bluetooth. This process is safe and includes verification checks.',
+      selectFile: 'Select Firmware ZIP',
+      kbLoaded: '{n} KB loaded',
+      status: {
+        ready: 'Ready',
+        searching: 'Searching for Boks...',
+        connecting: 'Connecting...',
+        connected: 'Connected!',
+        preparing: 'Preparing DFU mode...',
+        rebooting: 'Rebooting to DFU mode...',
+        flashing: 'Flashing firmware...',
+        success: 'Update Successful!',
+        error: 'Update Failed',
+        device_in_dfu: 'Device in DFU Mode'
+      },
+      buttons: {
+        connect: 'Connect to Boks',
+        prepare: 'Enter DFU Mode',
+        flash: 'Start Flashing',
+        reconnect: 'Reconnect (DFU Mode)'
+      },
+      labels: {
+        device_name: 'Device Name',
+        battery: 'Battery Level',
+        version: 'Current Version',
+        hw: 'Hardware Revision',
+        unknown: 'Unknown',
+        not_available: 'N/A'
+      },
+      warnings: {
+        https: 'Web Bluetooth requires a secure context (HTTPS).',
+        legal: 'WARNING: Updating firmware is a critical operation. Do not close this tab or turn off the device during the process.',
+        bricking: 'DFU is in progress! Closing this page might brick your device.'
+      },
+      logs: {
+        placeholder: 'Logs will appear here...',
+        firmware_loaded: 'Firmware loaded: {name} ({size} bytes)'
+      }
+    },
     logger: {
       title: 'Console',
       simulator: 'Simulator',
@@ -392,6 +433,47 @@ export const i18n = {
       temp: 'Temp',
       readingLevels: 'Lecture du niveau de batterie...',
       refreshSuccess: 'Données Batterie et Matériel actualisées.',
+    },
+    dfu: {
+      title: 'Mise à jour Firmware (DFU)',
+      desc: 'Mettez à jour le logiciel interne de votre Boks sans fil via Web Bluetooth.',
+      selectFile: 'Sélectionner le ZIP du Firmware',
+      kbLoaded: '{n} KB chargés',
+      status: {
+        ready: 'Prêt',
+        searching: 'Recherche de Boks...',
+        connecting: 'Connexion...',
+        connected: 'Connecté !',
+        preparing: 'Préparation du mode DFU...',
+        rebooting: 'Redémarrage en mode DFU...',
+        flashing: 'Flashage du firmware...',
+        success: 'Mise à jour réussie !',
+        error: 'Échec de la mise à jour',
+        device_in_dfu: 'Appareil en mode DFU'
+      },
+      buttons: {
+        connect: 'Connecter à la Boks',
+        prepare: 'Passer en mode DFU',
+        flash: 'Démarrer le Flashage',
+        reconnect: 'Reconnecter (Mode DFU)'
+      },
+      labels: {
+        device_name: 'Nom de l\'appareil',
+        battery: 'Niveau Batterie',
+        version: 'Version Actuelle',
+        hw: 'Révision Matériel',
+        unknown: 'Inconnu',
+        not_available: 'N/A'
+      },
+      warnings: {
+        https: 'Web Bluetooth nécessite un contexte sécurisé (HTTPS).',
+        legal: 'ATTENTION : La mise à jour du firmware est une opération critique. Ne fermez pas cet onglet et n\'éteignez pas l\'appareil pendant le processus.',
+        bricking: 'Le flashage est en cours ! Fermer cette page pourrait rendre votre appareil inutilisable.'
+      },
+      logs: {
+        placeholder: 'Les journaux apparaîtront ici...',
+        firmware_loaded: 'Firmware chargé : {name} ({size} octets)'
+      }
     },
     logger: {
       title: 'Console',
