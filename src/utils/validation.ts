@@ -41,13 +41,19 @@ export function validatePinCode(pin: string, allowIds: boolean = false): void {
     // Standard: '0'-'9' (48-57) or 'A'-'B' (65-66)
     const isStandard = (code >= 48 && code <= 57) || code === 65 || code === 66;
 
-    if (isStandard) continue;
+    if (isStandard) {
+      continue;
+    }
 
     if (isId) {
       // First char can be 'M' (77) or 'U' (85)
-      if (i === 0 && (code === 77 || code === 85)) continue;
+      if (i === 0 && (code === 77 || code === 85)) {
+        continue;
+      }
       // Second char can be 'C' (67)
-      if (i === 1 && code === 67) continue;
+      if (i === 1 && code === 67) {
+        continue;
+      }
     }
 
     throw new BoksProtocolError(
