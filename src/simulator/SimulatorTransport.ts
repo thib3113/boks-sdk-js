@@ -54,6 +54,15 @@ export class SimulatorTransport implements BoksTransport {
       return stringToBytes(state.firmwareVersion);
     }
 
+    // Custom Battery / Diagnostic (0x0004)
+    if (uuid.includes('0004')) {
+      const state = this.simulator.getInternalState();
+      const payload = new Uint8Array(6);
+      payload.set(state.batteryMeasures, 0);
+      payload[5] = state.temperature + 25; // Algorithm expects Value - 25
+      return payload;
+    }
+
     return EMPTY_BUFFER;
   }
 

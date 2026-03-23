@@ -73,9 +73,10 @@ export default defineConfig({
                 { text: 'Démo Initialisation', link: '/fr/examples/initialization' },
         { text: 'Régénération Seed', link: '/fr/examples/regeneration' },
                 { text: 'Démo Ouverture', link: '/fr/examples/open-door' },
-                { text: 'Sync Historique', link: '/fr/examples/history' },
-                { text: 'Génération PIN Offline', link: '/fr/examples/offline-pins' },
-                { text: 'Gestion Codes', link: '/fr/examples/codes' },
+                { text: 'History Sync', link: '/fr/examples/history' },
+                    { text: 'Génération PIN Offline', link: '/fr/examples/offline-pins' },
+                    { text: 'Santé Matérielle', link: '/fr/examples/hardware-health' },
+                    { text: 'Gestion Codes', link: '/fr/examples/codes' },
                 { text: 'Gestion NFC', link: '/fr/examples/nfc' },
                 { text: 'Batterie & Matériel', link: '/fr/examples/battery' }
               ]
@@ -148,6 +149,7 @@ export default defineConfig({
             { text: 'Open Door Demo', link: '/examples/open-door' },
             { text: 'History Sync', link: '/examples/history' },
             { text: 'Offline PIN Generation', link: '/examples/offline-pins' },
+            { text: 'Hardware Health', link: '/examples/hardware-health' },
             { text: 'Code Management', link: '/examples/codes' },
             { text: 'NFC Management', link: '/examples/nfc' },
             { text: 'Battery & Hardware', link: '/examples/battery' }

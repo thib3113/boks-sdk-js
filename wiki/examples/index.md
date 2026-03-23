@@ -15,6 +15,7 @@ The connection state and simulated data are shared across all pages in this sect
 - [**Open Door**](./open-door): Send a PIN code to unlock the device.
 - [**History Sync**](./history): Download and parse the internal event log.
 - [**Offline PIN Generation**](./offline-pins): Generate access codes locally using your Master Key.
+- [**Hardware Health**](./hardware-health): Real-time diagnostic data from battery and temperature sensors.
 - [**NFC Management**](./nfc): Scan and register NFC tags.
 - [**Battery & Hardware**](./battery): Read battery levels and detailed statistics.
 

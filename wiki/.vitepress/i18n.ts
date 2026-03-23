@@ -37,11 +37,36 @@ export const i18n = {
       generateBtn: 'Generate PIN',
       resultLabel: 'Generated PIN:',
       copyBtn: 'Copy',
+      verifyTitle: 'Verify a PIN',
+      verifyDesc: 'Check if a PIN is valid for your Master Key and find its origin.',
+      verifyPinLabel: 'PIN to Verify',
+      verifyBtn: 'Verify PIN',
+      verifySearching: 'Searching (checking indices 0-500)...',
+      verifyNotFound: 'PIN not found in common indices.',
+      verifyFound: 'Found valid {type} code at index {index}!',
+      listTitle: 'PIN List (First 10)',
+      listType: 'Type',
+      listIndex: 'Index',
+      listPin: 'PIN',
       types: {
         master: 'Master (Permanent)',
         'single-use': 'Single-Use',
         'multi-use': 'Multi-Use'
       }
+    },
+
+    health: {
+      title: 'Hardware Health',
+      desc: 'Real-time diagnostic data from the device sensors. Note: Detailed battery voltages are only updated after a door opening.',
+      readBtn: 'Read Health Data',
+      genericBattery: 'Generic Battery Level',
+      detailedBattery: 'Internal Battery Voltages',
+      batteryLabel: 'Battery {n}',
+      temperature: 'Internal Temperature',
+      voltUnit: 'V',
+      openDoorWarning: 'The detailed voltages are populated by the Boks only after a motor operation (opening).',
+      openDoorBtn: 'Open Door to Update Data',
+      lastUpdate: 'Last updated: {time}'
     },
 
     global: {
@@ -227,11 +252,36 @@ export const i18n = {
       generateBtn: 'Générer le PIN',
       resultLabel: 'PIN Généré :',
       copyBtn: 'Copier',
+      verifyTitle: 'Vérifier un PIN',
+      verifyDesc: 'Vérifiez si un code PIN est valide pour votre Clé Maître et trouvez son origine.',
+      verifyPinLabel: 'PIN à Vérifier',
+      verifyBtn: 'Vérifier le PIN',
+      verifySearching: 'Recherche en cours (indices 0-500)...',
+      verifyNotFound: 'PIN non trouvé dans les index courants.',
+      verifyFound: 'Code {type} valide trouvé à l\'index {index} !',
+      listTitle: 'Liste de PINs (10 premiers)',
+      listType: 'Type',
+      listIndex: 'Index',
+      listPin: 'PIN',
       types: {
-        master: 'Master (Permanent)',
+        master: 'Maître (Permanent)',
         'single-use': 'Usage Unique',
         'multi-use': 'Multi-Usage'
       }
+    },
+
+    health: {
+      title: 'Santé Matérielle',
+      desc: 'Données de diagnostic en temps réel des capteurs de l\'appareil. Note : Les tensions détaillées des piles ne sont mises à jour qu\'après une ouverture de porte.',
+      readBtn: 'Lire les Données',
+      genericBattery: 'Niveau Batterie Générique',
+      detailedBattery: 'Tensions Internes des Piles',
+      batteryLabel: 'Pile {n}',
+      temperature: 'Température Interne',
+      voltUnit: 'V',
+      openDoorWarning: 'Les tensions détaillées ne sont renseignées par la Boks qu\'après une opération moteur (ouverture).',
+      openDoorBtn: 'Ouvrir la Porte pour Actualiser',
+      lastUpdate: 'Dernière mise à jour : {time}'
     },
 
     global: {

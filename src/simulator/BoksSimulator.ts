@@ -237,6 +237,9 @@ export class BoksHardwareSimulator {
   #firmwareVersion: string = '10/125';
   #pendingProvisioningPartA: Uint8Array | null = null;
 
+  #batteryMeasures: number[] = [30, 30, 30, 30, 30]; // 3.0V per cell
+  #temperature: number = 25;
+
   #masterCodes: Map<number, string> = new Map();
   #nfcTags: Set<string> = new Set();
   #configuration: { laPosteEnabled: boolean } = { laPosteEnabled: false };
@@ -563,6 +566,13 @@ export class BoksHardwareSimulator {
     // 1. Log the source event (Access granted)
     this.addLog(logOpcode, payload);
 
+    // On real hardware, detailed battery stats (Handle 0x0004) are updated after motor operation.
+    // We simulate this by randomizing the values slightly.
+    this.#batteryMeasures = this.#batteryMeasures.map((v) =>
+      Math.max(20, Math.min(33, v + (Math.random() * 2 - 1)))
+    );
+    this.#temperature = Math.max(5, Math.min(45, this.#temperature + (Math.random() * 4 - 2)));
+
     // 2. Simulate the physical spring pushing the door open shortly after strike release.
     setTimeout(() => {
       if (!this.#isOpen) {
@@ -774,10 +784,11 @@ export class BoksHardwareSimulator {
       masterCodes: new Map(this.#masterCodes),
       nfcTags: new Set(this.#nfcTags),
       configuration: { ...this.#configuration },
-      isNfcScanning: this.#isNfcScanning
+      isNfcScanning: this.#isNfcScanning,
+      batteryMeasures: [...this.#batteryMeasures],
+      temperature: this.#temperature
     };
   }
-
   /**
    * Returns the GATT Schema for the simulated device.
    * Useful for exposing the simulator via bleno or other BLE peripherals.
