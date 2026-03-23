@@ -4,6 +4,25 @@ import { BoksOpcode } from '../../src/protocol/constants';
 import { calculateChecksum } from '../../src/utils/converters';
 
 describe('BoksHardwareSimulator Events', () => {
+  it('should emit unknown packet when emitUnknownPacket is called', async () => {
+    const simulator = new BoksHardwareSimulator();
+    simulator.setResponseDelay(0);
+
+    const events: SimulatorPacketEvent[] = [];
+    simulator.onPacket((event) => {
+      events.push(event);
+    });
+
+    simulator.emitUnknownPacket(0xFF, new Uint8Array([0xDE, 0xAD]));
+
+    expect(events.length).toBe(1);
+    expect(events[0].direction).toBe('TX');
+    expect(events[0].data[0]).toBe(0xFF);
+    expect(events[0].data[1]).toBe(2);
+    expect(events[0].data[2]).toBe(0xDE);
+    expect(events[0].data[3]).toBe(0xAD);
+  });
+
   it('should emit TX and RX events on packet processing', async () => {
     const simulator = new BoksHardwareSimulator();
     // Use responseDelayMs = 0 to make it return immediately

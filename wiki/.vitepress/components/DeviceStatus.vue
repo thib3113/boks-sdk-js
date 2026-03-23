@@ -127,6 +127,9 @@ function saveSimEdit() {
             <button @click="triggerRealisticOpen('key')" class="small-btn" data-testid="sim-trigger-key">{{ t.logger.key }}</button>
             <button @click="triggerRealisticOpen('nfc')" class="small-btn" data-testid="sim-trigger-nfc">{{ t.logger.nfc }}</button>
           </div>
+          <div class="config-item row">
+            <button @click="triggerUnknownPacket()" class="ctrl-btn" data-testid="sim-trigger-unknown" :title="t.logger.triggerUnknownTitle">{{ t.logger.triggerUnknown }}</button>
+          </div>
         </template>
 
         <!-- Metadata for both -->
