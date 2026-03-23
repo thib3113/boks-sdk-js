@@ -16,7 +16,7 @@ describe('BoksHardwareSimulator Events', () => {
     simulator.emitUnknownPacket(0xFF, new Uint8Array([0xDE, 0xAD]));
 
     expect(events.length).toBe(1);
-    expect(events[0].direction).toBe('TX');
+    expect(events[0].direction).toBe('RX');
     expect(events[0].buffer[0]).toBe(0xFF);
     expect(events[0].buffer[1]).toBe(2);
     expect(events[0].buffer[2]).toBe(0xDE);
