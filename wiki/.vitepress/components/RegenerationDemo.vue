@@ -91,7 +91,7 @@ async function provision() {
   if (!boksStore.controller || !boksStore.isConnected) return
   if (!newMasterKey.value || !currentConfigKey.value) return
 
-  if (!confirm(t.value.provision.confirm)) return
+  if (!confirm(`${t.value.provision.confirm}\n\n${t.value.provision.confirmMultipleDownloads}`)) return
 
   isProvisioning.value = true
   provisionProgress.value = 0
@@ -185,7 +185,7 @@ async function provision() {
         </div>
       </div>
 
-      <button
+            <button
         @click="provision"
         :disabled="!boksStore.isConnected || !isVersionSupported || isProvisioning || !newMasterKey || currentConfigKey.length !== 8"
         class="danger-btn big-btn"
@@ -194,6 +194,17 @@ async function provision() {
       >
         {{ isProvisioning ? t.provision.provisioningBtn : t.provision.provisionBtn }}
       </button>
+
+      <div style="margin-top: 1rem; text-align: center;">
+        <p class="desc" style="margin-bottom: 0.5rem; font-size: 0.8rem;">{{ t.provision.downloadLogsDesc }}</p>
+        <button
+          @click="boksStore.exportLogs()"
+          class="secondary-btn"
+          style="width: 100%; font-weight: 500;"
+        >
+          ⬇️ {{ t.provision.downloadLogsBtn }}
+        </button>
+      </div>
 
       <div v-if="hasAnnouncedAcceptance" class="success-panel">
         <strong>✅ {{ t.provision.acceptedTitle || 'Key Accepted' }}</strong>
