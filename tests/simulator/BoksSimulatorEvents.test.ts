@@ -17,10 +17,10 @@ describe('BoksHardwareSimulator Events', () => {
 
     expect(events.length).toBe(1);
     expect(events[0].direction).toBe('TX');
-    expect(events[0].data[0]).toBe(0xFF);
-    expect(events[0].data[1]).toBe(2);
-    expect(events[0].data[2]).toBe(0xDE);
-    expect(events[0].data[3]).toBe(0xAD);
+    expect(events[0].buffer[0]).toBe(0xFF);
+    expect(events[0].buffer[1]).toBe(2);
+    expect(events[0].buffer[2]).toBe(0xDE);
+    expect(events[0].buffer[3]).toBe(0xAD);
   });
 
   it('should emit TX and RX events on packet processing', async () => {
