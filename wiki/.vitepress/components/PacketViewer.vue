@@ -108,8 +108,9 @@ function exportLogs() {
 .json-data { margin: 0; padding: 0.4rem; background: var(--vp-c-bg-alt); border-radius: 4px; font-size: 0.7rem; max-height: 150px; overflow-y: auto; white-space: pre-wrap; word-break: break-all; }
 
 @media (max-width: 768px) {
-  .log-table th.name-col, .log-table td.name { display: none; }
+  .log-table th.op-col, .log-table td.op { display: none; }
   .log-table th.time-col, .log-table td.time { width: 60px; }
+  .log-table td.name { font-size: 0.6rem; word-break: break-word; }
 }
 
 .modal-overlay {
