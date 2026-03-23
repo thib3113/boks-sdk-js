@@ -39,13 +39,19 @@ function exportLogs() {
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(log, i) in boksStore.packetLogs" :key="i" :class="log.direction">
+          <tr v-for="(log, i) in boksStore.packetLogs" :key="i" :class="[log.direction, { 'PARSE_ERROR': !!log.error }]">
             <td class="time">{{ log.time }}</td>
             <td class="dir"><strong>{{ log.direction }}</strong></td>
             <td class="op"><code>{{ log.opcode }}</code></td>
-            <td class="name">{{ log.name }}</td>
+            <td class="name">
+              {{ log.name }}
+              <div v-if="log.error" class="error-msg">⚠️ {{ log.error }}</div>
+            </td>
             <td class="data">
               <pre v-if="log.rawData" class="json-data"><code>{{ JSON.stringify(log.rawData, (key, val) => key === 'opcode' ? undefined : val, 2) }}</code></pre>
+              <div v-else-if="log.hex" class="hex-data">
+                <code>{{ log.hex }}</code>
+              </div>
               <span v-else>-</span>
             </td>
           </tr>
@@ -86,6 +92,10 @@ function exportLogs() {
 .log-table td.data { width: 100%; }
 .TX { color: var(--vp-c-brand-1); background: rgba(59, 130, 246, 0.02); }
 .RX { color: var(--vp-c-green-1); background: rgba(16, 185, 129, 0.02); }
+.PARSE_ERROR { color: var(--vp-c-red-1); background: rgba(239, 68, 68, 0.05); }
+
+.error-msg { font-size: 0.65rem; color: var(--vp-c-red-1); margin-top: 0.2rem; font-weight: bold; }
+.hex-data { padding: 0.4rem; background: var(--vp-c-bg-alt); border-radius: 4px; font-size: 0.7rem; border: 1px dashed var(--vp-c-red-dimm); color: var(--vp-c-text-2); }
 
 .time-col { width: 85px; }
 .dir-col { width: 35px; }
@@ -108,7 +118,8 @@ function exportLogs() {
 .json-data { margin: 0; padding: 0.4rem; background: var(--vp-c-bg-alt); border-radius: 4px; font-size: 0.7rem; max-height: 150px; overflow-y: auto; white-space: pre-wrap; word-break: break-all; }
 
 @media (max-width: 768px) {
-  .log-table th.name-col, .log-table td.name { display: none; }
+  .log-table th.op-col, .log-table td.op { display: none; }
+  .log-table th.name-col, .log-table td.name { display: table-cell; }
   .log-table th.time-col, .log-table td.time { width: 60px; }
 }
 

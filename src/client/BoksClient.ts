@@ -76,13 +76,21 @@ interface TransactionContext {
 }
 
 /**
+ * High-level events emitted by the BoksClient.
+ */
+export type BoksClientEvents = {
+  /** Emitted when a received packet fails to parse correctly. */
+  parse_error: { data: Uint8Array; error: unknown };
+};
+
+/**
  * High-level client for interacting with a Boks device.
  * Focuses on protocol orchestration and transport abstraction.
  */
 export class BoksClient {
   private readonly transport: BoksTransport;
   private readonly logger?: BoksLogger;
-  public readonly event: BoksEventRouter<Record<string, never>> = new BoksEventRouter();
+  public readonly event: BoksEventRouter<BoksClientEvents> = new BoksEventRouter();
   private commandQueue: Promise<void> = Promise.resolve();
   private currentTransactionContext: TransactionContext | null = null;
 
@@ -308,6 +316,7 @@ export class BoksClient {
       }
     } catch (error) {
       this.log('error', 'error', { error });
+      this.event.emit('parse_error', { data, error });
     }
   }
 }

@@ -8,6 +8,7 @@ import RegenerationDemo from '../components/RegenerationDemo.vue';
 import OfflinePinDemo from '../components/OfflinePinDemo.vue';
 import HardwareHealthDemo from '../components/HardwareHealthDemo.vue';
 import BoksDashboard from '../components/BoksDashboard.vue';
+import NfcDemo from '../components/NfcDemo.vue';
 
 export default {
   extends: DefaultTheme,

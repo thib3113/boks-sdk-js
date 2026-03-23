@@ -12,34 +12,49 @@ export function isHexCode(code: number): boolean {
 
 /**
  * Validates a Boks PIN code.
- * A valid PIN must be exactly 6 characters long and only contain 0-9, A or B.
+ * A valid PIN must be exactly 6 characters long.
+ *
+ * Strict mode (default): only contain 0-9, A or B.
+ * ID mode (allowIds): also allows "M" or "U" at index 0, and "C" at index 1 (v4.6.0+ IDs).
  *
  * @param pin The PIN code to validate.
+ * @param allowIds Whether to allow v4.6.0 ID characters (M/U at 0, C at 1).
  * @throws BoksProtocolError if the PIN is invalid.
  */
-export function validatePinCode(pin: string): void {
-  // Optimization: Replacing Regex /^[0-9A-B]{6}$/.test() with a manual loop
-  // Yields ~2.3x performance speedup in V8 by avoiding Regex compilation/execution overhead.
+export function validatePinCode(pin: string, allowIds: boolean = false): void {
   if (typeof pin !== 'string' || pin.length !== 6) {
     throw new BoksProtocolError(
       BoksProtocolErrorId.INVALID_PIN_FORMAT,
       'PIN must be exactly 6 characters using only 0-9, A, and B',
       {
-        received: typeof pin === 'string' ? pin.length : /* v8 ignore next */ typeof pin,
+        received: typeof pin === 'string' ? pin.length : typeof pin,
         expected: 6
       }
     );
   }
+
+  const upper = pin.toUpperCase();
+  const isId = allowIds && (upper.startsWith('MC') || upper.startsWith('UC'));
+
   for (let i = 0; i < 6; i++) {
-    const code = pin.charCodeAt(i);
-    // '0'-'9' (48-57) or 'A'-'B' (65-66) or 'a'-'b' (97-98)
-    if ((code < 48 || code > 57) && code !== 65 && code !== 66 && code !== 97 && code !== 98) {
-      throw new BoksProtocolError(
-        BoksProtocolErrorId.INVALID_PIN_FORMAT,
-        'PIN must be exactly 6 characters using only 0-9, A, and B',
-        { received: pin, expected: BoksExpectedReason.PIN_CODE_FORMAT }
-      );
+    const code = upper.charCodeAt(i);
+    // Standard: '0'-'9' (48-57) or 'A'-'B' (65-66)
+    const isStandard = (code >= 48 && code <= 57) || code === 65 || code === 66;
+
+    if (isStandard) continue;
+
+    if (isId) {
+      // First char can be 'M' (77) or 'U' (85)
+      if (i === 0 && (code === 77 || code === 85)) continue;
+      // Second char can be 'C' (67)
+      if (i === 1 && code === 67) continue;
     }
+
+    throw new BoksProtocolError(
+      BoksProtocolErrorId.INVALID_PIN_FORMAT,
+      'PIN must be exactly 6 characters using only 0-9, A, and B',
+      { received: pin, expected: BoksExpectedReason.PIN_CODE_FORMAT }
+    );
   }
 }
 

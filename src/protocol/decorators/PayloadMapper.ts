@@ -32,6 +32,7 @@ export interface FieldDefinition {
   offset: number;
   length?: number; // Optional for hex_string and byte_array to consume remaining bytes
   bitIndex?: number; // Required for 'bit'
+  allowIds?: boolean;
 }
 
 /**
@@ -401,19 +402,29 @@ export class PayloadMapper {
           `;
           break;
         case 'pin_code':
-          // Inline validation for 6-char PIN: '0'-'9', 'A', 'B' (ASCII 48-57, 65-66)
+          // Inline validation for 6-char PIN
           fnBody += `
+             const p = payload.subarray(${o}, ${o} + 6);
+             const s = String.fromCharCode(p[0], p[1], p[2], p[3], p[4], p[5]).toUpperCase();
+             const isId = ${field.allowIds} && (s.startsWith('MC') || s.startsWith('UC'));
+
              for(let i=0; i<6; i++) {
-               const c = payload[${o} + i];
-               if ((c < 48 || c > 57) && c !== 65 && c !== 66 && c !== 97 && c !== 98) {
-                  throw new BoksProtocolError(
-                    BoksProtocolErrorId.INVALID_PIN_FORMAT,
-                    'Invalid PIN character inline',
-                    { field: '${prop}', received: c, expected: BoksExpectedReason.VALID_HEX_CHAR }
-                  );
+               const c = p[i];
+               const isStd = (c >= 48 && c <= 57) || c === 65 || c === 66;
+               if (isStd) continue;
+               
+               if (isId) {
+                 if (i === 0 && (c === 77 || c === 85)) continue;
+                 if (i === 1 && c === 67) continue;
                }
+
+               throw new BoksProtocolError(
+                 BoksProtocolErrorId.INVALID_PIN_FORMAT,
+                 'Invalid PIN character inline',
+                 { field: '${prop}', received: s, expected: BoksExpectedReason.VALID_HEX_CHAR }
+               );
              }
-             result['${prop}'] = String.fromCharCode(payload[${o}], payload[${o + 1}], payload[${o + 2}], payload[${o + 3}], payload[${o + 4}], payload[${o + 5}]).toUpperCase();
+             result['${prop}'] = s;
            `;
           break;
         case 'config_key':

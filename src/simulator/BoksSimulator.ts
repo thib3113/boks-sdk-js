@@ -1,4 +1,10 @@
-import { BoksOpcode, BoksCodeType, BOKS_UUIDS, EMPTY_BUFFER } from '../protocol/constants';
+import {
+  BoksOpcode,
+  BoksCodeType,
+  BOKS_UUIDS,
+  EMPTY_BUFFER,
+  DEBUG_UNKNOWN_OPCODE
+} from '../protocol/constants';
 import {
   calculateChecksum,
   readConfigKeyFromBuffer,
@@ -637,6 +643,13 @@ export class BoksHardwareSimulator {
   }
 
   /**
+   * Triggers an unknown opcode packet to test client resilience.
+   */
+  public triggerUnknownPacket(): void {
+    this.#subscribers.forEach((cb) => cb(this.createResponse(DEBUG_UNKNOWN_OPCODE, EMPTY_BUFFER)));
+  }
+
+  /**
    * Forces battery level (0-100).
    */
   public setBatteryLevel(level: number): void {
@@ -661,6 +674,19 @@ export class BoksHardwareSimulator {
   public addPinCode(code: string, type: BoksCodeType): void {
     this.#pinCodes.set(code, type);
     this.saveState('pinCodes');
+  }
+
+  /**
+   * Triggers an invalid PIN packet (e.g. with 'X' character) to test SDK error logging.
+   */
+  public triggerMalformedPinPacket(): void {
+    const payload = new Uint8Array(17);
+    // Fill with ASCII 'X' (88) which is invalid for PINs
+    for (let i = 0; i < 6; i++) {
+      payload[i] = 88;
+    }
+    // Emit a LOG_CODE_KEY_VALID (0x87) packet directly
+    this.emit(this.createResponse(BoksOpcode.LOG_CODE_KEY_VALID, payload));
   }
 
   /**

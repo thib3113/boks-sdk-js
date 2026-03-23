@@ -181,3 +181,5 @@ export const EMPTY_BUFFER = new Uint8Array(0);
 export enum BoksConfigType {
   LaPosteNfc = 1
 }
+
+export const DEBUG_UNKNOWN_OPCODE = 0xEE;

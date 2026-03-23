@@ -19,6 +19,8 @@ export interface BoksPacketLog {
   length: number;
   data?: any;
   rawData?: any;
+  error?: string;
+  hex?: string;
 }
 
 export const boksStore = reactive({
@@ -102,9 +104,12 @@ export const boksStore = reactive({
   exportLogs() {
     if (typeof document === 'undefined') return;
     const exportedLogs = this.packetLogs.map(log => {
-      const packetData = JSON.parse(JSON.stringify(log.rawData));
-      if (packetData && typeof packetData === 'object') {
-        delete packetData.opcode;
+      let packetData = undefined;
+      if (log.rawData) {
+        packetData = JSON.parse(JSON.stringify(log.rawData));
+        if (packetData && typeof packetData === 'object') {
+          delete packetData.opcode;
+        }
       }
       return {
         time: log.time,
@@ -112,6 +117,8 @@ export const boksStore = reactive({
         opcode: log.opcode,
         name: log.name,
         length: log.length,
+        error: log.error,
+        hex: log.hex,
         data: packetData
       };
     });
@@ -153,6 +160,21 @@ export const boksStore = reactive({
 
   },
 
+  logPacketError(data: Uint8Array, error: any) {
+    const opcode = data.length > 0 ? data[0] : 0;
+    const hex = Array.from(data).map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
+    
+    this.packetLogs.unshift({
+      time: new Date().toLocaleTimeString(),
+      direction: 'RX',
+      opcode: `0x${opcode.toString(16).padStart(2, "0").toUpperCase()}`,
+      name: `PARSING_ERROR (${this.getOpcodeName(opcode)})`,
+      length: data.length,
+      error: error.message || String(error),
+      hex: hex
+    });
+  },
+
   async connect() {
     this.isConnecting = true;
     try {
@@ -170,6 +192,10 @@ export const boksStore = reactive({
           this.logPacket(dir, p.opcode, p.rawPayload.length, p);
         });
 
+        client.event.on('parse_error', ({ data, error }) => {
+          this.logPacketError(data, error);
+        });
+
         await this.controller.connect();
         this.deviceName = 'Boks Simulator';
         // Auto-set the active master key to the simulator's default so ConfigKey pre-fills
@@ -185,6 +211,10 @@ export const boksStore = reactive({
 
         client.on("*", (p, dir) => {
           this.logPacket(dir, p.opcode, p.rawPayload.length, p);
+        });
+
+        client.event.on('parse_error', ({ data, error }) => {
+          this.logPacketError(data, error);
         });
 
         await this.controller.connect();

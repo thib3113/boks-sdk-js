@@ -96,12 +96,12 @@ function saveSimEdit() {
 
 <template>
   <div class="config-section">
-    <div class="section-header" @click="showSimControls = !showSimControls">
+    <!-- DEVICE STATUS (Always visible) -->
+    <div class="section-header static">
       <h4>{{ t.logger.deviceStatus }}</h4>
-      <span class="mobile-only">{{ showSimControls ? '▼' : '▲' }}</span>
     </div>
 
-    <div class="config-body" v-if="showSimControls">
+    <div class="config-body">
       <div class="config-grid">
         <!-- Info for both Real and Sim -->
         <div class="config-item">
@@ -109,28 +109,6 @@ function saveSimEdit() {
           <input v-if="boksStore.useSimulator" type="range" min="0" max="100" v-model.number="simState.batteryLevel" @input="boksStore.simulator?.setBatteryLevel(simState.batteryLevel)">
           <div v-else class="gauge-mini"><div class="gauge-fill" :style="{ width: boksStore.batteryLevel + '%' }"></div></div>
         </div>
-
-        <!-- Simulator-only Actions -->
-        <template v-if="boksStore.useSimulator">
-          <div class="config-item row">
-            <button @click="boksStore.simulator?.setDoorStatus(!simState.isOpen)" :class="['ctrl-btn', { active: simState.isOpen }]" data-testid="sim-toggle-door-button">
-              {{ simState.isOpen ? t.logger.closeDoor : t.logger.openDoor }}
-            </button>
-            <button @click="boksStore.simulator?.setChaosMode(!simState.chaosMode)" :class="['ctrl-btn', { warning: simState.chaosMode }]" data-testid="sim-toggle-chaos-button">
-              {{ simState.chaosMode ? t.logger.chaosMode : t.logger.normalMode }}
-            </button>
-          </div>
-
-          <div class="sub-title">{{ t.logger.triggerEvents }}</div>
-          <div class="config-item row tri">
-            <button @click="triggerRealisticOpen('keypad')" class="small-btn" data-testid="sim-trigger-keypad">{{ t.logger.keypad }}</button>
-            <button @click="triggerRealisticOpen('key')" class="small-btn" data-testid="sim-trigger-key">{{ t.logger.key }}</button>
-            <button @click="triggerRealisticOpen('nfc')" class="small-btn" data-testid="sim-trigger-nfc">{{ t.logger.nfc }}</button>
-          </div>
-          <div class="config-item row">
-            <button @click="triggerUnknownPacket()" class="ctrl-btn" data-testid="sim-trigger-unknown" :title="t.logger.triggerUnknownTitle">{{ t.logger.triggerUnknown }}</button>
-          </div>
-        </template>
 
         <!-- Metadata for both -->
         <div class="debug-info">
@@ -154,6 +132,38 @@ function saveSimEdit() {
         </div>
       </div>
     </div>
+
+    <!-- SIMULATOR CONTROLS (Collapsable) -->
+    <template v-if="boksStore.useSimulator">
+      <div class="section-header" @click="showSimControls = !showSimControls">
+        <h4>{{ t.logger.simulatorConfig }}</h4>
+        <span>{{ showSimControls ? '▼' : '▲' }}</span>
+      </div>
+
+      <div class="config-body no-top-padding" v-if="showSimControls">
+        <div class="config-grid">
+          <div class="config-item row">
+            <button @click="boksStore.simulator?.setDoorStatus(!simState.isOpen)" :class="['ctrl-btn', { active: simState.isOpen }]" data-testid="sim-toggle-door-button">
+              {{ simState.isOpen ? t.logger.closeDoor : t.logger.openDoor }}
+            </button>
+            <button @click="boksStore.simulator?.setChaosMode(!simState.chaosMode)" :class="['ctrl-btn', { warning: simState.chaosMode }]" data-testid="sim-toggle-chaos-button">
+              {{ simState.chaosMode ? t.logger.chaosMode : t.logger.normalMode }}
+            </button>
+          </div>
+
+          <div class="sub-title">{{ t.logger.triggerEvents }}</div>
+          <div class="config-item row tri">
+            <button @click="triggerRealisticOpen('keypad')" class="small-btn" data-testid="sim-trigger-keypad">{{ t.logger.keypad }}</button>
+            <button @click="triggerRealisticOpen('key')" class="small-btn" data-testid="sim-trigger-key">{{ t.logger.key }}</button>
+            <button @click="triggerRealisticOpen('nfc')" class="small-btn" data-testid="sim-trigger-nfc">{{ t.logger.nfc }}</button>
+          </div>
+          <div class="config-item row">
+            <button @click="boksStore.simulator?.triggerUnknownPacket()" class="ctrl-btn" data-testid="sim-trigger-unknown" :title="t.logger.triggerUnknownTitle">{{ t.logger.triggerUnknown }}</button>
+            <button @click="boksStore.simulator?.triggerMalformedPinPacket()" class="ctrl-btn" style="border-color: var(--vp-c-red-1); color: var(--vp-c-red-1);" title="Trigger a parsing error (invalid PIN chars)">Trigger Error</button>
+          </div>
+        </div>
+      </div>
+    </template>
 
     <!-- SIMULATOR EDIT MODAL -->
     <div v-if="showEditSim" class="modal-overlay">
@@ -185,10 +195,12 @@ function saveSimEdit() {
 
 <style scoped>
 .section-header { padding: 0.4rem 1rem; background: var(--vp-c-bg); border-bottom: 1px solid var(--vp-c-divider); display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+.section-header.static { cursor: default; background: var(--vp-c-bg-soft); }
 .section-header h4 { margin: 0; font-size: 0.7rem; text-transform: uppercase; color: var(--vp-c-text-3); letter-spacing: 0.5px; }
 
 .config-section { border-right: 1px solid var(--vp-c-divider); background: var(--vp-c-bg-soft); overflow-y: auto; height: 100%; }
 .config-body { padding: 1rem; }
+.config-body.no-top-padding { padding-top: 0.5rem; }
 .config-grid { display: flex; flex-direction: column; gap: 0.75rem; }
 .config-item label { font-size: 0.75rem; margin-bottom: 0.2rem; display: block; font-weight: 600; }
 .config-item input[type="range"] { width: 100%; margin: 0.25rem 0; }

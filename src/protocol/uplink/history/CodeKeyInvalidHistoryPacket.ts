@@ -12,7 +12,7 @@ export interface CodeKeyInvalidHistoryPacketProps extends BoksHistoryEventProps 
 export class CodeKeyInvalidHistoryPacket extends BoksHistoryEvent {
   static readonly opcode = BoksOpcode.LOG_CODE_KEY_INVALID;
 
-  @PayloadPinCode(3)
+  @PayloadPinCode(3, { allowIds: true })
   public accessor code!: string;
 
   constructor(props: CodeKeyInvalidHistoryPacketProps, rawPayload?: Uint8Array) {

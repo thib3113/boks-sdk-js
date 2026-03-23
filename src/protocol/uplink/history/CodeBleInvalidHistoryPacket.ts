@@ -13,7 +13,7 @@ export interface CodeBleInvalidHistoryPacketProps extends BoksHistoryEventProps 
 export class CodeBleInvalidHistoryPacket extends BoksHistoryEvent {
   static readonly opcode = BoksOpcode.LOG_CODE_BLE_INVALID;
 
-  @PayloadPinCode(3)
+  @PayloadPinCode(3, { allowIds: true })
   public accessor code!: string;
 
   @PayloadMacAddress(11)

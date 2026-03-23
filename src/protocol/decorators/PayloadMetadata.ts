@@ -25,6 +25,7 @@ export interface FieldDefinition {
   offset: number;
   length?: number;
   bitIndex?: number;
+  allowIds?: boolean;
 }
 
 export type PayloadConstructor = abstract new (...args: any[]) => any;

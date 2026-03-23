@@ -13,7 +13,7 @@ export interface CodeBleValidHistoryPacketProps extends BoksHistoryEventProps {
 export class CodeBleValidHistoryPacket extends BoksHistoryEvent {
   static readonly opcode = BoksOpcode.LOG_CODE_BLE_VALID;
 
-  @PayloadPinCode(3)
+  @PayloadPinCode(3, { allowIds: true })
   public accessor code!: string;
 
   @PayloadMacAddress(11)
