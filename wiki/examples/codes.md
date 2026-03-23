@@ -12,7 +12,7 @@ import { BoksController, BoksOpcode } from '@thib3113/boks-sdk';
 // ... connect to device with administrative credentials (Config Key or Master Key) ...
 
 try {
-  const masterCodeIndex = 0; // Slot index (0-3)
+  const masterCodeIndex = 0; // Slot index (0-255)
   const masterCodePin = '000000';
 
   // 1. Create a Master Code

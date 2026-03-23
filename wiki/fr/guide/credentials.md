@@ -17,7 +17,7 @@ Le moyen le plus simple de récupérer vos clés est d'interroger l'API Cloud of
 Notez que Boks exige que les comptes soient "migrés" vers leur nouveau système. Si votre compte n'est pas migré ou est bloqué dans l'application officielle, l'API peut retourner des clés vides.
 
 ### Utiliser un script de récupération
-Vous pouvez utiliser un script simple pour récupérer vos clés. L'outil recommandé est le script [get_config_key.py](https://github.com/thib3113/ha-boks/blob/main/scripts/get_config_key.py) de l'intégration Home Assistant. Il va :
+Vous pouvez utiliser un script simple pour récupérer vos clés. L'outil recommandé est le script [get_config_key.py](https://github.com/thib3113/ha-boks/blob/main/scripts/get_config_key.py). Il va :
 1. Se connecter à votre compte Boks via Google Identity.
 2. Lister tous les appareils associés.
 3. Afficher leur **ConfigKey** et leur **adresse MAC** respectives.

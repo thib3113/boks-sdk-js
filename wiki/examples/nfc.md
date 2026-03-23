@@ -27,7 +27,7 @@ try {
     // 2. Register the scanned tag
     await scanResult.register();
     // Or you can do it directly with:
-    // await controller.registerNFCTag(scanResult.tagId);
+    // await controller.registerNfcTag(scanResult.tagId);
 
     console.log(`Tag ${scanResult.tagId} successfully registered to Boks!`);
   } else {
@@ -48,7 +48,7 @@ try {
 
   // Remove the tag from the Boks device
   console.log(`Unregistering NFC tag: ${tagToRemove}`);
-  await controller.unregisterNFCTag(tagToRemove);
+  await controller.unregisterNfcTag(tagToRemove);
 
   console.log(`Tag ${tagToRemove} has been successfully removed.`);
 

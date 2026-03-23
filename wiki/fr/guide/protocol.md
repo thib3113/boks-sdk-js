@@ -35,7 +35,7 @@ Tous les paquets suivent un format binaire cohérent :
 ### 1. Gestion des Codes
 L'appareil gère trois types distincts de codes d'accès :
 
-*   **Codes permanents** : PINs stockés dans 5 emplacements dédiés (0-4).
+*   **Codes permanents** : PINs permanents. Par défaut, la routine d'initialisation génère 5 codes (indices 0 à 4). Cependant, le protocole supporte formellement la création de jusqu'à 256 codes distincts (indices 0 à 255) sans aucune restriction interne. *Particularité connue : Le firmware n'empêche pas de créer plusieurs codes sur le même index. Si cela se produit, une commande de suppression ne retirera qu'un seul code à la fois (systématiquement le plus ancien créé, car la base de données interne itère séquentiellement). Il faudra envoyer la commande plusieurs fois pour vider l'index.*
 *   **Single-Use Codes** : PINs temporaires qui expirent immédiatement après une ouverture réussie.
 *   **Multi-Use Codes** : PINs temporaires réutilisables. *Note : La génération de ces codes est désactivée dans les versions de firmware > 4.3.3.*
 
@@ -84,4 +84,11 @@ L'enregistrement d'un tag NFC est un processus de "Découverte" en deux étapes 
 | `0x81` | VALID_PIN | La porte s'ouvre. |
 | `0x82` | INVALID_PIN | Accès refusé. |
 | `0x84` | DOOR_STATUS | `0x00` (Fermée) / `0x01` (Ouverte). |
-| `0xC3` | CODES_COUNT | `[Master(2)] [Autres(2)]` (Big Endian). |
+| `0xC3` | CODES_COUNT | `[Master(2)] [Others(2)]` (Big Endian). |
+
+---
+
+## Fonctionnalités Expérimentales (Balance)
+::: warning FONCTIONNALITÉ THÉORIQUE
+Les opcodes liés à la balance (`0x50` à `0x62`) sont basés sur l'analyse du firmware et n'ont **pas été testés sur du matériel réel**. Ces fonctions permettent l'appairage d'une Boks Scale, le tarage et la récupération du poids en temps réel, mais leur stabilité est inconnue.
+:::

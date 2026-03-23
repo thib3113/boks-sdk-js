@@ -12,7 +12,7 @@ import { BoksController, BoksOpcode } from '@thib3113/boks-sdk';
 // ... se connecter à l'appareil avec des identifiants administratifs (Clé de Config ou Clé Maître) ...
 
 try {
-  const masterCodeIndex = 0; // Index de l'emplacement (0-3)
+  const masterCodeIndex = 0; // Index de l'emplacement (0-255)
   const masterCodePin = '000000';
 
   // 1. Créer un Code Maître

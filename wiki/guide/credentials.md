@@ -17,7 +17,7 @@ The easiest way to retrieve your keys is to query the official Boks Cloud API. S
 Note that Boks requires accounts to be "migrated" to their new system. If your account is not migrated or is blocked in the official app, the API may return empty keys.
 
 ### Using a retrieval script
-You can use a simple script to fetch your keys. The recommended tool is the [get_config_key.py](https://github.com/thib3113/ha-boks/blob/main/scripts/get_config_key.py) script from the Home Assistant integration. It will:
+You can use a simple script to fetch your keys. The recommended tool is the [get_config_key.py](https://github.com/thib3113/ha-boks/blob/main/scripts/get_config_key.py) script. It will:
 1. Log into your Boks account via Google Identity.
 2. List all associated devices.
 3. Display their respective **ConfigKey** and **MAC address**.

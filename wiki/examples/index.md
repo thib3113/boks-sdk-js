@@ -14,6 +14,8 @@ The connection state and simulated data are shared across all pages in this sect
 - [**Seed Regeneration**](./regeneration): Replace the current Master Key with a known one to manage offline codes.
 - [**Open Door**](./open-door): Send a PIN code to unlock the device.
 - [**History Sync**](./history): Download and parse the internal event log.
+- [**Offline PIN Generation**](./offline-pins): Generate access codes locally using your Master Key.
+- [**NFC Management**](./nfc): Scan and register NFC tags.
 - [**Battery & Hardware**](./battery): Read battery levels and detailed statistics.
 
 <BoksDashboard />

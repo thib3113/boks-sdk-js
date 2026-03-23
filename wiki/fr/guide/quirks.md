@@ -35,3 +35,11 @@ Le champ d'âge sur 3 octets dans les événements d'historique (flux `0x03`) es
 Comme indiqué dans le [Guide du Protocole](./protocol), les versions de firmware strictement supérieures à **4.3.3** ont désactivé la génération de nouveaux codes Multi-Usages.
 
 - **La Particularité** : Envoyer un `CREATE_MULTI_USE_CODE` (`0x13`) sur ces versions retournera une erreur, même si la charge utile et l'authentification sont correctes.
+
+## 6. Suppression Multiple de Codes à Usage Unique (> 3 326 codes)
+
+Il existe un bug de gestion de mémoire dans le firmware Boks lié au stockage des codes à usage unique.
+
+- **La Particularité** : Habituellement, tenter de supprimer un PIN déjà supprimé renvoie une erreur. Cependant, si la Boks stocke **plus de 3 326 codes à usage unique**, elle permet de supprimer plusieurs fois le même code valide avec succès.
+- **Conséquence** : Bien que rare en usage normal, ce comportement suggère un dépassement interne ou un suivi d'index incorrect qui pourrait potentiellement affecter l'intégrité d'autres codes stockés.
+

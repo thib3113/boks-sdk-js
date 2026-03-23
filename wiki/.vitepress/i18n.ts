@@ -25,6 +25,22 @@ export const i18n = {
       sponsorLink: 'Become a Sponsor on GitHub',
     },
 
+    offlinePins: {
+      title: 'Offline PIN Generation',
+      desc: 'Generate valid PIN codes locally using your Master Key. This allows you to create access codes even if the Boks cloud is down.',
+      masterKeyLabel: 'Master Key (64 hex chars)',
+      typeLabel: 'Code Type',
+      indexLabel: 'Index',
+      generateBtn: 'Generate PIN',
+      resultLabel: 'Generated PIN:',
+      copyBtn: 'Copy',
+      types: {
+        master: 'Master (Permanent)',
+        'single-use': 'Single-Use',
+        'multi-use': 'Multi-Use'
+      }
+    },
+
     global: {
       notConnectedBanner: 'To use these interactive examples, start the <strong>Simulator</strong> or <strong>Connect</strong> a real device using the dashboard at the bottom of your screen.',
       notConnectedWarning: '⚠️ <strong>Not Connected</strong>. Please use the connection panel at the bottom of the page.',
@@ -166,6 +182,22 @@ export const i18n = {
       sponsorTitle: 'Soutenez ce développement',
       sponsorText: 'L\'initialisation matérielle est une fonctionnalité critique que nous ne pouvons actuellement pas tester sur de vrais appareils. Vos dons nous aident à acheter du matériel pour valider ces fonctionnalités expérimentales en toute sécurité.',
       sponsorLink: 'Devenir un Sponsor sur GitHub',
+    },
+
+    offlinePins: {
+      title: 'Génération de PIN Hors-Ligne',
+      desc: 'Générez des codes PIN valides localement en utilisant votre Clé Maître. Cela vous permet de créer des codes d\'accès même si le cloud Boks est indisponible.',
+      masterKeyLabel: 'Clé Maître (64 caractères hex)',
+      typeLabel: 'Type de Code',
+      indexLabel: 'Index',
+      generateBtn: 'Générer le PIN',
+      resultLabel: 'PIN Généré :',
+      copyBtn: 'Copier',
+      types: {
+        master: 'Master (Permanent)',
+        'single-use': 'Usage Unique',
+        'multi-use': 'Multi-Usage'
+      }
     },
 
     global: {

@@ -35,3 +35,11 @@ The 3-byte age field in history events (`0x03` burst) is calculated by the firmw
 As noted in the [Protocol Guide](./protocol), firmware versions strictly greater than **4.3.3** have disabled the generation of new Multi-Use codes.
 
 - **The Quirk**: Sending a `CREATE_MULTI_USE_CODE` (`0x13`) on these versions will return an error, even if the payload and authentication are correct.
+
+## 6. Multiple Deletion of Single-Use Codes (> 3326 codes)
+
+There is a memory management bug in the Boks firmware related to the storage of single-use codes.
+
+- **The Quirk**: Usually, attempting to delete an already deleted PIN returns an error. However, if the Boks stores **more than 3,326 single-use codes**, it allows the same valid code to be deleted multiple times successfully.
+- **Consequence**: While rare in normal use, this behavior suggests an internal overflow or incorrect index tracking that could potentially affect the integrity of other stored codes.
+

@@ -48,6 +48,8 @@ export default defineConfig({
               text: 'Introduction',
               items: [
                 { text: 'Démarrage', link: '/fr/guide/' },
+                { text: 'Créer un Badge Utilisateur', link: '/fr/guide/create_user_tag' },
+                { text: 'Mise à jour (DFU)', link: '/fr/guide/dfu' },
                 { text: 'Sécurité & Dépannage', link: '/fr/guide/safety' },
                 { text: 'Récupérer ses Clés', link: '/fr/guide/credentials' },
                 { text: 'Glossaire', link: '/fr/guide/glossary' }
@@ -72,6 +74,7 @@ export default defineConfig({
         { text: 'Régénération Seed', link: '/fr/examples/regeneration' },
                 { text: 'Démo Ouverture', link: '/fr/examples/open-door' },
                 { text: 'Sync Historique', link: '/fr/examples/history' },
+                { text: 'Génération PIN Offline', link: '/fr/examples/offline-pins' },
                 { text: 'Gestion Codes', link: '/fr/examples/codes' },
                 { text: 'Gestion NFC', link: '/fr/examples/nfc' },
                 { text: 'Batterie & Matériel', link: '/fr/examples/battery' }
@@ -118,6 +121,8 @@ export default defineConfig({
           text: 'Introduction',
           items: [
             { text: 'Getting Started', link: '/guide/' },
+            { text: 'Create User Tag', link: '/guide/create_user_tag' },
+            { text: 'Firmware Update (DFU)', link: '/guide/dfu' },
             { text: 'Safety & Troubleshooting', link: '/guide/safety' },
             { text: 'Retrieving Credentials', link: '/guide/credentials' },
             { text: 'Glossary', link: '/guide/glossary' }
@@ -142,6 +147,7 @@ export default defineConfig({
         { text: 'Seed Regeneration', link: '/examples/regeneration' },
             { text: 'Open Door Demo', link: '/examples/open-door' },
             { text: 'History Sync', link: '/examples/history' },
+            { text: 'Offline PIN Generation', link: '/examples/offline-pins' },
             { text: 'Code Management', link: '/examples/codes' },
             { text: 'NFC Management', link: '/examples/nfc' },
             { text: 'Battery & Hardware', link: '/examples/battery' }
