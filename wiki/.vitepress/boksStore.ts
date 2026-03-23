@@ -46,7 +46,7 @@ export const boksStore = reactive({
   simulator: shallowRef<BoksHardwareSimulator | null>(null),
 
   getOpcodeName(opcode: number): string {
-    return BoksOpcode[opcode] || 'UNKNOWN_OPCODE';
+    return BoksOpcode[opcode] || `UNKNOWN_${opcode.toString(16).padStart(2, '0').toUpperCase()}`;
   },
 
   deriveConfigKey(masterKey: string): string {

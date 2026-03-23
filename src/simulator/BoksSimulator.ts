@@ -914,6 +914,17 @@ export class BoksHardwareSimulator {
   }
   /* v8 ignore stop */
 
+  /**
+   * Forces the simulator to emit an unknown packet to test resilience.
+   * By default, it sends an arbitrary payload with opcode 0xFF.
+   */
+  emitUnknownPacket(
+    opcode = 255,
+    payload: Uint8Array = new Uint8Array([222, 173, 190, 239])
+  ): void {
+    this.emit(this.createResponse(opcode, payload));
+  }
+
   private emit(data: Uint8Array): void {
     if (this.shouldDropPacket()) {
       return;
