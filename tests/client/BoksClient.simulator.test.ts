@@ -26,9 +26,10 @@ describe('BoksClient with Simulator', () => {
     expect(battery).toBeLessThanOrEqual(100);
   });
 
-  it('should fetch battery stats (returns undefined as SimulatorTransport doesnt support it yet)', async () => {
+  it('should fetch battery stats', async () => {
     const stats = await client.getBatteryStats();
-    expect(stats).toBeUndefined();
+    expect(stats).toBeDefined();
+    expect(stats?.temperature).toBe(25);
   });
 
   it('should read characteristic directly', async () => {
