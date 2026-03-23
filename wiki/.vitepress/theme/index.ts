@@ -16,17 +16,28 @@ export default {
       const isFrench = navigator.language.startsWith('fr');
       const path = window.location.pathname;
       const base = import.meta.env.BASE_URL || '/';
-      
-      console.log('[Redirection Debug]', { lang: navigator.language, isFrench, path, base });
-      
-      // Normalize paths to ensure trailing slash consistency for comparison
-      const normalizedPath = path.endsWith('/') ? path : path + '/';
-      const normalizedBase = base.endsWith('/') ? base : base + '/';
 
-      if (isFrench && (normalizedPath === normalizedBase || normalizedPath === normalizedBase + 'index.html/')) {
-        const target = normalizedBase + 'fr/';
-        console.log(`[Redirection Debug] Redirecting to ${target}`);
-        window.location.replace(target);
+      // Normalize paths for comparison (remove trailing slashes)
+      const nPath = path.replace(/\/$/, '') || '/';
+      const nBase = base.replace(/\/$/, '') || '/';
+
+      console.log('[Redirection Debug]', { 
+        lang: navigator.language, 
+        isFrench, 
+        path, 
+        nPath, 
+        base, 
+        nBase,
+        isAlreadyFr: path.includes('/fr/'),
+        isRoot: nPath === nBase || nPath === nBase + '/index.html'
+      });
+
+      if (isFrench && !path.includes('/fr/')) {
+        if (nPath === nBase || nPath === nBase + '/index.html') {
+          const target = (nBase === '/' ? '' : nBase) + '/fr/';
+          console.log(`[Redirection Debug] Redirecting to ${target}`);
+          window.location.replace(target);
+        }
       }
     }
 
