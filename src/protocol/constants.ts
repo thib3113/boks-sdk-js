@@ -168,6 +168,8 @@ export const PIN_ALGO_CONFIG = {
 export const CHECKSUM_MASK = 0xFF;
 export const INVALID_BYTE = 0xFF;
 
+export const PACKET_HEADER_SIZE = 3; // Opcode (1) + Length (1) + Checksum (1)
+
 export const MAX_MASTER_CODE_INDEX = 255;
 
 export enum BoksCodeType {

@@ -17,10 +17,9 @@ describe('NotifyCodesCountPacket', () => {
   it('should match fixed hexadecimal reference encoding', () => {
     const packet = new NotifyCodesCountPacket({ masterCount: 10, otherCount: 20 });
     const encoded = packet.encode();
-    // Opcode 0xC3 (195), Len 4, master 10 (000A), other 20 (0014), Checksum 0xEB (195+4+10+20=229=0xE5 ? Wait)
-    // 195+4+0+10+0+20 = 229 (0xE5)
-    // Re-calculate: 195+4+10+20 = 229. 229 % 256 = 229 (0xE5).
-    expect(bytesToHex(encoded)).toBe('C304000A0014E5');
+    // Opcode 0xC3 (195), Total Length 7, master 10 (000A), other 20 (0014), Checksum 0xE8
+    // 195+7+0+10+0+20 = 232 (0xE8)
+    expect(bytesToHex(encoded)).toBe('C307000A0014E8');
   });
 
   it('should output only mapped payload properties and opcode via toJSON', () => {

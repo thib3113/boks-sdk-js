@@ -58,6 +58,7 @@ import { NfcRegisteringHistoryPacket } from './uplink/history/NfcRegisteringHist
 
 import { calculateChecksum } from '@/utils/converters';
 import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';
+import { PACKET_HEADER_SIZE } from '@/protocol/constants';
 import { freeze } from '@/utils/security';
 
 /**
@@ -158,31 +159,38 @@ export class BoksPacketFactory {
       context: { opcode: number; expected: number; received: number }
     ) => void
   ): BoksPacket {
-    if (data.length < 3) {
+    if (data.length < PACKET_HEADER_SIZE) {
       throw new BoksProtocolError(
         BoksProtocolErrorId.INVALID_PAYLOAD_LENGTH,
-        'Packet length too short (needs at least 3 bytes)',
-        { received: data.length, expected: 3 }
+        `Packet length too short (needs at least ${PACKET_HEADER_SIZE} bytes)`,
+        { received: data.length, expected: PACKET_HEADER_SIZE }
       );
     }
 
     const opcode = data[0];
-    const length = data[1];
+    const lengthByte = data[1];
+    const Ctor = this.getConstructor(opcode);
+    const lengthIncludesHeader = Ctor?.lengthIncludesHeader ?? false;
 
-    // Ensure we have enough data (Opcode + Length + Payload + Checksum)
-    if (data.length < length + 3) {
+    // Standard: length byte = payload size. Total = length + 3 (Opcode, Len, CRC)
+    // Extended (0xC3): length byte = total size. Total = length
+    const expectedTotalLength = lengthIncludesHeader ? lengthByte : lengthByte + PACKET_HEADER_SIZE;
+
+    // Ensure we have enough data
+    if (data.length < expectedTotalLength) {
       throw new BoksProtocolError(
         BoksProtocolErrorId.INVALID_PAYLOAD_LENGTH,
         'Packet length too short based on length byte',
-        { received: data.length, expected: length + 3 }
+        { received: data.length, expected: expectedTotalLength }
       );
     }
 
-    const payload = data.subarray(2, 2 + length);
-    const checksum = data[length + 2];
+    const payloadLength = lengthIncludesHeader ? lengthByte - PACKET_HEADER_SIZE : lengthByte;
+    const payload = data.subarray(2, 2 + payloadLength);
+    const checksum = data[expectedTotalLength - 1];
 
     // Validate checksum
-    const computedChecksum = calculateChecksum(data, 0, length + 2);
+    const computedChecksum = calculateChecksum(data, 0, expectedTotalLength - 1);
     if (checksum !== computedChecksum) {
       if (logger) {
         logger('warn', 'checksum_error', {

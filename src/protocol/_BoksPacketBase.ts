@@ -1,4 +1,4 @@
-import { BoksOpcode, EMPTY_BUFFER } from '@/protocol/constants';
+import { BoksOpcode, EMPTY_BUFFER, PACKET_HEADER_SIZE } from '@/protocol/constants';
 import { PayloadMapper } from '@/protocol/decorators';
 import { calculateChecksum } from '@/utils/converters';
 import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';
@@ -11,6 +11,7 @@ export type BoksPacketConstructor<T extends BoksPacket = BoksPacket> = {
   new (...args: any[]): T;
   readonly opcode: BoksOpcode;
   fromPayload(payload: Uint8Array): T;
+  readonly lengthIncludesHeader?: boolean;
 };
 
 /**
@@ -74,9 +75,12 @@ export abstract class BoksPacket {
 
   encode(): Uint8Array {
     const payload = this.toPayload();
-    const packet = new Uint8Array(payload.length + 3);
+    const lengthIncludesHeader =
+      (this.constructor as unknown as BoksPacketConstructor).lengthIncludesHeader ?? false;
+
+    const packet = new Uint8Array(payload.length + PACKET_HEADER_SIZE);
     packet[0] = this.opcode;
-    packet[1] = payload.length;
+    packet[1] = lengthIncludesHeader ? payload.length + PACKET_HEADER_SIZE : payload.length;
     packet.set(payload, 2);
     packet[packet.length - 1] = calculateChecksum(packet, 0, packet.length - 1);
     return packet;
