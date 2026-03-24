@@ -1,4 +1,4 @@
-import { PayloadMapper, PayloadUint16 } from '@/protocol/decorators';
+import { PayloadMapper, PayloadUint16, PacketDescriptor } from '@/protocol/decorators';
 import { BoksRXPacket } from '@/protocol/uplink/_BoksRXPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
 
@@ -10,6 +10,7 @@ export interface NotifyCodesCountPacketProps {
   otherCount: number;
 }
 
+@PacketDescriptor({ lengthIncludesHeader: true })
 export class NotifyCodesCountPacket extends BoksRXPacket {
   static readonly opcode = BoksOpcode.NOTIFY_CODES_COUNT;
 

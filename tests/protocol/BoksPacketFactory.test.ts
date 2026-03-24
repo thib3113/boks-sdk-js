@@ -369,10 +369,13 @@ describe('BoksPacketFactory', () => {
 
     it.each(testCases)('should create $name from payload', ({ class: Ctor, payload }) => {
       const opcode = (Ctor as any).opcode;
-      const length = payload.length;
-      const dataWithoutChecksum = new Uint8Array(2 + length);
+      const lengthIncludesHeader = (Ctor as any).lengthIncludesHeader ?? false;
+      const payloadLength = payload.length;
+      const lengthByte = lengthIncludesHeader ? payloadLength + 3 : payloadLength;
+
+      const dataWithoutChecksum = new Uint8Array(2 + payloadLength);
       dataWithoutChecksum[0] = opcode;
-      dataWithoutChecksum[1] = length;
+      dataWithoutChecksum[1] = lengthByte;
       dataWithoutChecksum.set(payload, 2);
 
       const checksum = calculateChecksum(dataWithoutChecksum);
