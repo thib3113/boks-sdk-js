@@ -8,7 +8,7 @@ describe('CodeBleValidHistoryPacket', () => {
     // Note: The MAC bytes are sent in little-endian over the air and must be parsed accordingly.
     // To yield '112233445566', the payload should have [0x66, 0x55, 0x44, 0x33, 0x22, 0x11] at offset 11.
     const payload = new Uint8Array([0, 0, 10, 49, 50, 51, 52, 53, 54, 0, 0, 0x66, 0x55, 0x44, 0x33, 0x22, 0x11]);
-    const packet = CodeBleValidHistoryPacket.fromPayload(payload);
+    const packet = CodeBleValidHistoryPacket.fromRaw(payload);
 
     expect(packet.opcode).toBe(BoksOpcode.LOG_CODE_BLE_VALID);
     expect(packet.age).toBe(10);
@@ -28,14 +28,14 @@ describe('CodeBleValidHistoryPacket', () => {
 
   it('should cover the code branch where length is strictly 17', () => {
     const payload = new Uint8Array([0, 0, 3, 49, 50, 51, 52, 53, 54, 0, 0, 53, 54, 55, 56, 57, 48]);
-    const packet = CodeBleValidHistoryPacket.fromPayload(payload);
+    const packet = CodeBleValidHistoryPacket.fromRaw(payload);
     // 53, 54, 55, 56, 57, 48 (which is 0x35, 0x36, 0x37, 0x38, 0x39, 0x30)
     // Becomes MAC: 303938373635
     expect(packet.connectedMac).toBe('303938373635');
   });
 
   it('should output only mapped payload properties and opcode via toJSON', () => {
-    const packet = CodeBleValidHistoryPacket.fromPayload(new Uint8Array([0, 0, 10, 49, 50, 51, 52, 53, 54, 0, 0, 0x66, 0x55, 0x44, 0x33, 0x22, 0x11]));
+    const packet = CodeBleValidHistoryPacket.fromRaw(new Uint8Array([0, 0, 10, 49, 50, 51, 52, 53, 54, 0, 0, 0x66, 0x55, 0x44, 0x33, 0x22, 0x11]));
     const json = packet.toJSON();
     expect(json).toStrictEqual({
         "age": 10,

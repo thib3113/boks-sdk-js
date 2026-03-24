@@ -12,11 +12,11 @@ export class ScaleBondPacket extends BoksPacket {
   }
   constructor(
     public readonly data: Uint8Array,
-    rawPayload?: Uint8Array
+    raw?: Uint8Array
   ) {
-    super(rawPayload);
+    super(raw);
   }
-  static fromPayload(payload: Uint8Array): ScaleBondPacket {
+  static fromRaw(payload: Uint8Array): ScaleBondPacket {
     return new ScaleBondPacket(payload);
   }
   toPayload() {

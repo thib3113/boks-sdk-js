@@ -8,7 +8,7 @@ describe('CodeBleValidHistoryPacket Resilience (Fuzzing)', () => {
     fc.assert(
       fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (payload) => {
         try {
-          const packet = CodeBleValidHistoryPacket.fromPayload(payload);
+          const packet = CodeBleValidHistoryPacket.fromRaw(payload);
           expect(packet).toBeInstanceOf(CodeBleValidHistoryPacket);
           expect(packet.opcode).toBe(CodeBleValidHistoryPacket.opcode);
         } catch (e: any) {

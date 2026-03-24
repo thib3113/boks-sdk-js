@@ -34,7 +34,7 @@ describe('OpenDoorPacket', () => {
 
   it('should parse from payload correctly', () => {
     const payload = stringToBytes(validPin);
-    const packet = OpenDoorPacket.fromPayload(payload);
+    const packet = OpenDoorPacket.fromRaw(payload);
     expect(packet.pin).toBe(validPin);
   });
 
@@ -45,7 +45,7 @@ describe('OpenDoorPacket', () => {
 
   it('should fail parsing if payload is too short', () => {
     const shortPayload = new Uint8Array(5);
-    expect(() => OpenDoorPacket.fromPayload(shortPayload)).toThrowError(BoksProtocolError);
+    expect(() => OpenDoorPacket.fromRaw(shortPayload)).toThrowError(BoksProtocolError);
   });
 
   it('should output only mapped payload properties and opcode via toJSON', () => {

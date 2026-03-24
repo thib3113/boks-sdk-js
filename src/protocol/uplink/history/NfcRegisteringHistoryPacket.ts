@@ -18,12 +18,12 @@ export class NfcRegisteringHistoryPacket extends BoksHistoryEvent {
   @PayloadByteArray(3)
   public accessor data!: Uint8Array;
 
-  constructor(props: NfcRegisteringHistoryPacketProps, rawPayload?: Uint8Array) {
-    super(NfcRegisteringHistoryPacket.opcode, props, rawPayload);
+  constructor(props: NfcRegisteringHistoryPacketProps, raw?: Uint8Array) {
+    super(NfcRegisteringHistoryPacket.opcode, props, raw);
     this.data = props.data;
   }
 
-  static fromPayload(payload: Uint8Array): NfcRegisteringHistoryPacket {
+  static fromRaw(payload: Uint8Array): NfcRegisteringHistoryPacket {
     const data = PayloadMapper.parse<NfcRegisteringHistoryPacket>(
       NfcRegisteringHistoryPacket,
       payload

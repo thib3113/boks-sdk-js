@@ -18,12 +18,12 @@ export class BlockResetHistoryPacket extends BoksHistoryEvent {
   @PayloadHexString(3, 2)
   public accessor resetInfo!: string;
 
-  constructor(props: BlockResetHistoryPacketProps, rawPayload?: Uint8Array) {
-    super(BlockResetHistoryPacket.opcode, props, rawPayload);
+  constructor(props: BlockResetHistoryPacketProps, raw?: Uint8Array) {
+    super(BlockResetHistoryPacket.opcode, props, raw);
     this.resetInfo = props.resetInfo;
   }
 
-  static fromPayload(payload: Uint8Array): BlockResetHistoryPacket {
+  static fromRaw(payload: Uint8Array): BlockResetHistoryPacket {
     const data = PayloadMapper.parse<BlockResetHistoryPacketProps>(
       BlockResetHistoryPacket,
       payload

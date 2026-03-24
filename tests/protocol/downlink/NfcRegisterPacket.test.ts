@@ -49,9 +49,9 @@ describe('NfcRegisterPacket', () => {
     payload[8] = 4;
     payload.set(uidBytes, 9);
 
-    const packet = NfcRegisterPacket.fromPayload(payload);
+    const packet = NfcRegisterPacket.fromRaw(payload);
     expect(packet.configKey).toBe(validKey);
-    expect(packet.uid).toBe('01020304'); // formatted with colons by fromPayload logic
+    expect(packet.uid).toBe('01020304'); // formatted with colons by fromRaw logic
   });
 
   it('should throw INVALID_CONFIG_KEY for invalid config key format', () => {
@@ -79,8 +79,8 @@ describe('NfcRegisterPacket', () => {
     const payload = new Uint8Array(8); // Only key
     payload.set(stringToBytes(validKey), 0);
 
-    // fromPayload logic: if length < 8, it returns an empty packet which fails validation.
-    expect(() => NfcRegisterPacket.fromPayload(payload)).toThrowError(BoksProtocolError);
+    // fromRaw logic: if length < 8, it returns an empty packet which fails validation.
+    expect(() => NfcRegisterPacket.fromRaw(payload)).toThrowError(BoksProtocolError);
   });
 
   it('should prove PayloadVarLenHex decorator correctly handles dynamic payload length', () => {
@@ -97,7 +97,7 @@ describe('NfcRegisterPacket', () => {
       0x77 // Data
     ]);
 
-    const packet = NfcRegisterPacket.fromPayload(payload);
+    const packet = NfcRegisterPacket.fromRaw(payload);
     expect(packet.uid).toBe('11223344556677');
   });
 

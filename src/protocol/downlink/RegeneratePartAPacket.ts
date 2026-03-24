@@ -19,12 +19,12 @@ export class RegeneratePartAPacket extends AuthPacket {
   @PayloadHexString(8, 16)
   public accessor part!: string;
 
-  constructor(props: RegeneratePartAPacketProps, rawPayload?: Uint8Array) {
-    super(props, rawPayload);
+  constructor(props: RegeneratePartAPacketProps, raw?: Uint8Array) {
+    super(props, raw);
     this.part = props.part as string;
   }
 
-  static fromPayload(payload: Uint8Array): RegeneratePartAPacket {
+  static fromRaw(payload: Uint8Array): RegeneratePartAPacket {
     const data = PayloadMapper.parse<RegeneratePartAPacketProps>(RegeneratePartAPacket, payload);
     return new RegeneratePartAPacket(data, payload);
   }

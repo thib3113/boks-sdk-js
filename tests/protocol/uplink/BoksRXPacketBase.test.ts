@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { BoksRXPacket } from '@/protocol/uplink/_BoksRXPacketBase';
 
 describe('BoksRXPacketBase', () => {
-  it('toPayload should return the rawPayload', () => {
+  it('toPayload should return the raw', () => {
     class DummyPacket extends BoksRXPacket {
       constructor() {
         super(0x99, new Uint8Array([1, 2, 3]));

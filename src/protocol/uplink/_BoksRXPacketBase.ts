@@ -8,9 +8,9 @@ import { PayloadMapper } from '@/protocol/decorators';
 export abstract class BoksRXPacket extends BoksPacket {
   constructor(
     protected readonly _opcode: BoksOpcode,
-    protected readonly _rawPayload?: Uint8Array
+    protected readonly _raw?: Uint8Array
   ) {
-    super(_rawPayload);
+    super(_raw);
   }
 
   get opcode() {
@@ -22,8 +22,8 @@ export abstract class BoksRXPacket extends BoksPacket {
    * If not available (e.g. created for simulator/testing), it serializes the packet.
    */
   toPayload() {
-    if (this.rawPayload && this.rawPayload.length > 0) {
-      return this.rawPayload;
+    if (this.raw && this.raw.length > 0) {
+      return this.raw;
     }
     return PayloadMapper.serialize(this);
   }

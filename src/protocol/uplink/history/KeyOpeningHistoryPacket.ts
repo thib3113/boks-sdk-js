@@ -11,11 +11,11 @@ import { BoksOpcode } from '@/protocol/constants';
 export class KeyOpeningHistoryPacket extends BoksHistoryEvent {
   static readonly opcode = BoksOpcode.LOG_EVENT_KEY_OPENING;
 
-  constructor(props: BoksHistoryEventProps, rawPayload?: Uint8Array) {
-    super(KeyOpeningHistoryPacket.opcode, props, rawPayload);
+  constructor(props: BoksHistoryEventProps, raw?: Uint8Array) {
+    super(KeyOpeningHistoryPacket.opcode, props, raw);
   }
 
-  static fromPayload(payload: Uint8Array): KeyOpeningHistoryPacket {
+  static fromRaw(payload: Uint8Array): KeyOpeningHistoryPacket {
     const data = PayloadMapper.parse<BoksHistoryEventProps>(KeyOpeningHistoryPacket, payload);
     return new KeyOpeningHistoryPacket(data, payload);
   }

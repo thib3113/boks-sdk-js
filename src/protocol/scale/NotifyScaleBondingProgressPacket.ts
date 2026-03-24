@@ -12,12 +12,12 @@ export class NotifyScaleBondingProgressPacket extends BoksRXPacket {
   @PayloadUint8(0)
   public accessor progress!: number;
 
-  constructor(progress: number, rawPayload?: Uint8Array) {
-    super(NotifyScaleBondingProgressPacket.opcode, rawPayload);
+  constructor(progress: number, raw?: Uint8Array) {
+    super(NotifyScaleBondingProgressPacket.opcode, raw);
     this.progress = progress;
   }
 
-  static fromPayload(payload: Uint8Array): NotifyScaleBondingProgressPacket {
+  static fromRaw(payload: Uint8Array): NotifyScaleBondingProgressPacket {
     const data = PayloadMapper.parse(NotifyScaleBondingProgressPacket, payload);
     return new NotifyScaleBondingProgressPacket(data.progress, payload);
   }

@@ -31,7 +31,7 @@ export class UnknownPacket extends BoksPacket {
     };
   }
 
-  static fromPayload(_payload: Uint8Array): UnknownPacket {
+  static fromRaw(_payload: Uint8Array): UnknownPacket {
     throw new Error('Use fromUnknownPayload instead');
   }
 

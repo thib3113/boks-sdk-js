@@ -12,12 +12,12 @@ export class NotifyNfcTagFoundPacket extends BoksRXPacket {
   @PayloadVarLenHex(0)
   public accessor uid!: string;
 
-  constructor(uid: string, rawPayload?: Uint8Array) {
-    super(NotifyNfcTagFoundPacket.opcode, rawPayload);
+  constructor(uid: string, raw?: Uint8Array) {
+    super(NotifyNfcTagFoundPacket.opcode, raw);
     this.uid = uid;
   }
 
-  static fromPayload(payload: Uint8Array): NotifyNfcTagFoundPacket {
+  static fromRaw(payload: Uint8Array): NotifyNfcTagFoundPacket {
     const data = PayloadMapper.parse<NotifyNfcTagFoundPacket>(NotifyNfcTagFoundPacket, payload);
     return new NotifyNfcTagFoundPacket(data.uid, payload);
   }

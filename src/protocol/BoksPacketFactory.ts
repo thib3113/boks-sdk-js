@@ -222,6 +222,6 @@ export class BoksPacketFactory {
       return UnknownPacket.fromUnknownPayload(opcode, payload);
     }
 
-    return Ctor.fromPayload(payload);
+    return Ctor.fromRaw(payload);
   }
 }

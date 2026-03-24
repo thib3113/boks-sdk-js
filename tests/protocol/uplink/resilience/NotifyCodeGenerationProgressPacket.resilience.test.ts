@@ -4,20 +4,20 @@ import { NotifyCodeGenerationProgressPacket } from '@/protocol/uplink/NotifyCode
 import { BoksOpcode } from '@/protocol/constants';
 
 describe('NotifyCodeGenerationProgressPacket - Resilience & Edge Cases', () => {
-  describe('fromPayload()', () => {
+  describe('fromRaw()', () => {
     it('should parse valid arbitrary payloads without crashing', () => {
       fc.assert(
         fc.property(fc.uint8Array(), (payload) => {
           let packet;
           try {
-            packet = NotifyCodeGenerationProgressPacket.fromPayload(payload);
+            packet = NotifyCodeGenerationProgressPacket.fromRaw(payload);
           } catch (e: any) {
             expect(e.name).toBe('BoksProtocolError');
             return;
           }
           expect(packet).toBeInstanceOf(NotifyCodeGenerationProgressPacket);
           expect(packet.opcode).toBe(BoksOpcode.NOTIFY_CODE_GENERATION_PROGRESS);
-          expect((packet as any).rawPayload).toEqual(payload);
+          expect((packet as any).raw).toEqual(payload);
 
           if (payload.length > 0) {
             expect(packet.progress).toBe(payload[0]);
@@ -32,7 +32,7 @@ describe('NotifyCodeGenerationProgressPacket - Resilience & Edge Cases', () => {
       fc.assert(
         fc.property(fc.integer({ min: 0, max: 255 }), (progress) => {
           const payload = new Uint8Array([progress]);
-          const packet = NotifyCodeGenerationProgressPacket.fromPayload(payload);
+          const packet = NotifyCodeGenerationProgressPacket.fromRaw(payload);
           expect(packet.progress).toBe(progress);
         })
       );
@@ -40,7 +40,7 @@ describe('NotifyCodeGenerationProgressPacket - Resilience & Edge Cases', () => {
 
     it('should safely error for an empty payload', () => {
       const shortPayload = new Uint8Array(0);
-      expect(() => NotifyCodeGenerationProgressPacket.fromPayload(shortPayload)).toThrowError();
+      expect(() => NotifyCodeGenerationProgressPacket.fromRaw(shortPayload)).toThrowError();
     });
 
     it('should ignore all trailing bytes gracefully', () => {
@@ -50,7 +50,7 @@ describe('NotifyCodeGenerationProgressPacket - Resilience & Edge Cases', () => {
           fc.uint8Array(),
           (progress, trailingBytes) => {
             const payload = new Uint8Array([progress, ...trailingBytes]);
-            const packet = NotifyCodeGenerationProgressPacket.fromPayload(payload);
+            const packet = NotifyCodeGenerationProgressPacket.fromRaw(payload);
             expect(packet.progress).toBe(progress);
           }
         )

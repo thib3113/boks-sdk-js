@@ -7,7 +7,7 @@ describe('NotifyCodeGenerationProgressPacket', () => {
   it('should parse correctly', () => {
     // 50%
     const payload = new Uint8Array([50]);
-    const packet = NotifyCodeGenerationProgressPacket.fromPayload(payload);
+    const packet = NotifyCodeGenerationProgressPacket.fromRaw(payload);
 
     expect(packet.opcode).toBe(BoksOpcode.NOTIFY_CODE_GENERATION_PROGRESS);
     expect(packet.progress).toBe(50);
@@ -21,7 +21,7 @@ describe('NotifyCodeGenerationProgressPacket', () => {
   });
 
   it('should output only mapped payload properties and opcode via toJSON', () => {
-    const packet = NotifyCodeGenerationProgressPacket.fromPayload(new Uint8Array([50]));
+    const packet = NotifyCodeGenerationProgressPacket.fromRaw(new Uint8Array([50]));
     const json = packet.toJSON();
     expect(json).toStrictEqual({
         "opcode": 194,

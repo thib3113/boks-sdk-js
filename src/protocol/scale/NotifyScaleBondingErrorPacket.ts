@@ -12,12 +12,12 @@ export class NotifyScaleBondingErrorPacket extends BoksRXPacket {
   @PayloadUint8(0)
   public accessor errorCode!: number;
 
-  constructor(errorCode: number, rawPayload?: Uint8Array) {
-    super(NotifyScaleBondingErrorPacket.opcode, rawPayload);
+  constructor(errorCode: number, raw?: Uint8Array) {
+    super(NotifyScaleBondingErrorPacket.opcode, raw);
     this.errorCode = errorCode;
   }
 
-  static fromPayload(payload: Uint8Array): NotifyScaleBondingErrorPacket {
+  static fromRaw(payload: Uint8Array): NotifyScaleBondingErrorPacket {
     const data = PayloadMapper.parse(NotifyScaleBondingErrorPacket, payload);
     return new NotifyScaleBondingErrorPacket(data.errorCode, payload);
   }

@@ -7,11 +7,11 @@ import { BoksOpcode } from '@/protocol/constants';
 export class ErrorUnauthorizedPacket extends BoksRXPacket {
   static readonly opcode = BoksOpcode.ERROR_UNAUTHORIZED;
 
-  constructor(rawPayload?: Uint8Array) {
-    super(ErrorUnauthorizedPacket.opcode, rawPayload);
+  constructor(raw?: Uint8Array) {
+    super(ErrorUnauthorizedPacket.opcode, raw);
   }
 
-  static fromPayload(payload: Uint8Array): ErrorUnauthorizedPacket {
+  static fromRaw(payload: Uint8Array): ErrorUnauthorizedPacket {
     return new ErrorUnauthorizedPacket(payload);
   }
 }

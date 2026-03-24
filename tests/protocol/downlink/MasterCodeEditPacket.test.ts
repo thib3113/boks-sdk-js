@@ -45,7 +45,7 @@ describe('MasterCodeEditPacket', () => {
     payload[8] = validIndex;
     payload.set(stringToBytes(validNewPin), 9);
 
-    const packet = MasterCodeEditPacket.fromPayload(payload);
+    const packet = MasterCodeEditPacket.fromRaw(payload);
     expect(packet.configKey).toBe(validKey);
     expect(packet.index).toBe(validIndex);
     expect(packet.newPin).toBe(validNewPin);
@@ -57,7 +57,7 @@ describe('MasterCodeEditPacket', () => {
     // If we provide just key, index defaults to 0, pin defaults to empty string -> error.
     // So this test case is tricky because constructor validation runs.
     // If we provide key + enough bytes for pin but at wrong offset?
-    // fromPayload logic: index = payload[8]. newPin = slice(9, 15).
+    // fromRaw logic: index = payload[8]. newPin = slice(9, 15).
     // If payload is length 15 (correct), index is at 8.
     // If payload is length 8, index defaults to 0. Pin is empty -> Error.
   });
@@ -86,7 +86,7 @@ describe('MasterCodeEditPacket', () => {
     const payload = new Uint8Array(8);
     payload.set(stringToBytes(validKey), 0);
 
-    expect(() => MasterCodeEditPacket.fromPayload(payload)).toThrowError(BoksProtocolError);
+    expect(() => MasterCodeEditPacket.fromRaw(payload)).toThrowError(BoksProtocolError);
     // because pin will be empty string
   });
 

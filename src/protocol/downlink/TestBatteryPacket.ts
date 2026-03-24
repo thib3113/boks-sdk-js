@@ -9,7 +9,7 @@ export class TestBatteryPacket extends BoksPacket {
   get opcode() {
     return TestBatteryPacket.opcode;
   }
-  static fromPayload(payload: Uint8Array): TestBatteryPacket {
+  static fromRaw(payload: Uint8Array): TestBatteryPacket {
     return new TestBatteryPacket(payload);
   }
   toPayload() {

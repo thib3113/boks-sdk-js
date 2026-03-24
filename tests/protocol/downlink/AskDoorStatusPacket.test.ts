@@ -11,15 +11,15 @@ describe('AskDoorStatusPacket', () => {
   });
 
   it('should parse from payload correctly', () => {
-    const packet = AskDoorStatusPacket.fromPayload(new Uint8Array(0));
+    const packet = AskDoorStatusPacket.fromRaw(new Uint8Array(0));
     expect(packet).toBeInstanceOf(AskDoorStatusPacket);
     expect(packet.opcode).toBe(BoksOpcode.ASK_DOOR_STATUS);
   });
 
   it('should handle extra payload bytes gracefully (ignore them)', () => {
-    // Though toPayload() returns empty, if fromPayload is called with extra bytes, it currently ignores them.
+    // Though toPayload() returns empty, if fromRaw is called with extra bytes, it currently ignores them.
     // The base class ensures opcode is correct.
-    const packet = AskDoorStatusPacket.fromPayload(new Uint8Array([0x01, 0x02]));
+    const packet = AskDoorStatusPacket.fromRaw(new Uint8Array([0x01, 0x02]));
     expect(packet).toBeInstanceOf(AskDoorStatusPacket);
   });
 

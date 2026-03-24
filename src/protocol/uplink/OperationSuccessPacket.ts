@@ -7,11 +7,11 @@ import { BoksOpcode } from '@/protocol/constants';
 export class OperationSuccessPacket extends BoksRXPacket {
   static readonly opcode = BoksOpcode.CODE_OPERATION_SUCCESS;
 
-  constructor(rawPayload?: Uint8Array) {
-    super(OperationSuccessPacket.opcode, rawPayload);
+  constructor(raw?: Uint8Array) {
+    super(OperationSuccessPacket.opcode, raw);
   }
 
-  static fromPayload(payload: Uint8Array): OperationSuccessPacket {
+  static fromRaw(payload: Uint8Array): OperationSuccessPacket {
     return new OperationSuccessPacket(payload);
   }
 }

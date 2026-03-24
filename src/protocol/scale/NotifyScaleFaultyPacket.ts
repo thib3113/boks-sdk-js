@@ -12,12 +12,12 @@ export class NotifyScaleFaultyPacket extends BoksRXPacket {
   @PayloadByteArray(0)
   public accessor data!: Uint8Array;
 
-  constructor(data: Uint8Array, rawPayload?: Uint8Array) {
-    super(NotifyScaleFaultyPacket.opcode, rawPayload);
+  constructor(data: Uint8Array, raw?: Uint8Array) {
+    super(NotifyScaleFaultyPacket.opcode, raw);
     this.data = data;
   }
 
-  static fromPayload(payload: Uint8Array): NotifyScaleFaultyPacket {
+  static fromRaw(payload: Uint8Array): NotifyScaleFaultyPacket {
     const data = PayloadMapper.parse(NotifyScaleFaultyPacket, payload);
     return new NotifyScaleFaultyPacket(data.data, payload);
   }

@@ -23,13 +23,13 @@ export class AnswerDoorStatusPacket extends BoksRXPacket {
     return this.status === true && this.inverted === false;
   }
 
-  constructor(props: AnswerDoorStatusPacketProps, rawPayload?: Uint8Array) {
-    super(AnswerDoorStatusPacket.opcode, rawPayload);
+  constructor(props: AnswerDoorStatusPacketProps, raw?: Uint8Array) {
+    super(AnswerDoorStatusPacket.opcode, raw);
     this.inverted = props.inverted;
     this.status = props.status;
   }
 
-  static fromPayload(payload: Uint8Array): AnswerDoorStatusPacket {
+  static fromRaw(payload: Uint8Array): AnswerDoorStatusPacket {
     const data = PayloadMapper.parse<AnswerDoorStatusPacketProps>(AnswerDoorStatusPacket, payload);
     return new AnswerDoorStatusPacket(data, payload);
   }

@@ -481,7 +481,7 @@ describe('BoksPacketFactory', () => {
       const packet = BoksPacketFactory.createFromPayload(fullData);
       expect(packet).toBeInstanceOf(Packets.UnknownPacket);
       expect(packet.opcode).toBe(unknownOpcode);
-      expect(packet.rawPayload).toEqual(new Uint8Array(0));
+      expect(packet.raw).toEqual(new Uint8Array([unknownOpcode, 0, checksum]));
     });
   });
 

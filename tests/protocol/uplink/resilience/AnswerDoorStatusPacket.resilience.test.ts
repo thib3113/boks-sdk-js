@@ -4,20 +4,20 @@ import { AnswerDoorStatusPacket } from '@/protocol/uplink/AnswerDoorStatusPacket
 import { BoksOpcode } from '@/protocol/constants';
 
 describe('AnswerDoorStatusPacket - Resilience & Edge Cases', () => {
-  describe('fromPayload()', () => {
+  describe('fromRaw()', () => {
     it('should parse valid arbitrary payloads without crashing', () => {
       fc.assert(
         fc.property(fc.uint8Array(), (payload) => {
           let packet;
           try {
-            packet = AnswerDoorStatusPacket.fromPayload(payload);
+            packet = AnswerDoorStatusPacket.fromRaw(payload);
           } catch (e: any) {
             expect(e.name).toBe('BoksProtocolError');
             return;
           }
           expect(packet).toBeInstanceOf(AnswerDoorStatusPacket);
           expect(packet.opcode).toBe(BoksOpcode.ANSWER_DOOR_STATUS);
-          expect((packet as any).rawPayload).toEqual(payload);
+          expect((packet as any).raw).toEqual(payload);
 
           // Boolean validation based on parsing logic
           if (payload.length >= 2) {
@@ -39,7 +39,7 @@ describe('AnswerDoorStatusPacket - Resilience & Edge Cases', () => {
       fc.assert(
         fc.property(fc.uint8Array(), (trailingBytes) => {
           const payload = new Uint8Array([0x00, 0x01, ...trailingBytes]);
-          const packet = AnswerDoorStatusPacket.fromPayload(payload);
+          const packet = AnswerDoorStatusPacket.fromRaw(payload);
           expect(packet.isOpen).toBe(true);
         })
       );
@@ -53,7 +53,7 @@ describe('AnswerDoorStatusPacket - Resilience & Edge Cases', () => {
           (inverted, status) => {
             fc.pre((inverted !== 0x00 && inverted !== 0x01) || (status !== 0x00 && status !== 0x01)); // Exclude valid boolean bytes
             const payload = new Uint8Array([inverted, status]);
-            expect(() => AnswerDoorStatusPacket.fromPayload(payload)).toThrowError(Error);
+            expect(() => AnswerDoorStatusPacket.fromRaw(payload)).toThrowError(Error);
           }
         )
       );

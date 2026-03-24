@@ -12,13 +12,13 @@ describe('GetLogsCountPacket', () => {
   });
 
   it('should parse from payload correctly', () => {
-    const packet = GetLogsCountPacket.fromPayload(new Uint8Array(0));
+    const packet = GetLogsCountPacket.fromRaw(new Uint8Array(0));
     expect(packet).toBeInstanceOf(GetLogsCountPacket);
     expect(packet.opcode).toBe(BoksOpcode.GET_LOGS_COUNT);
   });
 
   it('should handle extra payload bytes gracefully (ignore them)', () => {
-    const packet = GetLogsCountPacket.fromPayload(new Uint8Array([0xff]));
+    const packet = GetLogsCountPacket.fromRaw(new Uint8Array([0xff]));
     expect(packet).toBeInstanceOf(GetLogsCountPacket);
   });
 

@@ -22,13 +22,13 @@ export class CreateMasterCodePacket extends AuthPacket {
   @PayloadMasterCodeIndex(14)
   public accessor index!: number;
 
-  constructor(props: CreateMasterCodePacketProps, rawPayload?: Uint8Array) {
-    super(props, rawPayload);
+  constructor(props: CreateMasterCodePacketProps, raw?: Uint8Array) {
+    super(props, raw);
     this.pin = props.pin;
     this.index = props.index;
   }
 
-  static fromPayload(payload: Uint8Array): CreateMasterCodePacket {
+  static fromRaw(payload: Uint8Array): CreateMasterCodePacket {
     let safePayload = payload;
     if (payload.length === 14) {
       safePayload = new Uint8Array(15);

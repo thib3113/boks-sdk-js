@@ -5,7 +5,7 @@ import { BoksOpcode } from '@/protocol/constants';
 describe('InvalidOpenCodePacket', () => {
   it('should parse correctly', () => {
     const payload = new Uint8Array(0);
-    const packet = InvalidOpenCodePacket.fromPayload(payload);
+    const packet = InvalidOpenCodePacket.fromRaw(payload);
     expect(packet.opcode).toBe(BoksOpcode.INVALID_OPEN_CODE);
   });
 });

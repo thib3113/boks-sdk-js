@@ -28,41 +28,41 @@ describe('Simple Notification Packets - Resilience & Edge Cases', () => {
   ];
 
   describe.each(PACKETS)('$packetClass.name', ({ packetClass, opcode }) => {
-    describe('fromPayload()', () => {
+    describe('fromRaw()', () => {
       it('should parse valid arbitrary payloads without crashing', () => {
         fc.assert(
           fc.property(fc.uint8Array(), (payload) => {
-            const packet = packetClass.fromPayload(payload);
+            const packet = packetClass.fromRaw(payload);
             expect(packet).toBeInstanceOf(packetClass);
             expect(packet.opcode).toBe(opcode);
-            expect((packet as any).rawPayload).toEqual(payload);
+            expect((packet as any).raw).toEqual(payload);
           })
         );
       });
 
       it('should instantiate cleanly with empty payload', () => {
         const payload = new Uint8Array(0);
-        const packet = packetClass.fromPayload(payload);
+        const packet = packetClass.fromRaw(payload);
         expect(packet.opcode).toBe(opcode);
       });
     });
   });
 
   describe('OperationErrorPacket', () => {
-    describe('fromPayload()', () => {
+    describe('fromRaw()', () => {
       it('should parse valid arbitrary payloads without crashing', () => {
         fc.assert(
           fc.property(fc.uint8Array(), (payload) => {
             let packet;
             try {
-              packet = OperationErrorPacket.fromPayload(payload);
+              packet = OperationErrorPacket.fromRaw(payload);
             } catch (e: any) {
               expect(e.name).toBe('BoksProtocolError');
               return;
             }
             expect(packet).toBeInstanceOf(OperationErrorPacket);
             expect(packet.opcode).toBe(BoksOpcode.CODE_OPERATION_ERROR);
-            expect((packet as any).rawPayload).toEqual(payload);
+            expect((packet as any).raw).toEqual(payload);
 
             if (payload.length > 0) {
               expect(packet.errorCode).toBe(payload[0]);
@@ -75,7 +75,7 @@ describe('Simple Notification Packets - Resilience & Edge Cases', () => {
 
       it('should throw on empty payload', () => {
         const payload = new Uint8Array(0);
-        expect(() => OperationErrorPacket.fromPayload(payload)).toThrowError(Error);
+        expect(() => OperationErrorPacket.fromRaw(payload)).toThrowError(Error);
       });
 
       it('should safely capture errorCode when trailing bytes exist', () => {
@@ -85,7 +85,7 @@ describe('Simple Notification Packets - Resilience & Edge Cases', () => {
             fc.uint8Array(),
             (errorCode, trailingBytes) => {
               const payload = new Uint8Array([errorCode, ...trailingBytes]);
-              const packet = OperationErrorPacket.fromPayload(payload);
+              const packet = OperationErrorPacket.fromRaw(payload);
               expect(packet.errorCode).toBe(errorCode);
             }
           )

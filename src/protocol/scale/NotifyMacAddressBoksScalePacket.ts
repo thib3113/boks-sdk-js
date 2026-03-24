@@ -12,12 +12,12 @@ export class NotifyMacAddressBoksScalePacket extends BoksRXPacket {
   @PayloadMacAddress(0)
   public accessor macAddress!: string;
 
-  constructor(macAddress: string, rawPayload?: Uint8Array) {
-    super(NotifyMacAddressBoksScalePacket.opcode, rawPayload);
+  constructor(macAddress: string, raw?: Uint8Array) {
+    super(NotifyMacAddressBoksScalePacket.opcode, raw);
     this.macAddress = macAddress;
   }
 
-  static fromPayload(payload: Uint8Array): NotifyMacAddressBoksScalePacket {
+  static fromRaw(payload: Uint8Array): NotifyMacAddressBoksScalePacket {
     const data = PayloadMapper.parse(NotifyMacAddressBoksScalePacket, payload);
     return new NotifyMacAddressBoksScalePacket(data.macAddress, payload);
   }

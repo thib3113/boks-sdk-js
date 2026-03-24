@@ -15,12 +15,12 @@ describe('ScaleTareLoadedPacket', () => {
 
   it('should parse from payload correctly', () => {
     const data = new Uint8Array([0x01, 0x02]);
-    const packet = ScaleTareLoadedPacket.fromPayload(data);
+    const packet = ScaleTareLoadedPacket.fromRaw(data);
     expect(packet.data).toEqual(data);
   });
 
   it('should output only mapped payload properties and opcode via toJSON', () => {
-    const packet = ScaleTareLoadedPacket.fromPayload(new Uint8Array([0x01, 0x02]));
+    const packet = ScaleTareLoadedPacket.fromRaw(new Uint8Array([0x01, 0x02]));
     const json = packet.toJSON();
     expect(json).toStrictEqual({
         "opcode": 86,

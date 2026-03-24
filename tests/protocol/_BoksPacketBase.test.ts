@@ -4,9 +4,9 @@ import { BoksPacket } from '../../src/protocol/_BoksPacketBase';
 import { BoksProtocolError, BoksProtocolErrorId } from '../../src/errors/BoksProtocolError';
 
 describe('BoksPacketBase', () => {
-  it('should throw NOT_IMPLEMENTED if fromPayload is not implemented', () => {
-    expect(() => BoksPacket.fromPayload(new Uint8Array())).toThrowError(
-      new BoksProtocolError(BoksProtocolErrorId.NOT_IMPLEMENTED, 'fromPayload not implemented')
+  it('should throw NOT_IMPLEMENTED if fromRaw is not implemented', () => {
+    expect(() => BoksPacket.fromRaw(new Uint8Array())).toThrowError(
+      new BoksProtocolError(BoksProtocolErrorId.NOT_IMPLEMENTED, 'fromRaw not implemented')
     );
   });
 });

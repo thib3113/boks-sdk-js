@@ -6,7 +6,7 @@ import { bytesToHex } from '@/utils/converters';
 describe('BlockResetHistoryPacket', () => {
   it('should parse correctly with age and info', () => {
     const payload = new Uint8Array([0x00, 0x00, 0x0a, 0xaa, 0xbb]);
-    const packet = BlockResetHistoryPacket.fromPayload(payload);
+    const packet = BlockResetHistoryPacket.fromRaw(payload);
     expect(packet.opcode).toBe(BoksOpcode.BLOCK_RESET);
     expect(packet.age).toBe(10);
     expect(packet.resetInfo).toBe('AABB');
@@ -23,7 +23,7 @@ describe('BlockResetHistoryPacket', () => {
   });
 
   it('should output only mapped payload properties and opcode via toJSON', () => {
-    const packet = BlockResetHistoryPacket.fromPayload(new Uint8Array([0x00, 0x00, 0x0a, 0xaa, 0xbb]));
+    const packet = BlockResetHistoryPacket.fromRaw(new Uint8Array([0x00, 0x00, 0x0a, 0xaa, 0xbb]));
     const json = packet.toJSON();
     expect(json).toStrictEqual({
         "age": 10,

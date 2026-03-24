@@ -38,16 +38,16 @@ describe('GenerateCodesSupportPacket', () => {
   });
 
   it('should parse from payload correctly', () => {
-    const packet = GenerateCodesSupportPacket.fromPayload(validSeedBytes);
+    const packet = GenerateCodesSupportPacket.fromRaw(validSeedBytes);
     expect(packet.seed).toBe(validSeedHex);
   });
 
   it('should throw INVALID_SEED_LENGTH for invalid seed length', () => {
-    // This test is obsolete now as validation occurs in fromPayload, but new constructor expects valid seed length when using toPayload
-    // actually let's just make it throw BoksProtocolError for fromPayload on short seed
+    // This test is obsolete now as validation occurs in fromRaw, but new constructor expects valid seed length when using toPayload
+    // actually let's just make it throw BoksProtocolError for fromRaw on short seed
 
     const shortSeed = new Uint8Array(31);
-    expect(() => GenerateCodesSupportPacket.fromPayload(shortSeed)).toThrowError(BoksProtocolError); // BoksProtocolError);
+    expect(() => GenerateCodesSupportPacket.fromRaw(shortSeed)).toThrowError(BoksProtocolError); // BoksProtocolError);
 
     const shortHex = '0001';
     expect(() => new GenerateCodesSupportPacket(shortHex)).toThrowError(BoksProtocolError);

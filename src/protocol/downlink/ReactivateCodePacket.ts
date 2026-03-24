@@ -18,12 +18,12 @@ export class ReactivateCodePacket extends AuthPacket {
   @PayloadPinCode(8)
   public accessor pin!: string;
 
-  constructor(props: ReactivateCodePacketProps, rawPayload?: Uint8Array) {
-    super(props, rawPayload);
+  constructor(props: ReactivateCodePacketProps, raw?: Uint8Array) {
+    super(props, raw);
     this.pin = props.pin;
   }
 
-  static fromPayload(payload: Uint8Array): ReactivateCodePacket {
+  static fromRaw(payload: Uint8Array): ReactivateCodePacket {
     const data = PayloadMapper.parse<ReactivateCodePacketProps>(ReactivateCodePacket, payload);
     return new ReactivateCodePacket(data, payload);
   }

@@ -11,7 +11,7 @@ describe('ScaleTareEmptyPacket', () => {
   });
 
   it('should parse from payload correctly', () => {
-    const packet = ScaleTareEmptyPacket.fromPayload(new Uint8Array(0));
+    const packet = ScaleTareEmptyPacket.fromRaw(new Uint8Array(0));
     expect(packet.opcode).toBe(BoksOpcode.SCALE_TARE_EMPTY);
   });
 

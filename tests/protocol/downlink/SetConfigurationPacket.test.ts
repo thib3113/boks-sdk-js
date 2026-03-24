@@ -64,13 +64,13 @@ describe('SetConfigurationPacket', () => {
     payload[8] = type;
     payload[9] = 0x01;
 
-    const packet = SetConfigurationPacket.fromPayload(payload);
+    const packet = SetConfigurationPacket.fromRaw(payload);
     expect(packet.configKey).toBe(validKey);
     expect(packet.configType).toBe(type);
     expect(packet.value).toBe(true);
 
     payload[9] = 0x00;
-    const packet2 = SetConfigurationPacket.fromPayload(payload);
+    const packet2 = SetConfigurationPacket.fromRaw(payload);
     expect(packet2.value).toBe(false);
   });
 
@@ -82,15 +82,15 @@ describe('SetConfigurationPacket', () => {
 
   it('should throw INVALID_PAYLOAD_LENGTH if payload is wrong size', () => {
     const shortPayload = new Uint8Array(9);
-    expect(() => SetConfigurationPacket.fromPayload(shortPayload)).toThrowError(BoksProtocolError);
+    expect(() => SetConfigurationPacket.fromRaw(shortPayload)).toThrowError(BoksProtocolError);
     try {
-      SetConfigurationPacket.fromPayload(shortPayload);
+      SetConfigurationPacket.fromRaw(shortPayload);
     } catch (e) {
       expect((e as BoksProtocolError).id).toBe(BoksProtocolErrorId.INVALID_PAYLOAD_LENGTH);
     }
 
     const longPayload = new Uint8Array(11);
-    expect(() => SetConfigurationPacket.fromPayload(longPayload)).toThrowError(BoksProtocolError);
+    expect(() => SetConfigurationPacket.fromRaw(longPayload)).toThrowError(BoksProtocolError);
   });
 
   it('should throw INVALID_VALUE if value byte is invalid', () => {
@@ -99,9 +99,9 @@ describe('SetConfigurationPacket', () => {
     payload[8] = type;
     payload[9] = 0x02; // Invalid boolean
 
-    expect(() => SetConfigurationPacket.fromPayload(payload)).toThrowError(BoksProtocolError);
+    expect(() => SetConfigurationPacket.fromRaw(payload)).toThrowError(BoksProtocolError);
     try {
-      SetConfigurationPacket.fromPayload(payload);
+      SetConfigurationPacket.fromRaw(payload);
     } catch (e) {
       expect((e as BoksProtocolError).id).toBe(BoksProtocolErrorId.INVALID_VALUE);
     }

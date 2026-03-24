@@ -1,4 +1,4 @@
-import { BoksOpcode, EMPTY_BUFFER, PACKET_HEADER_SIZE } from '@/protocol/constants';
+import { BoksOpcode, EMPTY_BUFFER, PACKET_HEADER_SIZE, CHECKSUM_MASK } from '@/protocol/constants';
 import { PayloadMapper } from '@/protocol/decorators';
 import { calculateChecksum } from '@/utils/converters';
 import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';
@@ -10,7 +10,7 @@ export type BoksPacketConstructor<T extends BoksPacket = BoksPacket> = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   new (...args: any[]): T;
   readonly opcode: BoksOpcode;
-  fromPayload(payload: Uint8Array): T;
+  fromRaw(raw: Uint8Array): T;
   readonly lengthIncludesHeader?: boolean;
 };
 
@@ -24,19 +24,18 @@ export type BoksPacketJSON<T> = {
 };
 
 export abstract class BoksPacket {
-  #rawPayload?: Uint8Array;
+  #raw?: Uint8Array;
   #extractedPayloadCache?: Uint8Array;
 
-  constructor(rawPayload?: Uint8Array) {
-    this.#rawPayload = rawPayload;
+  constructor(raw?: Uint8Array) {
+    this.#raw = raw;
   }
 
   /**
-   * Represents the raw bytes of the packet.
-   * If instantiated from a received buffer, this contains the full packet (Opcode + Len + Payload + CRC).
+   * The complete raw bytes of the packet (Opcode + Length + Payload + CRC).
    */
-  get rawPayload(): Uint8Array {
-    return this.#rawPayload ?? EMPTY_BUFFER;
+  get raw(): Uint8Array {
+    return this.#raw ?? EMPTY_BUFFER;
   }
 
   /**
@@ -48,43 +47,62 @@ export abstract class BoksPacket {
       return this.#extractedPayloadCache;
     }
 
-    if (this.#rawPayload && this.#rawPayload.length >= PACKET_HEADER_SIZE) {
-      // If it looks like a full packet (starts with our opcode), extract the data part
-      if (this.#rawPayload[0] === this.opcode) {
-        const lengthIncludesHeader = (this.constructor as unknown as BoksPacketConstructor).lengthIncludesHeader ?? false;
-        this.#extractedPayloadCache = BoksPacket.extractPayloadData(this.#rawPayload, lengthIncludesHeader);
+    if (this.#raw && this.#raw.length >= PACKET_HEADER_SIZE) {
+      if (this.#raw[0] === this.opcode) {
+        const lengthIncludesHeader =
+          (this.constructor as unknown as BoksPacketConstructor).lengthIncludesHeader ?? false;
+        this.#extractedPayloadCache = BoksPacket.extractPayloadData(
+          this.#raw,
+          this.opcode,
+          lengthIncludesHeader
+        );
         return this.#extractedPayloadCache;
       }
     }
-    
-    // Fallback: it might already be just a payload
-    this.#extractedPayloadCache = this.#rawPayload ?? EMPTY_BUFFER;
+
+    // Fallback if not a full packet
+    this.#extractedPayloadCache = this.#raw ?? EMPTY_BUFFER;
     return this.#extractedPayloadCache;
   }
 
-  /**
-   * Helper to extract the data payload from a full packet buffer.
-   */
-  static extractPayloadData(data: Uint8Array, lengthIncludesHeader: boolean = false): Uint8Array {
-    if (data.length < PACKET_HEADER_SIZE) return data;
+  static extractPayloadData(
+    data: Uint8Array,
+    opcode: BoksOpcode,
+    lengthIncludesHeader: boolean = false
+  ): Uint8Array {
+    if (data.length < PACKET_HEADER_SIZE || data[0] !== opcode) {
+      return data;
+    }
+
     const lengthByte = data[1];
-    const payloadLength = lengthIncludesHeader ? lengthByte - PACKET_HEADER_SIZE : lengthByte;
-    return data.subarray(2, 2 + payloadLength);
+    const expectedTotalLength = lengthIncludesHeader ? lengthByte : lengthByte + PACKET_HEADER_SIZE;
+
+    if (data.length === expectedTotalLength) {
+      let computed = 0;
+      for (let i = 0; i < data.length - 1; i++) {
+        computed = (computed + data[i]) & CHECKSUM_MASK;
+      }
+      if (data[data.length - 1] === computed) {
+        const payloadLength = lengthIncludesHeader ? lengthByte - PACKET_HEADER_SIZE : lengthByte;
+        return data.subarray(2, 2 + payloadLength);
+      }
+    }
+    return data;
   }
 
   abstract get opcode(): BoksOpcode;
-  
+
   toPayload(): Uint8Array {
     return PayloadMapper.serialize(this);
   }
 
   /**
-   * Static factory method to create an instance from a payload.
+   * Static factory method to create an instance from a full raw packet.
    * This MUST be implemented by leaf classes for strict parsing.
    */
   /* v8 ignore next 3 */
-  static fromPayload(_payload: Uint8Array): BoksPacket {
-    throw new BoksProtocolError(BoksProtocolErrorId.NOT_IMPLEMENTED, 'fromPayload not implemented');
+  static fromRaw(_raw: Uint8Array): BoksPacket {
+    throw new BoksProtocolError(BoksProtocolErrorId.NOT_IMPLEMENTED, 'fromRaw not implemented');
   }
 
   /**

@@ -23,13 +23,13 @@ export class MasterCodeEditPacket extends AuthPacket {
   @PayloadPinCode(9)
   public accessor newPin!: string;
 
-  constructor(props: MasterCodeEditPacketProps, rawPayload?: Uint8Array) {
-    super(props, rawPayload);
+  constructor(props: MasterCodeEditPacketProps, raw?: Uint8Array) {
+    super(props, raw);
     this.index = props.index;
     this.newPin = props.newPin;
   }
 
-  static fromPayload(payload: Uint8Array): MasterCodeEditPacket {
+  static fromRaw(payload: Uint8Array): MasterCodeEditPacket {
     const data = PayloadMapper.parse<MasterCodeEditPacketProps>(MasterCodeEditPacket, payload);
     return new MasterCodeEditPacket(data, payload);
   }

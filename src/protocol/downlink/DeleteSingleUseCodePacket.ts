@@ -18,12 +18,12 @@ export class DeleteSingleUseCodePacket extends AuthPacket {
   @PayloadPinCode(8)
   public accessor pin!: string;
 
-  constructor(props: DeleteSingleUseCodePacketProps, rawPayload?: Uint8Array) {
-    super(props, rawPayload);
+  constructor(props: DeleteSingleUseCodePacketProps, raw?: Uint8Array) {
+    super(props, raw);
     this.pin = props.pin;
   }
 
-  static fromPayload(payload: Uint8Array): DeleteSingleUseCodePacket {
+  static fromRaw(payload: Uint8Array): DeleteSingleUseCodePacket {
     const data = PayloadMapper.parse<DeleteSingleUseCodePacketProps>(
       DeleteSingleUseCodePacket,
       payload

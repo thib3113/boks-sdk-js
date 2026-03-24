@@ -5,7 +5,7 @@ import { BoksOpcode } from '@/protocol/constants';
 describe('ErrorBadRequestPacket', () => {
   it('should parse correctly', () => {
     const payload = new Uint8Array(0);
-    const packet = ErrorBadRequestPacket.fromPayload(payload);
+    const packet = ErrorBadRequestPacket.fromRaw(payload);
     expect(packet.opcode).toBe(BoksOpcode.ERROR_BAD_REQUEST);
   });
 });

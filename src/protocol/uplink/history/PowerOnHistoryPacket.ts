@@ -12,11 +12,11 @@ import { BoksOpcode } from '@/protocol/constants';
 export class PowerOnHistoryPacket extends BoksHistoryEvent {
   static readonly opcode = BoksOpcode.POWER_ON;
 
-  constructor(props: BoksHistoryEventProps, rawPayload?: Uint8Array) {
-    super(PowerOnHistoryPacket.opcode, props, rawPayload);
+  constructor(props: BoksHistoryEventProps, raw?: Uint8Array) {
+    super(PowerOnHistoryPacket.opcode, props, raw);
   }
 
-  static fromPayload(payload: Uint8Array): PowerOnHistoryPacket {
+  static fromRaw(payload: Uint8Array): PowerOnHistoryPacket {
     const data = PayloadMapper.parse<BoksHistoryEventProps>(PowerOnHistoryPacket, payload);
     return new PowerOnHistoryPacket(data, payload);
   }

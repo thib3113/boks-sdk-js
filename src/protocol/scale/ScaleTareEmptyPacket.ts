@@ -10,7 +10,7 @@ export class ScaleTareEmptyPacket extends BoksPacket {
   get opcode() {
     return ScaleTareEmptyPacket.opcode;
   }
-  static fromPayload(payload: Uint8Array): ScaleTareEmptyPacket {
+  static fromRaw(payload: Uint8Array): ScaleTareEmptyPacket {
     return new ScaleTareEmptyPacket(payload);
   }
   toPayload() {

@@ -22,12 +22,12 @@ export class ScaleMeasureHistoryPacket extends BoksHistoryEvent {
   @PayloadByteArray(3)
   public accessor data!: Uint8Array;
 
-  constructor(props: ScaleMeasureHistoryPacketProps, rawPayload?: Uint8Array) {
-    super(ScaleMeasureHistoryPacket.opcode, props, rawPayload);
+  constructor(props: ScaleMeasureHistoryPacketProps, raw?: Uint8Array) {
+    super(ScaleMeasureHistoryPacket.opcode, props, raw);
     this.data = props.data;
   }
 
-  static fromPayload(payload: Uint8Array): ScaleMeasureHistoryPacket {
+  static fromRaw(payload: Uint8Array): ScaleMeasureHistoryPacket {
     const data = PayloadMapper.parse<ScaleMeasureHistoryPacket>(ScaleMeasureHistoryPacket, payload);
     return new ScaleMeasureHistoryPacket(
       {

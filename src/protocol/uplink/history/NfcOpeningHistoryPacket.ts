@@ -19,13 +19,13 @@ export class NfcOpeningHistoryPacket extends BoksHistoryEvent {
   @PayloadNfcUid(4)
   public accessor uid!: string;
 
-  constructor(props: NfcOpeningHistoryPacketProps, rawPayload?: Uint8Array) {
-    super(NfcOpeningHistoryPacket.opcode, props, rawPayload);
+  constructor(props: NfcOpeningHistoryPacketProps, raw?: Uint8Array) {
+    super(NfcOpeningHistoryPacket.opcode, props, raw);
     this.tagType = props.tagType;
     this.uid = props.uid;
   }
 
-  static fromPayload(payload: Uint8Array): NfcOpeningHistoryPacket {
+  static fromRaw(payload: Uint8Array): NfcOpeningHistoryPacket {
     const data = PayloadMapper.parse<NfcOpeningHistoryPacketProps>(
       NfcOpeningHistoryPacket,
       payload

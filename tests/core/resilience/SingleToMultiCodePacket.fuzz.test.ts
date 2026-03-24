@@ -29,12 +29,12 @@ describe('SingleToMultiCodePacket Resilience (Fuzzing)', () => {
     );
   });
 
-  it('FEATURE REGRESSION: should securely reject malformed binary payloads in fromPayload with BoksProtocolError', () => {
+  it('FEATURE REGRESSION: should securely reject malformed binary payloads in fromRaw with BoksProtocolError', () => {
     // Fuzz the binary parser
     fc.assert(
       fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (payload) => {
         try {
-          const packet = SingleToMultiCodePacket.fromPayload(payload);
+          const packet = SingleToMultiCodePacket.fromRaw(payload);
           expect(packet).toBeInstanceOf(SingleToMultiCodePacket);
         } catch (e) {
           expect(e).toBeInstanceOf(BoksProtocolError);

@@ -40,7 +40,7 @@ describe('CreateMultiUseCodePacket', () => {
     payload.set(stringToBytes(validKey), 0);
     payload.set(stringToBytes(validPin), 8);
 
-    const packet = CreateMultiUseCodePacket.fromPayload(payload);
+    const packet = CreateMultiUseCodePacket.fromRaw(payload);
     expect(packet.configKey).toBe(validKey);
     expect(packet.pin).toBe(validPin);
   });
@@ -74,7 +74,7 @@ describe('CreateMultiUseCodePacket', () => {
   it('should fail parsing if payload is too short', () => {
     // Short payload leads to short pin or key extraction, which constructor validates.
     const shortPayload = new Uint8Array(10);
-    expect(() => CreateMultiUseCodePacket.fromPayload(shortPayload)).toThrowError(
+    expect(() => CreateMultiUseCodePacket.fromRaw(shortPayload)).toThrowError(
       BoksProtocolError
     );
   });

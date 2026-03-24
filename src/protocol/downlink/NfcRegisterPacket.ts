@@ -18,12 +18,12 @@ export class NfcRegisterPacket extends AuthPacket {
   @PayloadNfcUid(8)
   public accessor uid!: string;
 
-  constructor(props: NfcRegisterPacketProps, rawPayload?: Uint8Array) {
-    super(props, rawPayload);
+  constructor(props: NfcRegisterPacketProps, raw?: Uint8Array) {
+    super(props, raw);
     this.uid = props.uid;
   }
 
-  static fromPayload(payload: Uint8Array): NfcRegisterPacket {
+  static fromRaw(payload: Uint8Array): NfcRegisterPacket {
     const data = PayloadMapper.parse<NfcRegisterPacketProps>(NfcRegisterPacket, payload);
     return new NfcRegisterPacket(data, payload);
   }

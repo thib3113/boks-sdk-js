@@ -11,7 +11,7 @@ describe('ScaleGetRawSensorsPacket', () => {
   });
 
   it('should parse from payload correctly', () => {
-    const packet = ScaleGetRawSensorsPacket.fromPayload(new Uint8Array(0));
+    const packet = ScaleGetRawSensorsPacket.fromRaw(new Uint8Array(0));
     expect(packet.opcode).toBe(BoksOpcode.SCALE_GET_RAW_SENSORS);
   });
 

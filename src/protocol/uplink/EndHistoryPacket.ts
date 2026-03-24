@@ -7,11 +7,11 @@ import { BoksOpcode } from '@/protocol/constants';
 export class EndHistoryPacket extends BoksRXPacket {
   static readonly opcode = BoksOpcode.LOG_END_HISTORY;
 
-  constructor(rawPayload?: Uint8Array) {
-    super(EndHistoryPacket.opcode, rawPayload);
+  constructor(raw?: Uint8Array) {
+    super(EndHistoryPacket.opcode, raw);
   }
 
-  static fromPayload(payload: Uint8Array): EndHistoryPacket {
+  static fromRaw(payload: Uint8Array): EndHistoryPacket {
     return new EndHistoryPacket(payload);
   }
 }

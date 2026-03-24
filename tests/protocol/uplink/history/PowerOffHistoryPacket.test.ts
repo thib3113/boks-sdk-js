@@ -7,7 +7,7 @@ describe('PowerOffHistoryPacket', () => {
   it('should parse correctly with age and reason', () => {
     // age 60 (0x3c), reason 1
     const payload = new Uint8Array([0x00, 0x00, 0x3c, 0x01]);
-    const packet = PowerOffHistoryPacket.fromPayload(payload);
+    const packet = PowerOffHistoryPacket.fromRaw(payload);
 
     expect(packet.opcode).toBe(BoksOpcode.POWER_OFF);
     expect(packet.age).toBe(60);
@@ -24,11 +24,11 @@ describe('PowerOffHistoryPacket', () => {
 
   it('should throw error on missing reason', () => {
     const payload = new Uint8Array([0x00, 0x00, 0x0a]);
-    expect(() => PowerOffHistoryPacket.fromPayload(payload)).toThrowError();
+    expect(() => PowerOffHistoryPacket.fromRaw(payload)).toThrowError();
   });
 
   it('should output only mapped payload properties and opcode via toJSON', () => {
-    const packet = PowerOffHistoryPacket.fromPayload(new Uint8Array([0x00, 0x00, 0x3c, 0x01]));
+    const packet = PowerOffHistoryPacket.fromRaw(new Uint8Array([0x00, 0x00, 0x3c, 0x01]));
     const json = packet.toJSON();
     expect(json).toStrictEqual({
         "age": 60,

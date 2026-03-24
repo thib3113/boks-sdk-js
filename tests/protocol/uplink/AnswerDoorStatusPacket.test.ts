@@ -7,7 +7,7 @@ import { bytesToHex } from '@/utils/converters';
 describe('AnswerDoorStatusPacket', () => {
   it('should detect OPEN state (inv=false, status=true)', () => {
     const payload = new Uint8Array([0x00, 0x01]);
-    const packet = AnswerDoorStatusPacket.fromPayload(payload);
+    const packet = AnswerDoorStatusPacket.fromRaw(payload);
     expect(packet.opcode).toBe(BoksOpcode.ANSWER_DOOR_STATUS);
     expect(packet.isOpen).toBe(true);
   });
@@ -32,11 +32,11 @@ describe('AnswerDoorStatusPacket', () => {
 
   it('should throw BoksProtocolError if payload too short', () => {
     const payload = new Uint8Array(1);
-    expect(() => AnswerDoorStatusPacket.fromPayload(payload)).toThrowError(BoksProtocolError);
+    expect(() => AnswerDoorStatusPacket.fromRaw(payload)).toThrowError(BoksProtocolError);
   });
 
   it('should output only mapped payload properties and opcode via toJSON', () => {
-    const packet = AnswerDoorStatusPacket.fromPayload(new Uint8Array([0x00, 0x01]));
+    const packet = AnswerDoorStatusPacket.fromRaw(new Uint8Array([0x00, 0x01]));
     const json = packet.toJSON();
     expect(json).toStrictEqual({
         "inverted": false,

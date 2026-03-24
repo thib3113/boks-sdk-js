@@ -39,7 +39,7 @@ describe('MultiToSingleCodePacket', () => {
     payload.set(stringToBytes(validKey), 0);
     payload.set(stringToBytes(validPin), 8);
 
-    const packet = MultiToSingleCodePacket.fromPayload(payload);
+    const packet = MultiToSingleCodePacket.fromRaw(payload);
     expect(packet.configKey).toBe(validKey);
     expect(packet.pin).toBe(validPin);
   });
@@ -58,7 +58,7 @@ describe('MultiToSingleCodePacket', () => {
 
   it('should fail parsing if payload is too short', () => {
     const shortPayload = new Uint8Array(10);
-    expect(() => MultiToSingleCodePacket.fromPayload(shortPayload)).toThrowError(BoksProtocolError);
+    expect(() => MultiToSingleCodePacket.fromRaw(shortPayload)).toThrowError(BoksProtocolError);
   });
 
   it('should output only mapped payload properties and opcode via toJSON', () => {

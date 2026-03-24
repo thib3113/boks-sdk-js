@@ -27,14 +27,14 @@ describe('ErrorPackets - Resilience & Edge Cases', () => {
   ];
 
   describe.each(PACKETS)('$packetClass.name', ({ packetClass, opcode, hasStatus, status }) => {
-    describe('fromPayload()', () => {
+    describe('fromRaw()', () => {
       it('should parse valid arbitrary payloads without crashing', () => {
         fc.assert(
           fc.property(fc.uint8Array(), (payload) => {
-            const packet = packetClass.fromPayload(payload);
+            const packet = packetClass.fromRaw(payload);
             expect(packet).toBeInstanceOf(packetClass);
             expect(packet.opcode).toBe(opcode);
-            expect((packet as any).rawPayload).toEqual(payload);
+            expect((packet as any).raw).toEqual(payload);
             if (hasStatus) {
               expect((packet as any).status).toBe(status);
             }
@@ -44,7 +44,7 @@ describe('ErrorPackets - Resilience & Edge Cases', () => {
 
       it('should instantiate cleanly with empty payload', () => {
         const payload = new Uint8Array(0);
-        const packet = packetClass.fromPayload(payload);
+        const packet = packetClass.fromRaw(payload);
         expect(packet.opcode).toBe(opcode);
         if (hasStatus) {
           expect((packet as any).status).toBe(status);
@@ -57,7 +57,7 @@ describe('ErrorPackets - Resilience & Edge Cases', () => {
         const packet = new packetClass();
         expect(packet).toBeInstanceOf(packetClass);
         expect(packet.opcode).toBe(opcode);
-        expect((packet as any).rawPayload).toEqual(new Uint8Array(0));
+        expect((packet as any).raw).toEqual(new Uint8Array(0));
         if (hasStatus) {
           expect((packet as any).status).toBe(status);
         }

@@ -11,11 +11,11 @@ import { BoksOpcode } from '@/protocol/constants';
 export class BleRebootHistoryPacket extends BoksHistoryEvent {
   static readonly opcode = BoksOpcode.BLE_REBOOT;
 
-  constructor(props: BoksHistoryEventProps, rawPayload?: Uint8Array) {
-    super(BleRebootHistoryPacket.opcode, props, rawPayload);
+  constructor(props: BoksHistoryEventProps, raw?: Uint8Array) {
+    super(BleRebootHistoryPacket.opcode, props, raw);
   }
 
-  static fromPayload(payload: Uint8Array): BleRebootHistoryPacket {
+  static fromRaw(payload: Uint8Array): BleRebootHistoryPacket {
     const data = PayloadMapper.parse<BoksHistoryEventProps>(BleRebootHistoryPacket, payload);
     return new BleRebootHistoryPacket(data, payload);
   }

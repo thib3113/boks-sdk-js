@@ -52,11 +52,11 @@ const UPLINK_PACKETS = [
 
 describe('Uplink Packets Resilience (Fuzzing)', () => {
   for (const PacketClass of UPLINK_PACKETS) {
-    it(`FEATURE REGRESSION: ${PacketClass.name}.fromPayload should securely reject malformed binary payloads with BoksProtocolError`, () => {
+    it(`FEATURE REGRESSION: ${PacketClass.name}.fromRaw should securely reject malformed binary payloads with BoksProtocolError`, () => {
       fc.assert(
         fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (payload) => {
           try {
-            const packet = PacketClass.fromPayload(payload);
+            const packet = PacketClass.fromRaw(payload);
             expect(packet).toBeInstanceOf(PacketClass);
           } catch (e) {
             expect(e).toBeInstanceOf(BoksProtocolError);

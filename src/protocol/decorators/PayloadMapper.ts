@@ -3,7 +3,7 @@ export type PayloadConstructor = abstract new (...args: any[]) => any;
 
 import { BoksProtocolError, BoksProtocolErrorId } from '../../errors/BoksProtocolError';
 import { BoksExpectedReason } from '../../errors/BoksExpectedReason';
-import { EMPTY_BUFFER } from '../constants';
+import { CHECKSUM_MASK, EMPTY_BUFFER, PACKET_HEADER_SIZE } from '../constants';
 import { hexToBytes, bytesToHex } from '../../utils/converters';
 
 /**
@@ -837,24 +837,22 @@ export class PayloadMapper {
     // Auto-extract payload if we received a full raw packet
     let dataPart = payload;
     const opcode = (targetClass as any).opcode;
-    // We check if it looks like a full packet: length > header size, starts with opcode
-    if (
-      opcode !== undefined &&
-      payload.length >= 3 &&
-      payload[0] === opcode
-    ) {
+    // We check if it looks like a full packet: length >= header size, starts with opcode
+    if (opcode !== undefined && payload.length >= PACKET_HEADER_SIZE && payload[0] === opcode) {
       const lengthIncludesHeader = (targetClass as any).lengthIncludesHeader ?? false;
       const lengthByte = payload[1];
-      const expectedTotalLength = lengthIncludesHeader ? lengthByte : lengthByte + 3;
+      const expectedTotalLength = lengthIncludesHeader
+        ? lengthByte
+        : lengthByte + PACKET_HEADER_SIZE;
 
       if (expectedTotalLength === payload.length) {
         // We do a quick checksum validation to be sure it's a full packet and not just payload data that happens to match
         let computed = 0;
         for (let i = 0; i < payload.length - 1; i++) {
-          computed = (computed + payload[i]) & 0xff;
+          computed = (computed + payload[i]) & CHECKSUM_MASK;
         }
         if (payload[payload.length - 1] === computed) {
-          const payloadLength = lengthIncludesHeader ? lengthByte - 3 : lengthByte;
+          const payloadLength = lengthIncludesHeader ? lengthByte - PACKET_HEADER_SIZE : lengthByte;
           dataPart = payload.subarray(2, 2 + payloadLength);
         }
       }

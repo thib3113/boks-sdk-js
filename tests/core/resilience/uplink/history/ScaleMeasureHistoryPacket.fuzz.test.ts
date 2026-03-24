@@ -8,7 +8,7 @@ describe('ScaleMeasureHistoryPacket Resilience (Fuzzing)', () => {
     fc.assert(
       fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (payload) => {
         try {
-          const packet = ScaleMeasureHistoryPacket.fromPayload(payload);
+          const packet = ScaleMeasureHistoryPacket.fromRaw(payload);
           expect(packet).toBeInstanceOf(ScaleMeasureHistoryPacket);
           expect(packet.opcode).toBe(ScaleMeasureHistoryPacket.opcode);
         } catch (e: any) {

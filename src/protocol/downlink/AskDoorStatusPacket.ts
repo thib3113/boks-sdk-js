@@ -9,7 +9,7 @@ export class AskDoorStatusPacket extends BoksPacket {
   get opcode() {
     return AskDoorStatusPacket.opcode;
   }
-  static fromPayload(payload: Uint8Array): AskDoorStatusPacket {
+  static fromRaw(payload: Uint8Array): AskDoorStatusPacket {
     return new AskDoorStatusPacket(payload);
   }
   toPayload() {

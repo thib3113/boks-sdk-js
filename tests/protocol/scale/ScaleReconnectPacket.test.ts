@@ -11,7 +11,7 @@ describe('ScaleReconnectPacket', () => {
   });
 
   it('should parse from payload correctly', () => {
-    const packet = ScaleReconnectPacket.fromPayload(new Uint8Array(0));
+    const packet = ScaleReconnectPacket.fromRaw(new Uint8Array(0));
     expect(packet.opcode).toBe(BoksOpcode.SCALE_RECONNECT);
   });
 

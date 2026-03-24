@@ -137,7 +137,13 @@ export const boksStore = reactive({
   logPacket(direction: 'TX' | 'RX', opcode: number, length: number, packet?: any) {
     const rawPacket = packet ? toRaw(packet) : undefined;
     const data: any = {};
+    let hexString = '';
+
     if (rawPacket) {
+      if (rawPacket.raw instanceof Uint8Array) {
+        hexString = bytesToHex(rawPacket.raw);
+      }
+      
       // Extract interesting fields from common packets for the summary view
       if ('pinCode' in rawPacket) data.pin = rawPacket.pinCode;
       if ('pin' in rawPacket) data.pin = rawPacket.pin;
@@ -155,6 +161,7 @@ export const boksStore = reactive({
       name: this.getOpcodeName(opcode),
       length,
       data: Object.keys(data).length > 0 ? data : undefined,
+      hex: hexString,
       rawData: rawPacket ? markRaw(rawPacket) : undefined
     });
 
@@ -189,7 +196,7 @@ export const boksStore = reactive({
         this.controller = new BoksController(client);
 
         client.on("*", (p, dir) => {
-          this.logPacket(dir, p.opcode, p.rawPayload.length, p);
+          this.logPacket(dir, p.opcode, p.raw.length, p);
         });
 
         client.event.on('parse_error', ({ data, error }) => {
@@ -210,7 +217,7 @@ export const boksStore = reactive({
         this.controller = new BoksController(client);
 
         client.on("*", (p, dir) => {
-          this.logPacket(dir, p.opcode, p.rawPayload.length, p);
+          this.logPacket(dir, p.opcode, p.raw.length, p);
         });
 
         client.event.on('parse_error', ({ data, error }) => {

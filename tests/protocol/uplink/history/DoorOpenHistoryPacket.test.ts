@@ -6,7 +6,7 @@ import { bytesToHex } from '@/utils/converters';
 describe('DoorOpenHistoryPacket', () => {
   it('should parse correctly with age', () => {
     const payload = new Uint8Array([0x00, 0x00, 0x0a]);
-    const packet = DoorOpenHistoryPacket.fromPayload(payload);
+    const packet = DoorOpenHistoryPacket.fromRaw(payload);
 
     expect(packet.opcode).toBe(BoksOpcode.LOG_DOOR_OPEN);
     expect(packet.age).toBe(10);
@@ -23,7 +23,7 @@ describe('DoorOpenHistoryPacket', () => {
   });
 
   it('should output only mapped payload properties and opcode via toJSON', () => {
-    const packet = DoorOpenHistoryPacket.fromPayload(new Uint8Array([0x00, 0x00, 0x0a]));
+    const packet = DoorOpenHistoryPacket.fromRaw(new Uint8Array([0x00, 0x00, 0x0a]));
     const json = packet.toJSON();
     expect(json).toStrictEqual({
         "age": 10,

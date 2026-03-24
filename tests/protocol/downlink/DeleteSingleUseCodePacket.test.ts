@@ -32,7 +32,7 @@ describe('DeleteSingleUseCodePacket', () => {
     payload.set(stringToBytes(validKey), 0);
     payload.set(stringToBytes(validPin), 8);
 
-    const packet = DeleteSingleUseCodePacket.fromPayload(payload);
+    const packet = DeleteSingleUseCodePacket.fromRaw(payload);
     expect(packet.configKey).toBe(validKey);
     expect(packet.pin).toBe(validPin);
   });
@@ -65,7 +65,7 @@ describe('DeleteSingleUseCodePacket', () => {
 
   it('should fail parsing if payload is too short', () => {
     const shortPayload = new Uint8Array(10);
-    expect(() => DeleteSingleUseCodePacket.fromPayload(shortPayload)).toThrowError(
+    expect(() => DeleteSingleUseCodePacket.fromRaw(shortPayload)).toThrowError(
       BoksProtocolError
     );
   });

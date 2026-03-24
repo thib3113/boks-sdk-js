@@ -25,14 +25,14 @@ export class SetConfigurationPacket extends AuthPacket {
   @PayloadBoolean(9)
   public accessor value!: boolean;
 
-  constructor(props: SetConfigurationPacketProps, rawPayload?: Uint8Array) {
-    super(props, rawPayload);
+  constructor(props: SetConfigurationPacketProps, raw?: Uint8Array) {
+    super(props, raw);
     this.configType = props.configType;
     this.value = props.value;
   }
 
-  static fromPayload(raw: Uint8Array): SetConfigurationPacket {
-    const payload = BoksPacket.extractPayloadData(raw);
+  static fromRaw(raw: Uint8Array): SetConfigurationPacket {
+    const payload = BoksPacket.extractPayloadData(raw, SetConfigurationPacket.opcode);
     if (payload.length !== 10) {
       throw new BoksProtocolError(
         BoksProtocolErrorId.INVALID_PAYLOAD_LENGTH,

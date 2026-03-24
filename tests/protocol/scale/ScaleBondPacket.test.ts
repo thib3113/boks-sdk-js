@@ -19,12 +19,12 @@ describe('ScaleBondPacket', () => {
 
   it('should parse from payload correctly', () => {
     const data = new Uint8Array([0x01, 0x02, 0x03]);
-    const packet = ScaleBondPacket.fromPayload(data);
+    const packet = ScaleBondPacket.fromRaw(data);
     expect(packet.data).toEqual(data);
   });
 
   it('should output only mapped payload properties and opcode via toJSON', () => {
-    const packet = ScaleBondPacket.fromPayload(new Uint8Array([0x01, 0x02, 0x03]));
+    const packet = ScaleBondPacket.fromRaw(new Uint8Array([0x01, 0x02, 0x03]));
     const json = packet.toJSON();
     expect(json).toStrictEqual({
         "opcode": 80,

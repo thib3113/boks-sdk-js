@@ -9,7 +9,7 @@ describe('Scale generic packets Resilience (Fuzzing)', () => {
   it('NotifyScaleRawSensorsPacket should handle arbitrary arrays', () => {
     fc.assert(
       fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (data) => {
-        const packet = NotifyScaleRawSensorsPacket.fromPayload(data);
+        const packet = NotifyScaleRawSensorsPacket.fromRaw(data);
         expect(packet).toBeInstanceOf(NotifyScaleRawSensorsPacket);
         expect(packet.opcode).toBe(BoksOpcode.NOTIFY_SCALE_RAW_SENSORS);
         expect(packet.data).toEqual(data);
@@ -21,7 +21,7 @@ describe('Scale generic packets Resilience (Fuzzing)', () => {
   it('ScaleBondPacket should handle arbitrary arrays', () => {
     fc.assert(
       fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (data) => {
-        const packet = ScaleBondPacket.fromPayload(data);
+        const packet = ScaleBondPacket.fromRaw(data);
         expect(packet).toBeInstanceOf(ScaleBondPacket);
         expect(packet.opcode).toBe(BoksOpcode.SCALE_BOND);
         expect(packet.data).toEqual(data);
@@ -34,7 +34,7 @@ describe('Scale generic packets Resilience (Fuzzing)', () => {
   it('ScaleGetMacPacket should handle arbitrary arrays without utilizing them', () => {
     fc.assert(
       fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (data) => {
-        const packet = ScaleGetMacPacket.fromPayload(data);
+        const packet = ScaleGetMacPacket.fromRaw(data);
         expect(packet).toBeInstanceOf(ScaleGetMacPacket);
         expect(packet.opcode).toBe(BoksOpcode.SCALE_GET_MAC_ADDRESS_BOKS);
         expect(packet.toPayload().length).toBe(0);

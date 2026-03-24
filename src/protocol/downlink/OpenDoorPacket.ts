@@ -15,13 +15,13 @@ export class OpenDoorPacket extends BoksPacket {
     return OpenDoorPacket.opcode;
   }
 
-  constructor(pin: string, rawPayload?: Uint8Array) {
-    super(rawPayload);
+  constructor(pin: string, raw?: Uint8Array) {
+    super(raw);
 
     this.pin = pin;
   }
 
-  static fromPayload(payload: Uint8Array): OpenDoorPacket {
+  static fromRaw(payload: Uint8Array): OpenDoorPacket {
     const data = PayloadMapper.parse<OpenDoorPacket>(OpenDoorPacket, payload);
     return new OpenDoorPacket(data.pin, payload);
   }

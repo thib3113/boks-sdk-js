@@ -11,12 +11,12 @@ export class OperationErrorPacket extends BoksRXPacket {
   @PayloadUint8(0)
   public accessor errorCode!: number;
 
-  constructor(errorCode: number, rawPayload?: Uint8Array) {
-    super(OperationErrorPacket.opcode, rawPayload);
+  constructor(errorCode: number, raw?: Uint8Array) {
+    super(OperationErrorPacket.opcode, raw);
     this.errorCode = errorCode;
   }
 
-  static fromPayload(payload: Uint8Array): OperationErrorPacket {
+  static fromRaw(payload: Uint8Array): OperationErrorPacket {
     const data = PayloadMapper.parse<OperationErrorPacket>(OperationErrorPacket, payload);
     return new OperationErrorPacket(data.errorCode, payload);
   }

@@ -4,14 +4,14 @@ import { NotifyCodesCountPacket } from '@/protocol/uplink/NotifyCodesCountPacket
 import { BoksOpcode } from '@/protocol/constants';
 
 describe('NotifyCodesCountPacket - Resilience & Edge Cases', () => {
-  describe('fromPayload()', () => {
+  describe('fromRaw()', () => {
     it('should parse valid arbitrary payloads without crashing', () => {
       fc.assert(
         fc.property(fc.uint8Array({ minLength: 4 }), (payload) => {
-          const packet = NotifyCodesCountPacket.fromPayload(payload);
+          const packet = NotifyCodesCountPacket.fromRaw(payload);
           expect(packet).toBeInstanceOf(NotifyCodesCountPacket);
           expect(packet.opcode).toBe(BoksOpcode.NOTIFY_CODES_COUNT);
-          expect((packet as any).rawPayload).toEqual(payload);
+          expect((packet as any).raw).toEqual(payload);
 
           const view = new DataView(payload.buffer, payload.byteOffset, payload.byteLength);
           expect(packet.masterCount).toBe(view.getUint16(0, false));
@@ -23,7 +23,7 @@ describe('NotifyCodesCountPacket - Resilience & Edge Cases', () => {
     it('should throw an error for missing trailing bytes', () => {
       fc.assert(
         fc.property(fc.uint8Array({ maxLength: 3 }), (shortPayload) => {
-          expect(() => NotifyCodesCountPacket.fromPayload(shortPayload)).toThrowError();
+          expect(() => NotifyCodesCountPacket.fromRaw(shortPayload)).toThrowError();
         })
       );
     });
@@ -43,7 +43,7 @@ describe('NotifyCodesCountPacket - Resilience & Edge Cases', () => {
             const payload = new Uint8Array(buffer);
             payload.set(trailingBytes, 4);
 
-            const packet = NotifyCodesCountPacket.fromPayload(payload);
+            const packet = NotifyCodesCountPacket.fromRaw(payload);
             expect(packet.masterCount).toBe(masterCount);
             expect(packet.otherCount).toBe(otherCount);
           }

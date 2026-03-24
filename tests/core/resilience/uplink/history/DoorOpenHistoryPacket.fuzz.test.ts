@@ -8,7 +8,7 @@ describe('DoorOpenHistoryPacket Resilience (Fuzzing)', () => {
     fc.assert(
       fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (payload) => {
         try {
-          const packet = DoorOpenHistoryPacket.fromPayload(payload);
+          const packet = DoorOpenHistoryPacket.fromRaw(payload);
           expect(packet).toBeInstanceOf(DoorOpenHistoryPacket);
           expect(packet.opcode).toBe(DoorOpenHistoryPacket.opcode);
         } catch (e: any) {

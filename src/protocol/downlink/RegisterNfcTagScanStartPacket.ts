@@ -14,13 +14,13 @@ export class RegisterNfcTagScanStartPacket extends BoksPacket {
   @PayloadConfigKey(1)
   public accessor configKey!: string;
 
-  constructor(configKey: string, rawPayload?: Uint8Array) {
-    super(rawPayload);
+  constructor(configKey: string, raw?: Uint8Array) {
+    super(raw);
     this.configKey = configKey;
   }
 
-  static fromPayload(raw: Uint8Array): RegisterNfcTagScanStartPacket {
-    const payload = BoksPacket.extractPayloadData(raw);
+  static fromRaw(raw: Uint8Array): RegisterNfcTagScanStartPacket {
+    const payload = BoksPacket.extractPayloadData(raw, RegisterNfcTagScanStartPacket.opcode);
     let parsePayload = payload;
     if (payload.length === 8) {
       parsePayload = new Uint8Array([0, ...payload]);

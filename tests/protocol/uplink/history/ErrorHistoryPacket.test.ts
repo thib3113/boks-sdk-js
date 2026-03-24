@@ -6,7 +6,7 @@ import { bytesToHex } from '@/utils/converters';
 describe('ErrorHistoryPacket', () => {
   it('should parse correctly with age and error code', () => {
     const payload = new Uint8Array([0x00, 0x00, 0x0a, 0xff]);
-    const packet = ErrorHistoryPacket.fromPayload(payload);
+    const packet = ErrorHistoryPacket.fromRaw(payload);
     expect(packet.opcode).toBe(BoksOpcode.LOG_EVENT_ERROR);
     expect(packet.age).toBe(10);
     expect(packet.errorCode).toBe(0xff);
@@ -34,7 +34,7 @@ describe('ErrorHistoryPacket', () => {
   });
 
   it('should output only mapped payload properties and opcode via toJSON', () => {
-    const packet = ErrorHistoryPacket.fromPayload(new Uint8Array([0x00, 0x00, 0x0a, 0xff]));
+    const packet = ErrorHistoryPacket.fromRaw(new Uint8Array([0x00, 0x00, 0x0a, 0xff]));
     const json = packet.toJSON();
     expect(json).toStrictEqual({
         "age": 10,

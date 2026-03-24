@@ -38,7 +38,7 @@ describe('GenerateCodesPacket', () => {
   });
 
   it('should parse from payload correctly', () => {
-    const packet = GenerateCodesPacket.fromPayload(validSeedBytes);
+    const packet = GenerateCodesPacket.fromRaw(validSeedBytes);
     expect(packet.toPayload()).toEqual(validSeedBytes);
   });
 

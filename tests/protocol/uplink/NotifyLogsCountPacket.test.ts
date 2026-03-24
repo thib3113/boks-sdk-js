@@ -7,7 +7,7 @@ describe('NotifyLogsCountPacket', () => {
   it('should parse correctly', () => {
     // 0x0100 -> 256
     const payload = new Uint8Array([0x01, 0x00]);
-    const packet = NotifyLogsCountPacket.fromPayload(payload);
+    const packet = NotifyLogsCountPacket.fromRaw(payload);
 
     expect(packet.opcode).toBe(BoksOpcode.NOTIFY_LOGS_COUNT);
     expect(packet.count).toBe(256);
@@ -21,7 +21,7 @@ describe('NotifyLogsCountPacket', () => {
   });
 
   it('should output only mapped payload properties and opcode via toJSON', () => {
-    const packet = NotifyLogsCountPacket.fromPayload(new Uint8Array([0x01, 0x00]));
+    const packet = NotifyLogsCountPacket.fromRaw(new Uint8Array([0x01, 0x00]));
     const json = packet.toJSON();
     expect(json).toStrictEqual({
         "count": 256,

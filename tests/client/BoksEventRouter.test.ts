@@ -31,7 +31,7 @@ describe('BoksEventRouter', () => {
     router.on(BoksOpcode.ASK_DOOR_STATUS, opListener);
 
     const packet1 = new AskDoorStatusPacket();
-    const packet2 = new AnswerDoorStatusPacket({ inverted: false, raw: true });
+    const packet2 = new AnswerDoorStatusPacket({ inverted: false, status: true });
 
     router.emitClientEvent(packet1, 'TX');
     router.emitClientEvent(packet2, 'RX');
@@ -52,7 +52,7 @@ describe('BoksEventRouter', () => {
       classListener(isOpen, dir);
     });
 
-    const packet1 = new AnswerDoorStatusPacket({ inverted: false, raw: true });
+    const packet1 = new AnswerDoorStatusPacket({ inverted: false, status: true });
     const packet2 = new AskDoorStatusPacket();
 
     router.emitClientEvent(packet1, 'RX');
@@ -70,8 +70,8 @@ describe('BoksEventRouter', () => {
     router.on(['TX', AnswerDoorStatusPacket], mixedListener);
 
     const packet1 = new AskDoorStatusPacket();
-    const packet2 = new AnswerDoorStatusPacket({ inverted: false, raw: false });
-    const packet3 = new NotifyDoorStatusPacket({ inverted: false, raw: true });
+    const packet2 = new AnswerDoorStatusPacket({ inverted: false, status: false });
+    const packet3 = new NotifyDoorStatusPacket({ inverted: false, status: true });
 
     router.emitClientEvent(packet1, 'TX'); // matches TX
     router.emitClientEvent(packet2, 'RX'); // matches Class

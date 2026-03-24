@@ -5,7 +5,7 @@ import { BoksOpcode } from '@/protocol/constants';
 describe('OperationSuccessPacket', () => {
   it('should parse correctly', () => {
     const payload = new Uint8Array(0);
-    const packet = OperationSuccessPacket.fromPayload(payload);
+    const packet = OperationSuccessPacket.fromRaw(payload);
     expect(packet.opcode).toBe(BoksOpcode.CODE_OPERATION_SUCCESS);
   });
 });

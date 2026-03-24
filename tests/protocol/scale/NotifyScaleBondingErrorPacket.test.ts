@@ -6,7 +6,7 @@ import { bytesToHex } from '@/utils/converters';
 describe('NotifyScaleBondingErrorPacket', () => {
   it('should parse correctly with error code', () => {
     const payload = new Uint8Array([0x05]);
-    const packet = NotifyScaleBondingErrorPacket.fromPayload(payload);
+    const packet = NotifyScaleBondingErrorPacket.fromRaw(payload);
     expect(packet.opcode).toBe(BoksOpcode.NOTIFY_SCALE_BONDING_ERROR);
     expect(packet.errorCode).toBe(5);
   });
@@ -19,7 +19,7 @@ describe('NotifyScaleBondingErrorPacket', () => {
   });
 
   it('should output only mapped payload properties and opcode via toJSON', () => {
-    const packet = NotifyScaleBondingErrorPacket.fromPayload(new Uint8Array([0x05]));
+    const packet = NotifyScaleBondingErrorPacket.fromRaw(new Uint8Array([0x05]));
     const json = packet.toJSON();
     expect(json).toStrictEqual({
         "errorCode": 5,

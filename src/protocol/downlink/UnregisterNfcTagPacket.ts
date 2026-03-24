@@ -19,12 +19,12 @@ export class UnregisterNfcTagPacket extends AuthPacket {
   @PayloadNfcUid(8)
   public accessor uid!: string;
 
-  constructor(props: UnregisterNfcTagPacketProps, rawPayload?: Uint8Array) {
-    super(props, rawPayload);
+  constructor(props: UnregisterNfcTagPacketProps, raw?: Uint8Array) {
+    super(props, raw);
     this.uid = props.uid;
   }
 
-  static fromPayload(payload: Uint8Array): UnregisterNfcTagPacket {
+  static fromRaw(payload: Uint8Array): UnregisterNfcTagPacket {
     const data = PayloadMapper.parse<UnregisterNfcTagPacketProps>(UnregisterNfcTagPacket, payload);
     return new UnregisterNfcTagPacket(data, payload);
   }
