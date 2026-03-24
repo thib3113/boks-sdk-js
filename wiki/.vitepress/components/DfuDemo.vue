@@ -1,18 +1,10 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed } from 'vue'
 import { i18n } from '../i18n'
+import { SecureDfu } from '@thib3113/web-bluetooth-dfu'
 
 const lang = ref(typeof navigator !== 'undefined' && navigator.language.startsWith('fr') ? 'fr' : 'en')
 const t = computed(() => i18n[lang.value as keyof typeof i18n] || i18n.en)
-
-let WebBluetoothDFU: any = null
-
-onMounted(async () => {
-  if (typeof window !== 'undefined') {
-    const module = await import('https://unpkg.com/@thib3113/web-bluetooth-dfu@2.4.0/dist/secure-dfu.mjs')
-    WebBluetoothDFU = module.SecureDfu
-  }
-})
 
 const dfuState = ref<'idle' | 'connected_normal' | 'connected_dfu' | 'flashing' | 'success' | 'error'>('idle')
 const logs = ref<string[]>([])
@@ -113,14 +105,14 @@ const rebootToDfu = async () => {
 }
 
 const flashFirmware = async () => {
-  if (!fileBuffer.value || !device || !WebBluetoothDFU) return
+  if (!fileBuffer.value || !device) return
 
   try {
     dfuState.value = 'flashing'
     log(t.value.dfu.status.flashing)
     progress.value = 0
 
-    const dfu = new WebBluetoothDFU()
+    const dfu = new SecureDfu()
 
     dfu.addEventListener('progress', (e: any) => {
       progress.value = e.object.progress * 100
@@ -139,9 +131,9 @@ const flashFirmware = async () => {
 
     // Decode DFU errors
     let errorMsg = e.message
-    if (errorMsg.includes('0x0B')) errorMsg += ' (Integrity check failed - Invalid ZIP?)'
+    if (errorMsg.includes('0x0B')) errorMsg += ' (Le fichier de firmware est invalide ou corrompu pour ce modèle)'
     if (errorMsg.includes('0x0C')) errorMsg += ' (Authentication failed - Not signed by Boks)'
-    if (errorMsg.includes('0x0D')) errorMsg += ' (Wrong PCB - Hardware mismatch)'
+    if (errorMsg.includes('0x0D')) errorMsg += ' (Ce firmware n\'est pas compatible avec la version matérielle de votre Boks)'
     if (errorMsg.includes('0x0E')) errorMsg += ' (Downgrade blocked)'
 
     log(`${t.value.dfu.status.error}: ${errorMsg}`)

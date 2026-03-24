@@ -22,11 +22,11 @@ The firmware update is a two-step process:
 
 ## Crucial FAQ & Safety Information
 
-::: danger High Risk vs Low Risk Devices
+::: danger Recovery from Interruption
 Not all Boks devices recover from an interrupted DFU in the same way.
 
-* **Boks V3 (nRF52811)**: **High Risk**. If the update is interrupted (browser closed, power loss), the device is essentially bricked. It stays in the bootloader state, preventing any normal interaction until a successful flash is performed.
-* **Boks V4 (nRF52833)**: **Low Risk**. The bootloader on newer devices handles interruptions more gracefully. A battery pull (removing and re-inserting the batteries) can usually recover the device to its previous state.
+* **Boks V3 (nRF52811)**: If the update is interrupted (browser closed, power loss), the device will be **temporarily unavailable** and stuck in update mode. It stays in the bootloader state, preventing any normal interaction until a successful flash is performed.
+* **Boks V4 (nRF52833)**: The bootloader on newer devices handles interruptions more gracefully. A battery pull (removing and re-inserting the batteries) can usually recover the device to its previous state.
 :::
 
 **Q: Can I flash an older version (downgrade)?**

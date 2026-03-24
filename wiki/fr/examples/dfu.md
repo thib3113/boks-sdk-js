@@ -22,11 +22,11 @@ La mise à jour du firmware est un processus en deux étapes :
 
 ## FAQ Cruciale & Informations de Sécurité
 
-::: danger Appareils à Haut Risque vs Bas Risque
+::: danger Récupération suite à une interruption
 Tous les appareils Boks ne récupèrent pas d'une DFU interrompue de la même manière.
 
-* **Boks V3 (nRF52811)** : **Haut Risque**. Si la mise à jour est interrompue (navigateur fermé, coupure de courant), l'appareil est essentiellement briqué. Il reste dans l'état du bootloader, empêchant toute interaction normale jusqu'à ce qu'un flashage réussi soit effectué.
-* **Boks V4 (nRF52833)** : **Bas Risque**. Le bootloader sur les appareils plus récents gère les interruptions plus gracieusement. Un retrait de la batterie (retirer et réinsérer les piles) peut généralement restaurer l'appareil à son état précédent.
+* **Boks V3 (nRF52811)** : Si la mise à jour est interrompue (navigateur fermé, coupure de courant), l'appareil sera **temporairement indisponible** ou **bloqué en mode mise à jour**. Il reste dans l'état du bootloader, empêchant toute interaction normale. Il suffit de réussir un nouveau flash pour restaurer l'appareil.
+* **Boks V4 (nRF52833)** : Le bootloader sur les appareils plus récents gère les interruptions plus gracieusement. Un retrait de la batterie (retirer et réinsérer les piles) peut généralement restaurer l'appareil à son état précédent.
 :::
 
 **Q: Puis-je flasher une version plus ancienne (downgrade) ?**

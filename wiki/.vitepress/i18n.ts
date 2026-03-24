@@ -209,7 +209,7 @@ export const i18n = {
       warnings: {
         https: 'Web Bluetooth requires a secure context (HTTPS).',
         legal: 'WARNING: Updating firmware is a critical operation. Do not close this tab or turn off the device during the process.',
-        bricking: 'DFU is in progress! Closing this page might brick your device.'
+        bricking: 'DFU is in progress! Closing this page might interrupt the update process.'
       },
       logs: {
         placeholder: 'Logs will appear here...',
@@ -468,7 +468,7 @@ export const i18n = {
       warnings: {
         https: 'Web Bluetooth nécessite un contexte sécurisé (HTTPS).',
         legal: 'ATTENTION : La mise à jour du firmware est une opération critique. Ne fermez pas cet onglet et n\'éteignez pas l\'appareil pendant le processus.',
-        bricking: 'Le flashage est en cours ! Fermer cette page pourrait rendre votre appareil inutilisable.'
+        bricking: 'Le flashage est en cours ! Fermer cette page pourrait interrompre le processus.'
       },
       logs: {
         placeholder: 'Les journaux apparaîtront ici...',
