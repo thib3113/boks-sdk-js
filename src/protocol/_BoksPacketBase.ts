@@ -75,7 +75,8 @@ export abstract class BoksPacket {
 
   encode(): Uint8Array {
     const payload = this.toPayload();
-    const lengthIncludesHeader = (this.constructor as any).lengthIncludesHeader ?? false;
+    const lengthIncludesHeader =
+      (this.constructor as unknown as BoksPacketConstructor).lengthIncludesHeader ?? false;
 
     const packet = new Uint8Array(payload.length + PACKET_HEADER_SIZE);
     packet[0] = this.opcode;

@@ -11,7 +11,9 @@ export interface PacketOptions {
 }
 
 export function PacketDescriptor(options: PacketOptions) {
-  return function (constructor: Function) {
-    (constructor as any).lengthIncludesHeader = options.lengthIncludesHeader;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return function (constructor: new (...args: any[]) => any) {
+    (constructor as unknown as { lengthIncludesHeader: boolean | undefined }).lengthIncludesHeader =
+      options.lengthIncludesHeader;
   };
 }
