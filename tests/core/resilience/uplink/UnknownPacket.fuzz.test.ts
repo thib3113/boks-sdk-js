@@ -17,6 +17,7 @@ describe('UnknownPacket Resilience (Fuzzing)', () => {
           // Verify properties
           expect(packet.opcode).toBe(opcode);
           expect(packet.payload).toEqual(payload);
+          // @ts-ignore
           expect(packet.rawPayload).toEqual(payload);
 
           // Verify payload and toJSON output
@@ -37,6 +38,7 @@ describe('UnknownPacket Resilience (Fuzzing)', () => {
     fc.assert(
       fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (payload) => {
         expect(() => {
+          // @ts-ignore
           UnknownPacket.fromPayload(payload);
         }).toThrow('Use fromUnknownPayload instead');
       }),
