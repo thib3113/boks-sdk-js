@@ -1,15 +1,40 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { useData } from 'vitepress'
 import { BoksPacketFactory } from '../../../src/protocol/BoksPacketFactory'
 import { PayloadMapper } from '../../../src/protocol/decorators/PayloadMapper'
 import { BoksOpcode } from '../../../src/protocol/constants'
 import { hexToBytes } from '../../../src/utils/converters'
 
+const { lang } = useData()
+
+const t = computed(() => {
+  const isFr = lang.value === 'fr'
+  return {
+    rawPacket: isFr ? 'Paquet hexadécimal brut :' : 'Raw Hexadecimal Packet:',
+    eg: isFr ? 'ex.' : 'e.g.',
+    warning: isFr ? '⚠️ Avertissement :' : '⚠️ Parsing Warning:',
+    opcode: 'Opcode',
+    length: isFr ? 'Taille' : 'Length',
+    incompleteOpcode: isFr ? 'Opcode incomplet' : 'Incomplete Opcode',
+    incompleteLength: isFr ? 'Taille incomplète' : 'Incomplete Length',
+    unknownPadding: isFr ? 'Remplissage inconnu' : 'Unknown Padding',
+    unmappedPayload: isFr ? 'Payload non assigné' : 'Unmapped Payload',
+    checksum: 'Checksum',
+    extraBytes: isFr ? 'Octets supplémentaires (Invalide)' : 'Extra Bytes (Invalid)',
+    hex: 'Hex',
+    label: 'Label',
+    value: isFr ? 'Valeur' : 'Value',
+    incompleteHex: isFr ? 'Longueur de chaîne hexadécimale incomplète.' : 'Incomplete hexadecimal string length.',
+    tooShort: isFr ? 'Paquet trop court (minimum 3 octets : Opcode, Taille, Checksum).' : 'Packet too short (minimum 3 bytes: Opcode, Length, Checksum).'
+  }
+})
+
 const getOpcodeName = (opcode: number): string => {
   return BoksOpcode[opcode] || `UNKNOWN_OPCODE (0x${opcode.toString(16).padStart(2, '0').toUpperCase()})`;
 }
 
-const rawHex = ref('c30400020cffd4')
+const rawHex = ref('c30700020cffd7')
 
 const inputRef = ref<HTMLInputElement | null>(null)
 const overlayRef = ref<HTMLDivElement | null>(null)
@@ -45,13 +70,10 @@ const packetData = computed(() => {
   if (hexStr.length === 0) return { segments: [], error: null }
 
   // 1. Opcode
-  if (!takeChars(2, { label: 'Opcode', color: '#E91E63' })) return { segments, error: 'Incomplete Opcode' }
+  if (!takeChars(2, { label: t.value.opcode, color: '#E91E63' })) return { segments, error: t.value.incompleteOpcode }
 
   // 2. Length
-  if (!takeChars(2, { label: 'Length', color: '#4CAF50' })) return { segments, error: 'Incomplete Length' }
-
-  const expectedPayloadBytes = parseInt(hexStr.slice(2, 4), 16) || 0
-  const expectedPayloadChars = expectedPayloadBytes * 2
+  if (!takeChars(2, { label: t.value.length, color: '#4CAF50' })) return { segments, error: t.value.incompleteLength }
 
   const bytes = hexToBytes(hexStr.slice(0, cursor + (hexStr.length - cursor - (hexStr.length % 2))))
   const opcode = bytes[0]
@@ -61,6 +83,11 @@ const packetData = computed(() => {
   if (packetClass) {
     fields = PayloadMapper.getFields(packetClass)
   }
+
+  const lengthByte = parseInt(hexStr.slice(2, 4), 16) || 0
+  const lengthIncludesHeader = packetClass?.lengthIncludesHeader ?? false
+  const expectedPayloadBytes = lengthIncludesHeader ? Math.max(0, lengthByte - 3) : lengthByte
+  const expectedPayloadChars = expectedPayloadBytes * 2
 
   // 3. Payload
   const actualPayloadChars = Math.min(expectedPayloadChars, hexStr.length - cursor)
@@ -82,7 +109,7 @@ const packetData = computed(() => {
       if (field.offset > currentByteOffset) {
         const gapBytes = field.offset - currentByteOffset
         const gapChars = gapBytes * 2
-        if (!takeChars(gapChars, { label: 'Unknown Padding', color: '#9E9E9E' })) break;
+        if (!takeChars(gapChars, { label: t.value.unknownPadding, color: '#9E9E9E' })) break;
         currentByteOffset += gapBytes
       }
 
@@ -111,19 +138,19 @@ const packetData = computed(() => {
     }
 
     if (cursor < endOfPayload) {
-      takeChars(endOfPayload - cursor, { label: 'Unmapped Payload', color: '#9E9E9E' })
+      takeChars(endOfPayload - cursor, { label: t.value.unmappedPayload, color: '#9E9E9E' })
     }
   }
 
   // 4. Checksum
   if (cursor < hexStr.length) {
     const checksumCharsAvailable = Math.min(2, hexStr.length - cursor)
-    takeChars(checksumCharsAvailable, { label: 'Checksum', color: '#FFC107' })
+    takeChars(checksumCharsAvailable, { label: t.value.checksum, color: '#FFC107' })
   }
 
   // 5. Extra bytes
   if (cursor < hexStr.length) {
-    takeChars(hexStr.length - cursor, { label: 'Extra Bytes (Invalid)', color: '#F44336' })
+    takeChars(hexStr.length - cursor, { label: t.value.extraBytes, color: '#F44336' })
   }
 
   // Attempt to parse actual packet to get values for the detail table
@@ -137,9 +164,9 @@ const packetData = computed(() => {
       parseError = e.message
     }
   } else if (hexStr.length % 2 !== 0) {
-    parseError = 'Incomplete hexadecimal string length.'
+    parseError = t.value.incompleteHex
   } else if (hexStr.length < 6) {
-    parseError = 'Packet too short (minimum 3 bytes: Opcode, Length, Checksum).'
+    parseError = t.value.tooShort
   }
 
   const detailSegments = segments.map(seg => {
@@ -147,7 +174,7 @@ const packetData = computed(() => {
     if (packetObj && seg.label && packetObj[seg.label] !== undefined) {
       val = packetObj[seg.label]
     }
-    if (seg.label === 'Opcode') {
+    if (seg.label === t.value.opcode) {
       seg.label = 'Opcode: ' + getOpcodeName(opcode)
     }
     return { ...seg, value: val }
@@ -161,7 +188,7 @@ const packetData = computed(() => {
 <template>
   <div class="packet-visualizer">
     <div class="input-group">
-      <label for="hexInput">Raw Hexadecimal Packet:</label>
+      <label for="hexInput">{{ t.rawPacket }}</label>
       <div class="input-container">
         <!-- Colored overlay behind/under the text -->
         <div class="input-overlay" ref="overlayRef" aria-hidden="true">
@@ -179,7 +206,7 @@ const packetData = computed(() => {
           v-model="rawHexInput"
           @scroll="handleScroll"
           type="text"
-          placeholder="e.g. c30400020cffd4"
+          :placeholder="`${t.eg} c30700020cffd7`"
           class="hex-input"
           spellcheck="false"
           autocomplete="off"
@@ -188,7 +215,7 @@ const packetData = computed(() => {
     </div>
 
     <div v-if="packetData?.error" class="error-msg">
-      ⚠️ Parsing Warning: {{ packetData.error }}
+      {{ t.warning }} {{ packetData.error }}
     </div>
 
     <div v-if="packetData?.segments && packetData.segments.length > 0" class="visualization-container">
@@ -210,9 +237,9 @@ const packetData = computed(() => {
       <table class="detail-table">
         <thead>
           <tr>
-            <th>Hex</th>
-            <th>Label</th>
-            <th>Value</th>
+            <th>{{ t.hex }}</th>
+            <th>{{ t.label }}</th>
+            <th>{{ t.value }}</th>
           </tr>
         </thead>
         <tbody>
