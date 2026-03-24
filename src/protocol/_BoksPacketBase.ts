@@ -25,16 +25,55 @@ export type BoksPacketJSON<T> = {
 
 export abstract class BoksPacket {
   #rawPayload?: Uint8Array;
+  #extractedPayloadCache?: Uint8Array;
 
   constructor(rawPayload?: Uint8Array) {
     this.#rawPayload = rawPayload;
   }
 
+  /**
+   * Represents the raw bytes of the packet.
+   * If instantiated from a received buffer, this contains the full packet (Opcode + Len + Payload + CRC).
+   */
   get rawPayload(): Uint8Array {
     return this.#rawPayload ?? EMPTY_BUFFER;
   }
 
+  /**
+   * The data part of the packet (excluding opcode, length byte, and checksum).
+   * Cached after first extraction for performance.
+   */
+  get payload(): Uint8Array {
+    if (this.#extractedPayloadCache) {
+      return this.#extractedPayloadCache;
+    }
+
+    if (this.#rawPayload && this.#rawPayload.length >= PACKET_HEADER_SIZE) {
+      // If it looks like a full packet (starts with our opcode), extract the data part
+      if (this.#rawPayload[0] === this.opcode) {
+        const lengthIncludesHeader = (this.constructor as unknown as BoksPacketConstructor).lengthIncludesHeader ?? false;
+        this.#extractedPayloadCache = BoksPacket.extractPayloadData(this.#rawPayload, lengthIncludesHeader);
+        return this.#extractedPayloadCache;
+      }
+    }
+    
+    // Fallback: it might already be just a payload
+    this.#extractedPayloadCache = this.#rawPayload ?? EMPTY_BUFFER;
+    return this.#extractedPayloadCache;
+  }
+
+  /**
+   * Helper to extract the data payload from a full packet buffer.
+   */
+  static extractPayloadData(data: Uint8Array, lengthIncludesHeader: boolean = false): Uint8Array {
+    if (data.length < PACKET_HEADER_SIZE) return data;
+    const lengthByte = data[1];
+    const payloadLength = lengthIncludesHeader ? lengthByte - PACKET_HEADER_SIZE : lengthByte;
+    return data.subarray(2, 2 + payloadLength);
+  }
+
   abstract get opcode(): BoksOpcode;
+  
   toPayload(): Uint8Array {
     return PayloadMapper.serialize(this);
   }
@@ -47,10 +86,6 @@ export abstract class BoksPacket {
   static fromPayload(_payload: Uint8Array): BoksPacket {
     throw new BoksProtocolError(BoksProtocolErrorId.NOT_IMPLEMENTED, 'fromPayload not implemented');
   }
-
-  /**
-   * Encodes the full packet: [Opcode, Length, ...Payload, Checksum]
-   */
 
   /**
    * Serializes the packet to a plain JSON object.
@@ -73,6 +108,9 @@ export abstract class BoksPacket {
     return result as BoksPacketJSON<this>;
   }
 
+  /**
+   * Encodes the full packet: [Opcode, Length, ...Payload, Checksum]
+   */
   encode(): Uint8Array {
     const payload = this.toPayload();
     const lengthIncludesHeader =

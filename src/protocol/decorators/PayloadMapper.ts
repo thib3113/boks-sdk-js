@@ -833,13 +833,40 @@ export class PayloadMapper {
         { received: typeof payload, expected: 'Uint8Array' }
       );
     }
+
+    // Auto-extract payload if we received a full raw packet
+    let dataPart = payload;
+    const opcode = (targetClass as any).opcode;
+    // We check if it looks like a full packet: length > header size, starts with opcode
+    if (
+      opcode !== undefined &&
+      payload.length >= 3 &&
+      payload[0] === opcode
+    ) {
+      const lengthIncludesHeader = (targetClass as any).lengthIncludesHeader ?? false;
+      const lengthByte = payload[1];
+      const expectedTotalLength = lengthIncludesHeader ? lengthByte : lengthByte + 3;
+
+      if (expectedTotalLength === payload.length) {
+        // We do a quick checksum validation to be sure it's a full packet and not just payload data that happens to match
+        let computed = 0;
+        for (let i = 0; i < payload.length - 1; i++) {
+          computed = (computed + payload[i]) & 0xff;
+        }
+        if (payload[payload.length - 1] === computed) {
+          const payloadLength = lengthIncludesHeader ? lengthByte - 3 : lengthByte;
+          dataPart = payload.subarray(2, 2 + payloadLength);
+        }
+      }
+    }
+
     let parser = this.compiledParsers.get(targetClass as PayloadConstructor);
     if (!parser) {
       parser = this.compileParser(targetClass as PayloadConstructor);
       this.compiledParsers.set(targetClass as PayloadConstructor, parser);
     }
     const result = parser(
-      payload,
+      dataPart,
       BoksProtocolError,
       BoksProtocolErrorId,
       BoksExpectedReason,

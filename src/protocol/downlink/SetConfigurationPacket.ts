@@ -1,4 +1,5 @@
 import { PayloadMapper, PayloadUint8, PayloadBoolean } from '@/protocol/decorators';
+import { BoksPacket } from '@/protocol/_BoksPacketBase';
 import { AuthPacket, AuthPacketProps } from '@/protocol/downlink/_AuthPacketBase';
 import { BoksOpcode, BoksConfigType } from '@/protocol/constants';
 import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';
@@ -30,7 +31,8 @@ export class SetConfigurationPacket extends AuthPacket {
     this.value = props.value;
   }
 
-  static fromPayload(payload: Uint8Array): SetConfigurationPacket {
+  static fromPayload(raw: Uint8Array): SetConfigurationPacket {
+    const payload = BoksPacket.extractPayloadData(raw);
     if (payload.length !== 10) {
       throw new BoksProtocolError(
         BoksProtocolErrorId.INVALID_PAYLOAD_LENGTH,

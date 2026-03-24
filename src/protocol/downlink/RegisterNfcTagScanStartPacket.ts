@@ -19,7 +19,8 @@ export class RegisterNfcTagScanStartPacket extends BoksPacket {
     this.configKey = configKey;
   }
 
-  static fromPayload(payload: Uint8Array): RegisterNfcTagScanStartPacket {
+  static fromPayload(raw: Uint8Array): RegisterNfcTagScanStartPacket {
+    const payload = BoksPacket.extractPayloadData(raw);
     let parsePayload = payload;
     if (payload.length === 8) {
       parsePayload = new Uint8Array([0, ...payload]);

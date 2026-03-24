@@ -21,8 +21,8 @@ describe('NotifyDoorStatusPacket - Resilience & Edge Cases', () => {
 
           // Boolean validation based on parsing logic
           const inverted = payload[0];
-          const raw = payload[1];
-          if (raw === 0x01 && inverted === 0x00) {
+          const status = payload[1];
+          if (status === 0x01 && inverted === 0x00) {
             expect(packet.isOpen).toBe(true);
           } else {
             expect(packet.isOpen).toBe(false);
@@ -46,9 +46,9 @@ describe('NotifyDoorStatusPacket - Resilience & Edge Cases', () => {
         fc.property(
           fc.integer({ min: 0, max: 255 }),
           fc.integer({ min: 0, max: 255 }),
-          (inverted, raw) => {
-            fc.pre((inverted !== 0x00 && inverted !== 0x01) || (raw !== 0x00 && raw !== 0x01)); // Exclude valid boolean bytes
-            const payload = new Uint8Array([inverted, raw]);
+          (inverted, status) => {
+            fc.pre((inverted !== 0x00 && inverted !== 0x01) || (status !== 0x00 && status !== 0x01)); // Exclude valid boolean bytes
+            const payload = new Uint8Array([inverted, status]);
             expect(() => NotifyDoorStatusPacket.fromPayload(payload)).toThrowError(Error);
           }
         )

@@ -5,7 +5,7 @@ import { BoksOpcode } from '@/protocol/constants';
 import { bytesToHex } from '@/utils/converters';
 
 describe('AnswerDoorStatusPacket', () => {
-  it('should detect OPEN state (inv=false, raw=true)', () => {
+  it('should detect OPEN state (inv=false, status=true)', () => {
     const payload = new Uint8Array([0x00, 0x01]);
     const packet = AnswerDoorStatusPacket.fromPayload(payload);
     expect(packet.opcode).toBe(BoksOpcode.ANSWER_DOOR_STATUS);
@@ -13,18 +13,18 @@ describe('AnswerDoorStatusPacket', () => {
   });
 
   it('should encode correctly (Open)', () => {
-    const packet = new AnswerDoorStatusPacket({ inverted: false, raw: true });
+    const packet = new AnswerDoorStatusPacket({ inverted: false, status: true });
     const encoded = packet.encode();
-    // Opcode 0x85, Len 2, Inv 0, Raw 1
+    // Opcode 0x85, Len 2, Inv 0, Status 1
     expect(encoded[0]).toBe(0x85);
     expect(encoded[1]).toBe(2);
     expect(bytesToHex(encoded.subarray(2, 4))).toBe('0001');
   });
 
   it('should encode correctly (Closed)', () => {
-    const packet = new AnswerDoorStatusPacket({ inverted: true, raw: false });
+    const packet = new AnswerDoorStatusPacket({ inverted: true, status: false });
     const encoded = packet.encode();
-    // Opcode 0x85, Len 2, Inv 1, Raw 0
+    // Opcode 0x85, Len 2, Inv 1, Status 0
     expect(encoded[0]).toBe(0x85);
     expect(encoded[1]).toBe(2);
     expect(bytesToHex(encoded.subarray(2, 4))).toBe('0100');
@@ -41,7 +41,7 @@ describe('AnswerDoorStatusPacket', () => {
     expect(json).toStrictEqual({
         "inverted": false,
         "opcode": 133,
-        "raw": true,
+        "status": true,
       });
   });
 });

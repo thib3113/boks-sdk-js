@@ -26,12 +26,12 @@ class MockTransport implements BoksTransport {
 class MockPacket extends BoksPacket {
   constructor(
     public opcode: BoksOpcode,
-    private payload: Uint8Array = new Uint8Array(0)
+    private mockPayload: Uint8Array = new Uint8Array(0)
   ) {
     super();
   }
   toPayload() {
-    return this.payload;
+    return this.mockPayload;
   }
 }
 

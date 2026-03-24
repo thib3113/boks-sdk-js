@@ -7,7 +7,7 @@ import { BoksOpcode } from '@/protocol/constants';
  */
 export interface NotifyDoorStatusPacketProps {
   inverted: boolean;
-  raw: boolean;
+  status: boolean;
 }
 
 export class NotifyDoorStatusPacket extends BoksRXPacket {
@@ -17,16 +17,16 @@ export class NotifyDoorStatusPacket extends BoksRXPacket {
   public accessor inverted!: boolean;
 
   @PayloadBoolean(1)
-  public accessor raw!: boolean;
+  public accessor status!: boolean;
 
   public get isOpen(): boolean {
-    return this.raw === true && this.inverted === false;
+    return this.status === true && this.inverted === false;
   }
 
   constructor(props: NotifyDoorStatusPacketProps, rawPayload?: Uint8Array) {
     super(NotifyDoorStatusPacket.opcode, rawPayload);
     this.inverted = props.inverted;
-    this.raw = props.raw;
+    this.status = props.status;
   }
 
   static fromPayload(payload: Uint8Array): NotifyDoorStatusPacket {

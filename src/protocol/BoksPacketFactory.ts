@@ -185,8 +185,6 @@ export class BoksPacketFactory {
       );
     }
 
-    const payloadLength = lengthIncludesHeader ? lengthByte - PACKET_HEADER_SIZE : lengthByte;
-    const payload = data.subarray(2, 2 + payloadLength);
     const checksum = data[expectedTotalLength - 1];
 
     // Validate checksum
@@ -205,7 +203,7 @@ export class BoksPacketFactory {
       });
     }
 
-    return this.fromResponse(opcode, payload);
+    return this.fromResponse(opcode, data);
   }
 
   /**
