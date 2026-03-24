@@ -16,11 +16,11 @@ describe('UnknownPacket Resilience (Fuzzing)', () => {
 
           // Verify properties
           expect(packet.opcode).toBe(opcode);
-          expect(packet.payload).toBe(payload);
-          expect(packet.rawPayload).toBe(payload);
+          expect(packet.payload).toEqual(payload);
+          expect(packet.rawPayload).toEqual(payload);
 
           // Verify payload and toJSON output
-          expect(packet.toPayload()).toBe(payload);
+          expect(packet.toPayload()).toEqual(payload);
           const json = packet.toJSON();
           expect(json).toEqual({
             opcode: opcode,

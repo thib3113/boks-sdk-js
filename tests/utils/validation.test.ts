@@ -20,6 +20,19 @@ describe('validation utils', () => {
       expect(() => validatePinCode('123AB6')).not.toThrow();
     });
 
+    it('should accept ID PIN codes when allowed', () => {
+      expect(() => validatePinCode('MC1234', true)).not.toThrow();
+      expect(() => validatePinCode('UC1234', true)).not.toThrow();
+      expect(() => validatePinCode('mc1234', true)).not.toThrow();
+      expect(() => validatePinCode('uc1234', true)).not.toThrow();
+    });
+
+    it('should reject ID PIN codes when not allowed', () => {
+      expect(() => validatePinCode('MC1234', false)).toThrowError(BoksProtocolError);
+      expect(() => validatePinCode('UC1234', false)).toThrowError(BoksProtocolError);
+      expect(() => validatePinCode('MC1234')).toThrowError(BoksProtocolError); // Default is false
+    });
+
     it('should reject PIN codes with invalid length', () => {
       expect(() => validatePinCode('12345')).toThrowError(
         new BoksProtocolError(
