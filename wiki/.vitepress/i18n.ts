@@ -152,7 +152,8 @@ export const i18n = {
       date: 'Date',
       type: 'Type',
       eventDesc: 'Event Description',
-      noHistory: 'No history fetched yet. Click "Sync History".',
+      noHistory: 'No history fetched yet.',
+      syncPrompt: 'Click "Sync History" to download the events.',
       fetchingMsg: 'Fetching history from device memory...',
       fetchSuccess: 'Successfully fetched {count} events.',
       doorOpened: 'Door Opened',
@@ -162,6 +163,10 @@ export const i18n = {
       validNfcTag: 'Valid NFC Tag',
       physicalKey: 'Physical Key',
       systemPowerOn: 'System Power On',
+      pendingLogs: 'Pending logs on device: {count}',
+      pendingLogsUnknown: 'Pending logs: Unknown',
+      refreshPending: 'Refresh Count',
+      fetchingCount: 'Checking...'
     },
     battery: {
       title: 'Battery & Hardware Info',
@@ -411,7 +416,8 @@ export const i18n = {
       date: 'Date',
       type: 'Type',
       eventDesc: 'Description de l\'Événement',
-      noHistory: 'Aucun historique récupéré pour l\'instant. Cliquez sur "Synchroniser l\'Historique".',
+      noHistory: 'Aucun historique récupéré pour l\'instant.',
+      syncPrompt: 'Cliquez sur "Synchroniser l\'Historique" pour télécharger les événements.',
       fetchingMsg: 'Récupération de l\'historique depuis la mémoire de l\'appareil...',
       fetchSuccess: 'Récupération réussie de {count} événements.',
       doorOpened: 'Porte Ouverte',
@@ -421,6 +427,10 @@ export const i18n = {
       validNfcTag: 'Tag NFC Valide',
       physicalKey: 'Clé Physique',
       systemPowerOn: 'Allumage du Système',
+      pendingLogs: 'Journaux en attente sur l\'appareil : {count}',
+      pendingLogsUnknown: 'Journaux en attente : Inconnu',
+      refreshPending: 'Actualiser le Compte',
+      fetchingCount: 'Vérification...'
     },
     battery: {
       title: 'Info Batterie & Matériel',
