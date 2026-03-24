@@ -518,3 +518,23 @@ export const i18n = {
     }
   }
 }
+
+export function useI18n() {
+  const isFrench = typeof navigator !== 'undefined' && navigator.language.startsWith('fr')
+  const locale = isFrench ? 'fr' : 'en'
+  const t = (key: string, values?: Record<string, any>) => {
+    const keys = key.split('.')
+    let val: any = i18n[locale]
+    for (const k of keys) {
+      if (!val) break
+      val = val[k]
+    }
+    if (typeof val !== 'string') return key
+
+    if (values) {
+      return val.replace(/\{(\w+)\}/g, (_, k) => values[k] !== undefined ? values[k] : `{${k}}`)
+    }
+    return val
+  }
+  return { t, locale }
+}
