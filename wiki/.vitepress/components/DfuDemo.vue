@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { useI18n } from '../i18n'
+import { i18n } from '../i18n'
 
-const { t } = useI18n()
+const lang = ref(typeof navigator !== 'undefined' && navigator.language.startsWith('fr') ? 'fr' : 'en')
+const t = computed(() => i18n[lang.value as keyof typeof i18n] || i18n.en)
 
 let WebBluetoothDFU: any = null
 
@@ -38,14 +39,14 @@ const onFileChange = (e: Event) => {
   const reader = new FileReader()
   reader.onload = (e) => {
     fileBuffer.value = e.target?.result as ArrayBuffer
-    log(t('dfu.logs.firmware_loaded', { name: file.name, size: fileBuffer.value.byteLength }))
+    log(t.value.dfu.logs.firmware_loaded.replace('{name}', file.name).replace('{size}', fileBuffer.value!.byteLength.toString()))
   }
   reader.readAsArrayBuffer(file)
 }
 
 const connect = async () => {
   try {
-    log(t('dfu.status.searching'))
+    log(t.value.dfu.status.searching)
     device = await navigator.bluetooth.requestDevice({
       filters: [{ namePrefix: 'Boks' }, { namePrefix: 'DfuTarg' }],
       optionalServices: [
@@ -55,7 +56,7 @@ const connect = async () => {
       ]
     })
 
-    log(t('dfu.status.connecting'))
+    log(t.value.dfu.status.connecting)
     await device.gatt?.connect()
     deviceName.value = device.name || 'Unknown'
 
@@ -64,7 +65,7 @@ const connect = async () => {
       await readDeviceInfo()
     } else if (deviceName.value === 'DfuTarg' || deviceName.value === 'Boks_DFU') {
       dfuState.value = 'connected_dfu'
-      log(t('dfu.status.device_in_dfu'))
+      log(t.value.dfu.status.device_in_dfu)
     }
   } catch (e: any) {
     log(`Connection failed: ${e.message}`)
@@ -99,7 +100,7 @@ const readDeviceInfo = async () => {
 
 const rebootToDfu = async () => {
   try {
-    log(t('dfu.status.rebooting'))
+    log(t.value.dfu.status.rebooting)
     const dfuService = await device!.gatt!.getPrimaryService('0000fe59-0000-1000-8000-00805f9b34fb')
     const dfuChar = await dfuService.getCharacteristic('8ec90001-f315-4f60-9fb8-838830daea50')
     await dfuChar.writeValueWithoutResponse(new Uint8Array([0x01]))
@@ -116,7 +117,7 @@ const flashFirmware = async () => {
 
   try {
     dfuState.value = 'flashing'
-    log(t('dfu.status.flashing'))
+    log(t.value.dfu.status.flashing)
     progress.value = 0
 
     const dfu = new WebBluetoothDFU()
@@ -132,7 +133,7 @@ const flashFirmware = async () => {
     await dfu.update(device, fileBuffer.value)
 
     dfuState.value = 'success'
-    log(t('dfu.status.success'))
+    log(t.value.dfu.status.success)
   } catch (e: any) {
     dfuState.value = 'error'
 
@@ -143,7 +144,7 @@ const flashFirmware = async () => {
     if (errorMsg.includes('0x0D')) errorMsg += ' (Wrong PCB - Hardware mismatch)'
     if (errorMsg.includes('0x0E')) errorMsg += ' (Downgrade blocked)'
 
-    log(`${t('dfu.status.error')}: ${errorMsg}`)
+    log(`${t.value.dfu.status.error}: ${errorMsg}`)
   }
 }
 </script>
@@ -151,15 +152,15 @@ const flashFirmware = async () => {
 <template>
   <div class="boks-demo-container boks-theme">
     <div class="header">
-      <h2>{{ t('dfu.title') }}</h2>
-      <p>{{ t('dfu.desc') }}</p>
+      <h2>{{ t.dfu.title }}</h2>
+      <p>{{ t.dfu.desc }}</p>
     </div>
 
     <div class="demo-content">
       <div class="panel">
         <div class="file-selector">
           <label class="file-label">
-            {{ t('dfu.selectFile') }}
+            {{ t.dfu.selectFile }}
             <input type="file" accept=".zip" @change="onFileChange" />
           </label>
           <span v-if="fileName" class="file-name">{{ fileName }}</span>
@@ -167,34 +168,34 @@ const flashFirmware = async () => {
 
         <div class="device-panel">
           <div class="info-row">
-            <span class="label">{{ t('dfu.labels.device_name') }}:</span>
-            <span class="value">{{ deviceName || t('dfu.labels.unknown') }}</span>
+            <span class="label">{{ t.dfu.labels.device_name }}:</span>
+            <span class="value">{{ deviceName || t.dfu.labels.unknown }}</span>
           </div>
           <div class="info-row" v-if="batteryLevel !== null">
-            <span class="label">{{ t('dfu.labels.battery') }}:</span>
+            <span class="label">{{ t.dfu.labels.battery }}:</span>
             <span class="value" :class="{ 'warning-text': batteryLevel < 20 }">{{ batteryLevel }}%</span>
           </div>
           <div class="info-row" v-if="swVersion">
-            <span class="label">{{ t('dfu.labels.version') }}:</span>
+            <span class="label">{{ t.dfu.labels.version }}:</span>
             <span class="value">{{ swVersion }}</span>
           </div>
           <div class="info-row" v-if="hwVersion">
-            <span class="label">{{ t('dfu.labels.hw') }}:</span>
+            <span class="label">{{ t.dfu.labels.hw }}:</span>
             <span class="value">{{ hwVersion }}</span>
           </div>
         </div>
 
         <div class="action-buttons">
           <button v-if="dfuState === 'idle'" class="btn" @click="connect">
-            {{ t('dfu.buttons.connect') }}
+            {{ t.dfu.buttons.connect }}
           </button>
 
           <button v-if="dfuState === 'connected_normal'" class="btn warning" @click="rebootToDfu">
-            {{ t('dfu.buttons.prepare') }}
+            {{ t.dfu.buttons.prepare }}
           </button>
 
           <button v-if="dfuState === 'connected_dfu'" class="btn primary" :disabled="!fileBuffer" @click="flashFirmware">
-            {{ t('dfu.buttons.flash') }}
+            {{ t.dfu.buttons.flash }}
           </button>
         </div>
 
@@ -212,7 +213,7 @@ const flashFirmware = async () => {
         <h3>Logs</h3>
         <div class="log-box">
           <div v-for="(log, i) in logs" :key="i" class="log-entry">{{ log }}</div>
-          <div v-if="logs.length === 0" class="log-placeholder">{{ t('dfu.logs.placeholder') }}</div>
+          <div v-if="logs.length === 0" class="log-placeholder">{{ t.dfu.logs.placeholder }}</div>
         </div>
       </div>
     </div>
