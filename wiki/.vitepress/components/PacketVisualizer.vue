@@ -1,5 +1,6 @@
 <script setup lang="ts">import { ref, computed } from 'vue'
 import { useData } from 'vitepress'
+import { i18n } from '../i18n'
 import { BoksPacketFactory } from '../../../src/protocol/BoksPacketFactory'
 import { PayloadMapper } from '../../../src/protocol/decorators/PayloadMapper'
 import { BoksOpcode } from '../../../src/protocol/constants'
@@ -7,30 +8,7 @@ import { hexToBytes } from '../../../src/utils/converters'
 
 const { lang } = useData()
 
-const t = computed(() => {
-  const isFr = lang.value === 'fr'
-  return {
-    rawPacket: isFr ? 'Paquet hexadécimal brut :' : 'Raw Hexadecimal Packet:',
-    eg: isFr ? 'ex.' : 'e.g.',
-    warning: isFr ? '⚠️ Avertissement :' : '⚠️ Parsing Warning:',
-    opcode: 'Opcode',
-    length: isFr ? 'Taille' : 'Length',
-    incompleteOpcode: isFr ? 'Opcode incomplet' : 'Incomplete Opcode',
-    incompleteLength: isFr ? 'Taille incomplète' : 'Incomplete Length',
-    unknownPadding: isFr ? 'Remplissage inconnu' : 'Unknown Padding',
-    unmappedPayload: isFr ? 'Payload non assigné' : 'Unmapped Payload',
-    checksum: 'Checksum',
-    extraBytes: isFr ? 'Octets supplémentaires (Invalide)' : 'Extra Bytes (Invalid)',
-    hex: 'Hex',
-    label: 'Label',
-    value: isFr ? 'Valeur' : 'Value',
-    incompleteHex: isFr ? 'Longueur de chaîne hexadécimale incomplète.' : 'Incomplete hexadecimal string length.',
-    tooShort: isFr ? 'Paquet trop court (minimum 3 octets : Opcode, Taille, Checksum).' : 'Packet too short (minimum 3 bytes: Opcode, Length, Checksum).',
-    lengthTooShort: isFr ? 'Paquet trop court en fonction de sa taille' : 'Packet length too short based on length byte',
-    invalidChecksum: isFr ? 'Somme de contrôle invalide' : 'Invalid checksum',
-    missingChecksum: isFr ? 'Somme de contrôle manquante' : 'Missing checksum'
-  }
-})
+const t = computed(() => (i18n[lang.value as keyof typeof i18n] || i18n.en).visualizer)
 
 const getOpcodeName = (opcode: number): string => {
   return BoksOpcode[opcode] || `UNKNOWN_OPCODE (0x${opcode.toString(16).padStart(2, '0').toUpperCase()})`;

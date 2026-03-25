@@ -1,6 +1,27 @@
 export const i18n = {
   en: {
 
+    visualizer: {
+      rawPacket: 'Raw Hexadecimal Packet:',
+      eg: 'e.g.',
+      warning: '⚠️ Parsing Warning:',
+      opcode: 'Opcode',
+      length: 'Length',
+      incompleteOpcode: 'Incomplete Opcode',
+      incompleteLength: 'Incomplete Length',
+      unknownPadding: 'Unknown Padding',
+      unmappedPayload: 'Unmapped Payload',
+      checksum: 'Checksum',
+      extraBytes: 'Extra Bytes (Invalid)',
+      hex: 'Hex',
+      label: 'Label',
+      value: 'Value',
+      incompleteHex: 'Incomplete hexadecimal string length.',
+      tooShort: 'Packet too short (minimum 3 bytes: Opcode, Length, Checksum).',
+      lengthTooShort: 'Packet length too short based on length byte',
+      invalidChecksum: 'Invalid checksum',
+      missingChecksum: 'Missing checksum'
+    },
     provision: {
       title: 'Seed Regeneration',
       desc: 'Replace the current Master Key with a new known seed to generate offline codes.',
@@ -265,6 +286,27 @@ export const i18n = {
   },
   fr: {
 
+    visualizer: {
+      rawPacket: 'Paquet hexadécimal brut :',
+      eg: 'ex.',
+      warning: '⚠️ Avertissement :',
+      opcode: 'Opcode',
+      length: 'Taille',
+      incompleteOpcode: 'Opcode incomplet',
+      incompleteLength: 'Taille incomplète',
+      unknownPadding: 'Remplissage inconnu',
+      unmappedPayload: 'Payload non assigné',
+      checksum: 'Checksum',
+      extraBytes: 'Octets supplémentaires (Invalide)',
+      hex: 'Hex',
+      label: 'Label',
+      value: 'Valeur',
+      incompleteHex: 'Longueur de chaîne hexadécimale incomplète.',
+      tooShort: 'Paquet trop court (minimum 3 octets : Opcode, Taille, Checksum).',
+      lengthTooShort: 'Paquet trop court en fonction de sa taille',
+      invalidChecksum: 'Somme de contrôle invalide',
+      missingChecksum: 'Somme de contrôle manquante'
+    },
     provision: {
       title: 'Régénération de Seed',
       desc: 'Générez une nouvelle Clé Maître aléatoire et provisionnez-la sur l\'appareil.',
