@@ -1,9 +1,7 @@
-import { reactive, shallowRef, toRaw, markRaw } from 'vue';
-import { BoksController } from '../../src/client/BoksController';
-import { BoksClient } from '../../src/client/BoksClient';
+import { markRaw, reactive, shallowRef, toRaw } from 'vue';
+import { BoksClient, BoksCodeType, BoksController, BoksOpcode, bytesToHex } from '../../src';
 import { BoksHardwareSimulator } from '../../src/simulator/BoksSimulator';
 import { SimulatorTransport } from '../../src/simulator/SimulatorTransport';
-import { BoksCodeType, BoksOpcode } from '../../src/protocol/constants';
 
 export interface BoksLog {
   time: string;
@@ -97,13 +95,11 @@ export const boksStore = reactive({
       msg,
       type
     });
-
   },
-
 
   exportLogs() {
     if (typeof document === 'undefined') return;
-    const exportedLogs = this.packetLogs.map(log => {
+    const exportedLogs = this.packetLogs.map((log) => {
       let packetData = undefined;
       if (log.rawData) {
         packetData = JSON.parse(JSON.stringify(log.rawData));
@@ -143,7 +139,7 @@ export const boksStore = reactive({
       if (rawPacket.raw instanceof Uint8Array) {
         hexString = bytesToHex(rawPacket.raw);
       }
-      
+
       // Extract interesting fields from common packets for the summary view
       if ('pinCode' in rawPacket) data.pin = rawPacket.pinCode;
       if ('pin' in rawPacket) data.pin = rawPacket.pin;
@@ -151,30 +147,34 @@ export const boksStore = reactive({
       if ('weight' in rawPacket) data.weight = `${rawPacket.weight}g`;
       if ('battery' in rawPacket) data.batt = `${rawPacket.battery}%`;
       if ('isOpen' in rawPacket) data.open = rawPacket.isOpen;
-      if ('date' in rawPacket) data.time = rawPacket.date instanceof Date ? rawPacket.date.toLocaleTimeString() : rawPacket.date;
+      if ('date' in rawPacket)
+        data.time =
+          rawPacket.date instanceof Date ? rawPacket.date.toLocaleTimeString() : rawPacket.date;
     }
 
     this.packetLogs.unshift({
       time: new Date().toLocaleTimeString(),
       direction,
-      opcode: `0x${opcode.toString(16).padStart(2, "0").toUpperCase()}`,
+      opcode: `0x${opcode.toString(16).padStart(2, '0').toUpperCase()}`,
       name: this.getOpcodeName(opcode),
       length,
       data: Object.keys(data).length > 0 ? data : undefined,
       hex: hexString,
       rawData: rawPacket ? markRaw(rawPacket) : undefined
     });
-
   },
 
   logPacketError(data: Uint8Array, error: any) {
     const opcode = data.length > 0 ? data[0] : 0;
-    const hex = Array.from(data).map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
-    
+    const hex = Array.from(data)
+      .map((b) => b.toString(16).padStart(2, '0'))
+      .join('')
+      .toUpperCase();
+
     this.packetLogs.unshift({
       time: new Date().toLocaleTimeString(),
       direction: 'RX',
-      opcode: `0x${opcode.toString(16).padStart(2, "0").toUpperCase()}`,
+      opcode: `0x${opcode.toString(16).padStart(2, '0').toUpperCase()}`,
       name: `PARSING_ERROR (${this.getOpcodeName(opcode)})`,
       length: data.length,
       error: error.message || String(error),
@@ -195,7 +195,7 @@ export const boksStore = reactive({
         const client = new BoksClient({ transport });
         this.controller = new BoksController(client);
 
-        client.on("*", (p, dir) => {
+        client.on('*', (p, dir) => {
           this.logPacket(dir, p.opcode, p.raw.length, p);
         });
 
@@ -208,7 +208,10 @@ export const boksStore = reactive({
         // Auto-set the active master key to the simulator's default so ConfigKey pre-fills
         if (sim) {
           const state = sim.getInternalState();
-          const masterKeyHex = Array.from(state.masterKey).map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
+          const masterKeyHex = Array.from(state.masterKey)
+            .map((b) => b.toString(16).padStart(2, '0'))
+            .join('')
+            .toUpperCase();
           this.setActiveKey(masterKeyHex);
         }
       } else {
@@ -216,7 +219,7 @@ export const boksStore = reactive({
         const client = new BoksClient();
         this.controller = new BoksController(client);
 
-        client.on("*", (p, dir) => {
+        client.on('*', (p, dir) => {
           this.logPacket(dir, p.opcode, p.raw.length, p);
         });
 
