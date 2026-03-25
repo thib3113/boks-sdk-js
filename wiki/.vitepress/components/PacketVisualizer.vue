@@ -153,23 +153,20 @@ const packetData = computed(() => {
       try {
          packetObj = BoksPacketFactory.createFromPayload(hexToBytes(packetHex))
       } catch (e: any) {
-         if (missingChecksum && e.message === 'Invalid checksum') {
-            // We know it's invalid because we appended 00, but we still want the parsed payload
-            // BoksPacketFactory throws checksum error BEFORE returning the packet.
-            // So we can fallback to parsing via PayloadMapper to populate values.
+         if (e.message === 'Invalid checksum') {
             if (packetClass) {
                packetObj = new (packetClass as any)({}, hexToBytes(packetHex));
                Object.assign(packetObj, PayloadMapper.parse(packetClass, hexToBytes(packetHex)));
             }
-            parseError = t.value.missingChecksum;
+            parseError = missingChecksum ? t.value.missingChecksum : t.value.invalidChecksum;
          } else {
             throw e;
          }
       }
     } catch (e: any) {
-      parseError = e.message
-      if (parseError === 'Packet length too short based on length byte') parseError = t.value.lengthTooShort
-      if (parseError === 'Invalid checksum') parseError = t.value.invalidChecksum
+      parseError = e.message;
+      if (parseError === 'Packet length too short based on length byte') parseError = t.value.lengthTooShort;
+      if (parseError === 'Invalid checksum') parseError = t.value.invalidChecksum;
     }
   } else if (hexStr.length % 2 !== 0) {
     parseError = t.value.incompleteHex
