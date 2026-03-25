@@ -28,7 +28,10 @@ export class NotifyScaleMeasureWeightPacket extends BoksRXPacket {
 
   static fromRaw(payload: Uint8Array, options?: BoksPacketOptions): NotifyScaleMeasureWeightPacket {
     const data = PayloadMapper.parse<NotifyScaleMeasureWeightPacket>(
-      NotifyScaleMeasureWeightPacket, payload, options);
+      NotifyScaleMeasureWeightPacket,
+      payload,
+      options
+    );
     return new NotifyScaleMeasureWeightPacket(
       (data.signNegative ? -1 : 1) * data.absWeight,
       payload

@@ -25,7 +25,11 @@ export class DeleteMasterCodePacket extends AuthPacket {
   }
 
   static fromRaw(payload: Uint8Array, options?: BoksPacketOptions): DeleteMasterCodePacket {
-    const data = PayloadMapper.parse<DeleteMasterCodePacketProps>(DeleteMasterCodePacket, payload, options);
+    const data = PayloadMapper.parse<DeleteMasterCodePacketProps>(
+      DeleteMasterCodePacket,
+      payload,
+      options
+    );
     return new DeleteMasterCodePacket(data, payload);
   }
 }

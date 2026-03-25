@@ -25,7 +25,11 @@ export class ReactivateCodePacket extends AuthPacket {
   }
 
   static fromRaw(payload: Uint8Array, options?: BoksPacketOptions): ReactivateCodePacket {
-    const data = PayloadMapper.parse<ReactivateCodePacketProps>(ReactivateCodePacket, payload, options);
+    const data = PayloadMapper.parse<ReactivateCodePacketProps>(
+      ReactivateCodePacket,
+      payload,
+      options
+    );
     return new ReactivateCodePacket(data, payload);
   }
 }

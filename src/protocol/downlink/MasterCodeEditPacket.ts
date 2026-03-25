@@ -31,7 +31,11 @@ export class MasterCodeEditPacket extends AuthPacket {
   }
 
   static fromRaw(payload: Uint8Array, options?: BoksPacketOptions): MasterCodeEditPacket {
-    const data = PayloadMapper.parse<MasterCodeEditPacketProps>(MasterCodeEditPacket, payload, options);
+    const data = PayloadMapper.parse<MasterCodeEditPacketProps>(
+      MasterCodeEditPacket,
+      payload,
+      options
+    );
     return new MasterCodeEditPacket(data, payload);
   }
 }

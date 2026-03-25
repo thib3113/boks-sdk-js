@@ -13,7 +13,10 @@ export class NotifyNfcTagUnregisteredPacket extends BoksRXPacket {
     super(NotifyNfcTagUnregisteredPacket.opcode, raw);
   }
 
-  static fromRaw(payload: Uint8Array, _options?: BoksPacketOptions): NotifyNfcTagUnregisteredPacket {
+  static fromRaw(
+    payload: Uint8Array,
+    _options?: BoksPacketOptions
+  ): NotifyNfcTagUnregisteredPacket {
     return new NotifyNfcTagUnregisteredPacket(payload);
   }
 }

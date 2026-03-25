@@ -26,7 +26,10 @@ export class SingleToMultiCodePacket extends AuthPacket {
 
   static fromRaw(payload: Uint8Array, options?: BoksPacketOptions): SingleToMultiCodePacket {
     const data = PayloadMapper.parse<SingleToMultiCodePacketProps>(
-      SingleToMultiCodePacket, payload, options);
+      SingleToMultiCodePacket,
+      payload,
+      options
+    );
     return new SingleToMultiCodePacket(data, payload);
   }
 }

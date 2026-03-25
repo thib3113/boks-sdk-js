@@ -28,7 +28,10 @@ export class NfcOpeningHistoryPacket extends BoksHistoryEvent {
 
   static fromRaw(payload: Uint8Array, options?: BoksPacketOptions): NfcOpeningHistoryPacket {
     const data = PayloadMapper.parse<NfcOpeningHistoryPacketProps>(
-      NfcOpeningHistoryPacket, payload, options);
+      NfcOpeningHistoryPacket,
+      payload,
+      options
+    );
     return new NfcOpeningHistoryPacket(data, payload);
   }
 }

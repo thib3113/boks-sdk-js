@@ -17,7 +17,11 @@ export class BleRebootHistoryPacket extends BoksHistoryEvent {
   }
 
   static fromRaw(payload: Uint8Array, options?: BoksPacketOptions): BleRebootHistoryPacket {
-    const data = PayloadMapper.parse<BoksHistoryEventProps>(BleRebootHistoryPacket, payload, options);
+    const data = PayloadMapper.parse<BoksHistoryEventProps>(
+      BleRebootHistoryPacket,
+      payload,
+      options
+    );
     return new BleRebootHistoryPacket(data, payload);
   }
 }

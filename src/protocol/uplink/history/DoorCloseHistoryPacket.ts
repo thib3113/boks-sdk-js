@@ -18,7 +18,11 @@ export class DoorCloseHistoryPacket extends BoksHistoryEvent {
   }
 
   static fromRaw(payload: Uint8Array, options?: BoksPacketOptions): DoorCloseHistoryPacket {
-    const data = PayloadMapper.parse<BoksHistoryEventProps>(DoorCloseHistoryPacket, payload, options);
+    const data = PayloadMapper.parse<BoksHistoryEventProps>(
+      DoorCloseHistoryPacket,
+      payload,
+      options
+    );
     return new DoorCloseHistoryPacket(data, payload);
   }
 }

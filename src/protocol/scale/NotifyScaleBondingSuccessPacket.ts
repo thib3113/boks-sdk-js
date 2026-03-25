@@ -13,7 +13,10 @@ export class NotifyScaleBondingSuccessPacket extends BoksRXPacket {
     super(NotifyScaleBondingSuccessPacket.opcode, raw);
   }
 
-  static fromRaw(payload: Uint8Array, _options?: BoksPacketOptions): NotifyScaleBondingSuccessPacket {
+  static fromRaw(
+    payload: Uint8Array,
+    _options?: BoksPacketOptions
+  ): NotifyScaleBondingSuccessPacket {
     return new NotifyScaleBondingSuccessPacket(payload);
   }
 }

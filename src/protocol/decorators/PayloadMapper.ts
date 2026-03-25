@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unsafe-function-type */
 export type PayloadConstructor = abstract new (...args: any[]) => any;
 
 import { BoksProtocolError, BoksProtocolErrorId } from '../../errors/BoksProtocolError';
@@ -810,9 +811,9 @@ export class PayloadMapper {
    *
    * @param targetClass The class constructor (e.g., OpenDoorPacket)
    * @param payload The raw buffer
+   * @param options
    * @returns A mapped object containing the extracted properties
    */
-  /* eslint-disable-next-line @typescript-eslint/no-unsafe-function-type */
   public static parse<T = any>(
     targetClass: Function | any,
     payload: Uint8Array,
@@ -848,7 +849,9 @@ export class PayloadMapper {
     if (opcode !== undefined && payload.length >= PACKET_MIN_HEADER_SIZE && payload[0] === opcode) {
       const lengthIncludesHeader = (targetClass as any).lengthIncludesHeader ?? false;
       const lengthByte = payload[1];
-      const expectedTotalLength = lengthIncludesHeader ? lengthByte : lengthByte + PACKET_HEADER_SIZE;
+      const expectedTotalLength = lengthIncludesHeader
+        ? lengthByte
+        : lengthByte + PACKET_HEADER_SIZE;
 
       // In non-strict mode, we strip the header as long as the opcode matches (for truncated packets).
       // In strict mode, we only strip if the length is a perfect match.

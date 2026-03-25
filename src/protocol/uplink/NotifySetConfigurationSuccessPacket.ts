@@ -12,7 +12,10 @@ export class NotifySetConfigurationSuccessPacket extends BoksRXPacket {
     super(NotifySetConfigurationSuccessPacket.opcode, raw);
   }
 
-  static fromRaw(payload: Uint8Array, _options?: BoksPacketOptions): NotifySetConfigurationSuccessPacket {
+  static fromRaw(
+    payload: Uint8Array,
+    _options?: BoksPacketOptions
+  ): NotifySetConfigurationSuccessPacket {
     return new NotifySetConfigurationSuccessPacket(payload);
   }
 }

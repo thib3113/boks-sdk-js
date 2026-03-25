@@ -26,7 +26,10 @@ export class NfcRegisteringHistoryPacket extends BoksHistoryEvent {
 
   static fromRaw(payload: Uint8Array, options?: BoksPacketOptions): NfcRegisteringHistoryPacket {
     const data = PayloadMapper.parse<NfcRegisteringHistoryPacket>(
-      NfcRegisteringHistoryPacket, payload, options);
+      NfcRegisteringHistoryPacket,
+      payload,
+      options
+    );
     return new NfcRegisteringHistoryPacket(
       {
         age: data.age,

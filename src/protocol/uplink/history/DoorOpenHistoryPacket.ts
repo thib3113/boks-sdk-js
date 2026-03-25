@@ -23,7 +23,11 @@ export class DoorOpenHistoryPacket extends BoksHistoryEvent {
   }
 
   static fromRaw(payload: Uint8Array, options?: BoksPacketOptions): DoorOpenHistoryPacket {
-    const data = PayloadMapper.parse<BoksHistoryEventProps>(DoorOpenHistoryPacket, payload, options);
+    const data = PayloadMapper.parse<BoksHistoryEventProps>(
+      DoorOpenHistoryPacket,
+      payload,
+      options
+    );
     return new DoorOpenHistoryPacket(data, payload);
   }
 }

@@ -26,7 +26,10 @@ export class DeleteMultiUseCodePacket extends AuthPacket {
 
   static fromRaw(payload: Uint8Array, options?: BoksPacketOptions): DeleteMultiUseCodePacket {
     const data = PayloadMapper.parse<DeleteMultiUseCodePacketProps>(
-      DeleteMultiUseCodePacket, payload, options);
+      DeleteMultiUseCodePacket,
+      payload,
+      options
+    );
     return new DeleteMultiUseCodePacket(data, payload);
   }
 }

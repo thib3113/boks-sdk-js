@@ -18,7 +18,10 @@ export class NotifyScaleBondingProgressPacket extends BoksRXPacket {
     this.progress = progress;
   }
 
-  static fromRaw(payload: Uint8Array, options?: BoksPacketOptions): NotifyScaleBondingProgressPacket {
+  static fromRaw(
+    payload: Uint8Array,
+    options?: BoksPacketOptions
+  ): NotifyScaleBondingProgressPacket {
     const data = PayloadMapper.parse(NotifyScaleBondingProgressPacket, payload, options);
     return new NotifyScaleBondingProgressPacket(data.progress, payload);
   }

@@ -26,7 +26,10 @@ export class BlockResetHistoryPacket extends BoksHistoryEvent {
 
   static fromRaw(payload: Uint8Array, options?: BoksPacketOptions): BlockResetHistoryPacket {
     const data = PayloadMapper.parse<BlockResetHistoryPacketProps>(
-      BlockResetHistoryPacket, payload, options);
+      BlockResetHistoryPacket,
+      payload,
+      options
+    );
     return new BlockResetHistoryPacket(data, payload);
   }
 }

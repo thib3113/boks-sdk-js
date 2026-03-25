@@ -19,7 +19,11 @@ export class NotifyNfcTagFoundPacket extends BoksRXPacket {
   }
 
   static fromRaw(payload: Uint8Array, options?: BoksPacketOptions): NotifyNfcTagFoundPacket {
-    const data = PayloadMapper.parse<NotifyNfcTagFoundPacket>(NotifyNfcTagFoundPacket, payload, options);
+    const data = PayloadMapper.parse<NotifyNfcTagFoundPacket>(
+      NotifyNfcTagFoundPacket,
+      payload,
+      options
+    );
     return new NotifyNfcTagFoundPacket(data.uid, payload);
   }
 }

@@ -13,7 +13,10 @@ export class NotifyCodeGenerationSuccessPacket extends BoksRXPacket {
     super(NotifyCodeGenerationSuccessPacket.opcode, raw);
   }
 
-  static fromRaw(payload: Uint8Array, _options?: BoksPacketOptions): NotifyCodeGenerationSuccessPacket {
+  static fromRaw(
+    payload: Uint8Array,
+    _options?: BoksPacketOptions
+  ): NotifyCodeGenerationSuccessPacket {
     return new NotifyCodeGenerationSuccessPacket(payload);
   }
 }

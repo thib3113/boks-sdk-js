@@ -31,7 +31,11 @@ export class NotifyDoorStatusPacket extends BoksRXPacket {
   }
 
   static fromRaw(payload: Uint8Array, options?: BoksPacketOptions): NotifyDoorStatusPacket {
-    const data = PayloadMapper.parse<NotifyDoorStatusPacketProps>(NotifyDoorStatusPacket, payload, options);
+    const data = PayloadMapper.parse<NotifyDoorStatusPacketProps>(
+      NotifyDoorStatusPacket,
+      payload,
+      options
+    );
     return new NotifyDoorStatusPacket(data, payload);
   }
 }

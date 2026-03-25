@@ -28,7 +28,10 @@ export class CodeBleInvalidHistoryPacket extends BoksHistoryEvent {
 
   static fromRaw(payload: Uint8Array, options?: BoksPacketOptions): CodeBleInvalidHistoryPacket {
     const data = PayloadMapper.parse<CodeBleInvalidHistoryPacketProps>(
-      CodeBleInvalidHistoryPacket, payload, options);
+      CodeBleInvalidHistoryPacket,
+      payload,
+      options
+    );
     return new CodeBleInvalidHistoryPacket(data, payload);
   }
 }

@@ -13,7 +13,10 @@ export class ErrorNfcTagAlreadyExistsScanPacket extends BoksRXPacket {
     super(ErrorNfcTagAlreadyExistsScanPacket.opcode, raw);
   }
 
-  static fromRaw(payload: Uint8Array, _options?: BoksPacketOptions): ErrorNfcTagAlreadyExistsScanPacket {
+  static fromRaw(
+    payload: Uint8Array,
+    _options?: BoksPacketOptions
+  ): ErrorNfcTagAlreadyExistsScanPacket {
     return new ErrorNfcTagAlreadyExistsScanPacket(payload);
   }
 }

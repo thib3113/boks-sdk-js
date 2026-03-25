@@ -26,7 +26,11 @@ export class RegeneratePartAPacket extends AuthPacket {
   }
 
   static fromRaw(payload: Uint8Array, options?: BoksPacketOptions): RegeneratePartAPacket {
-    const data = PayloadMapper.parse<RegeneratePartAPacketProps>(RegeneratePartAPacket, payload, options);
+    const data = PayloadMapper.parse<RegeneratePartAPacketProps>(
+      RegeneratePartAPacket,
+      payload,
+      options
+    );
     return new RegeneratePartAPacket(data, payload);
   }
 }

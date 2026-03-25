@@ -26,7 +26,10 @@ export class DeleteSingleUseCodePacket extends AuthPacket {
 
   static fromRaw(payload: Uint8Array, options?: BoksPacketOptions): DeleteSingleUseCodePacket {
     const data = PayloadMapper.parse<DeleteSingleUseCodePacketProps>(
-      DeleteSingleUseCodePacket, payload, options);
+      DeleteSingleUseCodePacket,
+      payload,
+      options
+    );
     return new DeleteSingleUseCodePacket(data, payload);
   }
 }

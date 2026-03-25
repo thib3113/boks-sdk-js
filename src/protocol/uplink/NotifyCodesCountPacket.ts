@@ -28,7 +28,11 @@ export class NotifyCodesCountPacket extends BoksRXPacket {
   }
 
   static fromRaw(payload: Uint8Array, options?: BoksPacketOptions): NotifyCodesCountPacket {
-    const data = PayloadMapper.parse<NotifyCodesCountPacketProps>(NotifyCodesCountPacket, payload, options);
+    const data = PayloadMapper.parse<NotifyCodesCountPacketProps>(
+      NotifyCodesCountPacket,
+      payload,
+      options
+    );
     return new NotifyCodesCountPacket(data, payload);
   }
 }

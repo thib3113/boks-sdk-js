@@ -18,9 +18,15 @@ export class NotifyCodeGenerationProgressPacket extends BoksRXPacket {
     this.progress = progress;
   }
 
-  static fromRaw(payload: Uint8Array, options?: BoksPacketOptions): NotifyCodeGenerationProgressPacket {
+  static fromRaw(
+    payload: Uint8Array,
+    options?: BoksPacketOptions
+  ): NotifyCodeGenerationProgressPacket {
     const data = PayloadMapper.parse<NotifyCodeGenerationProgressPacket>(
-      NotifyCodeGenerationProgressPacket, payload, options);
+      NotifyCodeGenerationProgressPacket,
+      payload,
+      options
+    );
     return new NotifyCodeGenerationProgressPacket(data.progress, payload);
   }
 }

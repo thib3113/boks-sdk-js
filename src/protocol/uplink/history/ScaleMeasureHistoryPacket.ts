@@ -29,7 +29,11 @@ export class ScaleMeasureHistoryPacket extends BoksHistoryEvent {
   }
 
   static fromRaw(payload: Uint8Array, options?: BoksPacketOptions): ScaleMeasureHistoryPacket {
-    const data = PayloadMapper.parse<ScaleMeasureHistoryPacket>(ScaleMeasureHistoryPacket, payload, options);
+    const data = PayloadMapper.parse<ScaleMeasureHistoryPacket>(
+      ScaleMeasureHistoryPacket,
+      payload,
+      options
+    );
     return new ScaleMeasureHistoryPacket(
       {
         age: data.age,

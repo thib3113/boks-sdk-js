@@ -17,7 +17,11 @@ export class HistoryEraseHistoryPacket extends BoksHistoryEvent {
   }
 
   static fromRaw(payload: Uint8Array, options?: BoksPacketOptions): HistoryEraseHistoryPacket {
-    const data = PayloadMapper.parse<BoksHistoryEventProps>(HistoryEraseHistoryPacket, payload, options);
+    const data = PayloadMapper.parse<BoksHistoryEventProps>(
+      HistoryEraseHistoryPacket,
+      payload,
+      options
+    );
     return new HistoryEraseHistoryPacket(data, payload);
   }
 }

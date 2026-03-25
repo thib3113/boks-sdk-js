@@ -12,7 +12,10 @@ export class NotifyNfcTagRegisteredErrorAlreadyExistsPacket extends BoksRXPacket
     super(NotifyNfcTagRegisteredErrorAlreadyExistsPacket.opcode, raw);
   }
 
-  static fromRaw(payload: Uint8Array, _options?: BoksPacketOptions): NotifyNfcTagRegisteredErrorAlreadyExistsPacket {
+  static fromRaw(
+    payload: Uint8Array,
+    _options?: BoksPacketOptions
+  ): NotifyNfcTagRegisteredErrorAlreadyExistsPacket {
     return new NotifyNfcTagRegisteredErrorAlreadyExistsPacket(payload);
   }
 }

@@ -17,7 +17,11 @@ export class KeyOpeningHistoryPacket extends BoksHistoryEvent {
   }
 
   static fromRaw(payload: Uint8Array, options?: BoksPacketOptions): KeyOpeningHistoryPacket {
-    const data = PayloadMapper.parse<BoksHistoryEventProps>(KeyOpeningHistoryPacket, payload, options);
+    const data = PayloadMapper.parse<BoksHistoryEventProps>(
+      KeyOpeningHistoryPacket,
+      payload,
+      options
+    );
     return new KeyOpeningHistoryPacket(data, payload);
   }
 }

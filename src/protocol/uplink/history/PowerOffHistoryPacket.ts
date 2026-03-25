@@ -25,7 +25,11 @@ export class PowerOffHistoryPacket extends BoksHistoryEvent {
   }
 
   static fromRaw(payload: Uint8Array, options?: BoksPacketOptions): PowerOffHistoryPacket {
-    const data = PayloadMapper.parse<PowerOffHistoryPacketProps>(PowerOffHistoryPacket, payload, options);
+    const data = PayloadMapper.parse<PowerOffHistoryPacketProps>(
+      PowerOffHistoryPacket,
+      payload,
+      options
+    );
     return new PowerOffHistoryPacket(data, payload);
   }
 }

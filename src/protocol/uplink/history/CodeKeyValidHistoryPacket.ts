@@ -23,7 +23,10 @@ export class CodeKeyValidHistoryPacket extends BoksHistoryEvent {
 
   static fromRaw(payload: Uint8Array, options?: BoksPacketOptions): CodeKeyValidHistoryPacket {
     const data = PayloadMapper.parse<CodeKeyValidHistoryPacketProps>(
-      CodeKeyValidHistoryPacket, payload, options);
+      CodeKeyValidHistoryPacket,
+      payload,
+      options
+    );
     return new CodeKeyValidHistoryPacket(data, payload);
   }
 }

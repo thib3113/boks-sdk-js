@@ -26,7 +26,11 @@ export class UnregisterNfcTagPacket extends AuthPacket {
   }
 
   static fromRaw(payload: Uint8Array, options?: BoksPacketOptions): UnregisterNfcTagPacket {
-    const data = PayloadMapper.parse<UnregisterNfcTagPacketProps>(UnregisterNfcTagPacket, payload, options);
+    const data = PayloadMapper.parse<UnregisterNfcTagPacketProps>(
+      UnregisterNfcTagPacket,
+      payload,
+      options
+    );
     return new UnregisterNfcTagPacket(data, payload);
   }
 }

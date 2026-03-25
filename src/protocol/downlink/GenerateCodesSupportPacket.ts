@@ -23,7 +23,10 @@ export class GenerateCodesSupportPacket extends BoksPacket {
 
   static fromRaw(payload: Uint8Array, options?: BoksPacketOptions): GenerateCodesSupportPacket {
     const data = PayloadMapper.parse<GenerateCodesSupportPacket>(
-      GenerateCodesSupportPacket, payload, options);
+      GenerateCodesSupportPacket,
+      payload,
+      options
+    );
     return new GenerateCodesSupportPacket(data.seed, payload);
   }
 }

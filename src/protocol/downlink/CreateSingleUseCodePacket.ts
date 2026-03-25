@@ -26,7 +26,10 @@ export class CreateSingleUseCodePacket extends AuthPacket {
 
   static fromRaw(payload: Uint8Array, options?: BoksPacketOptions): CreateSingleUseCodePacket {
     const data = PayloadMapper.parse<CreateSingleUseCodePacketProps>(
-      CreateSingleUseCodePacket, payload, options);
+      CreateSingleUseCodePacket,
+      payload,
+      options
+    );
     return new CreateSingleUseCodePacket(data, payload);
   }
 }
