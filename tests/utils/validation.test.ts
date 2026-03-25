@@ -33,6 +33,18 @@ describe('validation utils', () => {
       expect(() => validatePinCode('MC1234')).toThrowError(BoksProtocolError); // Default is false
     });
 
+    it('should reject malformed ID PIN codes even when allowed', () => {
+      // Passes 'M' check but fails 'C' check
+      expect(() => validatePinCode('MA1234', true)).toThrowError(BoksProtocolError);
+
+      // Starts with MC but fails later check
+      expect(() => validatePinCode('MCC234', true)).toThrowError(BoksProtocolError);
+
+      // Not a string test for pin length error fallback
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect(() => validatePinCode(123456 as any, true)).toThrowError(BoksProtocolError);
+    });
+
     it('should reject PIN codes with invalid length', () => {
       expect(() => validatePinCode('12345')).toThrowError(
         new BoksProtocolError(
