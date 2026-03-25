@@ -36,7 +36,7 @@ describe('ErrorHistoryPacket', () => {
   it('should output only mapped payload properties and opcode via toJSON', () => {
     const packet = ErrorHistoryPacket.fromRaw(new Uint8Array([0x00, 0x00, 0x0a, 0xff]));
     const json = packet.toJSON();
-    expect(json).toStrictEqual({ validChecksum: null,
+    expect(json).toStrictEqual({
         "age": 10,
         "errorCode": 255,
         "opcode": 160,

@@ -68,7 +68,7 @@ describe('UnregisterNfcTagPacket', () => {
   it('should output only mapped payload properties and opcode via toJSON', () => {
     const packet = new UnregisterNfcTagPacket({ configKey: '12345678', uid: '04A1B2C3' });
     const json = packet.toJSON();
-    expect(json).toStrictEqual({ validChecksum: null,
+    expect(json).toStrictEqual({
         "configKey": "12345678",
         "opcode": 25,
         "uid": "04A1B2C3",

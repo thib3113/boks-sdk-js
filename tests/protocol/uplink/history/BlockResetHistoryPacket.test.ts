@@ -25,7 +25,7 @@ describe('BlockResetHistoryPacket', () => {
   it('should output only mapped payload properties and opcode via toJSON', () => {
     const packet = BlockResetHistoryPacket.fromRaw(new Uint8Array([0x00, 0x00, 0x0a, 0xaa, 0xbb]));
     const json = packet.toJSON();
-    expect(json).toStrictEqual({ validChecksum: null,
+    expect(json).toStrictEqual({
         "age": 10,
         "opcode": 149,
         "resetInfo": "AABB",

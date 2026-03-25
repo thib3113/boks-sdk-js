@@ -57,7 +57,7 @@ describe('RegisterNfcTagScanStartPacket', () => {
   it('should output only mapped payload properties and opcode via toJSON', () => {
     const packet = new RegisterNfcTagScanStartPacket(validKey);
     const json = packet.toJSON();
-    expect(json).toStrictEqual({ validChecksum: null,
+    expect(json).toStrictEqual({
         "configKey": "12345678",
         "opcode": 23,
       });

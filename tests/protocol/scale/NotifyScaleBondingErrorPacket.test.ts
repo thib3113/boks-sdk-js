@@ -21,7 +21,7 @@ describe('NotifyScaleBondingErrorPacket', () => {
   it('should output only mapped payload properties and opcode via toJSON', () => {
     const packet = NotifyScaleBondingErrorPacket.fromRaw(new Uint8Array([0x05]));
     const json = packet.toJSON();
-    expect(json).toStrictEqual({ validChecksum: null,
+    expect(json).toStrictEqual({
         "errorCode": 5,
         "opcode": 177,
       });

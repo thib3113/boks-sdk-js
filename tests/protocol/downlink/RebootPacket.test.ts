@@ -20,7 +20,7 @@ describe('RebootPacket', () => {
   it('should output only mapped payload properties and opcode via toJSON', () => {
     const packet = new RebootPacket();
     const json = packet.toJSON();
-    expect(json).toStrictEqual({ validChecksum: null,
+    expect(json).toStrictEqual({
         "opcode": 6,
       });
   });

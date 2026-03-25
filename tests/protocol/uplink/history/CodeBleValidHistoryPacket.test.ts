@@ -37,7 +37,7 @@ describe('CodeBleValidHistoryPacket', () => {
   it('should output only mapped payload properties and opcode via toJSON', () => {
     const packet = CodeBleValidHistoryPacket.fromRaw(new Uint8Array([0, 0, 10, 49, 50, 51, 52, 53, 54, 0, 0, 0x66, 0x55, 0x44, 0x33, 0x22, 0x11]));
     const json = packet.toJSON();
-    expect(json).toStrictEqual({ validChecksum: null,
+    expect(json).toStrictEqual({
         "age": 10,
         "code": "123456",
         "connectedMac": "112233445566",

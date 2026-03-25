@@ -35,7 +35,7 @@ describe('NotifyScaleMeasureWeightPacket', () => {
   it('should output only mapped payload properties and opcode via toJSON', () => {
     const packet = NotifyScaleMeasureWeightPacket.fromRaw(new Uint8Array([0x00, 0x00, 0x03, 0xe8]));
     const json = packet.toJSON();
-    expect(json).toStrictEqual({ validChecksum: null,
+    expect(json).toStrictEqual({
         "absWeight": 1000,
         "opcode": 183,
         "signNegative": false,

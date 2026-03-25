@@ -23,7 +23,7 @@ describe('NotifyLogsCountPacket', () => {
   it('should output only mapped payload properties and opcode via toJSON', () => {
     const packet = NotifyLogsCountPacket.fromRaw(new Uint8Array([0x01, 0x00]));
     const json = packet.toJSON();
-    expect(json).toStrictEqual({ validChecksum: null,
+    expect(json).toStrictEqual({
         "count": 256,
         "opcode": 121,
       });

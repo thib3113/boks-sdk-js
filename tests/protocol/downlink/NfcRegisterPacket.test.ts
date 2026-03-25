@@ -104,7 +104,7 @@ describe('NfcRegisterPacket', () => {
   it('should output only mapped payload properties and opcode via toJSON', () => {
     const packet = new NfcRegisterPacket({ configKey: '12345678', uid: '04A1B2C3' });
     const json = packet.toJSON();
-    expect(json).toStrictEqual({ validChecksum: null,
+    expect(json).toStrictEqual({
         "configKey": "12345678",
         "opcode": 24,
         "uid": "04A1B2C3",

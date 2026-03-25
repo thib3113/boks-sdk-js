@@ -32,7 +32,7 @@ describe('OperationErrorPacket', () => {
   it('should output only mapped payload properties and opcode via toJSON', () => {
     const packet = OperationErrorPacket.fromRaw(new Uint8Array([0x01]));
     const json = packet.toJSON();
-    expect(json).toStrictEqual({ validChecksum: null,
+    expect(json).toStrictEqual({
         "errorCode": 1,
         "opcode": 120,
       });

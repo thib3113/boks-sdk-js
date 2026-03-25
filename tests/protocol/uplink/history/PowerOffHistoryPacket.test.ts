@@ -30,7 +30,7 @@ describe('PowerOffHistoryPacket', () => {
   it('should output only mapped payload properties and opcode via toJSON', () => {
     const packet = PowerOffHistoryPacket.fromRaw(new Uint8Array([0x00, 0x00, 0x3c, 0x01]));
     const json = packet.toJSON();
-    expect(json).toStrictEqual({ validChecksum: null,
+    expect(json).toStrictEqual({
         "age": 60,
         "opcode": 148,
         "reason": 1,

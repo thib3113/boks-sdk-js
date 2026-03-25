@@ -72,7 +72,7 @@ describe('error handling', () => {
   it('should output only mapped payload properties and opcode via toJSON', () => {
     const packet = new GenerateCodesPacket('000102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F');
     const json = packet.toJSON();
-    expect(json).toStrictEqual({ validChecksum: null,
+    expect(json).toStrictEqual({
         "opcode": 16,
         "seed": "000102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F",
       });

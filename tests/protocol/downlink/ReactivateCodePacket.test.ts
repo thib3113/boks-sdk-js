@@ -66,7 +66,7 @@ describe('ReactivateCodePacket', () => {
   it('should output only mapped payload properties and opcode via toJSON', () => {
     const packet = new ReactivateCodePacket({ configKey: validKey, pin: validPin });
     const json = packet.toJSON();
-    expect(json).toStrictEqual({ validChecksum: null,
+    expect(json).toStrictEqual({
         "configKey": "12345678",
         "opcode": 15,
         "pin": "998877",

@@ -30,7 +30,7 @@ describe('CodeKeyInvalidHistoryPacket', () => {
   it('should output only mapped payload properties and opcode via toJSON', () => {
     const packet = CodeKeyInvalidHistoryPacket.fromRaw(new Uint8Array([0, 0, 10, 49, 50, 51, 52, 53, 54]));
     const json = packet.toJSON();
-    expect(json).toStrictEqual({ validChecksum: null,
+    expect(json).toStrictEqual({
         "age": 10,
         "code": "123456",
         "opcode": 137,

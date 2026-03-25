@@ -28,7 +28,7 @@ describe('PowerOnHistoryPacket', () => {
   it('should output only mapped payload properties and opcode via toJSON', () => {
     const packet = PowerOnHistoryPacket.fromRaw(new Uint8Array([0x00, 0x00, 0x00]));
     const json = packet.toJSON();
-    expect(json).toStrictEqual({ validChecksum: null,
+    expect(json).toStrictEqual({
         "age": 0,
         "opcode": 150,
       });

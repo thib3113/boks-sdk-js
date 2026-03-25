@@ -42,7 +42,7 @@ describe('NfcOpeningHistoryPacket', () => {
   it('should output only mapped payload properties and opcode via toJSON', () => {
     const packet = NfcOpeningHistoryPacket.fromRaw(new Uint8Array([0x00, 0x00, 0x0a, 0x02, 0x04, 0x04, 0x05, 0x06, 0x07]));
     const json = packet.toJSON();
-    expect(json).toStrictEqual({ validChecksum: null,
+    expect(json).toStrictEqual({
         "age": 10,
         "opcode": 161,
         "tagType": 2,

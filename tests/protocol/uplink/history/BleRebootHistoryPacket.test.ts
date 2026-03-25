@@ -34,7 +34,7 @@ describe('BleRebootHistoryPacket', () => {
   it('should output only mapped payload properties and opcode via toJSON', () => {
     const packet = BleRebootHistoryPacket.fromRaw(new Uint8Array([0x00, 0x00, 0x0a]));
     const json = packet.toJSON();
-    expect(json).toStrictEqual({ validChecksum: null,
+    expect(json).toStrictEqual({
         "age": 10,
         "opcode": 151,
       });

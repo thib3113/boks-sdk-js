@@ -117,7 +117,7 @@ describe('CreateMasterCodePacket', () => {
       pin: validPin
     });
     const json = packet.toJSON();
-    expect(json).toStrictEqual({ validChecksum: null,
+    expect(json).toStrictEqual({
         "configKey": "12345678",
         "index": 1,
         "opcode": 17,

@@ -80,7 +80,7 @@ describe('CreateSingleUseCodePacket', () => {
   it('should output only mapped payload properties and opcode via toJSON', () => {
     const packet = new CreateSingleUseCodePacket({ configKey: validKey, pin: validPin });
     const json = packet.toJSON();
-    expect(json).toStrictEqual({ validChecksum: null,
+    expect(json).toStrictEqual({
         "configKey": "12345678",
         "opcode": 18,
         "pin": "112233",

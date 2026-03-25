@@ -114,7 +114,7 @@ describe('SetConfigurationPacket', () => {
       value: valueTrue
     });
     const json = packet.toJSON();
-    expect(json).toStrictEqual({ validChecksum: null,
+    expect(json).toStrictEqual({
         "configKey": "12345678",
         "configType": 1,
         "opcode": 22,

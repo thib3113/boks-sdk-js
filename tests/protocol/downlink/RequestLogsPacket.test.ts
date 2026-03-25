@@ -20,7 +20,7 @@ describe('RequestLogsPacket', () => {
   it('should output only mapped payload properties and opcode via toJSON', () => {
     const packet = new RequestLogsPacket();
     const json = packet.toJSON();
-    expect(json).toStrictEqual({ validChecksum: null,
+    expect(json).toStrictEqual({
         "opcode": 3,
       });
   });

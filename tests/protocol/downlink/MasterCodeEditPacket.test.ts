@@ -107,7 +107,7 @@ describe('MasterCodeEditPacket', () => {
       newPin: validNewPin
     });
     const json = packet.toJSON();
-    expect(json).toStrictEqual({ validChecksum: null,
+    expect(json).toStrictEqual({
         "configKey": "12345678",
         "index": 5,
         "newPin": "667788",
