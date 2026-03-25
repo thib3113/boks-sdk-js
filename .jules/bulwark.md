@@ -75,3 +75,4 @@
 - Updated `NotifyDoorStatusPacket.resilience.test.ts` to expect `BoksProtocolError` when invalid payloads are parsed instead of returning silently.
 - Updated `SimpleNotificationPackets.resilience.test.ts` to expect `BoksProtocolError` when `OperationErrorPacket` receives invalid payloads instead of returning silently.
 ## 2024-03-22 - Core **Hardened:** src/protocol/scale/ScaleBondPacket.ts, src/protocol/scale/ScaleGetMacPacket.ts, src/protocol/decorators/PayloadMapper.ts **Edge-Cases Covered:** Arbitrary random payload fuzzing for serialization/deserialization.
+## 2024-10-24 - [core/downlink] **Hardened:** src/protocol/downlink/* **Edge-Cases Covered:** Fuzzing all standard downlink packets with variable payload lengths, verifying robust error handling (BoksProtocolError) or successful parsing.
