@@ -21,7 +21,7 @@ describe('NotifyScaleRawSensorsPacket', () => {
   it('should output only mapped payload properties and opcode via toJSON', () => {
     const packet = NotifyScaleRawSensorsPacket.fromRaw(new Uint8Array([0x01, 0x02, 0x03]));
     const json = packet.toJSON();
-    expect(json).toStrictEqual({
+    expect(json).toStrictEqual({ validChecksum: null,
         "data": new Uint8Array([
           1,
           2,

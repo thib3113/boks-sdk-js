@@ -21,7 +21,7 @@ describe('NotifyScaleBondingProgressPacket', () => {
   it('should output only mapped payload properties and opcode via toJSON', () => {
     const packet = NotifyScaleBondingProgressPacket.fromRaw(new Uint8Array([50]));
     const json = packet.toJSON();
-    expect(json).toStrictEqual({
+    expect(json).toStrictEqual({ validChecksum: null,
         "opcode": 180,
         "progress": 50,
       });

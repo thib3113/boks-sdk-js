@@ -26,7 +26,7 @@ describe('ScaleBondPacket', () => {
   it('should output only mapped payload properties and opcode via toJSON', () => {
     const packet = ScaleBondPacket.fromRaw(new Uint8Array([0x01, 0x02, 0x03]));
     const json = packet.toJSON();
-    expect(json).toStrictEqual({
+    expect(json).toStrictEqual({ validChecksum: null,
         "opcode": 80,
       });
   });

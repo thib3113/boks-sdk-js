@@ -170,12 +170,11 @@ export abstract class BoksPacket {
    * Serializes the packet to a plain JSON object.
    * Includes the opcode and all properties mapped by decorators.
    */
-  toJSON(): BoksPacketJSON<this> & { validChecksum: boolean | null } {
+  toJSON(): BoksPacketJSON<this> {
     const fields = PayloadMapper.getFields(this.constructor);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const result: any = {
-      opcode: this.opcode,
-      validChecksum: this.validChecksum
+      opcode: this.opcode
     };
 
     for (let i = 0; i < fields.length; i++) {
@@ -187,7 +186,7 @@ export abstract class BoksPacket {
       }
     }
 
-    return result as BoksPacketJSON<this> & { validChecksum: boolean | null };
+    return result as BoksPacketJSON<this>;
   }
 
   /**

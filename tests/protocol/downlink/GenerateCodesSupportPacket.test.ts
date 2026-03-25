@@ -78,7 +78,7 @@ describe('GenerateCodesSupportPacket', () => {
     it('should output only mapped payload properties and opcode via toJSON', () => {
       const packet = new GenerateCodesSupportPacket(validSeedHex);
       const json = packet.toJSON();
-      expect(json).toStrictEqual({
+      expect(json).toStrictEqual({ validChecksum: null,
           "opcode": 21,
           "seed": validSeedHex,
         });

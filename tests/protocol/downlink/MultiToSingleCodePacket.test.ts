@@ -64,7 +64,7 @@ describe('MultiToSingleCodePacket', () => {
   it('should output only mapped payload properties and opcode via toJSON', () => {
     const packet = new MultiToSingleCodePacket({ configKey: validKey, pin: validPin });
     const json = packet.toJSON();
-    expect(json).toStrictEqual({
+    expect(json).toStrictEqual({ validChecksum: null,
         "configKey": "12345678",
         "opcode": 11,
         "pin": "876543",

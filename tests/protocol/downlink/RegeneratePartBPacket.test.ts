@@ -64,7 +64,7 @@ describe('RegeneratePartBPacket', () => {
   it('should output only mapped payload properties and opcode via toJSON', () => {
     const packet = new RegeneratePartBPacket({ configKey: validKey, part: validPart });
     const json = packet.toJSON();
-    expect(json).toStrictEqual({
+    expect(json).toStrictEqual({ validChecksum: null,
         "configKey": "12345678",
         "opcode": 33,
         "part": "101112131415161718191A1B1C1D1E1F",

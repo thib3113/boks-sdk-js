@@ -22,7 +22,7 @@ describe('NotifyScaleFaultyPacket', () => {
   it('should output only mapped payload properties and opcode via toJSON', () => {
     const packet = NotifyScaleFaultyPacket.fromRaw(new Uint8Array([0x01, 0x02]));
     const json = packet.toJSON();
-    expect(json).toStrictEqual({
+    expect(json).toStrictEqual({ validChecksum: null,
         "data": new Uint8Array([
           1,
           2,

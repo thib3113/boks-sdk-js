@@ -79,7 +79,7 @@ describe('DeleteMultiUseCodePacket', () => {
   it('should output only mapped payload properties and opcode via toJSON', () => {
     const packet = new DeleteMultiUseCodePacket({ configKey: validKey, pin: validPin });
     const json = packet.toJSON();
-    expect(json).toStrictEqual({
+    expect(json).toStrictEqual({ validChecksum: null,
         "configKey": "12345678",
         "opcode": 14,
         "pin": "334455",

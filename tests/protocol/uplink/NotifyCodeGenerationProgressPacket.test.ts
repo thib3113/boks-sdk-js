@@ -23,7 +23,7 @@ describe('NotifyCodeGenerationProgressPacket', () => {
   it('should output only mapped payload properties and opcode via toJSON', () => {
     const packet = NotifyCodeGenerationProgressPacket.fromRaw(new Uint8Array([50]));
     const json = packet.toJSON();
-    expect(json).toStrictEqual({
+    expect(json).toStrictEqual({ validChecksum: null,
         "opcode": 194,
         "progress": 50,
       });

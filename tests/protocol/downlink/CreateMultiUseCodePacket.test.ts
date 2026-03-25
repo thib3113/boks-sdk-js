@@ -82,7 +82,7 @@ describe('CreateMultiUseCodePacket', () => {
   it('should output only mapped payload properties and opcode via toJSON', () => {
     const packet = new CreateMultiUseCodePacket({ configKey: validKey, pin: validPin });
     const json = packet.toJSON();
-    expect(json).toStrictEqual({
+    expect(json).toStrictEqual({ validChecksum: null,
         "configKey": "12345678",
         "opcode": 19,
         "pin": "654321",

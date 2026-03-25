@@ -51,7 +51,7 @@ describe('OpenDoorPacket', () => {
   it('should output only mapped payload properties and opcode via toJSON', () => {
     const packet = new OpenDoorPacket(validPin);
     const json = packet.toJSON();
-    expect(json).toStrictEqual({
+    expect(json).toStrictEqual({ validChecksum: null,
         "opcode": 1,
         "pin": "123456",
       });

@@ -18,7 +18,7 @@ describe('ScaleGetRawSensorsPacket', () => {
   it('should output only mapped payload properties and opcode via toJSON', () => {
     const packet = new ScaleGetRawSensorsPacket();
     const json = packet.toJSON();
-    expect(json).toStrictEqual({
+    expect(json).toStrictEqual({ validChecksum: null,
         "opcode": 97,
       });
   });

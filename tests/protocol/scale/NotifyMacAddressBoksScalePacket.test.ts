@@ -35,7 +35,7 @@ describe('NotifyMacAddressBoksScalePacket', () => {
   it('should output only mapped payload properties and opcode via toJSON', () => {
     const packet = NotifyMacAddressBoksScalePacket.fromRaw(new Uint8Array([0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff]));
     const json = packet.toJSON();
-    expect(json).toStrictEqual({
+    expect(json).toStrictEqual({ validChecksum: null,
         "macAddress": "FFEEDDCCBBAA",
         "opcode": 178,
       });

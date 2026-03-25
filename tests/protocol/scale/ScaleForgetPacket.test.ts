@@ -19,7 +19,7 @@ describe('ScaleForgetPacket', () => {
   it('should output only mapped payload properties and opcode via toJSON', () => {
     const packet = new ScaleForgetPacket();
     const json = packet.toJSON();
-    expect(json).toStrictEqual({
+    expect(json).toStrictEqual({ validChecksum: null,
         "opcode": 83,
       });
   });
