@@ -156,7 +156,11 @@ const packetData = computed(() => {
          if (e.message === 'Invalid checksum') {
             if (packetClass) {
                packetObj = new (packetClass as any)({}, hexToBytes(packetHex));
-               Object.assign(packetObj, PayloadMapper.parse(packetClass, hexToBytes(packetHex)));
+               try {
+                 Object.assign(packetObj, PayloadMapper.parse(packetClass, hexToBytes(packetHex)));
+               } catch (e2) {
+                 // ignore parsing errors (like Required field cannot be undefined) if we already have an invalid checksum
+               }
             }
             parseError = missingChecksum ? t.value.missingChecksum : t.value.invalidChecksum;
          } else {
