@@ -10,7 +10,7 @@ describe('NotifyCodeGenerationProgressPacket - Resilience & Edge Cases', () => {
         fc.property(fc.uint8Array(), (payload) => {
           let packet;
           try {
-            packet = NotifyCodeGenerationProgressPacket.fromRaw(payload);
+            packet = NotifyCodeGenerationProgressPacket.fromRaw(buildMockRawPacket(NotifyCodeGenerationProgressPacket.opcode, payload));
           } catch (e: any) {
             expect(e.name).toBe('BoksProtocolError');
             return;
@@ -32,7 +32,7 @@ describe('NotifyCodeGenerationProgressPacket - Resilience & Edge Cases', () => {
       fc.assert(
         fc.property(fc.integer({ min: 0, max: 255 }), (progress) => {
           const payload = new Uint8Array([progress]);
-          const packet = NotifyCodeGenerationProgressPacket.fromRaw(payload);
+          const packet = NotifyCodeGenerationProgressPacket.fromRaw(buildMockRawPacket(NotifyCodeGenerationProgressPacket.opcode, payload));
           expect(packet.progress).toBe(progress);
         })
       );
@@ -40,7 +40,7 @@ describe('NotifyCodeGenerationProgressPacket - Resilience & Edge Cases', () => {
 
     it('should safely error for an empty payload', () => {
       const shortPayload = new Uint8Array(0);
-      expect(() => NotifyCodeGenerationProgressPacket.fromRaw(shortPayload)).toThrowError();
+      expect(() => NotifyCodeGenerationProgressPacket.fromRaw(buildMockRawPacket(NotifyCodeGenerationProgressPacket.opcode, shortPayload))).toThrowError();
     });
 
     it('should ignore all trailing bytes gracefully', () => {
@@ -50,7 +50,7 @@ describe('NotifyCodeGenerationProgressPacket - Resilience & Edge Cases', () => {
           fc.uint8Array(),
           (progress, trailingBytes) => {
             const payload = new Uint8Array([progress, ...trailingBytes]);
-            const packet = NotifyCodeGenerationProgressPacket.fromRaw(payload);
+            const packet = NotifyCodeGenerationProgressPacket.fromRaw(buildMockRawPacket(NotifyCodeGenerationProgressPacket.opcode, payload));
             expect(packet.progress).toBe(progress);
           }
         )

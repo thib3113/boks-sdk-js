@@ -12,7 +12,7 @@ describe('TestBatteryPacket', () => {
   });
 
   it('should parse from payload correctly', () => {
-    const packet = TestBatteryPacket.fromRaw(new Uint8Array(0));
+    const packet = TestBatteryPacket.fromRaw(buildMockRawPacket(TestBatteryPacket.opcode, new Uint8Array(0)));
     expect(packet).toBeInstanceOf(TestBatteryPacket);
     expect(packet.opcode).toBe(BoksOpcode.TEST_BATTERY);
   });

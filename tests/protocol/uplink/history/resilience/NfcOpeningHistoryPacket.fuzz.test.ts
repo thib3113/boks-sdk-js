@@ -8,7 +8,7 @@ describe('NfcOpeningHistoryPacket Resilience (Fuzzing)', () => {
     fc.assert(
       fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (payload) => {
         try {
-          const packet = NfcOpeningHistoryPacket.fromRaw(payload);
+          const packet = NfcOpeningHistoryPacket.fromRaw(buildMockRawPacket(NfcOpeningHistoryPacket.opcode, payload));
           expect(packet).toBeInstanceOf(NfcOpeningHistoryPacket);
         } catch (e) {
           expect(e).toBeInstanceOf(BoksProtocolError);

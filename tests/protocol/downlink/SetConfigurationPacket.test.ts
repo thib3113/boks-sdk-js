@@ -3,6 +3,7 @@ import { SetConfigurationPacket } from '@/protocol/downlink/SetConfigurationPack
 import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';
 import { BoksOpcode } from '@/protocol/constants';
 import { bytesToHex, stringToBytes } from '@/utils/converters';
+import { buildMockRawPacket } from '../../utils/packet-builder';
 
 describe('SetConfigurationPacket', () => {
   const validKey = '12345678';
@@ -64,13 +65,13 @@ describe('SetConfigurationPacket', () => {
     payload[8] = type;
     payload[9] = 0x01;
 
-    const packet = SetConfigurationPacket.fromRaw(payload);
+    const packet = SetConfigurationPacket.fromRaw(buildMockRawPacket(SetConfigurationPacket.opcode, payload));
     expect(packet.configKey).toBe(validKey);
     expect(packet.configType).toBe(type);
     expect(packet.value).toBe(true);
 
     payload[9] = 0x00;
-    const packet2 = SetConfigurationPacket.fromRaw(payload);
+    const packet2 = SetConfigurationPacket.fromRaw(buildMockRawPacket(SetConfigurationPacket.opcode, payload));
     expect(packet2.value).toBe(false);
   });
 
@@ -82,15 +83,15 @@ describe('SetConfigurationPacket', () => {
 
   it('should throw INVALID_PAYLOAD_LENGTH if payload is wrong size', () => {
     const shortPayload = new Uint8Array(9);
-    expect(() => SetConfigurationPacket.fromRaw(shortPayload)).toThrowError(BoksProtocolError);
+    expect(() => SetConfigurationPacket.fromRaw(buildMockRawPacket(SetConfigurationPacket.opcode, shortPayload))).toThrowError(BoksProtocolError);
     try {
-      SetConfigurationPacket.fromRaw(shortPayload);
+      SetConfigurationPacket.fromRaw(buildMockRawPacket(SetConfigurationPacket.opcode, shortPayload));
     } catch (e) {
       expect((e as BoksProtocolError).id).toBe(BoksProtocolErrorId.INVALID_PAYLOAD_LENGTH);
     }
 
     const longPayload = new Uint8Array(11);
-    expect(() => SetConfigurationPacket.fromRaw(longPayload)).toThrowError(BoksProtocolError);
+    expect(() => SetConfigurationPacket.fromRaw(buildMockRawPacket(SetConfigurationPacket.opcode, longPayload))).toThrowError(BoksProtocolError);
   });
 
   it('should throw INVALID_VALUE if value byte is invalid', () => {
@@ -99,9 +100,9 @@ describe('SetConfigurationPacket', () => {
     payload[8] = type;
     payload[9] = 0x02; // Invalid boolean
 
-    expect(() => SetConfigurationPacket.fromRaw(payload)).toThrowError(BoksProtocolError);
+    expect(() => SetConfigurationPacket.fromRaw(buildMockRawPacket(SetConfigurationPacket.opcode, payload))).toThrowError(BoksProtocolError);
     try {
-      SetConfigurationPacket.fromRaw(payload);
+      SetConfigurationPacket.fromRaw(buildMockRawPacket(SetConfigurationPacket.opcode, payload));
     } catch (e) {
       expect((e as BoksProtocolError).id).toBe(BoksProtocolErrorId.INVALID_VALUE);
     }

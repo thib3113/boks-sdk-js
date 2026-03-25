@@ -45,7 +45,7 @@ describe('MasterCodeEditPacket', () => {
     payload[8] = validIndex;
     payload.set(stringToBytes(validNewPin), 9);
 
-    const packet = MasterCodeEditPacket.fromRaw(payload);
+    const packet = MasterCodeEditPacket.fromRaw(buildMockRawPacket(MasterCodeEditPacket.opcode, payload));
     expect(packet.configKey).toBe(validKey);
     expect(packet.index).toBe(validIndex);
     expect(packet.newPin).toBe(validNewPin);
@@ -86,7 +86,7 @@ describe('MasterCodeEditPacket', () => {
     const payload = new Uint8Array(8);
     payload.set(stringToBytes(validKey), 0);
 
-    expect(() => MasterCodeEditPacket.fromRaw(payload)).toThrowError(BoksProtocolError);
+    expect(() => MasterCodeEditPacket.fromRaw(buildMockRawPacket(MasterCodeEditPacket.opcode, payload))).toThrowError(BoksProtocolError);
     // because pin will be empty string
   });
 

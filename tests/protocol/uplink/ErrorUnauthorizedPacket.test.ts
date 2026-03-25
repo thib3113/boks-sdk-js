@@ -5,7 +5,7 @@ import { BoksOpcode } from '@/protocol/constants';
 describe('ErrorUnauthorizedPacket', () => {
   it('should parse correctly', () => {
     const payload = new Uint8Array(0);
-    const packet = ErrorUnauthorizedPacket.fromRaw(payload);
+    const packet = ErrorUnauthorizedPacket.fromRaw(buildMockRawPacket(ErrorUnauthorizedPacket.opcode, payload));
     expect(packet.opcode).toBe(BoksOpcode.ERROR_UNAUTHORIZED);
   });
 });

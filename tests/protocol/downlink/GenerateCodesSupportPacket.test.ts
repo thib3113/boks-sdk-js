@@ -38,7 +38,7 @@ describe('GenerateCodesSupportPacket', () => {
   });
 
   it('should parse from payload correctly', () => {
-    const packet = GenerateCodesSupportPacket.fromRaw(validSeedBytes);
+    const packet = GenerateCodesSupportPacket.fromRaw(buildMockRawPacket(GenerateCodesSupportPacket.opcode, validSeedBytes));
     expect(packet.seed).toBe(validSeedHex);
   });
 
@@ -47,7 +47,7 @@ describe('GenerateCodesSupportPacket', () => {
     // actually let's just make it throw BoksProtocolError for fromRaw on short seed
 
     const shortSeed = new Uint8Array(31);
-    expect(() => GenerateCodesSupportPacket.fromRaw(shortSeed)).toThrowError(BoksProtocolError); // BoksProtocolError);
+    expect(() => GenerateCodesSupportPacket.fromRaw(buildMockRawPacket(GenerateCodesSupportPacket.opcode, shortSeed))).toThrowError(BoksProtocolError); // BoksProtocolError);
 
     const shortHex = '0001';
     expect(() => new GenerateCodesSupportPacket(shortHex)).toThrowError(BoksProtocolError);

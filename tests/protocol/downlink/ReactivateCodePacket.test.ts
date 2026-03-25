@@ -38,7 +38,7 @@ describe('ReactivateCodePacket', () => {
     payload.set(stringToBytes(validKey), 0);
     payload.set(stringToBytes(validPin), 8);
 
-    const packet = ReactivateCodePacket.fromRaw(payload);
+    const packet = ReactivateCodePacket.fromRaw(buildMockRawPacket(ReactivateCodePacket.opcode, payload));
     expect(packet.configKey).toBe(validKey);
     expect(packet.pin).toBe(validPin);
   });
@@ -60,7 +60,7 @@ describe('ReactivateCodePacket', () => {
 
   it('should fail parsing if payload is too short', () => {
     const shortPayload = new Uint8Array(10);
-    expect(() => ReactivateCodePacket.fromRaw(shortPayload)).toThrowError(BoksProtocolError);
+    expect(() => ReactivateCodePacket.fromRaw(buildMockRawPacket(ReactivateCodePacket.opcode, shortPayload))).toThrowError(BoksProtocolError);
   });
 
   it('should output only mapped payload properties and opcode via toJSON', () => {

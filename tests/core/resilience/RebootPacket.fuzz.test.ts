@@ -9,7 +9,7 @@ describe('RebootPacket Resilience (Fuzzing)', () => {
     fc.assert(
       fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (payload) => {
         try {
-          const packet = RebootPacket.fromRaw(payload);
+          const packet = RebootPacket.fromRaw(buildMockRawPacket(RebootPacket.opcode, payload));
           expect(packet).toBeInstanceOf(RebootPacket);
         } catch (e) {
           expect(e).toBeInstanceOf(BoksProtocolError);

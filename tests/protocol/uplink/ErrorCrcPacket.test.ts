@@ -5,7 +5,7 @@ import { BoksOpcode } from '@/protocol/constants';
 describe('ErrorCrcPacket', () => {
   it('should parse correctly', () => {
     const payload = new Uint8Array(0);
-    const packet = ErrorCrcPacket.fromRaw(payload);
+    const packet = ErrorCrcPacket.fromRaw(buildMockRawPacket(ErrorCrcPacket.opcode, payload));
     expect(packet.opcode).toBe(BoksOpcode.ERROR_CRC);
   });
 });

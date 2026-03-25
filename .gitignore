@@ -47,3 +47,7 @@ test_output.txt
 .jules/diff.patch
 junit.xml
 dist/\n*.py
+
+node_modules
+coverage
+test_output.log

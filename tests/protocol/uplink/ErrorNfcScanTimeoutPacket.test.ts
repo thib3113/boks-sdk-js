@@ -5,7 +5,7 @@ import { BoksOpcode } from '@/protocol/constants';
 describe('ErrorNfcScanTimeoutPacket', () => {
   it('should parse correctly', () => {
     const payload = new Uint8Array(0);
-    const packet = ErrorNfcScanTimeoutPacket.fromRaw(payload);
+    const packet = ErrorNfcScanTimeoutPacket.fromRaw(buildMockRawPacket(ErrorNfcScanTimeoutPacket.opcode, payload));
     expect(packet.opcode).toBe(BoksOpcode.ERROR_NFC_SCAN_TIMEOUT);
     expect(packet.status).toBe('timeout');
   });

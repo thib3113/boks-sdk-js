@@ -22,7 +22,7 @@ describe('SimpleNotificationPackets Resilience (Fuzzing)', () => {
     it('FEATURE REGRESSION: should parse progress correctly for valid payloads', () => {
       fc.assert(
         fc.property(fc.uint8Array({ minLength: 1, maxLength: 256 }), (payload) => {
-          const packet = NotifyCodeGenerationProgressPacket.fromRaw(payload);
+          const packet = NotifyCodeGenerationProgressPacket.fromRaw(buildMockRawPacket(NotifyCodeGenerationProgressPacket.opcode, payload));
           expect(packet).toBeInstanceOf(NotifyCodeGenerationProgressPacket);
           expect(packet.opcode).toBe(0xc2);
           expect((packet as any).raw).toEqual(payload);
@@ -36,7 +36,7 @@ describe('SimpleNotificationPackets Resilience (Fuzzing)', () => {
       fc.assert(
         fc.property(fc.uint8Array({ maxLength: 0 }), (payload) => {
           try {
-            NotifyCodeGenerationProgressPacket.fromRaw(payload);
+            NotifyCodeGenerationProgressPacket.fromRaw(buildMockRawPacket(NotifyCodeGenerationProgressPacket.opcode, payload));
             expect.unreachable('Should have thrown an error');
           } catch (error: any) {
             expect(error.name).toBe('BoksProtocolError');
@@ -61,7 +61,7 @@ describe('SimpleNotificationPackets Resilience (Fuzzing)', () => {
             return clone;
           }),
           (payload) => {
-            const packet = AnswerDoorStatusPacket.fromRaw(payload);
+            const packet = AnswerDoorStatusPacket.fromRaw(buildMockRawPacket(AnswerDoorStatusPacket.opcode, payload));
             expect(packet).toBeInstanceOf(AnswerDoorStatusPacket);
             expect(packet.opcode).toBe(0x85);
             expect((packet as any).raw).toEqual(payload);
@@ -76,7 +76,7 @@ describe('SimpleNotificationPackets Resilience (Fuzzing)', () => {
       fc.assert(
         fc.property(fc.uint8Array({ minLength: 0, maxLength: 1 }), (payload) => {
           try {
-            AnswerDoorStatusPacket.fromRaw(payload);
+            AnswerDoorStatusPacket.fromRaw(buildMockRawPacket(AnswerDoorStatusPacket.opcode, payload));
             expect.unreachable('Should have thrown an error');
           } catch (error: any) {
             expect(error.name).toBe('BoksProtocolError');
@@ -101,7 +101,7 @@ describe('SimpleNotificationPackets Resilience (Fuzzing)', () => {
             return clone;
           }),
           (payload) => {
-            const packet = NotifyDoorStatusPacket.fromRaw(payload);
+            const packet = NotifyDoorStatusPacket.fromRaw(buildMockRawPacket(NotifyDoorStatusPacket.opcode, payload));
             expect(packet).toBeInstanceOf(NotifyDoorStatusPacket);
             expect(packet.opcode).toBe(0x84);
             expect((packet as any).raw).toEqual(payload);
@@ -116,7 +116,7 @@ describe('SimpleNotificationPackets Resilience (Fuzzing)', () => {
       fc.assert(
         fc.property(fc.uint8Array({ minLength: 0, maxLength: 1 }), (payload) => {
           try {
-            NotifyDoorStatusPacket.fromRaw(payload);
+            NotifyDoorStatusPacket.fromRaw(buildMockRawPacket(NotifyDoorStatusPacket.opcode, payload));
             expect.unreachable('Should have thrown an error');
           } catch (error: any) {
             expect(error.name).toBe('BoksProtocolError');
@@ -134,7 +134,7 @@ describe('SimpleNotificationPackets Resilience (Fuzzing)', () => {
     it('FEATURE REGRESSION: should parse counts from DataView for valid payloads', () => {
       fc.assert(
         fc.property(fc.uint8Array({ minLength: 4, maxLength: 256 }), (payload) => {
-          const packet = NotifyCodesCountPacket.fromRaw(payload);
+          const packet = NotifyCodesCountPacket.fromRaw(buildMockRawPacket(NotifyCodesCountPacket.opcode, payload));
           expect(packet).toBeInstanceOf(NotifyCodesCountPacket);
           expect(packet.opcode).toBe(0xc3);
           expect((packet as any).raw).toEqual(payload);
@@ -150,7 +150,7 @@ describe('SimpleNotificationPackets Resilience (Fuzzing)', () => {
       fc.assert(
         fc.property(fc.uint8Array({ minLength: 0, maxLength: 3 }), (payload) => {
           try {
-            NotifyCodesCountPacket.fromRaw(payload);
+            NotifyCodesCountPacket.fromRaw(buildMockRawPacket(NotifyCodesCountPacket.opcode, payload));
             expect.unreachable('Should have thrown an error');
           } catch (error: any) {
             expect(error.name).toBe('BoksProtocolError');
@@ -168,7 +168,7 @@ describe('SimpleNotificationPackets Resilience (Fuzzing)', () => {
     it('FEATURE REGRESSION: should parse count from DataView for valid payloads', () => {
       fc.assert(
         fc.property(fc.uint8Array({ minLength: 2, maxLength: 256 }), (payload) => {
-          const packet = NotifyLogsCountPacket.fromRaw(payload);
+          const packet = NotifyLogsCountPacket.fromRaw(buildMockRawPacket(NotifyLogsCountPacket.opcode, payload));
           expect(packet).toBeInstanceOf(NotifyLogsCountPacket);
           expect(packet.opcode).toBe(0x79);
           expect((packet as any).raw).toEqual(payload);
@@ -183,7 +183,7 @@ describe('SimpleNotificationPackets Resilience (Fuzzing)', () => {
       fc.assert(
         fc.property(fc.uint8Array({ minLength: 0, maxLength: 1 }), (payload) => {
           try {
-            NotifyLogsCountPacket.fromRaw(payload);
+            NotifyLogsCountPacket.fromRaw(buildMockRawPacket(NotifyLogsCountPacket.opcode, payload));
             expect.unreachable('Should have thrown an error');
           } catch (error: any) {
             expect(error.name).toBe('BoksProtocolError');
@@ -199,7 +199,7 @@ describe('SimpleNotificationPackets Resilience (Fuzzing)', () => {
   it('FEATURE REGRESSION: EndHistoryPacket should safely handle arbitrary payload lengths', () => {
     fc.assert(
       fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (payload) => {
-        const packet = EndHistoryPacket.fromRaw(payload);
+        const packet = EndHistoryPacket.fromRaw(buildMockRawPacket(EndHistoryPacket.opcode, payload));
         expect(packet).toBeInstanceOf(EndHistoryPacket);
         expect(packet.opcode).toBe(0x92);
         expect((packet as any).raw).toEqual(payload);
@@ -211,7 +211,7 @@ describe('SimpleNotificationPackets Resilience (Fuzzing)', () => {
   it('FEATURE REGRESSION: ErrorBadRequestPacket should safely handle arbitrary payload lengths', () => {
     fc.assert(
       fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (payload) => {
-        const packet = ErrorBadRequestPacket.fromRaw(payload);
+        const packet = ErrorBadRequestPacket.fromRaw(buildMockRawPacket(ErrorBadRequestPacket.opcode, payload));
         expect(packet).toBeInstanceOf(ErrorBadRequestPacket);
         expect(packet.opcode).toBe(0xe2);
         expect((packet as any).raw).toEqual(payload);
@@ -223,7 +223,7 @@ describe('SimpleNotificationPackets Resilience (Fuzzing)', () => {
   it('FEATURE REGRESSION: ErrorCrcPacket should safely handle arbitrary payload lengths', () => {
     fc.assert(
       fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (payload) => {
-        const packet = ErrorCrcPacket.fromRaw(payload);
+        const packet = ErrorCrcPacket.fromRaw(buildMockRawPacket(ErrorCrcPacket.opcode, payload));
         expect(packet).toBeInstanceOf(ErrorCrcPacket);
         expect(packet.opcode).toBe(0xe0);
         expect((packet as any).raw).toEqual(payload);
@@ -235,7 +235,7 @@ describe('SimpleNotificationPackets Resilience (Fuzzing)', () => {
   it('FEATURE REGRESSION: ErrorUnauthorizedPacket should safely handle arbitrary payload lengths', () => {
     fc.assert(
       fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (payload) => {
-        const packet = ErrorUnauthorizedPacket.fromRaw(payload);
+        const packet = ErrorUnauthorizedPacket.fromRaw(buildMockRawPacket(ErrorUnauthorizedPacket.opcode, payload));
         expect(packet).toBeInstanceOf(ErrorUnauthorizedPacket);
         expect(packet.opcode).toBe(0xe1);
         expect((packet as any).raw).toEqual(payload);
@@ -247,7 +247,7 @@ describe('SimpleNotificationPackets Resilience (Fuzzing)', () => {
   it('FEATURE REGRESSION: InvalidOpenCodePacket should safely handle arbitrary payload lengths', () => {
     fc.assert(
       fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (payload) => {
-        const packet = InvalidOpenCodePacket.fromRaw(payload);
+        const packet = InvalidOpenCodePacket.fromRaw(buildMockRawPacket(InvalidOpenCodePacket.opcode, payload));
         expect(packet).toBeInstanceOf(InvalidOpenCodePacket);
         expect(packet.opcode).toBe(0x82);
         expect((packet as any).raw).toEqual(payload);
@@ -259,7 +259,7 @@ describe('SimpleNotificationPackets Resilience (Fuzzing)', () => {
   it('FEATURE REGRESSION: NotifyCodeGenerationErrorPacket should safely handle arbitrary payload lengths', () => {
     fc.assert(
       fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (payload) => {
-        const packet = NotifyCodeGenerationErrorPacket.fromRaw(payload);
+        const packet = NotifyCodeGenerationErrorPacket.fromRaw(buildMockRawPacket(NotifyCodeGenerationErrorPacket.opcode, payload));
         expect(packet).toBeInstanceOf(NotifyCodeGenerationErrorPacket);
         expect(packet.opcode).toBe(0xc1);
         expect((packet as any).raw).toEqual(payload);
@@ -271,7 +271,7 @@ describe('SimpleNotificationPackets Resilience (Fuzzing)', () => {
   it('FEATURE REGRESSION: NotifyCodeGenerationSuccessPacket should safely handle arbitrary payload lengths', () => {
     fc.assert(
       fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (payload) => {
-        const packet = NotifyCodeGenerationSuccessPacket.fromRaw(payload);
+        const packet = NotifyCodeGenerationSuccessPacket.fromRaw(buildMockRawPacket(NotifyCodeGenerationSuccessPacket.opcode, payload));
         expect(packet).toBeInstanceOf(NotifyCodeGenerationSuccessPacket);
         expect(packet.opcode).toBe(0xc0);
         expect((packet as any).raw).toEqual(payload);
@@ -283,7 +283,7 @@ describe('SimpleNotificationPackets Resilience (Fuzzing)', () => {
   it('FEATURE REGRESSION: NotifySetConfigurationSuccessPacket should safely handle arbitrary payload lengths', () => {
     fc.assert(
       fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (payload) => {
-        const packet = NotifySetConfigurationSuccessPacket.fromRaw(payload);
+        const packet = NotifySetConfigurationSuccessPacket.fromRaw(buildMockRawPacket(NotifySetConfigurationSuccessPacket.opcode, payload));
         expect(packet).toBeInstanceOf(NotifySetConfigurationSuccessPacket);
         expect(packet.opcode).toBe(0xc4);
         expect((packet as any).raw).toEqual(payload);
@@ -295,7 +295,7 @@ describe('SimpleNotificationPackets Resilience (Fuzzing)', () => {
   it('FEATURE REGRESSION: OperationSuccessPacket should safely handle arbitrary payload lengths', () => {
     fc.assert(
       fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (payload) => {
-        const packet = OperationSuccessPacket.fromRaw(payload);
+        const packet = OperationSuccessPacket.fromRaw(buildMockRawPacket(OperationSuccessPacket.opcode, payload));
         expect(packet).toBeInstanceOf(OperationSuccessPacket);
         expect(packet.opcode).toBe(0x77);
         expect((packet as any).raw).toEqual(payload);
@@ -307,7 +307,7 @@ describe('SimpleNotificationPackets Resilience (Fuzzing)', () => {
   it('FEATURE REGRESSION: ValidOpenCodePacket should safely handle arbitrary payload lengths', () => {
     fc.assert(
       fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (payload) => {
-        const packet = ValidOpenCodePacket.fromRaw(payload);
+        const packet = ValidOpenCodePacket.fromRaw(buildMockRawPacket(ValidOpenCodePacket.opcode, payload));
         expect(packet).toBeInstanceOf(ValidOpenCodePacket);
         expect(packet.opcode).toBe(0x81);
         expect((packet as any).raw).toEqual(payload);
@@ -320,7 +320,7 @@ describe('SimpleNotificationPackets Resilience (Fuzzing)', () => {
     it('FEATURE REGRESSION: should parse error code from first byte for valid payloads', () => {
       fc.assert(
         fc.property(fc.uint8Array({ minLength: 1, maxLength: 256 }), (payload) => {
-          const packet = OperationErrorPacket.fromRaw(payload);
+          const packet = OperationErrorPacket.fromRaw(buildMockRawPacket(OperationErrorPacket.opcode, payload));
           expect(packet).toBeInstanceOf(OperationErrorPacket);
           expect(packet.opcode).toBe(0x78);
           expect(packet.errorCode).toBe(payload[0]);
@@ -334,7 +334,7 @@ describe('SimpleNotificationPackets Resilience (Fuzzing)', () => {
       fc.assert(
         fc.property(fc.uint8Array({ maxLength: 0 }), (payload) => {
           try {
-            OperationErrorPacket.fromRaw(payload);
+            OperationErrorPacket.fromRaw(buildMockRawPacket(OperationErrorPacket.opcode, payload));
             expect.unreachable('Should have thrown an error');
           } catch (error: any) {
             expect(error.name).toBe('BoksProtocolError');

@@ -42,7 +42,7 @@ describe('UnregisterNfcTagPacket', () => {
     payload[8] = 4;
     payload.set(uidBytes, 9);
 
-    const packet = UnregisterNfcTagPacket.fromRaw(payload);
+    const packet = UnregisterNfcTagPacket.fromRaw(buildMockRawPacket(UnregisterNfcTagPacket.opcode, payload));
     expect(packet.configKey).toBe(validKey);
     expect(packet.uid).toBe('01020304');
   });
@@ -62,7 +62,7 @@ describe('UnregisterNfcTagPacket', () => {
   it('should fail parsing if payload is malformed', () => {
     const payload = new Uint8Array(8);
     payload.set(stringToBytes(validKey), 0);
-    expect(() => UnregisterNfcTagPacket.fromRaw(payload)).toThrowError(BoksProtocolError);
+    expect(() => UnregisterNfcTagPacket.fromRaw(buildMockRawPacket(UnregisterNfcTagPacket.opcode, payload))).toThrowError(BoksProtocolError);
   });
 
   it('should output only mapped payload properties and opcode via toJSON', () => {

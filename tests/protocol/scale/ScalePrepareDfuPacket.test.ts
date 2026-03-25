@@ -11,7 +11,7 @@ describe('ScalePrepareDfuPacket', () => {
   });
 
   it('should parse from payload correctly', () => {
-    const packet = ScalePrepareDfuPacket.fromRaw(new Uint8Array(0));
+    const packet = ScalePrepareDfuPacket.fromRaw(buildMockRawPacket(ScalePrepareDfuPacket.opcode, new Uint8Array(0)));
     expect(packet.opcode).toBe(BoksOpcode.SCALE_PREPARE_DFU);
   });
 

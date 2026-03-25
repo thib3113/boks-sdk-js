@@ -5,7 +5,7 @@ import { BoksOpcode } from '@/protocol/constants';
 describe('EndHistoryPacket', () => {
   it('should parse correctly', () => {
     const payload = new Uint8Array(0);
-    const packet = EndHistoryPacket.fromRaw(payload);
+    const packet = EndHistoryPacket.fromRaw(buildMockRawPacket(EndHistoryPacket.opcode, payload));
     expect(packet.opcode).toBe(BoksOpcode.LOG_END_HISTORY);
   });
 });

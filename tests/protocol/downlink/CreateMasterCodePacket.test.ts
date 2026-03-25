@@ -47,7 +47,7 @@ describe('CreateMasterCodePacket', () => {
     payload.set(stringToBytes(validPin), 8);
     payload[14] = validIndex;
 
-    const packet = CreateMasterCodePacket.fromRaw(payload);
+    const packet = CreateMasterCodePacket.fromRaw(buildMockRawPacket(CreateMasterCodePacket.opcode, payload));
     expect(packet.configKey).toBe(validKey);
     expect(packet.pin).toBe(validPin);
     expect(packet.index).toBe(validIndex);
@@ -59,7 +59,7 @@ describe('CreateMasterCodePacket', () => {
     payload.set(stringToBytes(validKey), 0);
     payload.set(stringToBytes(validPin), 8);
 
-    const packet = CreateMasterCodePacket.fromRaw(payload);
+    const packet = CreateMasterCodePacket.fromRaw(buildMockRawPacket(CreateMasterCodePacket.opcode, payload));
     expect(packet.index).toBe(0);
   });
 

@@ -5,7 +5,7 @@ import { BoksOpcode } from '@/protocol/constants';
 describe('NotifyScaleBondingSuccessPacket', () => {
   it('should parse correctly', () => {
     const payload = new Uint8Array(0);
-    const packet = NotifyScaleBondingSuccessPacket.fromRaw(payload);
+    const packet = NotifyScaleBondingSuccessPacket.fromRaw(buildMockRawPacket(NotifyScaleBondingSuccessPacket.opcode, payload));
     expect(packet.opcode).toBe(BoksOpcode.NOTIFY_SCALE_BONDING_SUCCESS);
   });
 });

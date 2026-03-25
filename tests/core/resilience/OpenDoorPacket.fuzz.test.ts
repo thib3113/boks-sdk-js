@@ -9,7 +9,7 @@ describe('OpenDoorPacket Resilience (Fuzzing)', () => {
     fc.assert(
       fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (payload) => {
         try {
-          const packet = OpenDoorPacket.fromRaw(payload);
+          const packet = OpenDoorPacket.fromRaw(buildMockRawPacket(OpenDoorPacket.opcode, payload));
           expect(packet).toBeInstanceOf(OpenDoorPacket);
         } catch (e) {
           // Must gracefully reject with BoksProtocolError when the PIN inside the payload

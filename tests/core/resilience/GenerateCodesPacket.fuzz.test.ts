@@ -31,7 +31,7 @@ describe('GenerateCodesPacket Resilience (Fuzzing)', () => {
     fc.assert(
       fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (payload) => {
         try {
-          const packet = GenerateCodesPacket.fromRaw(payload);
+          const packet = GenerateCodesPacket.fromRaw(buildMockRawPacket(GenerateCodesPacket.opcode, payload));
           expect(packet).toBeInstanceOf(GenerateCodesPacket);
         } catch (e) {
           expect(e).toBeInstanceOf(BoksProtocolError);

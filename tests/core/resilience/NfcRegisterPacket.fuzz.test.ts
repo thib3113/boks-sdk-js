@@ -34,7 +34,7 @@ describe('NfcRegisterPacket Resilience (Fuzzing)', () => {
     fc.assert(
       fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (payload) => {
         try {
-          const packet = NfcRegisterPacket.fromRaw(payload);
+          const packet = NfcRegisterPacket.fromRaw(buildMockRawPacket(NfcRegisterPacket.opcode, payload));
           expect(packet).toBeInstanceOf(NfcRegisterPacket);
         } catch (e) {
           // It is an intended FEATURE that fromRaw validation throws a BoksProtocolError

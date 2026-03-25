@@ -38,7 +38,7 @@ describe('DeleteMasterCodePacket', () => {
     payload.set(stringToBytes(validKey), 0);
     payload[8] = validIndex;
 
-    const packet = DeleteMasterCodePacket.fromRaw(payload);
+    const packet = DeleteMasterCodePacket.fromRaw(buildMockRawPacket(DeleteMasterCodePacket.opcode, payload));
     expect(packet.configKey).toBe(validKey);
     expect(packet.index).toBe(validIndex);
   });
@@ -47,7 +47,7 @@ describe('DeleteMasterCodePacket', () => {
     const payload = new Uint8Array(8);
     payload.set(stringToBytes(validKey), 0);
 
-    expect(() => DeleteMasterCodePacket.fromRaw(payload)).toThrowError(BoksProtocolError);
+    expect(() => DeleteMasterCodePacket.fromRaw(buildMockRawPacket(DeleteMasterCodePacket.opcode, payload))).toThrowError(BoksProtocolError);
   });
 
   it('should throw INVALID_CONFIG_KEY for invalid config key format', () => {

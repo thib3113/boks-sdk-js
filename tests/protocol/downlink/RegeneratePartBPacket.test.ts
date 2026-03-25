@@ -31,7 +31,7 @@ describe('RegeneratePartBPacket', () => {
     payload.set(stringToBytes(validKey), 0);
     payload.set(validPart, 8);
 
-    const packet = RegeneratePartBPacket.fromRaw(payload);
+    const packet = RegeneratePartBPacket.fromRaw(buildMockRawPacket(RegeneratePartBPacket.opcode, payload));
     expect(packet.configKey).toBe(validKey);
     expect(packet.part).toEqual('101112131415161718191A1B1C1D1E1F');
   });
@@ -58,7 +58,7 @@ describe('RegeneratePartBPacket', () => {
     const payload = new Uint8Array(20);
     payload.set(stringToBytes(validKey), 0);
 
-    expect(() => RegeneratePartBPacket.fromRaw(payload)).toThrowError(BoksProtocolError);
+    expect(() => RegeneratePartBPacket.fromRaw(buildMockRawPacket(RegeneratePartBPacket.opcode, payload))).toThrowError(BoksProtocolError);
   });
 
   it('should output only mapped payload properties and opcode via toJSON', () => {

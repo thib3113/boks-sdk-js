@@ -12,7 +12,7 @@ describe('ScaleForgetPacket', () => {
   });
 
   it('should parse from payload correctly', () => {
-    const packet = ScaleForgetPacket.fromRaw(new Uint8Array(0));
+    const packet = ScaleForgetPacket.fromRaw(buildMockRawPacket(ScaleForgetPacket.opcode, new Uint8Array(0)));
     expect(packet.opcode).toBe(BoksOpcode.SCALE_FORGET_BONDING);
   });
 

@@ -7,7 +7,7 @@ describe('ScaleBondPacket Resilience (Fuzzing)', () => {
   it('FEATURE REGRESSION: should safely parse completely arbitrary payloads without crashing', () => {
     fc.assert(
       fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (payload) => {
-        const packet = ScaleBondPacket.fromRaw(payload);
+        const packet = ScaleBondPacket.fromRaw(buildMockRawPacket(ScaleBondPacket.opcode, payload));
         expect(packet).toBeInstanceOf(ScaleBondPacket);
         expect(packet.opcode).toBe(BoksOpcode.SCALE_BOND);
         expect(packet.data).toEqual(payload);

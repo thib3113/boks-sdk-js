@@ -11,7 +11,7 @@ describe('ScaleMeasureWeightPacket', () => {
   });
 
   it('should parse from payload correctly', () => {
-    const packet = ScaleMeasureWeightPacket.fromRaw(new Uint8Array(0));
+    const packet = ScaleMeasureWeightPacket.fromRaw(buildMockRawPacket(ScaleMeasureWeightPacket.opcode, new Uint8Array(0)));
     expect(packet.opcode).toBe(BoksOpcode.SCALE_MEASURE_WEIGHT);
   });
 

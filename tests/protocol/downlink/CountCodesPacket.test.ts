@@ -11,13 +11,13 @@ describe('CountCodesPacket', () => {
   });
 
   it('should parse from payload correctly', () => {
-    const packet = CountCodesPacket.fromRaw(new Uint8Array(0));
+    const packet = CountCodesPacket.fromRaw(buildMockRawPacket(CountCodesPacket.opcode, new Uint8Array(0)));
     expect(packet).toBeInstanceOf(CountCodesPacket);
     expect(packet.opcode).toBe(BoksOpcode.COUNT_CODES);
   });
 
   it('should handle extra payload bytes gracefully (ignore them)', () => {
-    const packet = CountCodesPacket.fromRaw(new Uint8Array([0xff]));
+    const packet = CountCodesPacket.fromRaw(buildMockRawPacket(CountCodesPacket.opcode, new Uint8Array([0xff])));
     expect(packet).toBeInstanceOf(CountCodesPacket);
   });
 

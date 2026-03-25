@@ -6,7 +6,7 @@ import { bytesToHex } from '@/utils/converters';
 describe('OperationErrorPacket', () => {
   it('should parse correctly with error code', () => {
     const payload = new Uint8Array([0x01]);
-    const packet = OperationErrorPacket.fromRaw(payload);
+    const packet = OperationErrorPacket.fromRaw(buildMockRawPacket(OperationErrorPacket.opcode, payload));
     expect(packet.opcode).toBe(BoksOpcode.CODE_OPERATION_ERROR);
     expect(packet.errorCode).toBe(1);
   });
@@ -26,11 +26,11 @@ describe('OperationErrorPacket', () => {
   });
 
   it('should throw error if payload is empty', () => {
-    expect(() => OperationErrorPacket.fromRaw(new Uint8Array(0))).toThrowError();
+    expect(() => OperationErrorPacket.fromRaw(buildMockRawPacket(OperationErrorPacket.opcode, new Uint8Array(0)))).toThrowError();
   });
 
   it('should output only mapped payload properties and opcode via toJSON', () => {
-    const packet = OperationErrorPacket.fromRaw(new Uint8Array([0x01]));
+    const packet = OperationErrorPacket.fromRaw(buildMockRawPacket(OperationErrorPacket.opcode, new Uint8Array([0x01])));
     const json = packet.toJSON();
     expect(json).toStrictEqual({
         "errorCode": 1,

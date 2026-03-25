@@ -9,7 +9,7 @@ describe('NotifyNfcTagFoundPacket - Resilience & Edge Cases', () => {
       fc.assert(
         fc.property(fc.uint8Array(), (payload) => {
           try {
-            const packet = NotifyNfcTagFoundPacket.fromRaw(payload);
+            const packet = NotifyNfcTagFoundPacket.fromRaw(buildMockRawPacket(NotifyNfcTagFoundPacket.opcode, payload));
             const uidLength = payload[0];
             expect(packet.uid.length / 2).toBe(uidLength);
           } catch (e) {
@@ -20,7 +20,7 @@ describe('NotifyNfcTagFoundPacket - Resilience & Edge Cases', () => {
     });
 
     it('should correctly handle completely empty payloads', () => {
-      expect(() => NotifyNfcTagFoundPacket.fromRaw(new Uint8Array(0))).toThrow(
+      expect(() => NotifyNfcTagFoundPacket.fromRaw(buildMockRawPacket(NotifyNfcTagFoundPacket.opcode, new Uint8Array(0)))).toThrow(
         BoksProtocolError
       );
     });
@@ -29,7 +29,7 @@ describe('NotifyNfcTagFoundPacket - Resilience & Edge Cases', () => {
       fc.assert(
         fc.property(fc.uint8Array({ minLength: 4, maxLength: 10 }), (payload) => {
           try {
-            const packet = NotifyNfcTagFoundPacket.fromRaw(payload);
+            const packet = NotifyNfcTagFoundPacket.fromRaw(buildMockRawPacket(NotifyNfcTagFoundPacket.opcode, payload));
             const uidLength = payload[0];
             expect(packet.uid.length / 2).toBe(uidLength);
           } catch (e) {

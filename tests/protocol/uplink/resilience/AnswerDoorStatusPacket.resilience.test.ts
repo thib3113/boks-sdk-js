@@ -10,7 +10,7 @@ describe('AnswerDoorStatusPacket - Resilience & Edge Cases', () => {
         fc.property(fc.uint8Array(), (payload) => {
           let packet;
           try {
-            packet = AnswerDoorStatusPacket.fromRaw(payload);
+            packet = AnswerDoorStatusPacket.fromRaw(buildMockRawPacket(AnswerDoorStatusPacket.opcode, payload));
           } catch (e: any) {
             expect(e.name).toBe('BoksProtocolError');
             return;
@@ -39,7 +39,7 @@ describe('AnswerDoorStatusPacket - Resilience & Edge Cases', () => {
       fc.assert(
         fc.property(fc.uint8Array(), (trailingBytes) => {
           const payload = new Uint8Array([0x00, 0x01, ...trailingBytes]);
-          const packet = AnswerDoorStatusPacket.fromRaw(payload);
+          const packet = AnswerDoorStatusPacket.fromRaw(buildMockRawPacket(AnswerDoorStatusPacket.opcode, payload));
           expect(packet.isOpen).toBe(true);
         })
       );
@@ -53,7 +53,7 @@ describe('AnswerDoorStatusPacket - Resilience & Edge Cases', () => {
           (inverted, status) => {
             fc.pre((inverted !== 0x00 && inverted !== 0x01) || (status !== 0x00 && status !== 0x01)); // Exclude valid boolean bytes
             const payload = new Uint8Array([inverted, status]);
-            expect(() => AnswerDoorStatusPacket.fromRaw(payload)).toThrowError(Error);
+            expect(() => AnswerDoorStatusPacket.fromRaw(buildMockRawPacket(AnswerDoorStatusPacket.opcode, payload))).toThrowError(Error);
           }
         )
       );

@@ -14,7 +14,7 @@ describe('NfcNotificationPackets Resilience (Fuzzing)', () => {
     fc.assert(
       fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (payload) => {
         try {
-          const packet = NotifyNfcTagFoundPacket.fromRaw(payload);
+          const packet = NotifyNfcTagFoundPacket.fromRaw(buildMockRawPacket(NotifyNfcTagFoundPacket.opcode, payload));
           expect(packet).toBeInstanceOf(NotifyNfcTagFoundPacket);
           expect(packet.opcode).toBe(0xc5);
           expect((packet as any).raw).toEqual(payload);
@@ -31,7 +31,7 @@ describe('NfcNotificationPackets Resilience (Fuzzing)', () => {
   it('FEATURE REGRESSION: NotifyNfcTagRegisteredPacket should safely handle arbitrary payload lengths', () => {
     fc.assert(
       fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (payload) => {
-        const packet = NotifyNfcTagRegisteredPacket.fromRaw(payload);
+        const packet = NotifyNfcTagRegisteredPacket.fromRaw(buildMockRawPacket(NotifyNfcTagRegisteredPacket.opcode, payload));
         expect(packet).toBeInstanceOf(NotifyNfcTagRegisteredPacket);
         expect(packet.opcode).toBe(0xc8);
         expect((packet as any).raw).toEqual(payload);
@@ -43,7 +43,7 @@ describe('NfcNotificationPackets Resilience (Fuzzing)', () => {
   it('FEATURE REGRESSION: NotifyNfcTagRegisteredErrorAlreadyExistsPacket should safely handle arbitrary payload lengths', () => {
     fc.assert(
       fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (payload) => {
-        const packet = NotifyNfcTagRegisteredErrorAlreadyExistsPacket.fromRaw(payload);
+        const packet = NotifyNfcTagRegisteredErrorAlreadyExistsPacket.fromRaw(buildMockRawPacket(NotifyNfcTagRegisteredErrorAlreadyExistsPacket.opcode, payload));
         expect(packet).toBeInstanceOf(NotifyNfcTagRegisteredErrorAlreadyExistsPacket);
         expect(packet.opcode).toBe(0xc9);
         expect((packet as any).raw).toEqual(payload);
@@ -55,7 +55,7 @@ describe('NfcNotificationPackets Resilience (Fuzzing)', () => {
   it('FEATURE REGRESSION: NotifyNfcTagUnregisteredPacket should safely handle arbitrary payload lengths', () => {
     fc.assert(
       fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (payload) => {
-        const packet = NotifyNfcTagUnregisteredPacket.fromRaw(payload);
+        const packet = NotifyNfcTagUnregisteredPacket.fromRaw(buildMockRawPacket(NotifyNfcTagUnregisteredPacket.opcode, payload));
         expect(packet).toBeInstanceOf(NotifyNfcTagUnregisteredPacket);
         expect(packet.opcode).toBe(0xca);
         expect((packet as any).raw).toEqual(payload);
@@ -67,7 +67,7 @@ describe('NfcNotificationPackets Resilience (Fuzzing)', () => {
   it('FEATURE REGRESSION: ErrorNfcTagAlreadyExistsScanPacket should safely handle arbitrary payload lengths', () => {
     fc.assert(
       fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (payload) => {
-        const packet = ErrorNfcTagAlreadyExistsScanPacket.fromRaw(payload);
+        const packet = ErrorNfcTagAlreadyExistsScanPacket.fromRaw(buildMockRawPacket(ErrorNfcTagAlreadyExistsScanPacket.opcode, payload));
         expect(packet).toBeInstanceOf(ErrorNfcTagAlreadyExistsScanPacket);
         expect(packet.opcode).toBe(0xc6);
         expect((packet as any).raw).toEqual(payload);
@@ -79,7 +79,7 @@ describe('NfcNotificationPackets Resilience (Fuzzing)', () => {
   it('FEATURE REGRESSION: ErrorNfcScanTimeoutPacket should safely handle arbitrary payload lengths', () => {
     fc.assert(
       fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (payload) => {
-        const packet = ErrorNfcScanTimeoutPacket.fromRaw(payload);
+        const packet = ErrorNfcScanTimeoutPacket.fromRaw(buildMockRawPacket(ErrorNfcScanTimeoutPacket.opcode, payload));
         expect(packet).toBeInstanceOf(ErrorNfcScanTimeoutPacket);
         expect(packet.opcode).toBe(0xc7);
         expect((packet as any).raw).toEqual(payload);

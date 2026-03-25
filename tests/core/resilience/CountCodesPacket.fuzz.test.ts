@@ -8,7 +8,7 @@ describe('CountCodesPacket Resilience (Fuzzing)', () => {
     fc.assert(
       fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (payload) => {
         // CountCodesPacket ignores payload, so it should always succeed
-        const packet = CountCodesPacket.fromRaw(payload);
+        const packet = CountCodesPacket.fromRaw(buildMockRawPacket(CountCodesPacket.opcode, payload));
         expect(packet).toBeInstanceOf(CountCodesPacket);
         expect(packet.opcode).toBe(0x14); // CountCodesPacket opcode
       }),

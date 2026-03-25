@@ -9,7 +9,7 @@ describe('GetLogsCountPacket Resilience (Fuzzing)', () => {
     fc.assert(
       fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (payload) => {
         try {
-          const packet = GetLogsCountPacket.fromRaw(payload);
+          const packet = GetLogsCountPacket.fromRaw(buildMockRawPacket(GetLogsCountPacket.opcode, payload));
           expect(packet).toBeInstanceOf(GetLogsCountPacket);
         } catch (e) {
           expect(e).toBeInstanceOf(BoksProtocolError);

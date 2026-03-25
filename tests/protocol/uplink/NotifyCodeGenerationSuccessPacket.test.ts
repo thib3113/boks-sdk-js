@@ -5,7 +5,7 @@ import { BoksOpcode } from '@/protocol/constants';
 describe('NotifyCodeGenerationSuccessPacket', () => {
   it('should parse correctly', () => {
     const payload = new Uint8Array(0);
-    const packet = NotifyCodeGenerationSuccessPacket.fromRaw(payload);
+    const packet = NotifyCodeGenerationSuccessPacket.fromRaw(buildMockRawPacket(NotifyCodeGenerationSuccessPacket.opcode, payload));
     expect(packet.opcode).toBe(BoksOpcode.NOTIFY_CODE_GENERATION_SUCCESS);
   });
 });

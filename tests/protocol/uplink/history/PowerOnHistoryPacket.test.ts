@@ -7,7 +7,7 @@ describe('PowerOnHistoryPacket', () => {
   it('should parse correctly with age', () => {
     // age 0
     const payload = new Uint8Array([0x00, 0x00, 0x00]);
-    const packet = PowerOnHistoryPacket.fromRaw(payload);
+    const packet = PowerOnHistoryPacket.fromRaw(buildMockRawPacket(PowerOnHistoryPacket.opcode, payload));
     expect(packet.opcode).toBe(BoksOpcode.POWER_ON);
     expect(packet.age).toBe(0);
   });
@@ -26,7 +26,7 @@ describe('PowerOnHistoryPacket', () => {
   });
 
   it('should output only mapped payload properties and opcode via toJSON', () => {
-    const packet = PowerOnHistoryPacket.fromRaw(new Uint8Array([0x00, 0x00, 0x00]));
+    const packet = PowerOnHistoryPacket.fromRaw(buildMockRawPacket(PowerOnHistoryPacket.opcode, new Uint8Array([0x00, 0x00, 0x00])));
     const json = packet.toJSON();
     expect(json).toStrictEqual({
         "age": 0,

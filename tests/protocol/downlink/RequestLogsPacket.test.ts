@@ -12,7 +12,7 @@ describe('RequestLogsPacket', () => {
   });
 
   it('should parse from payload correctly', () => {
-    const packet = RequestLogsPacket.fromRaw(new Uint8Array(0));
+    const packet = RequestLogsPacket.fromRaw(buildMockRawPacket(RequestLogsPacket.opcode, new Uint8Array(0)));
     expect(packet).toBeInstanceOf(RequestLogsPacket);
     expect(packet.opcode).toBe(BoksOpcode.REQUEST_LOGS);
   });

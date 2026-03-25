@@ -8,7 +8,7 @@ describe('NotifyCodesCountPacket - Resilience & Edge Cases', () => {
     it('should parse valid arbitrary payloads without crashing', () => {
       fc.assert(
         fc.property(fc.uint8Array({ minLength: 4 }), (payload) => {
-          const packet = NotifyCodesCountPacket.fromRaw(payload);
+          const packet = NotifyCodesCountPacket.fromRaw(buildMockRawPacket(NotifyCodesCountPacket.opcode, payload));
           expect(packet).toBeInstanceOf(NotifyCodesCountPacket);
           expect(packet.opcode).toBe(BoksOpcode.NOTIFY_CODES_COUNT);
           expect((packet as any).raw).toEqual(payload);
@@ -23,7 +23,7 @@ describe('NotifyCodesCountPacket - Resilience & Edge Cases', () => {
     it('should throw an error for missing trailing bytes', () => {
       fc.assert(
         fc.property(fc.uint8Array({ maxLength: 3 }), (shortPayload) => {
-          expect(() => NotifyCodesCountPacket.fromRaw(shortPayload)).toThrowError();
+          expect(() => NotifyCodesCountPacket.fromRaw(buildMockRawPacket(NotifyCodesCountPacket.opcode, shortPayload))).toThrowError();
         })
       );
     });
@@ -43,7 +43,7 @@ describe('NotifyCodesCountPacket - Resilience & Edge Cases', () => {
             const payload = new Uint8Array(buffer);
             payload.set(trailingBytes, 4);
 
-            const packet = NotifyCodesCountPacket.fromRaw(payload);
+            const packet = NotifyCodesCountPacket.fromRaw(buildMockRawPacket(NotifyCodesCountPacket.opcode, payload));
             expect(packet.masterCount).toBe(masterCount);
             expect(packet.otherCount).toBe(otherCount);
           }

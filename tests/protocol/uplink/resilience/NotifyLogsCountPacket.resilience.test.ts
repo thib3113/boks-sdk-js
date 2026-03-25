@@ -8,7 +8,7 @@ describe('NotifyLogsCountPacket - Resilience & Edge Cases', () => {
     it('should parse valid arbitrary payloads without crashing', () => {
       fc.assert(
         fc.property(fc.uint8Array({ minLength: 2 }), (payload) => {
-          const packet = NotifyLogsCountPacket.fromRaw(payload);
+          const packet = NotifyLogsCountPacket.fromRaw(buildMockRawPacket(NotifyLogsCountPacket.opcode, payload));
           expect(packet).toBeInstanceOf(NotifyLogsCountPacket);
           expect(packet.opcode).toBe(BoksOpcode.NOTIFY_LOGS_COUNT);
           expect((packet as any).raw).toEqual(payload);
@@ -26,7 +26,7 @@ describe('NotifyLogsCountPacket - Resilience & Edge Cases', () => {
     it('should throw MALFORMED_DATA on short payload', () => {
       fc.assert(
         fc.property(fc.uint8Array({ maxLength: 1 }), (shortPayload) => {
-          expect(() => NotifyLogsCountPacket.fromRaw(shortPayload)).toThrowError(Error);
+          expect(() => NotifyLogsCountPacket.fromRaw(buildMockRawPacket(NotifyLogsCountPacket.opcode, shortPayload))).toThrowError(Error);
         })
       );
     });
@@ -41,7 +41,7 @@ describe('NotifyLogsCountPacket - Resilience & Edge Cases', () => {
           const payload = new Uint8Array(buffer);
           payload.set(trailingBytes, 2);
 
-          const packet = NotifyLogsCountPacket.fromRaw(payload);
+          const packet = NotifyLogsCountPacket.fromRaw(buildMockRawPacket(NotifyLogsCountPacket.opcode, payload));
           expect(packet.count).toBe(count);
         })
       );

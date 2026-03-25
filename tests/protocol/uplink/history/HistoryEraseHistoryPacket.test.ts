@@ -6,7 +6,7 @@ import { bytesToHex } from '@/utils/converters';
 describe('HistoryEraseHistoryPacket', () => {
   it('should parse correctly with age', () => {
     const payload = new Uint8Array([0x01, 0x02, 0x03]);
-    const packet = HistoryEraseHistoryPacket.fromRaw(payload);
+    const packet = HistoryEraseHistoryPacket.fromRaw(buildMockRawPacket(HistoryEraseHistoryPacket.opcode, payload));
     expect(packet.opcode).toBe(BoksOpcode.LOG_HISTORY_ERASE);
     expect(packet.age).toBe(0x010203);
   });
@@ -21,7 +21,7 @@ describe('HistoryEraseHistoryPacket', () => {
   });
 
   it('should output only mapped payload properties and opcode via toJSON', () => {
-    const packet = HistoryEraseHistoryPacket.fromRaw(new Uint8Array([0x01, 0x02, 0x03]));
+    const packet = HistoryEraseHistoryPacket.fromRaw(buildMockRawPacket(HistoryEraseHistoryPacket.opcode, new Uint8Array([0x01, 0x02, 0x03])));
     const json = packet.toJSON();
     expect(json).toStrictEqual({
         "age": 66051,

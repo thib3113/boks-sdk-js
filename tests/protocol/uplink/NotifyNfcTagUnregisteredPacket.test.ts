@@ -5,7 +5,7 @@ import { BoksOpcode } from '@/protocol/constants';
 describe('NotifyNfcTagUnregisteredPacket', () => {
   it('should parse correctly', () => {
     const payload = new Uint8Array(0);
-    const packet = NotifyNfcTagUnregisteredPacket.fromRaw(payload);
+    const packet = NotifyNfcTagUnregisteredPacket.fromRaw(buildMockRawPacket(NotifyNfcTagUnregisteredPacket.opcode, payload));
     expect(packet.opcode).toBe(BoksOpcode.NOTIFY_NFC_TAG_UNREGISTERED);
   });
 });

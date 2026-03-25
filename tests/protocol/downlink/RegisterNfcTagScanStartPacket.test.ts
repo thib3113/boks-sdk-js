@@ -3,6 +3,7 @@ import { describe, it, expect } from 'vitest';
 import { RegisterNfcTagScanStartPacket } from '@/protocol/downlink/RegisterNfcTagScanStartPacket';
 import { BoksOpcode } from '@/protocol/constants';
 import { bytesToHex, stringToBytes } from '@/utils/converters';
+import { buildMockRawPacket } from '../../utils/packet-builder';
 
 describe('RegisterNfcTagScanStartPacket', () => {
   const validKey = '12345678';
@@ -34,7 +35,7 @@ describe('RegisterNfcTagScanStartPacket', () => {
 
   it('should parse from payload correctly', () => {
     const payload = new Uint8Array([0, ...stringToBytes(validKey)]);
-    const packet = RegisterNfcTagScanStartPacket.fromRaw(payload);
+    const packet = RegisterNfcTagScanStartPacket.fromRaw(buildMockRawPacket(RegisterNfcTagScanStartPacket.opcode, payload));
     expect(packet.configKey).toBe(validKey);
   });
 
@@ -49,7 +50,7 @@ describe('RegisterNfcTagScanStartPacket', () => {
 
   it('should fail parsing if payload is too short (bad key)', () => {
     const payload = new Uint8Array(5);
-    expect(() => RegisterNfcTagScanStartPacket.fromRaw(payload)).toThrowError(
+    expect(() => RegisterNfcTagScanStartPacket.fromRaw(buildMockRawPacket(RegisterNfcTagScanStartPacket.opcode, payload))).toThrowError(
       BoksProtocolError
     );
   });

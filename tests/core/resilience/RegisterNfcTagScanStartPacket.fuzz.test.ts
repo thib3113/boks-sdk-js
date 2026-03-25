@@ -33,7 +33,7 @@ describe('RegisterNfcTagScanStartPacket Resilience (Fuzzing)', () => {
     fc.assert(
       fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (payload) => {
         try {
-          const packet = RegisterNfcTagScanStartPacket.fromRaw(payload);
+          const packet = RegisterNfcTagScanStartPacket.fromRaw(buildMockRawPacket(RegisterNfcTagScanStartPacket.opcode, payload));
           expect(packet).toBeInstanceOf(RegisterNfcTagScanStartPacket);
         } catch (e) {
           // It is an intended FEATURE that fromRaw validation throws a BoksProtocolError

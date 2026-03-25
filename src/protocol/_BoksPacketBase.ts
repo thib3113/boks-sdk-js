@@ -70,24 +70,42 @@ export abstract class BoksPacket {
     opcode: BoksOpcode,
     lengthIncludesHeader: boolean = false
   ): Uint8Array {
-    if (data.length < PACKET_HEADER_SIZE || data[0] !== opcode) {
-      return data;
+    if (data.length < PACKET_HEADER_SIZE) {
+      throw new BoksProtocolError(
+        BoksProtocolErrorId.MALFORMED_DATA,
+        'Packet too small to contain header'
+      );
+    }
+    if (data[0] !== opcode) {
+      throw new BoksProtocolError(
+        BoksProtocolErrorId.UNEXPECTED_OPCODE,
+        `Expected opcode ${opcode}, but got ${data[0]}`
+      );
     }
 
     const lengthByte = data[1];
     const expectedTotalLength = lengthIncludesHeader ? lengthByte : lengthByte + PACKET_HEADER_SIZE;
 
-    if (data.length === expectedTotalLength) {
-      let computed = 0;
-      for (let i = 0; i < data.length - 1; i++) {
-        computed = (computed + data[i]) & CHECKSUM_MASK;
-      }
-      if (data[data.length - 1] === computed) {
-        const payloadLength = lengthIncludesHeader ? lengthByte - PACKET_HEADER_SIZE : lengthByte;
-        return data.subarray(2, 2 + payloadLength);
-      }
+    if (data.length !== expectedTotalLength) {
+      throw new BoksProtocolError(
+        BoksProtocolErrorId.MALFORMED_DATA,
+        `Packet length mismatch: expected ${expectedTotalLength}, got ${data.length}`
+      );
     }
-    return data;
+
+    let computed = 0;
+    for (let i = 0; i < data.length - 1; i++) {
+      computed = (computed + data[i]) & CHECKSUM_MASK;
+    }
+    if (data[data.length - 1] !== computed) {
+      throw new BoksProtocolError(
+        BoksProtocolErrorId.INVALID_CHECKSUM,
+        `Checksum mismatch: expected ${computed}, got ${data[data.length - 1]}`
+      );
+    }
+
+    const payloadLength = lengthIncludesHeader ? lengthByte - PACKET_HEADER_SIZE : lengthByte;
+    return data.subarray(2, 2 + payloadLength);
   }
 
   abstract get opcode(): BoksOpcode;

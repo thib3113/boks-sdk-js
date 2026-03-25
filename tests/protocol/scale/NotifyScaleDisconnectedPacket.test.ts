@@ -5,7 +5,7 @@ import { BoksOpcode } from '@/protocol/constants';
 describe('NotifyScaleDisconnectedPacket', () => {
   it('should parse correctly', () => {
     const payload = new Uint8Array(0);
-    const packet = NotifyScaleDisconnectedPacket.fromRaw(payload);
+    const packet = NotifyScaleDisconnectedPacket.fromRaw(buildMockRawPacket(NotifyScaleDisconnectedPacket.opcode, payload));
     expect(packet.opcode).toBe(BoksOpcode.NOTIFY_SCALE_DISCONNECTED);
   });
 });

@@ -34,7 +34,7 @@ describe('UnregisterNfcTagPacket Resilience (Fuzzing)', () => {
     fc.assert(
       fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (payload) => {
         try {
-          const packet = UnregisterNfcTagPacket.fromRaw(payload);
+          const packet = UnregisterNfcTagPacket.fromRaw(buildMockRawPacket(UnregisterNfcTagPacket.opcode, payload));
           expect(packet).toBeInstanceOf(UnregisterNfcTagPacket);
         } catch (e) {
           expect(e).toBeInstanceOf(BoksProtocolError);

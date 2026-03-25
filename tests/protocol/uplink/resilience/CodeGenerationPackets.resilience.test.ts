@@ -21,7 +21,7 @@ describe('CodeGenerationPackets - Resilience & Edge Cases', () => {
       it('should parse valid arbitrary payloads without crashing', () => {
         fc.assert(
           fc.property(fc.uint8Array(), (payload) => {
-            const packet = packetClass.fromRaw(payload);
+            const packet = packetClass.fromRaw(buildMockRawPacket(packetClass.opcode, payload));
             expect(packet).toBeInstanceOf(packetClass);
             expect(packet.opcode).toBe(opcode);
             expect((packet as any).raw).toEqual(payload);
@@ -31,7 +31,7 @@ describe('CodeGenerationPackets - Resilience & Edge Cases', () => {
 
       it('should instantiate cleanly with empty payload', () => {
         const payload = new Uint8Array(0);
-        const packet = packetClass.fromRaw(payload);
+        const packet = packetClass.fromRaw(buildMockRawPacket(packetClass.opcode, payload));
         expect(packet.opcode).toBe(opcode);
       });
     });

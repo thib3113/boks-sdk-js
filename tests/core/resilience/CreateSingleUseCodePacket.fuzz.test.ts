@@ -35,7 +35,7 @@ describe('CreateSingleUseCodePacket Resilience (Fuzzing)', () => {
     fc.assert(
       fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (payload) => {
         try {
-          const packet = CreateSingleUseCodePacket.fromRaw(payload);
+          const packet = CreateSingleUseCodePacket.fromRaw(buildMockRawPacket(CreateSingleUseCodePacket.opcode, payload));
           expect(packet).toBeInstanceOf(CreateSingleUseCodePacket);
         } catch (e) {
           // It is an intended FEATURE that fromRaw validation throws a BoksProtocolError

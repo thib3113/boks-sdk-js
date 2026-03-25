@@ -8,7 +8,7 @@ describe('EndHistoryPacket - Resilience & Edge Cases', () => {
     it('should parse valid arbitrary payloads without crashing', () => {
       fc.assert(
         fc.property(fc.uint8Array(), (payload) => {
-          const packet = EndHistoryPacket.fromRaw(payload);
+          const packet = EndHistoryPacket.fromRaw(buildMockRawPacket(EndHistoryPacket.opcode, payload));
           expect(packet).toBeInstanceOf(EndHistoryPacket);
           expect(packet.opcode).toBe(BoksOpcode.LOG_END_HISTORY);
           expect((packet as any).raw).toEqual(payload);
@@ -18,7 +18,7 @@ describe('EndHistoryPacket - Resilience & Edge Cases', () => {
 
     it('should instantiate cleanly with empty payload', () => {
       const payload = new Uint8Array(0);
-      const packet = EndHistoryPacket.fromRaw(payload);
+      const packet = EndHistoryPacket.fromRaw(buildMockRawPacket(EndHistoryPacket.opcode, payload));
       expect(packet.opcode).toBe(BoksOpcode.LOG_END_HISTORY);
     });
   });

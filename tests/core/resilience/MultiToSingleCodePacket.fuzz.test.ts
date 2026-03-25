@@ -34,7 +34,7 @@ describe('MultiToSingleCodePacket Resilience (Fuzzing)', () => {
     fc.assert(
       fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (payload) => {
         try {
-          const packet = MultiToSingleCodePacket.fromRaw(payload);
+          const packet = MultiToSingleCodePacket.fromRaw(buildMockRawPacket(MultiToSingleCodePacket.opcode, payload));
           expect(packet).toBeInstanceOf(MultiToSingleCodePacket);
         } catch (e) {
           expect(e).toBeInstanceOf(BoksProtocolError);

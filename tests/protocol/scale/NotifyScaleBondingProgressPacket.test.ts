@@ -6,7 +6,7 @@ import { bytesToHex } from '@/utils/converters';
 describe('NotifyScaleBondingProgressPacket', () => {
   it('should parse correctly with progress', () => {
     const payload = new Uint8Array([50]);
-    const packet = NotifyScaleBondingProgressPacket.fromRaw(payload);
+    const packet = NotifyScaleBondingProgressPacket.fromRaw(buildMockRawPacket(NotifyScaleBondingProgressPacket.opcode, payload));
     expect(packet.opcode).toBe(BoksOpcode.NOTIFY_SCALE_BONDING_PROGRESS);
     expect(packet.progress).toBe(50);
   });
@@ -19,7 +19,7 @@ describe('NotifyScaleBondingProgressPacket', () => {
   });
 
   it('should output only mapped payload properties and opcode via toJSON', () => {
-    const packet = NotifyScaleBondingProgressPacket.fromRaw(new Uint8Array([50]));
+    const packet = NotifyScaleBondingProgressPacket.fromRaw(buildMockRawPacket(NotifyScaleBondingProgressPacket.opcode, new Uint8Array([50])));
     const json = packet.toJSON();
     expect(json).toStrictEqual({
         "opcode": 180,

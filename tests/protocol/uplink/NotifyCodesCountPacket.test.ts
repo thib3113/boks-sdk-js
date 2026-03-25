@@ -7,7 +7,7 @@ describe('NotifyCodesCountPacket', () => {
   it('should parse correctly', () => {
     // 0x000A (10) master, 0x0014 (20) other
     const payload = new Uint8Array([0x00, 0x0a, 0x00, 0x14]);
-    const packet = NotifyCodesCountPacket.fromRaw(payload);
+    const packet = NotifyCodesCountPacket.fromRaw(buildMockRawPacket(NotifyCodesCountPacket.opcode, payload));
 
     expect(packet.opcode).toBe(BoksOpcode.NOTIFY_CODES_COUNT);
     expect(packet.masterCount).toBe(10);
@@ -23,7 +23,7 @@ describe('NotifyCodesCountPacket', () => {
   });
 
   it('should output only mapped payload properties and opcode via toJSON', () => {
-    const packet = NotifyCodesCountPacket.fromRaw(new Uint8Array([0x00, 0x0a, 0x00, 0x14]));
+    const packet = NotifyCodesCountPacket.fromRaw(buildMockRawPacket(NotifyCodesCountPacket.opcode, new Uint8Array([0x00, 0x0a, 0x00, 0x14])));
     const json = packet.toJSON();
     expect(json).toStrictEqual({
         "masterCount": 10,

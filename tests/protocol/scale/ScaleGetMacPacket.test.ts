@@ -11,7 +11,7 @@ describe('ScaleGetMacPacket', () => {
   });
 
   it('should parse from payload correctly', () => {
-    const packet = ScaleGetMacPacket.fromRaw(new Uint8Array(0));
+    const packet = ScaleGetMacPacket.fromRaw(buildMockRawPacket(ScaleGetMacPacket.opcode, new Uint8Array(0)));
     expect(packet.opcode).toBe(BoksOpcode.SCALE_GET_MAC_ADDRESS_BOKS);
   });
 

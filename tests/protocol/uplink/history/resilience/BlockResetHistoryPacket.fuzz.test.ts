@@ -8,7 +8,7 @@ describe('BlockResetHistoryPacket Resilience (Fuzzing)', () => {
     fc.assert(
       fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (payload) => {
         try {
-          const packet = BlockResetHistoryPacket.fromRaw(payload);
+          const packet = BlockResetHistoryPacket.fromRaw(buildMockRawPacket(BlockResetHistoryPacket.opcode, payload));
           expect(packet).toBeInstanceOf(BlockResetHistoryPacket);
         } catch (e) {
           expect(e).toBeInstanceOf(BoksProtocolError);

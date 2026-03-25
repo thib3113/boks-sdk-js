@@ -32,7 +32,7 @@ describe('Simple Notification Packets - Resilience & Edge Cases', () => {
       it('should parse valid arbitrary payloads without crashing', () => {
         fc.assert(
           fc.property(fc.uint8Array(), (payload) => {
-            const packet = packetClass.fromRaw(payload);
+            const packet = packetClass.fromRaw(buildMockRawPacket(packetClass.opcode, payload));
             expect(packet).toBeInstanceOf(packetClass);
             expect(packet.opcode).toBe(opcode);
             expect((packet as any).raw).toEqual(payload);
@@ -42,7 +42,7 @@ describe('Simple Notification Packets - Resilience & Edge Cases', () => {
 
       it('should instantiate cleanly with empty payload', () => {
         const payload = new Uint8Array(0);
-        const packet = packetClass.fromRaw(payload);
+        const packet = packetClass.fromRaw(buildMockRawPacket(packetClass.opcode, payload));
         expect(packet.opcode).toBe(opcode);
       });
     });
@@ -55,7 +55,7 @@ describe('Simple Notification Packets - Resilience & Edge Cases', () => {
           fc.property(fc.uint8Array(), (payload) => {
             let packet;
             try {
-              packet = OperationErrorPacket.fromRaw(payload);
+              packet = OperationErrorPacket.fromRaw(buildMockRawPacket(OperationErrorPacket.opcode, payload));
             } catch (e: any) {
               expect(e.name).toBe('BoksProtocolError');
               return;
@@ -75,7 +75,7 @@ describe('Simple Notification Packets - Resilience & Edge Cases', () => {
 
       it('should throw on empty payload', () => {
         const payload = new Uint8Array(0);
-        expect(() => OperationErrorPacket.fromRaw(payload)).toThrowError(Error);
+        expect(() => OperationErrorPacket.fromRaw(buildMockRawPacket(OperationErrorPacket.opcode, payload))).toThrowError(Error);
       });
 
       it('should safely capture errorCode when trailing bytes exist', () => {
@@ -85,7 +85,7 @@ describe('Simple Notification Packets - Resilience & Edge Cases', () => {
             fc.uint8Array(),
             (errorCode, trailingBytes) => {
               const payload = new Uint8Array([errorCode, ...trailingBytes]);
-              const packet = OperationErrorPacket.fromRaw(payload);
+              const packet = OperationErrorPacket.fromRaw(buildMockRawPacket(OperationErrorPacket.opcode, payload));
               expect(packet.errorCode).toBe(errorCode);
             }
           )

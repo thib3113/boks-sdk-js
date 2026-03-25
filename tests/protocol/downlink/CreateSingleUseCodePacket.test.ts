@@ -39,7 +39,7 @@ describe('CreateSingleUseCodePacket', () => {
     payload.set(stringToBytes(validKey), 0);
     payload.set(stringToBytes(validPin), 8);
 
-    const packet = CreateSingleUseCodePacket.fromRaw(payload);
+    const packet = CreateSingleUseCodePacket.fromRaw(buildMockRawPacket(CreateSingleUseCodePacket.opcode, payload));
     expect(packet.configKey).toBe(validKey);
     expect(packet.pin).toBe(validPin);
   });
@@ -72,7 +72,7 @@ describe('CreateSingleUseCodePacket', () => {
 
   it('should fail parsing if payload is too short', () => {
     const shortPayload = new Uint8Array(10);
-    expect(() => CreateSingleUseCodePacket.fromRaw(shortPayload)).toThrowError(
+    expect(() => CreateSingleUseCodePacket.fromRaw(buildMockRawPacket(CreateSingleUseCodePacket.opcode, shortPayload))).toThrowError(
       BoksProtocolError
     );
   });

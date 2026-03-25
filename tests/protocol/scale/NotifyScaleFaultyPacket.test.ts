@@ -6,7 +6,7 @@ import { bytesToHex } from '@/utils/converters';
 describe('NotifyScaleFaultyPacket', () => {
   it('should parse correctly with data', () => {
     const payload = new Uint8Array([0x01, 0x02]);
-    const packet = NotifyScaleFaultyPacket.fromRaw(payload);
+    const packet = NotifyScaleFaultyPacket.fromRaw(buildMockRawPacket(NotifyScaleFaultyPacket.opcode, payload));
     expect(packet.opcode).toBe(BoksOpcode.NOTIFY_SCALE_FAULTY);
     expect(packet.data).toEqual(payload);
   });
@@ -20,7 +20,7 @@ describe('NotifyScaleFaultyPacket', () => {
   });
 
   it('should output only mapped payload properties and opcode via toJSON', () => {
-    const packet = NotifyScaleFaultyPacket.fromRaw(new Uint8Array([0x01, 0x02]));
+    const packet = NotifyScaleFaultyPacket.fromRaw(buildMockRawPacket(NotifyScaleFaultyPacket.opcode, new Uint8Array([0x01, 0x02])));
     const json = packet.toJSON();
     expect(json).toStrictEqual({
         "data": new Uint8Array([

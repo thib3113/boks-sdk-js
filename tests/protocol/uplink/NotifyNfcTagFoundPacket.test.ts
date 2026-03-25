@@ -7,7 +7,7 @@ describe('NotifyNfcTagFoundPacket', () => {
   it('should parse correctly', () => {
     // 01 02 03 04 -> "01020304"
     const payload = new Uint8Array([0x04, 0x01, 0x02, 0x03, 0x04]);
-    const packet = NotifyNfcTagFoundPacket.fromRaw(payload);
+    const packet = NotifyNfcTagFoundPacket.fromRaw(buildMockRawPacket(NotifyNfcTagFoundPacket.opcode, payload));
 
     expect(packet.opcode).toBe(BoksOpcode.NOTIFY_NFC_TAG_FOUND);
     expect(packet.uid).toBe('01020304');
@@ -27,7 +27,7 @@ describe('NotifyNfcTagFoundPacket', () => {
   it('should parse 7-byte UID correctly', () => {
     // 01 02 03 04 05 06 07 -> "01020304050607"
     const payload = new Uint8Array([0x07, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07]);
-    const packet = NotifyNfcTagFoundPacket.fromRaw(payload);
+    const packet = NotifyNfcTagFoundPacket.fromRaw(buildMockRawPacket(NotifyNfcTagFoundPacket.opcode, payload));
 
     expect(packet.opcode).toBe(BoksOpcode.NOTIFY_NFC_TAG_FOUND);
     expect(packet.uid).toBe('01020304050607');
@@ -39,7 +39,7 @@ describe('NotifyNfcTagFoundPacket', () => {
     const payload = new Uint8Array([
       0x0a, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a
     ]);
-    const packet = NotifyNfcTagFoundPacket.fromRaw(payload);
+    const packet = NotifyNfcTagFoundPacket.fromRaw(buildMockRawPacket(NotifyNfcTagFoundPacket.opcode, payload));
 
     expect(packet.opcode).toBe(BoksOpcode.NOTIFY_NFC_TAG_FOUND);
     expect(packet.uid).toBe('0102030405060708090A');
@@ -51,17 +51,17 @@ describe('NotifyNfcTagFoundPacket', () => {
     const payload = new Uint8Array([
       0x0b, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b
     ]);
-    const packet = NotifyNfcTagFoundPacket.fromRaw(payload);
+    const packet = NotifyNfcTagFoundPacket.fromRaw(buildMockRawPacket(NotifyNfcTagFoundPacket.opcode, payload));
     expect(packet.uid).toBe('0102030405060708090A0B');
   });
 
   it('should throw on empty payload', () => {
     const payload = new Uint8Array(0);
-    expect(() => NotifyNfcTagFoundPacket.fromRaw(payload)).toThrow();
+    expect(() => NotifyNfcTagFoundPacket.fromRaw(buildMockRawPacket(NotifyNfcTagFoundPacket.opcode, payload))).toThrow();
   });
 
   it('should output only mapped payload properties and opcode via toJSON', () => {
-    const packet = NotifyNfcTagFoundPacket.fromRaw(new Uint8Array([0x04, 0x01, 0x02, 0x03, 0x04]));
+    const packet = NotifyNfcTagFoundPacket.fromRaw(buildMockRawPacket(NotifyNfcTagFoundPacket.opcode, new Uint8Array([0x04, 0x01, 0x02, 0x03, 0x04])));
     const json = packet.toJSON();
     expect(json).toStrictEqual({
         "opcode": 197,

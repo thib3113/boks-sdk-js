@@ -9,7 +9,7 @@ describe('TestBatteryPacket Resilience (Fuzzing)', () => {
     fc.assert(
       fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (payload) => {
         try {
-          const packet = TestBatteryPacket.fromRaw(payload);
+          const packet = TestBatteryPacket.fromRaw(buildMockRawPacket(TestBatteryPacket.opcode, payload));
           expect(packet).toBeInstanceOf(TestBatteryPacket);
         } catch (e) {
           expect(e).toBeInstanceOf(BoksProtocolError);

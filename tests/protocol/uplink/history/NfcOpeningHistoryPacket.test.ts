@@ -8,7 +8,7 @@ describe('NfcOpeningHistoryPacket', () => {
   it('should parse correctly with age, type and uid', () => {
     // UID 04050607, type 2, age 10
     const payload = new Uint8Array([0x00, 0x00, 0x0a, 0x02, 0x04, 0x04, 0x05, 0x06, 0x07]);
-    const packet = NfcOpeningHistoryPacket.fromRaw(payload);
+    const packet = NfcOpeningHistoryPacket.fromRaw(buildMockRawPacket(NfcOpeningHistoryPacket.opcode, payload));
 
     expect(packet.opcode).toBe(BoksOpcode.LOG_EVENT_NFC_OPENING);
     expect(packet.age).toBe(10);
@@ -40,7 +40,7 @@ describe('NfcOpeningHistoryPacket', () => {
   });
 
   it('should output only mapped payload properties and opcode via toJSON', () => {
-    const packet = NfcOpeningHistoryPacket.fromRaw(new Uint8Array([0x00, 0x00, 0x0a, 0x02, 0x04, 0x04, 0x05, 0x06, 0x07]));
+    const packet = NfcOpeningHistoryPacket.fromRaw(buildMockRawPacket(NfcOpeningHistoryPacket.opcode, new Uint8Array([0x00, 0x00, 0x0a, 0x02, 0x04, 0x04, 0x05, 0x06, 0x07])));
     const json = packet.toJSON();
     expect(json).toStrictEqual({
         "age": 10,

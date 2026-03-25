@@ -6,7 +6,7 @@ import { bytesToHex } from '@/utils/converters';
 describe('NotifyDoorStatusPacket', () => {
   it('should detect OPEN state (inv=false, status=true)', () => {
     const payload = new Uint8Array([0x00, 0x01]);
-    const packet = NotifyDoorStatusPacket.fromRaw(payload);
+    const packet = NotifyDoorStatusPacket.fromRaw(buildMockRawPacket(NotifyDoorStatusPacket.opcode, payload));
     expect(packet.opcode).toBe(BoksOpcode.NOTIFY_DOOR_STATUS);
     expect(packet.isOpen).toBe(true);
   });
@@ -36,7 +36,7 @@ describe('NotifyDoorStatusPacket', () => {
   });
 
   it('should output only mapped payload properties and opcode via toJSON', () => {
-    const packet = NotifyDoorStatusPacket.fromRaw(new Uint8Array([0x00, 0x01]));
+    const packet = NotifyDoorStatusPacket.fromRaw(buildMockRawPacket(NotifyDoorStatusPacket.opcode, new Uint8Array([0x00, 0x01])));
     const json = packet.toJSON();
     expect(json).toStrictEqual({
         "inverted": false,

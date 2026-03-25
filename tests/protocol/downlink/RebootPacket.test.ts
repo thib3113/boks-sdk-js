@@ -12,7 +12,7 @@ describe('RebootPacket', () => {
   });
 
   it('should parse from payload correctly', () => {
-    const packet = RebootPacket.fromRaw(new Uint8Array(0));
+    const packet = RebootPacket.fromRaw(buildMockRawPacket(RebootPacket.opcode, new Uint8Array(0)));
     expect(packet).toBeInstanceOf(RebootPacket);
     expect(packet.opcode).toBe(BoksOpcode.REBOOT);
   });

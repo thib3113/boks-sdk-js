@@ -34,7 +34,7 @@ describe('RegeneratePartAPacket Resilience (Fuzzing)', () => {
     fc.assert(
       fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (payload) => {
         try {
-          const packet = RegeneratePartAPacket.fromRaw(payload);
+          const packet = RegeneratePartAPacket.fromRaw(buildMockRawPacket(RegeneratePartAPacket.opcode, payload));
           expect(packet).toBeInstanceOf(RegeneratePartAPacket);
         } catch (e) {
           expect(e).toBeInstanceOf(BoksProtocolError);

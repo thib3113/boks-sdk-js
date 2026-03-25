@@ -8,7 +8,7 @@ describe('DoorOpenHistoryPacket Resilience (Fuzzing)', () => {
     fc.assert(
       fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (payload) => {
         try {
-          const packet = DoorOpenHistoryPacket.fromRaw(payload);
+          const packet = DoorOpenHistoryPacket.fromRaw(buildMockRawPacket(DoorOpenHistoryPacket.opcode, payload));
           expect(packet).toBeInstanceOf(DoorOpenHistoryPacket);
         } catch (e) {
           expect(e).toBeInstanceOf(BoksProtocolError);

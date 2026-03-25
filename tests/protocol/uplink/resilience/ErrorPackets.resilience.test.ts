@@ -31,7 +31,7 @@ describe('ErrorPackets - Resilience & Edge Cases', () => {
       it('should parse valid arbitrary payloads without crashing', () => {
         fc.assert(
           fc.property(fc.uint8Array(), (payload) => {
-            const packet = packetClass.fromRaw(payload);
+            const packet = packetClass.fromRaw(buildMockRawPacket(packetClass.opcode, payload));
             expect(packet).toBeInstanceOf(packetClass);
             expect(packet.opcode).toBe(opcode);
             expect((packet as any).raw).toEqual(payload);
@@ -44,7 +44,7 @@ describe('ErrorPackets - Resilience & Edge Cases', () => {
 
       it('should instantiate cleanly with empty payload', () => {
         const payload = new Uint8Array(0);
-        const packet = packetClass.fromRaw(payload);
+        const packet = packetClass.fromRaw(buildMockRawPacket(packetClass.opcode, payload));
         expect(packet.opcode).toBe(opcode);
         if (hasStatus) {
           expect((packet as any).status).toBe(status);

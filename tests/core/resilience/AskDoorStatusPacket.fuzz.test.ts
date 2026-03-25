@@ -9,7 +9,7 @@ describe('AskDoorStatusPacket Resilience (Fuzzing)', () => {
     fc.assert(
       fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (payload) => {
         try {
-          const packet = AskDoorStatusPacket.fromRaw(payload);
+          const packet = AskDoorStatusPacket.fromRaw(buildMockRawPacket(AskDoorStatusPacket.opcode, payload));
           expect(packet).toBeInstanceOf(AskDoorStatusPacket);
         } catch (e) {
           expect(e).toBeInstanceOf(BoksProtocolError);

@@ -7,7 +7,7 @@ describe('BleRebootHistoryPacket', () => {
   it('should parse correctly with age', () => {
     // Age 10 (0x0a)
     const payload = new Uint8Array([0x00, 0x00, 0x0a]);
-    const packet = BleRebootHistoryPacket.fromRaw(payload);
+    const packet = BleRebootHistoryPacket.fromRaw(buildMockRawPacket(BleRebootHistoryPacket.opcode, payload));
 
     expect(packet.opcode).toBe(BoksOpcode.BLE_REBOOT);
     expect(packet.age).toBe(10);
@@ -28,11 +28,11 @@ describe('BleRebootHistoryPacket', () => {
 
   it('should throw error on short payload', () => {
     const payload = new Uint8Array(2);
-    expect(() => BleRebootHistoryPacket.fromRaw(payload)).toThrowError();
+    expect(() => BleRebootHistoryPacket.fromRaw(buildMockRawPacket(BleRebootHistoryPacket.opcode, payload))).toThrowError();
   });
 
   it('should output only mapped payload properties and opcode via toJSON', () => {
-    const packet = BleRebootHistoryPacket.fromRaw(new Uint8Array([0x00, 0x00, 0x0a]));
+    const packet = BleRebootHistoryPacket.fromRaw(buildMockRawPacket(BleRebootHistoryPacket.opcode, new Uint8Array([0x00, 0x00, 0x0a])));
     const json = packet.toJSON();
     expect(json).toStrictEqual({
         "age": 10,

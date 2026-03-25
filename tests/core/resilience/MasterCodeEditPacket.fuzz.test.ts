@@ -42,7 +42,7 @@ describe('MasterCodeEditPacket Resilience (Fuzzing)', () => {
     fc.assert(
       fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (payload) => {
         try {
-          const packet = MasterCodeEditPacket.fromRaw(payload);
+          const packet = MasterCodeEditPacket.fromRaw(buildMockRawPacket(MasterCodeEditPacket.opcode, payload));
           expect(packet).toBeInstanceOf(MasterCodeEditPacket);
         } catch (e) {
           expect(e).toBeInstanceOf(BoksProtocolError);

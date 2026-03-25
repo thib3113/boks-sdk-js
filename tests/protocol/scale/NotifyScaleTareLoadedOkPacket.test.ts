@@ -5,7 +5,7 @@ import { BoksOpcode } from '@/protocol/constants';
 describe('NotifyScaleTareLoadedOkPacket', () => {
   it('should parse correctly', () => {
     const payload = new Uint8Array(0);
-    const packet = NotifyScaleTareLoadedOkPacket.fromRaw(payload);
+    const packet = NotifyScaleTareLoadedOkPacket.fromRaw(buildMockRawPacket(NotifyScaleTareLoadedOkPacket.opcode, payload));
     expect(packet.opcode).toBe(BoksOpcode.NOTIFY_SCALE_TARE_LOADED_OK);
   });
 });

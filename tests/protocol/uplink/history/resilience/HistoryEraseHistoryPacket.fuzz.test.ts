@@ -8,7 +8,7 @@ describe('HistoryEraseHistoryPacket Resilience (Fuzzing)', () => {
     fc.assert(
       fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (payload) => {
         try {
-          const packet = HistoryEraseHistoryPacket.fromRaw(payload);
+          const packet = HistoryEraseHistoryPacket.fromRaw(buildMockRawPacket(HistoryEraseHistoryPacket.opcode, payload));
           expect(packet).toBeInstanceOf(HistoryEraseHistoryPacket);
         } catch (e) {
           expect(e).toBeInstanceOf(BoksProtocolError);

@@ -8,7 +8,7 @@ describe('PowerOnHistoryPacket Resilience (Fuzzing)', () => {
     fc.assert(
       fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (payload) => {
         try {
-          const packet = PowerOnHistoryPacket.fromRaw(payload);
+          const packet = PowerOnHistoryPacket.fromRaw(buildMockRawPacket(PowerOnHistoryPacket.opcode, payload));
           expect(packet).toBeInstanceOf(PowerOnHistoryPacket);
         } catch (e) {
           expect(e).toBeInstanceOf(BoksProtocolError);
