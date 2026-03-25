@@ -168,7 +168,17 @@ export const PIN_ALGO_CONFIG = {
 export const CHECKSUM_MASK = 0xFF;
 export const INVALID_BYTE = 0xFF;
 
-export const PACKET_HEADER_SIZE = 3; // Opcode (1) + Length (1) + Checksum (1)
+/**
+ * Total size of a standard packet header including the trailing checksum.
+ * [Opcode, Length, ...Payload, Checksum]
+ */
+export const PACKET_HEADER_SIZE = 3;
+
+/**
+ * Minimum bytes required to identify a packet and its length.
+ * [Opcode, Length]
+ */
+export const PACKET_MIN_HEADER_SIZE = PACKET_HEADER_SIZE - 1;
 
 export const MAX_MASTER_CODE_INDEX = 255;
 

@@ -44,10 +44,11 @@ class MockPacket extends BoksPacket {
 // Mock Factory
 vi.mock('@/protocol/BoksPacketFactory', () => ({
   BoksPacketFactory: {
-    createFromPayload: (data: Uint8Array) => {
+    createFromPayload: (data: Uint8Array, _options?: any) => {
       return {
         opcode: data[0],
-        encode: () => data
+        encode: () => data,
+        validChecksum: true
       };
     }
   }

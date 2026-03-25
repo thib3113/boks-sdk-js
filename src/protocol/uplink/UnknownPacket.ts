@@ -27,6 +27,7 @@ export class UnknownPacket extends BoksPacket {
   toJSON(): any {
     return {
       opcode: this.opcode,
+      validChecksum: this.validChecksum,
       payload: this._payload
     };
   }

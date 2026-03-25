@@ -1,5 +1,20 @@
 export const i18n = {
   en: {
+    visualizer: {
+      title: 'Packet Visualizer',
+      label: 'Raw Hexadecimal Packet:',
+      placeholder: 'e.g. c30700020cffd7',
+      opcode: 'Opcode',
+      length: 'Length',
+      checksum: 'Checksum',
+      unmapped: 'Unmapped Payload',
+      extra: 'Extra Bytes (Invalid)',
+      valid: 'Valid',
+      invalid: 'Invalid',
+      notAvailable: 'N/A',
+      warning: 'Parsing Warning:',
+      checksumError: 'Invalid checksum',
+    },
 
     provision: {
       title: 'Seed Regeneration',
@@ -264,6 +279,21 @@ export const i18n = {
     }
   },
   fr: {
+    visualizer: {
+      title: 'Visualiseur de Paquets',
+      label: 'Paquet Hexadécimal Brut :',
+      placeholder: 'ex: c30700020cffd7',
+      opcode: 'Opcode',
+      length: 'Longueur',
+      checksum: 'Somme de contrôle',
+      unmapped: 'Données non mappées',
+      extra: 'Octets en trop (Invalide)',
+      valid: 'Valide',
+      invalid: 'Invalide',
+      notAvailable: 'N/A',
+      warning: 'Avertissement :',
+      checksumError: 'Somme de contrôle invalide',
+    },
 
     provision: {
       title: 'Régénération de Seed',

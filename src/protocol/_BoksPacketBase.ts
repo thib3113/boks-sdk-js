@@ -1,4 +1,4 @@
-import { BoksOpcode, EMPTY_BUFFER, PACKET_HEADER_SIZE, CHECKSUM_MASK } from '@/protocol/constants';
+import { BoksOpcode, EMPTY_BUFFER, PACKET_HEADER_SIZE, PACKET_MIN_HEADER_SIZE, CHECKSUM_MASK } from '@/protocol/constants';
 import { PayloadMapper } from '@/protocol/decorators';
 import { calculateChecksum } from '@/utils/converters';
 import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';
@@ -26,9 +26,37 @@ export type BoksPacketJSON<T> = {
 export abstract class BoksPacket {
   #raw?: Uint8Array;
   #extractedPayloadCache?: Uint8Array;
+  #checksumCache: boolean | null | undefined = undefined;
 
   constructor(raw?: Uint8Array) {
     this.#raw = raw;
+  }
+
+  /**
+   * The validity status of the packet's checksum.
+   *
+   * - `true`: The checksum is valid and matches the data.
+   * - `false`: The checksum is invalid (data corruption or malformed packet).
+   * - `null`: The checksum could not be validated (e.g., partial packet, opcode mismatch, or packet created manually without raw bytes).
+   *
+   * Computed lazily on first access.
+   */
+  get validChecksum(): boolean | null {
+    if (this.#checksumCache !== undefined) {
+      return this.#checksumCache;
+    }
+
+    if (!this.#raw || this.#raw.length < PACKET_HEADER_SIZE) {
+      this.#checksumCache = null;
+      return null;
+    }
+
+    this.#checksumCache = BoksPacket.validateChecksum(
+      this.#raw,
+      this.opcode,
+      this.lengthIncludesHeader
+    );
+    return this.#checksumCache;
   }
 
   /**
@@ -36,6 +64,10 @@ export abstract class BoksPacket {
    */
   get raw(): Uint8Array {
     return this.#raw ?? EMPTY_BUFFER;
+  }
+
+  private get lengthIncludesHeader(): boolean {
+    return (this.constructor as unknown as BoksPacketConstructor).lengthIncludesHeader ?? false;
   }
 
   /**
@@ -49,12 +81,10 @@ export abstract class BoksPacket {
 
     if (this.#raw && this.#raw.length >= PACKET_HEADER_SIZE) {
       if (this.#raw[0] === this.opcode) {
-        const lengthIncludesHeader =
-          (this.constructor as unknown as BoksPacketConstructor).lengthIncludesHeader ?? false;
         this.#extractedPayloadCache = BoksPacket.extractPayloadData(
           this.#raw,
           this.opcode,
-          lengthIncludesHeader
+          this.lengthIncludesHeader
         );
         return this.#extractedPayloadCache;
       }
@@ -63,6 +93,35 @@ export abstract class BoksPacket {
     // Fallback if not a full packet
     this.#extractedPayloadCache = this.#raw ?? EMPTY_BUFFER;
     return this.#extractedPayloadCache;
+  }
+
+  static validateChecksum(
+    data: Uint8Array,
+    opcode: BoksOpcode,
+    lengthIncludesHeader: boolean = false
+  ): boolean | null {
+    if (data.length < PACKET_HEADER_SIZE) {
+      return null;
+    }
+
+    // Check if the first byte matches the opcode.
+    // If it doesn't match, we can't reliably validate the checksum for THIS packet type.
+    if (data[0] !== opcode) {
+      return null;
+    }
+
+    const lengthByte = data[1];
+    const expectedTotalLength = lengthIncludesHeader ? lengthByte : lengthByte + PACKET_HEADER_SIZE;
+
+    if (data.length >= expectedTotalLength) {
+      let computed = 0;
+      for (let i = 0; i < expectedTotalLength - 1; i++) {
+        computed = (computed + data[i]) & CHECKSUM_MASK;
+      }
+      return data[expectedTotalLength - 1] === computed;
+    }
+
+    return null;
   }
 
   static extractPayloadData(
@@ -75,18 +134,14 @@ export abstract class BoksPacket {
     }
 
     const lengthByte = data[1];
-    const expectedTotalLength = lengthIncludesHeader ? lengthByte : lengthByte + PACKET_HEADER_SIZE;
+    const payloadLength = lengthIncludesHeader ? lengthByte - PACKET_HEADER_SIZE : lengthByte;
+    const start = PACKET_MIN_HEADER_SIZE;
+    const end = start + payloadLength;
 
-    if (data.length === expectedTotalLength) {
-      let computed = 0;
-      for (let i = 0; i < data.length - 1; i++) {
-        computed = (computed + data[i]) & CHECKSUM_MASK;
-      }
-      if (data[data.length - 1] === computed) {
-        const payloadLength = lengthIncludesHeader ? lengthByte - PACKET_HEADER_SIZE : lengthByte;
-        return data.subarray(2, 2 + payloadLength);
-      }
+    if (data.length >= end) {
+      return data.subarray(start, end);
     }
+
     return data;
   }
 
@@ -109,10 +164,13 @@ export abstract class BoksPacket {
    * Serializes the packet to a plain JSON object.
    * Includes the opcode and all properties mapped by decorators.
    */
-  toJSON(): BoksPacketJSON<this> {
+  toJSON(): BoksPacketJSON<this> & { validChecksum: boolean | null } {
     const fields = PayloadMapper.getFields(this.constructor);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const result: any = { opcode: this.opcode };
+    const result: any = {
+      opcode: this.opcode,
+      validChecksum: this.validChecksum
+    };
 
     for (let i = 0; i < fields.length; i++) {
       const field = fields[i];
@@ -123,7 +181,7 @@ export abstract class BoksPacket {
       }
     }
 
-    return result as BoksPacketJSON<this>;
+    return result as BoksPacketJSON<this> & { validChecksum: boolean | null };
   }
 
   /**
@@ -137,7 +195,7 @@ export abstract class BoksPacket {
     const packet = new Uint8Array(payload.length + PACKET_HEADER_SIZE);
     packet[0] = this.opcode;
     packet[1] = lengthIncludesHeader ? payload.length + PACKET_HEADER_SIZE : payload.length;
-    packet.set(payload, 2);
+    packet.set(payload, PACKET_MIN_HEADER_SIZE);
     packet[packet.length - 1] = calculateChecksum(packet, 0, packet.length - 1);
     return packet;
   }

@@ -2,34 +2,25 @@
 import { ref, computed } from 'vue'
 import { BoksPacketFactory } from '../../../src/protocol/BoksPacketFactory'
 import { PayloadMapper } from '../../../src/protocol/decorators/PayloadMapper'
-import { BoksOpcode } from '../../../src/protocol/constants'
-import { hexToBytes } from '../../../src/utils/converters'
+import { BoksOpcode, PACKET_HEADER_SIZE, PACKET_MIN_HEADER_SIZE } from '../../../src/protocol/constants'
+import { hexToBytes, bytesToHex } from '../../../src/utils/converters'
+import { useData } from 'vitepress'
+import { i18n } from '../i18n'
+
+const { lang } = useData()
+const t = computed(() => i18n[lang.value === 'fr' ? 'fr' : 'en'].visualizer)
 
 const getOpcodeName = (opcode: number): string => {
   return BoksOpcode[opcode] || `UNKNOWN_OPCODE (0x${opcode.toString(16).padStart(2, '0').toUpperCase()})`;
 }
 
-const rawHex = ref('c30400020cffd4')
+const rawHex = ref('C30700020CFFD7')
 
-const inputRef = ref<HTMLInputElement | null>(null)
-const overlayRef = ref<HTMLDivElement | null>(null)
-
-const rawHexInput = computed({
-  get: () => rawHex.value,
-  set: (val: string) => {
-    // Strip non-hex characters and lowercase
-    rawHex.value = val.replace(/[^0-9a-fA-F]/g, '').toLowerCase()
-  }
-})
-
-const handleScroll = () => {
-  if (inputRef.value && overlayRef.value) {
-    overlayRef.value.scrollLeft = inputRef.value.scrollLeft
-  }
-}
+// Computed value for internal logic, filtered and uppercased
+const cleanHex = computed(() => rawHex.value.replace(/[^0-9a-fA-F]/g, '').toUpperCase())
 
 const packetData = computed(() => {
-  const hexStr = rawHex.value
+  const hexStr = cleanHex.value
   const segments: any[] = []
 
   let cursor = 0;
@@ -45,18 +36,21 @@ const packetData = computed(() => {
   if (hexStr.length === 0) return { segments: [], error: null }
 
   // 1. Opcode
-  if (!takeChars(2, { label: 'Opcode', color: '#E91E63' })) return { segments, error: 'Incomplete Opcode' }
+  if (!takeChars(2, { label: t.value.opcode, color: '#E91E63', key: 'opcode' })) return { segments, error: 'Incomplete Opcode' }
 
   // 2. Length
-  if (!takeChars(2, { label: 'Length', color: '#4CAF50' })) return { segments, error: 'Incomplete Length' }
+  if (!takeChars(2, { label: t.value.length, color: '#4CAF50', key: 'length' })) return { segments, error: 'Incomplete Length' }
 
-  const expectedPayloadBytes = parseInt(hexStr.slice(2, 4), 16) || 0
-  const expectedPayloadChars = expectedPayloadBytes * 2
-
-  const bytes = hexToBytes(hexStr.slice(0, cursor + (hexStr.length - cursor - (hexStr.length % 2))))
+  const expectedPayloadBytesRaw = parseInt(hexStr.slice(2, 4), 16) || 0
+  const bytes = hexToBytes(hexStr.slice(0, Math.min(cursor, hexStr.length - (hexStr.length % 2))));
   const opcode = bytes[0]
 
   let packetClass = BoksPacketFactory.getConstructor(opcode)
+  const lengthIncludesHeader = (packetClass as any)?.lengthIncludesHeader ?? false
+  
+  const expectedPayloadBytes = lengthIncludesHeader ? Math.max(0, expectedPayloadBytesRaw - PACKET_HEADER_SIZE) : expectedPayloadBytesRaw
+  const expectedPayloadChars = expectedPayloadBytes * 2
+
   let fields: any[] = []
   if (packetClass) {
     fields = PayloadMapper.getFields(packetClass)
@@ -66,15 +60,11 @@ const packetData = computed(() => {
   const actualPayloadChars = Math.min(expectedPayloadChars, hexStr.length - cursor)
 
   if (actualPayloadChars > 0) {
-    const payloadHexStr = hexStr.slice(cursor, cursor + actualPayloadChars)
-    const payloadBytes = hexToBytes(payloadHexStr.length % 2 === 0 ? payloadHexStr : payloadHexStr.slice(0, -1))
-
+    const endOfPayload = cursor + actualPayloadChars;
     const colors = ['#2196F3', '#9C27B0', '#FF9800', '#00BCD4', '#3F51B5', '#009688']
     let colorIdx = 0
     let currentByteOffset = 0
     const sortedFields = [...fields].sort((a, b) => a.offset - b.offset)
-
-    const endOfPayload = cursor + actualPayloadChars;
 
     for (const field of sortedFields) {
       if (cursor >= endOfPayload) break;
@@ -97,63 +87,72 @@ const packetData = computed(() => {
       else if (field.type === 'ascii_string' && typeof field.length === 'number') fieldSize = field.length
       else if ((field.type === 'hex_string' || field.type === 'byte_array') && typeof field.length === 'number') fieldSize = field.length
       else if (field.type === 'hex_string' || field.type === 'byte_array') fieldSize = Math.max(0, expectedPayloadBytes - currentByteOffset)
-      else if (field.type === 'var_len_hex') fieldSize = 1 + (payloadBytes[currentByteOffset] || 0)
+      else if (field.type === 'var_len_hex') {
+        const payloadHexPart = hexStr.slice(cursor);
+        const payloadBytesPart = hexToBytes(payloadHexPart.length % 2 === 0 ? payloadHexPart : payloadHexPart.slice(0, -1));
+        fieldSize = 1 + (payloadBytesPart[0] || 0)
+      }
       else if (field.type === 'bit') fieldSize = 1
 
       const charsAvailable = endOfPayload - cursor
       const charsToTake = Math.min(fieldSize * 2, charsAvailable)
 
       if (charsToTake > 0) {
-        takeChars(charsToTake, { label: field.propertyName, color: colors[colorIdx % colors.length] })
+        takeChars(charsToTake, { label: field.propertyName, color: colors[colorIdx % colors.length], key: field.propertyName })
         currentByteOffset += Math.ceil(charsToTake / 2)
         colorIdx++
       }
     }
 
     if (cursor < endOfPayload) {
-      takeChars(endOfPayload - cursor, { label: 'Unmapped Payload', color: '#9E9E9E' })
+      takeChars(endOfPayload - cursor, { label: t.value.unmapped, color: '#9E9E9E' })
     }
   }
 
   // 4. Checksum
   if (cursor < hexStr.length) {
     const checksumCharsAvailable = Math.min(2, hexStr.length - cursor)
-    takeChars(checksumCharsAvailable, { label: 'Checksum', color: '#FFC107' })
+    takeChars(checksumCharsAvailable, { label: t.value.checksum, color: '#FFC107', key: 'checksum' })
   }
 
   // 5. Extra bytes
   if (cursor < hexStr.length) {
-    takeChars(hexStr.length - cursor, { label: 'Extra Bytes (Invalid)', color: '#F44336' })
+    takeChars(hexStr.length - cursor, { label: t.value.extra, color: '#F44336' })
   }
 
   // Attempt to parse actual packet to get values for the detail table
   let packetObj: any = null
   let parseError = ''
 
-  if (hexStr.length >= 6 && hexStr.length % 2 === 0) {
+  // Only attempt parsing if we have at least Opcode and Length
+  if (hexStr.length >= (PACKET_MIN_HEADER_SIZE * 2)) {
     try {
-      packetObj = BoksPacketFactory.createFromPayload(hexToBytes(hexStr))
+      // Take only complete bytes (ignore trailing nibble if odd length)
+      const completeHex = hexStr.slice(0, hexStr.length - (hexStr.length % 2));
+      packetObj = BoksPacketFactory.createFromPayload(hexToBytes(completeHex), { strict: false })
     } catch (e: any) {
       parseError = e.message
     }
-  } else if (hexStr.length % 2 !== 0) {
-    parseError = 'Incomplete hexadecimal string length.'
-  } else if (hexStr.length < 6) {
-    parseError = 'Packet too short (minimum 3 bytes: Opcode, Length, Checksum).'
   }
 
   const detailSegments = segments.map(seg => {
     let val = undefined
-    if (packetObj && seg.label && packetObj[seg.label] !== undefined) {
-      val = packetObj[seg.label]
-    }
-    if (seg.label === 'Opcode') {
-      seg.label = 'Opcode: ' + getOpcodeName(opcode)
+    if (packetObj) {
+        if (seg.key === 'opcode') val = `0x${opcode.toString(16).toUpperCase()} (${getOpcodeName(opcode)})`
+        else if (seg.key === 'checksum') {
+            if (packetObj.validChecksum === true) val = t.value.valid;
+            else if (packetObj.validChecksum === false) val = t.value.invalid;
+            else val = t.value.notAvailable;
+        }
+        else if (seg.key === 'length') val = expectedPayloadBytesRaw
+        else if (seg.key && packetObj[seg.key] !== undefined) {
+          val = packetObj[seg.key]
+        }
     }
     return { ...seg, value: val }
   })
 
-  return { segments: detailSegments, error: parseError }
+  return { segments: detailSegments, error: parseError, packetObj }
 })
 
 </script>
@@ -161,57 +160,38 @@ const packetData = computed(() => {
 <template>
   <div class="packet-visualizer">
     <div class="input-group">
-      <label for="hexInput">Raw Hexadecimal Packet:</label>
+      <label for="hexInput">{{ t.label }}</label>
       <div class="input-container">
-        <!-- Colored overlay behind/under the text -->
-        <div class="input-overlay" ref="overlayRef" aria-hidden="true">
-          <span
-            v-for="(seg, idx) in packetData.segments"
-            :key="idx"
-            :style="{ color: seg.color }"
-          >{{ seg.text }}</span>
+        <div class="visual-input">
+            <span
+                v-for="(seg, idx) in packetData.segments"
+                :key="idx"
+                :style="{ color: seg.color }"
+            >{{ seg.text.toUpperCase() }}</span>
+            <input
+                id="hexInput"
+                v-model="rawHex"
+                type="text"
+                :placeholder="t.placeholder"
+                class="hex-input-hidden"
+                spellcheck="false"
+                autocomplete="off"
+            />
         </div>
-
-        <!-- The actual input, text is transparent -->
-        <input
-          id="hexInput"
-          ref="inputRef"
-          v-model="rawHexInput"
-          @scroll="handleScroll"
-          type="text"
-          placeholder="e.g. c30400020cffd4"
-          class="hex-input"
-          spellcheck="false"
-          autocomplete="off"
-        />
       </div>
     </div>
 
-    <div v-if="packetData?.error" class="error-msg">
-      ⚠️ Parsing Warning: {{ packetData.error }}
+    <div v-if="packetData?.packetObj && packetData.packetObj.validChecksum === false" class="error-msg">
+      ⚠️ {{ t.warning }} {{ t.checksumError }}
     </div>
 
     <div v-if="packetData?.segments && packetData.segments.length > 0" class="visualization-container">
-
-      <!-- Visual breakdown block -->
-      <div class="hex-blocks">
-        <span
-          v-for="(seg, idx) in packetData.segments"
-          :key="idx"
-          class="hex-segment"
-          :style="{ backgroundColor: seg.color + '22', color: seg.color, borderColor: seg.color }"
-          :title="seg.label"
-        >
-          {{ seg.text.toUpperCase() }}
-        </span>
-      </div>
-
       <!-- Detail table -->
       <table class="detail-table">
         <thead>
           <tr>
             <th>Hex</th>
-            <th>Label</th>
+            <th>{{ t.opcode }}</th>
             <th>Value</th>
           </tr>
         </thead>
@@ -224,7 +204,9 @@ const packetData = computed(() => {
               <strong>{{ seg.label }}</strong>
             </td>
             <td class="val-col">
-              <span v-if="seg.value !== undefined">{{ seg.value }}</span>
+              <span v-if="seg.value !== undefined" :class="{ 'error-text': seg.key === 'checksum' && packetData.packetObj.validChecksum === false }">
+                {{ seg.value }}
+              </span>
               <span v-else class="empty-val">-</span>
             </td>
           </tr>
@@ -261,33 +243,8 @@ const packetData = computed(() => {
   width: 100%;
 }
 
-.input-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  padding: 0.8rem 0.9rem; /* Adjusted padding slightly for font alignment */
-  font-family: monospace;
-  font-size: 1.1rem;      /* Use a bigger monospace for better visibility */
-  font-weight: bold;
-  letter-spacing: 2px;    /* Letter spacing to align exactly */
-  white-space: pre;
-  overflow: hidden;
-  pointer-events: none;
-  display: flex;
-  align-items: center;
-  border: 1px solid transparent;
-  background: var(--vp-c-bg);
-  border-radius: 6px;
-  color: var(--vp-c-text-1);
-}
-
-.input-overlay span {
-  transition: color 0.2s;
-}
-
-.hex-input {
+.visual-input {
+  position: relative;
   width: 100%;
   padding: 0.8rem 0.9rem;
   font-family: monospace;
@@ -296,26 +253,33 @@ const packetData = computed(() => {
   letter-spacing: 2px;
   border: 1px solid var(--vp-c-divider);
   border-radius: 6px;
+  background: var(--vp-c-bg);
+  min-height: 3rem;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.hex-input-hidden {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  padding: 0.8rem 0.9rem;
+  font-family: monospace;
+  font-size: 1.1rem;
+  font-weight: bold;
+  letter-spacing: 2px;
+  border: 1px solid transparent;
   background: transparent;
-  color: transparent; /* Make user text transparent so overlay shows through */
+  color: transparent;
   caret-color: var(--vp-c-text-1);
-  transition: border-color 0.2s;
-  position: relative;
   z-index: 2;
+  text-transform: uppercase;
 }
-
-.hex-input::placeholder {
-  color: var(--vp-c-text-3);
-  letter-spacing: normal;
-}
-
-.hex-input:placeholder-shown + .input-overlay {
-  display: none;
-}
-
-.hex-input:focus {
-  outline: none;
-  border-color: var(--vp-c-brand-1);
+.hex-input-hidden:focus {
+    outline: none;
 }
 
 .error-msg {
@@ -328,29 +292,8 @@ const packetData = computed(() => {
   margin-bottom: 1rem;
 }
 
-.hex-blocks {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-  margin-bottom: 1.5rem;
-  padding: 1rem;
-  background: var(--vp-c-bg);
-  border-radius: 6px;
-  border: 1px solid var(--vp-c-divider);
-}
-
-.hex-segment {
-  font-family: monospace;
-  font-size: 1.1rem;
-  font-weight: bold;
-  padding: 0.3rem 0.6rem;
-  border-radius: 4px;
-  border: 1px solid;
-  cursor: help;
-  transition: transform 0.1s;
-}
-.hex-segment:hover {
-  transform: scale(1.05);
+.error-text {
+    color: var(--vp-c-red-1);
 }
 
 .detail-table {

@@ -3,8 +3,9 @@ export type PayloadConstructor = abstract new (...args: any[]) => any;
 
 import { BoksProtocolError, BoksProtocolErrorId } from '../../errors/BoksProtocolError';
 import { BoksExpectedReason } from '../../errors/BoksExpectedReason';
-import { CHECKSUM_MASK, EMPTY_BUFFER, PACKET_HEADER_SIZE } from '../constants';
+import { EMPTY_BUFFER, PACKET_HEADER_SIZE, PACKET_MIN_HEADER_SIZE } from '../constants';
 import { hexToBytes, bytesToHex } from '../../utils/converters';
+import { BoksPacket } from '../_BoksPacketBase';
 
 /**
  * Metadata key used to store field definitions on the class constructor.
@@ -838,24 +839,16 @@ export class PayloadMapper {
     let dataPart = payload;
     const opcode = (targetClass as any).opcode;
     // We check if it looks like a full packet: length >= header size, starts with opcode
-    if (opcode !== undefined && payload.length >= PACKET_HEADER_SIZE && payload[0] === opcode) {
+    if (opcode !== undefined && payload.length >= PACKET_MIN_HEADER_SIZE && payload[0] === opcode) {
       const lengthIncludesHeader = (targetClass as any).lengthIncludesHeader ?? false;
       const lengthByte = payload[1];
-      const expectedTotalLength = lengthIncludesHeader
-        ? lengthByte
-        : lengthByte + PACKET_HEADER_SIZE;
+      
+      // Calculate where the data should be based on the protocol rules
+      const payloadLength = lengthIncludesHeader ? lengthByte - PACKET_HEADER_SIZE : lengthByte;
 
-      if (expectedTotalLength === payload.length) {
-        // We do a quick checksum validation to be sure it's a full packet and not just payload data that happens to match
-        let computed = 0;
-        for (let i = 0; i < payload.length - 1; i++) {
-          computed = (computed + payload[i]) & CHECKSUM_MASK;
-        }
-        if (payload[payload.length - 1] === computed) {
-          const payloadLength = lengthIncludesHeader ? lengthByte - PACKET_HEADER_SIZE : lengthByte;
-          dataPart = payload.subarray(2, 2 + payloadLength);
-        }
-      }
+      // Extract the data part. We take what's available up to payloadLength.
+      // This allows parsing even if the checksum is missing.
+      dataPart = payload.subarray(PACKET_MIN_HEADER_SIZE, PACKET_MIN_HEADER_SIZE + payloadLength);
     }
 
     let parser = this.compiledParsers.get(targetClass as PayloadConstructor);
