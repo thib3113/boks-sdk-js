@@ -29,6 +29,8 @@ describe('NotifyCodesCountPacket', () => {
         "masterCount": 10,
         "opcode": 195,
         "otherCount": 20,
+      "validChecksum": null,
+
       });
   });
 });

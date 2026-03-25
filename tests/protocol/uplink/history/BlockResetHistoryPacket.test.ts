@@ -29,6 +29,8 @@ describe('BlockResetHistoryPacket', () => {
         "age": 10,
         "opcode": 149,
         "resetInfo": "AABB",
+      "validChecksum": null,
+
       });
   });
 });

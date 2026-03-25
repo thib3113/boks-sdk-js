@@ -66,6 +66,8 @@ describe('NotifyNfcTagFoundPacket', () => {
     expect(json).toStrictEqual({
         "opcode": 197,
         "uid": "01020304",
+      "validChecksum": null,
+
       });
   });
 });

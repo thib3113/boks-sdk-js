@@ -23,6 +23,8 @@ describe('KeyOpeningHistoryPacket', () => {
     expect(json).toStrictEqual({
         "age": 66051,
         "opcode": 153,
+      "validChecksum": null,
+
       });
   });
 });

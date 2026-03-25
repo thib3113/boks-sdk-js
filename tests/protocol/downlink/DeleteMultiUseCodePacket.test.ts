@@ -83,6 +83,8 @@ describe('DeleteMultiUseCodePacket', () => {
         "configKey": "12345678",
         "opcode": 14,
         "pin": "334455",
+      "validChecksum": null,
+
       });
   });
 });

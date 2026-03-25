@@ -60,6 +60,8 @@ describe('RegisterNfcTagScanStartPacket', () => {
     expect(json).toStrictEqual({
         "configKey": "12345678",
         "opcode": 23,
+      "validChecksum": null,
+
       });
   });
 });

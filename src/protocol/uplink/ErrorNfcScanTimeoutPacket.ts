@@ -1,3 +1,4 @@
+import { BoksPacketOptions } from '../_BoksPacketBase';
 import { BoksRXPacket } from '@/protocol/uplink/_BoksRXPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
 
@@ -12,7 +13,7 @@ export class ErrorNfcScanTimeoutPacket extends BoksRXPacket {
     super(ErrorNfcScanTimeoutPacket.opcode, raw);
   }
 
-  static fromRaw(payload: Uint8Array): ErrorNfcScanTimeoutPacket {
+  static fromRaw(payload: Uint8Array, _options?: BoksPacketOptions): ErrorNfcScanTimeoutPacket {
     return new ErrorNfcScanTimeoutPacket(payload);
   }
 }

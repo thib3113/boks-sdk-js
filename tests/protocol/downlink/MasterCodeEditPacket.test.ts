@@ -112,6 +112,8 @@ describe('MasterCodeEditPacket', () => {
         "index": 5,
         "newPin": "667788",
         "opcode": 9,
+      "validChecksum": null,
+
       });
   });
 });

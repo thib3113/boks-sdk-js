@@ -1,3 +1,4 @@
+import { BoksPacketOptions } from '../_BoksPacketBase';
 import { BoksPacket } from '@/protocol/_BoksPacketBase';
 import { BoksOpcode, EMPTY_BUFFER } from '@/protocol/constants';
 
@@ -10,7 +11,7 @@ export class ScaleGetRawSensorsPacket extends BoksPacket {
   get opcode() {
     return ScaleGetRawSensorsPacket.opcode;
   }
-  static fromRaw(payload: Uint8Array): ScaleGetRawSensorsPacket {
+  static fromRaw(payload: Uint8Array, _options?: BoksPacketOptions): ScaleGetRawSensorsPacket {
     return new ScaleGetRawSensorsPacket(payload);
   }
   toPayload() {

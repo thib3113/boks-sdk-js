@@ -5,7 +5,7 @@ import { BoksProtocolError, BoksProtocolErrorId } from '../../errors/BoksProtoco
 import { BoksExpectedReason } from '../../errors/BoksExpectedReason';
 import { EMPTY_BUFFER, PACKET_HEADER_SIZE, PACKET_MIN_HEADER_SIZE } from '../constants';
 import { hexToBytes, bytesToHex } from '../../utils/converters';
-import { BoksPacket } from '../_BoksPacketBase';
+import { BoksPacketOptions } from '../_BoksPacketBase';
 
 /**
  * Metadata key used to store field definitions on the class constructor.
@@ -813,7 +813,11 @@ export class PayloadMapper {
    * @returns A mapped object containing the extracted properties
    */
   /* eslint-disable-next-line @typescript-eslint/no-unsafe-function-type */
-  public static parse<T = any>(targetClass: Function | any, payload: Uint8Array): T {
+  public static parse<T = any>(
+    targetClass: Function | any,
+    payload: Uint8Array,
+    options?: BoksPacketOptions
+  ): T {
     if (typeof payload === 'string') {
       throw new BoksProtocolError(
         BoksProtocolErrorId.INVALID_TYPE,
@@ -838,17 +842,23 @@ export class PayloadMapper {
     // Auto-extract payload if we received a full raw packet
     let dataPart = payload;
     const opcode = (targetClass as any).opcode;
-    // We check if it looks like a full packet: length >= header size, starts with opcode
+    const strict = options?.strict ?? true;
+
+    // Logic for header stripping
     if (opcode !== undefined && payload.length >= PACKET_MIN_HEADER_SIZE && payload[0] === opcode) {
       const lengthIncludesHeader = (targetClass as any).lengthIncludesHeader ?? false;
       const lengthByte = payload[1];
-      
-      // Calculate where the data should be based on the protocol rules
-      const payloadLength = lengthIncludesHeader ? lengthByte - PACKET_HEADER_SIZE : lengthByte;
+      const expectedTotalLength = lengthIncludesHeader ? lengthByte : lengthByte + PACKET_HEADER_SIZE;
 
-      // Extract the data part. We take what's available up to payloadLength.
-      // This allows parsing even if the checksum is missing.
-      dataPart = payload.subarray(PACKET_MIN_HEADER_SIZE, PACKET_MIN_HEADER_SIZE + payloadLength);
+      // In non-strict mode, we strip the header as long as the opcode matches (for truncated packets).
+      // In strict mode, we only strip if the length is a perfect match.
+      const shouldStrip = !strict || payload.length === expectedTotalLength;
+
+      if (shouldStrip) {
+        const payloadLength = lengthIncludesHeader ? lengthByte - PACKET_HEADER_SIZE : lengthByte;
+        // Extract the data part. Using subarray is safe even if payload is shorter than payloadLength.
+        dataPart = payload.subarray(PACKET_MIN_HEADER_SIZE, PACKET_MIN_HEADER_SIZE + payloadLength);
+      }
     }
 
     let parser = this.compiledParsers.get(targetClass as PayloadConstructor);

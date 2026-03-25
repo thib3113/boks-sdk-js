@@ -1,3 +1,4 @@
+import { BoksPacketOptions } from '../../_BoksPacketBase';
 import { PayloadMapper, PayloadHexString } from '@/protocol/decorators';
 import {
   BoksHistoryEvent,
@@ -23,11 +24,9 @@ export class BlockResetHistoryPacket extends BoksHistoryEvent {
     this.resetInfo = props.resetInfo;
   }
 
-  static fromRaw(payload: Uint8Array): BlockResetHistoryPacket {
+  static fromRaw(payload: Uint8Array, options?: BoksPacketOptions): BlockResetHistoryPacket {
     const data = PayloadMapper.parse<BlockResetHistoryPacketProps>(
-      BlockResetHistoryPacket,
-      payload
-    );
+      BlockResetHistoryPacket, payload, options);
     return new BlockResetHistoryPacket(data, payload);
   }
 }

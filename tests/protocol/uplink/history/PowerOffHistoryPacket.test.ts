@@ -34,6 +34,8 @@ describe('PowerOffHistoryPacket', () => {
         "age": 60,
         "opcode": 148,
         "reason": 1,
+      "validChecksum": null,
+
       });
   });
 });

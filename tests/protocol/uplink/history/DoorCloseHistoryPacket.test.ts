@@ -24,6 +24,8 @@ describe('DoorCloseHistoryPacket', () => {
     expect(json).toStrictEqual({
         "age": 66051,
         "opcode": 144,
+      "validChecksum": null,
+
       });
   });
 });

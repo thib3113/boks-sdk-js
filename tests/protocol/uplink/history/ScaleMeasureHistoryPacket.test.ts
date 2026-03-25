@@ -65,6 +65,8 @@ describe('ScaleMeasureHistoryPacket', () => {
           4,
         ]),
         "opcode": 152,
+      "validChecksum": null,
+
       });
   });
 });

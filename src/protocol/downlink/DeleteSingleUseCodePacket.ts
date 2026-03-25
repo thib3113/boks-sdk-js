@@ -1,3 +1,4 @@
+import { BoksPacketOptions } from '../_BoksPacketBase';
 import { AuthPacket, AuthPacketProps } from '@/protocol/downlink/_AuthPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
 import { PayloadMapper, PayloadPinCode } from '@/protocol/decorators';
@@ -23,11 +24,9 @@ export class DeleteSingleUseCodePacket extends AuthPacket {
     this.pin = props.pin;
   }
 
-  static fromRaw(payload: Uint8Array): DeleteSingleUseCodePacket {
+  static fromRaw(payload: Uint8Array, options?: BoksPacketOptions): DeleteSingleUseCodePacket {
     const data = PayloadMapper.parse<DeleteSingleUseCodePacketProps>(
-      DeleteSingleUseCodePacket,
-      payload
-    );
+      DeleteSingleUseCodePacket, payload, options);
     return new DeleteSingleUseCodePacket(data, payload);
   }
 }

@@ -47,6 +47,8 @@ describe('NfcOpeningHistoryPacket', () => {
         "opcode": 161,
         "tagType": 2,
         "uid": "04050607",
+      "validChecksum": null,
+
       });
   });
 });

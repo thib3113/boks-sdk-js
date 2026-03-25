@@ -108,6 +108,8 @@ describe('NfcRegisterPacket', () => {
         "configKey": "12345678",
         "opcode": 24,
         "uid": "04A1B2C3",
+      "validChecksum": null,
+
       });
   });
 });

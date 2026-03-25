@@ -1,3 +1,4 @@
+import { BoksPacketOptions } from '../_BoksPacketBase';
 import { BoksRXPacket } from '@/protocol/uplink/_BoksRXPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
 
@@ -12,7 +13,7 @@ export class NotifyScaleTareLoadedOkPacket extends BoksRXPacket {
     super(NotifyScaleTareLoadedOkPacket.opcode, raw);
   }
 
-  static fromRaw(payload: Uint8Array): NotifyScaleTareLoadedOkPacket {
+  static fromRaw(payload: Uint8Array, _options?: BoksPacketOptions): NotifyScaleTareLoadedOkPacket {
     return new NotifyScaleTareLoadedOkPacket(payload);
   }
 }

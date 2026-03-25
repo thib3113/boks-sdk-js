@@ -44,6 +44,8 @@ describe('NfcRegisteringHistoryPacket', () => {
           4,
         ]),
         "opcode": 162,
+      "validChecksum": null,
+
       });
   });
 });

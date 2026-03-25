@@ -20,6 +20,8 @@ describe('ScaleGetMacPacket', () => {
     const json = packet.toJSON();
     expect(json).toStrictEqual({
         "opcode": 82,
+      "validChecksum": null,
+
       });
   });
 });

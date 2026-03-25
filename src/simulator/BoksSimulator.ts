@@ -907,9 +907,9 @@ export class BoksHardwareSimulator {
     this.log('debug', 'receive', { opcode, length: data.length });
 
     if (this.#packetSubscribers.size > 0) {
-      const parsedPacket = BoksPacketFactory.createFromPayload(data, (l, e, c) =>
-        this.log(l, e, c)
-      );
+      const parsedPacket = BoksPacketFactory.createFromPayload(data, {
+        logger: (l, e, c) => this.log(l, e, c)
+      });
       if (parsedPacket) {
         this.#packetSubscribers.forEach((cb) =>
           cb({ direction: 'TX', packet: parsedPacket, buffer: data })
@@ -985,9 +985,9 @@ export class BoksHardwareSimulator {
     this.log('debug', 'send', { opcode: data[0], length: data.length });
 
     if (this.#packetSubscribers.size > 0) {
-      const parsedOutPacket = BoksPacketFactory.createFromPayload(data, (l, e, c) =>
-        this.log(l, e, c)
-      );
+      const parsedOutPacket = BoksPacketFactory.createFromPayload(data, {
+        logger: (l, e, c) => this.log(l, e, c)
+      });
       if (parsedOutPacket) {
         this.#packetSubscribers.forEach((cb) =>
           cb({ direction: 'RX', packet: parsedOutPacket, buffer: data })

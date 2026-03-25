@@ -28,6 +28,8 @@ describe('NotifyScaleRawSensorsPacket', () => {
           3,
         ]),
         "opcode": 185,
+      "validChecksum": null,
+
       });
   });
 });

@@ -24,6 +24,8 @@ describe('NotifyScaleBondingProgressPacket', () => {
     expect(json).toStrictEqual({
         "opcode": 180,
         "progress": 50,
+      "validChecksum": null,
+
       });
   });
 });

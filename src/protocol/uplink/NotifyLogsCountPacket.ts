@@ -1,3 +1,4 @@
+import { BoksPacketOptions } from '../_BoksPacketBase';
 import { PayloadMapper, PayloadUint16 } from '@/protocol/decorators';
 import { BoksRXPacket } from '@/protocol/uplink/_BoksRXPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
@@ -16,8 +17,8 @@ export class NotifyLogsCountPacket extends BoksRXPacket {
     this.count = count;
   }
 
-  static fromRaw(payload: Uint8Array): NotifyLogsCountPacket {
-    const data = PayloadMapper.parse<NotifyLogsCountPacket>(NotifyLogsCountPacket, payload);
+  static fromRaw(payload: Uint8Array, options?: BoksPacketOptions): NotifyLogsCountPacket {
+    const data = PayloadMapper.parse<NotifyLogsCountPacket>(NotifyLogsCountPacket, payload, options);
     return new NotifyLogsCountPacket(data.count, payload);
   }
 }

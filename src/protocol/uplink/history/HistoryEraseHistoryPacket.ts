@@ -1,3 +1,4 @@
+import { BoksPacketOptions } from '../../_BoksPacketBase';
 import { PayloadMapper } from '@/protocol/decorators';
 import {
   BoksHistoryEvent,
@@ -15,8 +16,8 @@ export class HistoryEraseHistoryPacket extends BoksHistoryEvent {
     super(HistoryEraseHistoryPacket.opcode, props, raw);
   }
 
-  static fromRaw(payload: Uint8Array): HistoryEraseHistoryPacket {
-    const data = PayloadMapper.parse<BoksHistoryEventProps>(HistoryEraseHistoryPacket, payload);
+  static fromRaw(payload: Uint8Array, options?: BoksPacketOptions): HistoryEraseHistoryPacket {
+    const data = PayloadMapper.parse<BoksHistoryEventProps>(HistoryEraseHistoryPacket, payload, options);
     return new HistoryEraseHistoryPacket(data, payload);
   }
 }

@@ -1,3 +1,4 @@
+import { BoksPacketOptions } from '../_BoksPacketBase';
 import { BoksRXPacket } from '@/protocol/uplink/_BoksRXPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
 
@@ -12,7 +13,7 @@ export class NotifyCodeGenerationSuccessPacket extends BoksRXPacket {
     super(NotifyCodeGenerationSuccessPacket.opcode, raw);
   }
 
-  static fromRaw(payload: Uint8Array): NotifyCodeGenerationSuccessPacket {
+  static fromRaw(payload: Uint8Array, _options?: BoksPacketOptions): NotifyCodeGenerationSuccessPacket {
     return new NotifyCodeGenerationSuccessPacket(payload);
   }
 }

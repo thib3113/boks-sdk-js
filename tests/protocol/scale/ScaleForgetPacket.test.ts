@@ -21,6 +21,8 @@ describe('ScaleForgetPacket', () => {
     const json = packet.toJSON();
     expect(json).toStrictEqual({
         "opcode": 83,
+      "validChecksum": null,
+
       });
   });
 });

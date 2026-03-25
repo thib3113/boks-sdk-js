@@ -83,6 +83,8 @@ describe('DeleteSingleUseCodePacket', () => {
         "configKey": "12345678",
         "opcode": 13,
         "pin": "998877",
+      "validChecksum": null,
+
       });
   });
 });

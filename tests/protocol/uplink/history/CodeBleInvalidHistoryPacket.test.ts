@@ -40,6 +40,8 @@ describe('CodeBleInvalidHistoryPacket', () => {
         "code": "123456",
         "connectedMac": "112233445566",
         "opcode": 136,
+      "validChecksum": null,
+
       });
   });
 });

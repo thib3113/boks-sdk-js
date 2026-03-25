@@ -83,6 +83,8 @@ describe('DeleteMasterCodePacket', () => {
         "configKey": "12345678",
         "index": 2,
         "opcode": 12,
+      "validChecksum": null,
+
       });
   });
 });

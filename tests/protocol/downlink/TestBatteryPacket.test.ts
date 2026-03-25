@@ -22,6 +22,8 @@ describe('TestBatteryPacket', () => {
     const json = packet.toJSON();
     expect(json).toStrictEqual({
         "opcode": 8,
+      "validChecksum": null,
+
       });
   });
 });

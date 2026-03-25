@@ -1,3 +1,4 @@
+import { BoksPacketOptions } from '../../_BoksPacketBase';
 import {
   BoksHistoryEvent,
   BoksHistoryEventProps
@@ -21,8 +22,8 @@ export class DoorOpenHistoryPacket extends BoksHistoryEvent {
     super(DoorOpenHistoryPacket.opcode, props, raw);
   }
 
-  static fromRaw(payload: Uint8Array): DoorOpenHistoryPacket {
-    const data = PayloadMapper.parse<BoksHistoryEventProps>(DoorOpenHistoryPacket, payload);
+  static fromRaw(payload: Uint8Array, options?: BoksPacketOptions): DoorOpenHistoryPacket {
+    const data = PayloadMapper.parse<BoksHistoryEventProps>(DoorOpenHistoryPacket, payload, options);
     return new DoorOpenHistoryPacket(data, payload);
   }
 }

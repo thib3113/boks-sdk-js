@@ -37,6 +37,8 @@ describe('BleRebootHistoryPacket', () => {
     expect(json).toStrictEqual({
         "age": 10,
         "opcode": 151,
+      "validChecksum": null,
+
       });
   });
 });

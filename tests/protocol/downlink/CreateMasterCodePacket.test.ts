@@ -122,6 +122,8 @@ describe('CreateMasterCodePacket', () => {
         "index": 1,
         "opcode": 17,
         "pin": "123456",
+      "validChecksum": null,
+
       });
   });
 });

@@ -1,3 +1,4 @@
+import { BoksPacketOptions } from '../_BoksPacketBase';
 import { PayloadMapper, PayloadVarLenHex } from '@/protocol/decorators';
 import { BoksRXPacket } from '@/protocol/uplink/_BoksRXPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
@@ -17,8 +18,8 @@ export class NotifyNfcTagFoundPacket extends BoksRXPacket {
     this.uid = uid;
   }
 
-  static fromRaw(payload: Uint8Array): NotifyNfcTagFoundPacket {
-    const data = PayloadMapper.parse<NotifyNfcTagFoundPacket>(NotifyNfcTagFoundPacket, payload);
+  static fromRaw(payload: Uint8Array, options?: BoksPacketOptions): NotifyNfcTagFoundPacket {
+    const data = PayloadMapper.parse<NotifyNfcTagFoundPacket>(NotifyNfcTagFoundPacket, payload, options);
     return new NotifyNfcTagFoundPacket(data.uid, payload);
   }
 }

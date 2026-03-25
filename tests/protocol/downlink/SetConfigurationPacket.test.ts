@@ -119,6 +119,8 @@ describe('SetConfigurationPacket', () => {
         "configType": 1,
         "opcode": 22,
         "value": true,
+      "validChecksum": null,
+
       });
   });
 });

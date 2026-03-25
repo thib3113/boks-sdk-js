@@ -68,6 +68,8 @@ describe('RegeneratePartBPacket', () => {
         "configKey": "12345678",
         "opcode": 33,
         "part": "101112131415161718191A1B1C1D1E1F",
+      "validChecksum": null,
+
       });
   });
 });

@@ -22,6 +22,8 @@ describe('RebootPacket', () => {
     const json = packet.toJSON();
     expect(json).toStrictEqual({
         "opcode": 6,
+      "validChecksum": null,
+
       });
   });
 });

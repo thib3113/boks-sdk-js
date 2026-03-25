@@ -86,6 +86,8 @@ describe('CreateMultiUseCodePacket', () => {
         "configKey": "12345678",
         "opcode": 19,
         "pin": "654321",
+      "validChecksum": null,
+
       });
   });
 });

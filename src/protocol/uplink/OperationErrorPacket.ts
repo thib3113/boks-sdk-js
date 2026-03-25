@@ -1,3 +1,4 @@
+import { BoksPacketOptions } from '../_BoksPacketBase';
 import { PayloadMapper, PayloadUint8 } from '@/protocol/decorators';
 import { BoksRXPacket } from '@/protocol/uplink/_BoksRXPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
@@ -16,8 +17,8 @@ export class OperationErrorPacket extends BoksRXPacket {
     this.errorCode = errorCode;
   }
 
-  static fromRaw(payload: Uint8Array): OperationErrorPacket {
-    const data = PayloadMapper.parse<OperationErrorPacket>(OperationErrorPacket, payload);
+  static fromRaw(payload: Uint8Array, options?: BoksPacketOptions): OperationErrorPacket {
+    const data = PayloadMapper.parse<OperationErrorPacket>(OperationErrorPacket, payload, options);
     return new OperationErrorPacket(data.errorCode, payload);
   }
 }

@@ -1,3 +1,4 @@
+import { BoksPacketOptions } from '../../_BoksPacketBase';
 import { PayloadMapper, PayloadByteArray } from '@/protocol/decorators';
 import {
   BoksHistoryEvent,
@@ -23,11 +24,9 @@ export class NfcRegisteringHistoryPacket extends BoksHistoryEvent {
     this.data = props.data;
   }
 
-  static fromRaw(payload: Uint8Array): NfcRegisteringHistoryPacket {
+  static fromRaw(payload: Uint8Array, options?: BoksPacketOptions): NfcRegisteringHistoryPacket {
     const data = PayloadMapper.parse<NfcRegisteringHistoryPacket>(
-      NfcRegisteringHistoryPacket,
-      payload
-    );
+      NfcRegisteringHistoryPacket, payload, options);
     return new NfcRegisteringHistoryPacket(
       {
         age: data.age,

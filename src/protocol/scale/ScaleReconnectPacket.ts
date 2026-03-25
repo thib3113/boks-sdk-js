@@ -1,3 +1,4 @@
+import { BoksPacketOptions } from '../_BoksPacketBase';
 import { BoksPacket } from '@/protocol/_BoksPacketBase';
 import { BoksOpcode, EMPTY_BUFFER } from '@/protocol/constants';
 
@@ -10,7 +11,7 @@ export class ScaleReconnectPacket extends BoksPacket {
   get opcode() {
     return ScaleReconnectPacket.opcode;
   }
-  static fromRaw(payload: Uint8Array): ScaleReconnectPacket {
+  static fromRaw(payload: Uint8Array, _options?: BoksPacketOptions): ScaleReconnectPacket {
     return new ScaleReconnectPacket(payload);
   }
   toPayload() {

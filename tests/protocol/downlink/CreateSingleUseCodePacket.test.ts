@@ -84,6 +84,8 @@ describe('CreateSingleUseCodePacket', () => {
         "configKey": "12345678",
         "opcode": 18,
         "pin": "112233",
+      "validChecksum": null,
+
       });
   });
 });

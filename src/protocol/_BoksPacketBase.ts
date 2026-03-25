@@ -1,7 +1,24 @@
-import { BoksOpcode, EMPTY_BUFFER, PACKET_HEADER_SIZE, PACKET_MIN_HEADER_SIZE, CHECKSUM_MASK } from '@/protocol/constants';
+import {
+  BoksOpcode,
+  EMPTY_BUFFER,
+  PACKET_HEADER_SIZE,
+  PACKET_MIN_HEADER_SIZE,
+  CHECKSUM_MASK
+} from '@/protocol/constants';
 import { PayloadMapper } from '@/protocol/decorators';
 import { calculateChecksum } from '@/utils/converters';
 import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';
+
+/**
+ * Options for packet creation and parsing.
+ */
+export interface BoksPacketOptions {
+  /**
+   * If true (default), the packet parsing will be strict.
+   * If false, it will allow parsing of truncated or malformed packets.
+   */
+  strict?: boolean;
+}
 
 /**
  * Type representing a BoksPacket constructor.
@@ -10,7 +27,7 @@ export type BoksPacketConstructor<T extends BoksPacket = BoksPacket> = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   new (...args: any[]): T;
   readonly opcode: BoksOpcode;
-  fromRaw(raw: Uint8Array): T;
+  fromRaw(raw: Uint8Array, options?: BoksPacketOptions): T;
   readonly lengthIncludesHeader?: boolean;
 };
 
@@ -156,7 +173,7 @@ export abstract class BoksPacket {
    * This MUST be implemented by leaf classes for strict parsing.
    */
   /* v8 ignore next 3 */
-  static fromRaw(_raw: Uint8Array): BoksPacket {
+  static fromRaw(_raw: Uint8Array, _options?: BoksPacketOptions): BoksPacket {
     throw new BoksProtocolError(BoksProtocolErrorId.NOT_IMPLEMENTED, 'fromRaw not implemented');
   }
 

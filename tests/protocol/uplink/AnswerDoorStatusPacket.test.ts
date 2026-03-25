@@ -42,6 +42,8 @@ describe('AnswerDoorStatusPacket', () => {
         "inverted": false,
         "opcode": 133,
         "status": true,
+      "validChecksum": null,
+
       });
   });
 });

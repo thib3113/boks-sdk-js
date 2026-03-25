@@ -31,6 +31,8 @@ describe('PowerOnHistoryPacket', () => {
     expect(json).toStrictEqual({
         "age": 0,
         "opcode": 150,
+      "validChecksum": null,
+
       });
   });
 });

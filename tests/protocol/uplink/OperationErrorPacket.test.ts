@@ -35,6 +35,8 @@ describe('OperationErrorPacket', () => {
     expect(json).toStrictEqual({
         "errorCode": 1,
         "opcode": 120,
+      "validChecksum": null,
+
       });
   });
 });

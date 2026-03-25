@@ -20,6 +20,8 @@ describe('ScaleMeasureWeightPacket', () => {
     const json = packet.toJSON();
     expect(json).toStrictEqual({
         "opcode": 87,
+      "validChecksum": null,
+
       });
   });
 });

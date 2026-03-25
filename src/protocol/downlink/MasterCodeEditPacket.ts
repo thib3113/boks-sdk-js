@@ -1,3 +1,4 @@
+import { BoksPacketOptions } from '../_BoksPacketBase';
 import { AuthPacket, AuthPacketProps } from '@/protocol/downlink/_AuthPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
 import { PayloadMapper, PayloadPinCode, PayloadMasterCodeIndex } from '@/protocol/decorators';
@@ -29,8 +30,8 @@ export class MasterCodeEditPacket extends AuthPacket {
     this.newPin = props.newPin;
   }
 
-  static fromRaw(payload: Uint8Array): MasterCodeEditPacket {
-    const data = PayloadMapper.parse<MasterCodeEditPacketProps>(MasterCodeEditPacket, payload);
+  static fromRaw(payload: Uint8Array, options?: BoksPacketOptions): MasterCodeEditPacket {
+    const data = PayloadMapper.parse<MasterCodeEditPacketProps>(MasterCodeEditPacket, payload, options);
     return new MasterCodeEditPacket(data, payload);
   }
 }

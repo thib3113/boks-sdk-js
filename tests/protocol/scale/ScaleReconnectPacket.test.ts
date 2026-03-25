@@ -20,6 +20,8 @@ describe('ScaleReconnectPacket', () => {
     const json = packet.toJSON();
     expect(json).toStrictEqual({
         "opcode": 98,
+      "validChecksum": null,
+
       });
   });
 });

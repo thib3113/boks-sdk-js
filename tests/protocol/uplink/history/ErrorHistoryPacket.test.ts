@@ -40,6 +40,8 @@ describe('ErrorHistoryPacket', () => {
         "age": 10,
         "errorCode": 255,
         "opcode": 160,
+      "validChecksum": null,
+
       });
   });
 });

@@ -22,6 +22,8 @@ describe('RequestLogsPacket', () => {
     const json = packet.toJSON();
     expect(json).toStrictEqual({
         "opcode": 3,
+      "validChecksum": null,
+
       });
   });
 });

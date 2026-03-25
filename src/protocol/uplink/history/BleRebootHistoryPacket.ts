@@ -1,3 +1,4 @@
+import { BoksPacketOptions } from '../../_BoksPacketBase';
 import { PayloadMapper } from '@/protocol/decorators';
 import {
   BoksHistoryEvent,
@@ -15,8 +16,8 @@ export class BleRebootHistoryPacket extends BoksHistoryEvent {
     super(BleRebootHistoryPacket.opcode, props, raw);
   }
 
-  static fromRaw(payload: Uint8Array): BleRebootHistoryPacket {
-    const data = PayloadMapper.parse<BoksHistoryEventProps>(BleRebootHistoryPacket, payload);
+  static fromRaw(payload: Uint8Array, options?: BoksPacketOptions): BleRebootHistoryPacket {
+    const data = PayloadMapper.parse<BoksHistoryEventProps>(BleRebootHistoryPacket, payload, options);
     return new BleRebootHistoryPacket(data, payload);
   }
 }

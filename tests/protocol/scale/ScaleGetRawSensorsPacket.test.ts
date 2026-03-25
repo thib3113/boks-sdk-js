@@ -20,6 +20,8 @@ describe('ScaleGetRawSensorsPacket', () => {
     const json = packet.toJSON();
     expect(json).toStrictEqual({
         "opcode": 97,
+      "validChecksum": null,
+
       });
   });
 });

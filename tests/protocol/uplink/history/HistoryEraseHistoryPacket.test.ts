@@ -26,6 +26,8 @@ describe('HistoryEraseHistoryPacket', () => {
     expect(json).toStrictEqual({
         "age": 66051,
         "opcode": 147,
+      "validChecksum": null,
+
       });
   });
 });

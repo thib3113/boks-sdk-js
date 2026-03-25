@@ -24,6 +24,8 @@ describe('ScaleTareLoadedPacket', () => {
     const json = packet.toJSON();
     expect(json).toStrictEqual({
         "opcode": 86,
+      "validChecksum": null,
+
       });
   });
 });

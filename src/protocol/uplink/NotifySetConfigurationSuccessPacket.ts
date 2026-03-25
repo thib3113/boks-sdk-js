@@ -1,3 +1,4 @@
+import { BoksPacketOptions } from '../_BoksPacketBase';
 import { BoksRXPacket } from '@/protocol/uplink/_BoksRXPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
 
@@ -11,7 +12,7 @@ export class NotifySetConfigurationSuccessPacket extends BoksRXPacket {
     super(NotifySetConfigurationSuccessPacket.opcode, raw);
   }
 
-  static fromRaw(payload: Uint8Array): NotifySetConfigurationSuccessPacket {
+  static fromRaw(payload: Uint8Array, _options?: BoksPacketOptions): NotifySetConfigurationSuccessPacket {
     return new NotifySetConfigurationSuccessPacket(payload);
   }
 }

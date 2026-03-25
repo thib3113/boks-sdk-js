@@ -1,3 +1,4 @@
+import { BoksPacketOptions } from '../_BoksPacketBase';
 import { BoksPacket } from '@/protocol/_BoksPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
 import { PayloadMapper, PayloadPinCode } from '@/protocol/decorators';
@@ -21,8 +22,8 @@ export class OpenDoorPacket extends BoksPacket {
     this.pin = pin;
   }
 
-  static fromRaw(payload: Uint8Array): OpenDoorPacket {
-    const data = PayloadMapper.parse<OpenDoorPacket>(OpenDoorPacket, payload);
+  static fromRaw(payload: Uint8Array, options?: BoksPacketOptions): OpenDoorPacket {
+    const data = PayloadMapper.parse<OpenDoorPacket>(OpenDoorPacket, payload, options);
     return new OpenDoorPacket(data.pin, payload);
   }
 }

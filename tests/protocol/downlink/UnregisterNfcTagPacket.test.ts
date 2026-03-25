@@ -72,6 +72,8 @@ describe('UnregisterNfcTagPacket', () => {
         "configKey": "12345678",
         "opcode": 25,
         "uid": "04A1B2C3",
+      "validChecksum": null,
+
       });
   });
 });

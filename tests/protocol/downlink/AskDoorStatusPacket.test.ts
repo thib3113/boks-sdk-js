@@ -28,6 +28,8 @@ describe('AskDoorStatusPacket', () => {
     const json = packet.toJSON();
     expect(json).toStrictEqual({
         "opcode": 2,
+      "validChecksum": null,
+
       });
   });
 });

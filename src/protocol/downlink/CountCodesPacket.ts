@@ -1,3 +1,4 @@
+import { BoksPacketOptions } from '../_BoksPacketBase';
 import { BoksPacket } from '@/protocol/_BoksPacketBase';
 import { BoksOpcode, EMPTY_BUFFER } from '@/protocol/constants';
 
@@ -9,7 +10,7 @@ export class CountCodesPacket extends BoksPacket {
   get opcode() {
     return CountCodesPacket.opcode;
   }
-  static fromRaw(payload: Uint8Array): CountCodesPacket {
+  static fromRaw(payload: Uint8Array, _options?: BoksPacketOptions): CountCodesPacket {
     return new CountCodesPacket(payload);
   }
   toPayload() {

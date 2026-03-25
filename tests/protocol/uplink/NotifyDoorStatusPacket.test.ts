@@ -42,6 +42,8 @@ describe('NotifyDoorStatusPacket', () => {
         "inverted": false,
         "opcode": 132,
         "status": true,
+      "validChecksum": null,
+
       });
   });
 });

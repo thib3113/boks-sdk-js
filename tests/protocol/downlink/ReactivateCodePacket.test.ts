@@ -70,6 +70,8 @@ describe('ReactivateCodePacket', () => {
         "configKey": "12345678",
         "opcode": 15,
         "pin": "998877",
+      "validChecksum": null,
+
       });
   });
 });

@@ -1,3 +1,4 @@
+import { BoksPacketOptions } from '../_BoksPacketBase';
 import { PayloadMapper, PayloadByteArray } from '@/protocol/decorators';
 import { BoksRXPacket } from '@/protocol/uplink/_BoksRXPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
@@ -17,8 +18,8 @@ export class NotifyScaleRawSensorsPacket extends BoksRXPacket {
     this.data = data;
   }
 
-  static fromRaw(payload: Uint8Array): NotifyScaleRawSensorsPacket {
-    const data = PayloadMapper.parse(NotifyScaleRawSensorsPacket, payload);
+  static fromRaw(payload: Uint8Array, options?: BoksPacketOptions): NotifyScaleRawSensorsPacket {
+    const data = PayloadMapper.parse(NotifyScaleRawSensorsPacket, payload, options);
     return new NotifyScaleRawSensorsPacket(data.data, payload);
   }
 }

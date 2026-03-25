@@ -54,6 +54,8 @@ describe('OpenDoorPacket', () => {
     expect(json).toStrictEqual({
         "opcode": 1,
         "pin": "123456",
+      "validChecksum": null,
+
       });
   });
 });

@@ -1,3 +1,4 @@
+import { BoksPacketOptions } from '../_BoksPacketBase';
 import { PayloadMapper, PayloadBoolean } from '@/protocol/decorators';
 import { BoksRXPacket } from '@/protocol/uplink/_BoksRXPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
@@ -29,8 +30,8 @@ export class NotifyDoorStatusPacket extends BoksRXPacket {
     this.status = props.status;
   }
 
-  static fromRaw(payload: Uint8Array): NotifyDoorStatusPacket {
-    const data = PayloadMapper.parse<NotifyDoorStatusPacketProps>(NotifyDoorStatusPacket, payload);
+  static fromRaw(payload: Uint8Array, options?: BoksPacketOptions): NotifyDoorStatusPacket {
+    const data = PayloadMapper.parse<NotifyDoorStatusPacketProps>(NotifyDoorStatusPacket, payload, options);
     return new NotifyDoorStatusPacket(data, payload);
   }
 }

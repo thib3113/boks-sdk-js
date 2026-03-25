@@ -1,3 +1,4 @@
+import { BoksPacketOptions } from '../_BoksPacketBase';
 import { BoksPacket } from '@/protocol/_BoksPacketBase';
 import { BoksOpcode, EMPTY_BUFFER } from '@/protocol/constants';
 
@@ -9,7 +10,7 @@ export class RebootPacket extends BoksPacket {
   get opcode() {
     return RebootPacket.opcode;
   }
-  static fromRaw(payload: Uint8Array): RebootPacket {
+  static fromRaw(payload: Uint8Array, _options?: BoksPacketOptions): RebootPacket {
     return new RebootPacket(payload);
   }
   toPayload() {

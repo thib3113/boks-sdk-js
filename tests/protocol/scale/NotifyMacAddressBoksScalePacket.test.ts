@@ -38,6 +38,8 @@ describe('NotifyMacAddressBoksScalePacket', () => {
     expect(json).toStrictEqual({
         "macAddress": "FFEEDDCCBBAA",
         "opcode": 178,
+      "validChecksum": null,
+
       });
   });
 });

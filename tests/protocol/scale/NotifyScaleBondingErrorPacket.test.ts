@@ -24,6 +24,8 @@ describe('NotifyScaleBondingErrorPacket', () => {
     expect(json).toStrictEqual({
         "errorCode": 5,
         "opcode": 177,
+      "validChecksum": null,
+
       });
   });
 });

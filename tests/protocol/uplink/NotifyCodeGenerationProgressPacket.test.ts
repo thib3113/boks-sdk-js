@@ -26,6 +26,8 @@ describe('NotifyCodeGenerationProgressPacket', () => {
     expect(json).toStrictEqual({
         "opcode": 194,
         "progress": 50,
+      "validChecksum": null,
+
       });
   });
 });

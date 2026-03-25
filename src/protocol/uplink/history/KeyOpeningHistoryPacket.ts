@@ -1,3 +1,4 @@
+import { BoksPacketOptions } from '../../_BoksPacketBase';
 import { PayloadMapper } from '@/protocol/decorators';
 import {
   BoksHistoryEvent,
@@ -15,8 +16,8 @@ export class KeyOpeningHistoryPacket extends BoksHistoryEvent {
     super(KeyOpeningHistoryPacket.opcode, props, raw);
   }
 
-  static fromRaw(payload: Uint8Array): KeyOpeningHistoryPacket {
-    const data = PayloadMapper.parse<BoksHistoryEventProps>(KeyOpeningHistoryPacket, payload);
+  static fromRaw(payload: Uint8Array, options?: BoksPacketOptions): KeyOpeningHistoryPacket {
+    const data = PayloadMapper.parse<BoksHistoryEventProps>(KeyOpeningHistoryPacket, payload, options);
     return new KeyOpeningHistoryPacket(data, payload);
   }
 }

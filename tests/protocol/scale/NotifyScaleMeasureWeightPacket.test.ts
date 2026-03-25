@@ -39,6 +39,8 @@ describe('NotifyScaleMeasureWeightPacket', () => {
         "absWeight": 1000,
         "opcode": 183,
         "signNegative": false,
+      "validChecksum": null,
+
       });
   });
 });

@@ -1,4 +1,4 @@
-import { BoksPacket, BoksPacketConstructor } from './_BoksPacketBase';
+import { BoksPacket, BoksPacketConstructor, BoksPacketOptions } from './_BoksPacketBase';
 
 // Scale Notifications
 import { NotifyScaleBondingSuccessPacket } from './scale/NotifyScaleBondingSuccessPacket';
@@ -221,7 +221,7 @@ export class BoksPacketFactory {
       );
     }
 
-    return this.fromResponse(opcode, data);
+    return this.fromResponse(opcode, data, { strict });
   }
 
   /**
@@ -232,14 +232,18 @@ export class BoksPacketFactory {
   }
 
   /**
-   * Creates an RX packet instance from an opcode and its payload.
+   * Creates a packet instance from an identified opcode and raw payload.
    */
-  static fromResponse(opcode: number, payload: Uint8Array): BoksPacket {
+  static fromResponse(
+    opcode: number,
+    payload: Uint8Array,
+    options?: BoksPacketOptions
+  ): BoksPacket {
     const Ctor = this.getConstructor(opcode);
     if (!Ctor) {
       return UnknownPacket.fromUnknownPayload(opcode, payload);
     }
 
-    return Ctor.fromRaw(payload);
+    return Ctor.fromRaw(payload, options);
   }
 }

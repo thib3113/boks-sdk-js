@@ -68,6 +68,8 @@ describe('SingleToMultiCodePacket', () => {
         "configKey": "12345678",
         "opcode": 10,
         "pin": "876543",
+      "validChecksum": null,
+
       });
   });
 });

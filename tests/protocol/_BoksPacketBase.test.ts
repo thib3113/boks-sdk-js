@@ -9,7 +9,6 @@ describe('BoksPacketBase', () => {
       new BoksProtocolError(BoksProtocolErrorId.NOT_IMPLEMENTED, 'fromRaw not implemented')
     );
   });
-});
 
   it('should test missing property in toJSON', () => {
     class DummyPacket extends BoksPacket {
@@ -21,5 +20,6 @@ describe('BoksPacketBase', () => {
     PayloadMapper.defineSchema(DummyPacket, [{ propertyName: 'fakeProp', type: 'uint8', offset: 0 }]);
     const packet = new DummyPacket();
     const json = packet.toJSON();
-    expect(json).toEqual({ opcode: 0x99 });
+    expect(json).toEqual({ opcode: 0x99, validChecksum: null });
   });
+});

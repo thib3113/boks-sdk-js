@@ -20,6 +20,8 @@ describe('ScalePrepareDfuPacket', () => {
     const json = packet.toJSON();
     expect(json).toStrictEqual({
         "opcode": 96,
+      "validChecksum": null,
+
       });
   });
 });

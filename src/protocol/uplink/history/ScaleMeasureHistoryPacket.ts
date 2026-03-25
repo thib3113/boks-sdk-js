@@ -1,3 +1,4 @@
+import { BoksPacketOptions } from '../../_BoksPacketBase';
 import {
   BoksHistoryEvent,
   BoksHistoryEventProps
@@ -27,8 +28,8 @@ export class ScaleMeasureHistoryPacket extends BoksHistoryEvent {
     this.data = props.data;
   }
 
-  static fromRaw(payload: Uint8Array): ScaleMeasureHistoryPacket {
-    const data = PayloadMapper.parse<ScaleMeasureHistoryPacket>(ScaleMeasureHistoryPacket, payload);
+  static fromRaw(payload: Uint8Array, options?: BoksPacketOptions): ScaleMeasureHistoryPacket {
+    const data = PayloadMapper.parse<ScaleMeasureHistoryPacket>(ScaleMeasureHistoryPacket, payload, options);
     return new ScaleMeasureHistoryPacket(
       {
         age: data.age,

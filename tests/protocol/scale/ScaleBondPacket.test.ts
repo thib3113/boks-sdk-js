@@ -28,6 +28,8 @@ describe('ScaleBondPacket', () => {
     const json = packet.toJSON();
     expect(json).toStrictEqual({
         "opcode": 80,
+      "validChecksum": null,
+
       });
   });
 });

@@ -1,3 +1,4 @@
+import { BoksPacketOptions } from '../_BoksPacketBase';
 import { BoksRXPacket } from '@/protocol/uplink/_BoksRXPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
 
@@ -11,7 +12,7 @@ export class NotifyNfcTagRegisteredPacket extends BoksRXPacket {
     super(NotifyNfcTagRegisteredPacket.opcode, raw);
   }
 
-  static fromRaw(payload: Uint8Array): NotifyNfcTagRegisteredPacket {
+  static fromRaw(payload: Uint8Array, _options?: BoksPacketOptions): NotifyNfcTagRegisteredPacket {
     return new NotifyNfcTagRegisteredPacket(payload);
   }
 }

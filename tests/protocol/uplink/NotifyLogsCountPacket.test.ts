@@ -26,6 +26,8 @@ describe('NotifyLogsCountPacket', () => {
     expect(json).toStrictEqual({
         "count": 256,
         "opcode": 121,
+      "validChecksum": null,
+
       });
   });
 });

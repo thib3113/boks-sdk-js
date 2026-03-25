@@ -1,3 +1,4 @@
+import { BoksPacketOptions } from '../_BoksPacketBase';
 import { BoksRXPacket } from '@/protocol/uplink/_BoksRXPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
 
@@ -12,7 +13,7 @@ export class NotifyScaleDisconnectedPacket extends BoksRXPacket {
     super(NotifyScaleDisconnectedPacket.opcode, raw);
   }
 
-  static fromRaw(payload: Uint8Array): NotifyScaleDisconnectedPacket {
+  static fromRaw(payload: Uint8Array, _options?: BoksPacketOptions): NotifyScaleDisconnectedPacket {
     return new NotifyScaleDisconnectedPacket(payload);
   }
 }

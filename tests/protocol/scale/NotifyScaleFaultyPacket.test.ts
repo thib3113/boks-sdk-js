@@ -28,6 +28,8 @@ describe('NotifyScaleFaultyPacket', () => {
           2,
         ]),
         "opcode": 186,
+      "validChecksum": null,
+
       });
   });
 });

@@ -30,6 +30,8 @@ describe('CodeKeyValidHistoryPacket', () => {
         "age": 10,
         "code": "123456",
         "opcode": 135,
+      "validChecksum": null,
+
       });
   });
 });

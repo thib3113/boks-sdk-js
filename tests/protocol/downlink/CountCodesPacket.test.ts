@@ -26,6 +26,8 @@ describe('CountCodesPacket', () => {
     const json = packet.toJSON();
     expect(json).toStrictEqual({
         "opcode": 20,
+      "validChecksum": null,
+
       });
   });
 });

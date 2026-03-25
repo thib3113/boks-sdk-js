@@ -1,3 +1,4 @@
+import { BoksPacketOptions } from '../_BoksPacketBase';
 import { AuthPacket, AuthPacketProps } from '@/protocol/downlink/_AuthPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
 import { PayloadMapper, PayloadPinCode } from '@/protocol/decorators';
@@ -23,11 +24,9 @@ export class SingleToMultiCodePacket extends AuthPacket {
     this.pin = props.pin;
   }
 
-  static fromRaw(payload: Uint8Array): SingleToMultiCodePacket {
+  static fromRaw(payload: Uint8Array, options?: BoksPacketOptions): SingleToMultiCodePacket {
     const data = PayloadMapper.parse<SingleToMultiCodePacketProps>(
-      SingleToMultiCodePacket,
-      payload
-    );
+      SingleToMultiCodePacket, payload, options);
     return new SingleToMultiCodePacket(data, payload);
   }
 }

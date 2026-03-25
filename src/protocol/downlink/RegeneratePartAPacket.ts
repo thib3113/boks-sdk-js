@@ -1,3 +1,4 @@
+import { BoksPacketOptions } from '../_BoksPacketBase';
 import { PayloadMapper, PayloadHexString } from '@/protocol/decorators';
 import { AuthPacket, AuthPacketProps } from '@/protocol/downlink/_AuthPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
@@ -24,8 +25,8 @@ export class RegeneratePartAPacket extends AuthPacket {
     this.part = props.part as string;
   }
 
-  static fromRaw(payload: Uint8Array): RegeneratePartAPacket {
-    const data = PayloadMapper.parse<RegeneratePartAPacketProps>(RegeneratePartAPacket, payload);
+  static fromRaw(payload: Uint8Array, options?: BoksPacketOptions): RegeneratePartAPacket {
+    const data = PayloadMapper.parse<RegeneratePartAPacketProps>(RegeneratePartAPacket, payload, options);
     return new RegeneratePartAPacket(data, payload);
   }
 }

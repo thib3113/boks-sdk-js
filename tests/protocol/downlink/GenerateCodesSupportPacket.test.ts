@@ -81,6 +81,8 @@ describe('GenerateCodesSupportPacket', () => {
       expect(json).toStrictEqual({
           "opcode": 21,
           "seed": validSeedHex,
+        "validChecksum": null,
+
         });
     });
   });

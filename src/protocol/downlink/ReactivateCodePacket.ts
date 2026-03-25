@@ -1,3 +1,4 @@
+import { BoksPacketOptions } from '../_BoksPacketBase';
 import { AuthPacket, AuthPacketProps } from '@/protocol/downlink/_AuthPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
 import { PayloadMapper, PayloadPinCode } from '@/protocol/decorators';
@@ -23,8 +24,8 @@ export class ReactivateCodePacket extends AuthPacket {
     this.pin = props.pin;
   }
 
-  static fromRaw(payload: Uint8Array): ReactivateCodePacket {
-    const data = PayloadMapper.parse<ReactivateCodePacketProps>(ReactivateCodePacket, payload);
+  static fromRaw(payload: Uint8Array, options?: BoksPacketOptions): ReactivateCodePacket {
+    const data = PayloadMapper.parse<ReactivateCodePacketProps>(ReactivateCodePacket, payload, options);
     return new ReactivateCodePacket(data, payload);
   }
 }
