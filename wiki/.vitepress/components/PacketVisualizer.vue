@@ -29,10 +29,12 @@ const t = computed(() => {
     lengthTooShort: isFr ? 'Paquet trop court en fonction de sa taille' : 'Packet length too short based on length byte',
     invalidChecksum: isFr ? 'Somme de contrôle invalide' : 'Invalid checksum',
     missingChecksum: isFr ? 'Somme de contrôle manquante' : 'Missing checksum'
-  })
+  }
+})
 
 const getOpcodeName = (opcode: number): string => {
   return BoksOpcode[opcode] || `UNKNOWN_OPCODE (0x${opcode.toString(16).padStart(2, '0').toUpperCase()})`;
+}
 
 const rawHex = ref('c30700020cffd7')
 
@@ -44,7 +46,8 @@ const rawHexInput = computed({
   set: (val: string) => {
     // Strip non-hex characters and lowercase
     rawHex.value = val.replace(/[^0-9a-fA-F]/g, '').toLowerCase()
-  })
+  }
+})
 
 const handleScroll = () => {
   if (inputRef.value && overlayRef.value) {
@@ -361,19 +364,7 @@ const packetData = computed(() => {
   margin-bottom: 1rem;
 }
 
-  display: flex;
-  margin-bottom: 1.5rem;
-  padding: 1rem;
-  background: var(--vp-c-bg);
-  border-radius: 6px;
-  border: 1px solid var(--vp-c-divider);
-}
 
-  font-family: monospace;
-  font-size: 1.1rem;
-  font-weight: bold;
-}
-}
 
 .detail-table {
   width: 100%;
