@@ -5,7 +5,6 @@ import { BoksProtocolError, BoksProtocolErrorId } from '../../errors/BoksProtoco
 import { BoksExpectedReason } from '../../errors/BoksExpectedReason';
 import { EMPTY_BUFFER, PACKET_HEADER_SIZE, PACKET_MIN_HEADER_SIZE } from '../constants';
 import { hexToBytes, bytesToHex } from '../../utils/converters';
-import { BoksPacket } from '../_BoksPacketBase';
 
 /**
  * Metadata key used to store field definitions on the class constructor.
@@ -403,14 +402,13 @@ export class PayloadMapper {
           `;
           break;
         case 'pin_code':
-          // Inline validation for 6-char PIN
+          // Inline validation for 6-char PIN (Optimization: avoid subarray allocation)
           fnBody += `
-             const p = payload.subarray(${o}, ${o} + 6);
-             const s = String.fromCharCode(p[0], p[1], p[2], p[3], p[4], p[5]).toUpperCase();
+             const s = String.fromCharCode(payload[${o}], payload[${o + 1}], payload[${o + 2}], payload[${o + 3}], payload[${o + 4}], payload[${o + 5}]).toUpperCase();
              const isId = ${field.allowIds} && (s.startsWith('MC') || s.startsWith('UC'));
 
              for(let i=0; i<6; i++) {
-               const c = p[i];
+               const c = payload[${o} + i];
                const isStd = (c >= 48 && c <= 57) || c === 65 || c === 66;
                if (isStd) continue;
                
@@ -842,7 +840,7 @@ export class PayloadMapper {
     if (opcode !== undefined && payload.length >= PACKET_MIN_HEADER_SIZE && payload[0] === opcode) {
       const lengthIncludesHeader = (targetClass as any).lengthIncludesHeader ?? false;
       const lengthByte = payload[1];
-      
+
       // Calculate where the data should be based on the protocol rules
       const payloadLength = lengthIncludesHeader ? lengthByte - PACKET_HEADER_SIZE : lengthByte;
 

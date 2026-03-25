@@ -1,4 +1,10 @@
-import { BoksOpcode, EMPTY_BUFFER, PACKET_HEADER_SIZE, PACKET_MIN_HEADER_SIZE, CHECKSUM_MASK } from '@/protocol/constants';
+import {
+  BoksOpcode,
+  EMPTY_BUFFER,
+  PACKET_HEADER_SIZE,
+  PACKET_MIN_HEADER_SIZE,
+  CHECKSUM_MASK
+} from '@/protocol/constants';
 import { PayloadMapper } from '@/protocol/decorators';
 import { calculateChecksum } from '@/utils/converters';
 import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';

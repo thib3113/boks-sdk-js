@@ -140,3 +140,6 @@
 ## 2025-10-26 - Event Dispatch Loop Overhead
 **Learning:** Iterating through the listeners Set and filter arrays using native array/set methods like `.forEach()`, `.some()` and `.includes()` creates substantial callback function allocations and context-switching overhead in hot paths such as packet handling. Refactoring `emitClientEvent` and `emit` to use standard `for...of` over the listeners `Set` and an explicit `for` loop over the filters provides a ~3.5x performance boost (75ms down to 21ms for 100k invocations).
 **Action:** When creating high-frequency event emitters or packet routers, avoid higher-order array and set functions like `.forEach` and `.some` and prefer raw `for` loops to reduce allocation and iteration overhead.
+\n## 2026-03-25 - JIT Array Validation Overhead
+**Learning:** In dynamically generated JIT functions (`compileParser`), allocating a `Uint8Array.subarray` view simply to pass bytes sequentially to `String.fromCharCode` when parsing small, fixed-length strings (like a 6-character PIN code) incurs unnecessary object allocation and garbage collection pauses.
+**Action:** When extracting short, fixed-length ASCII strings from an array within hot dynamic paths, access array indices directly (e.g., `payload[o], payload[o+1]`) instead of creating intermediate views via `subarray()`.
