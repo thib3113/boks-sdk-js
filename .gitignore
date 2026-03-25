@@ -47,3 +47,8 @@ test_output.txt
 .jules/diff.patch
 junit.xml
 dist/\n*.py
+target/
+coverage/
+node_modules/
+__pycache__/
+.pnpm-store/

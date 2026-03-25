@@ -241,7 +241,7 @@ export class BoksPacketFactory {
   ): BoksPacket {
     const Ctor = this.getConstructor(opcode);
     if (!Ctor) {
-      return UnknownPacket.fromUnknownPayload(opcode, payload);
+      return UnknownPacket.fromUnknownPayload(opcode, payload, raw);
     }
 
     return Ctor.fromRaw(payload, options);

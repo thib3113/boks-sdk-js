@@ -7,6 +7,9 @@ import { BoksOpcode, EMPTY_BUFFER } from '@/protocol/constants';
  * Command to get the scale's MAC address.
  */
 export class ScaleGetMacPacket extends BoksPacket {
+    constructor(raw?: Uint8Array) {
+    super(raw);
+  }
   static readonly opcode = BoksOpcode.SCALE_GET_MAC_ADDRESS_BOKS;
   get opcode() {
     return ScaleGetMacPacket.opcode;

@@ -6,6 +6,9 @@ import { BoksOpcode, EMPTY_BUFFER } from '@/protocol/constants';
  * Command to get the number of logs stored.
  */
 export class GetLogsCountPacket extends BoksPacket {
+    constructor(raw?: Uint8Array) {
+    super(raw);
+  }
   static readonly opcode = BoksOpcode.GET_LOGS_COUNT;
   get opcode() {
     return GetLogsCountPacket.opcode;

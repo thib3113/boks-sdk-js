@@ -7,6 +7,9 @@ import { BoksOpcode, EMPTY_BUFFER } from '@/protocol/constants';
  * Command to request the scale to reconnect.
  */
 export class ScaleReconnectPacket extends BoksPacket {
+    constructor(raw?: Uint8Array) {
+    super(raw);
+  }
   static readonly opcode = BoksOpcode.SCALE_RECONNECT;
   get opcode() {
     return ScaleReconnectPacket.opcode;
