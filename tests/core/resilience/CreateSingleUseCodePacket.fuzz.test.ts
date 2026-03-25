@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import fc from 'fast-check';
 import { CreateSingleUseCodePacket } from '../../../src/protocol/downlink/CreateSingleUseCodePacket';
 import { BoksProtocolError } from '../../../src/errors/BoksProtocolError';
+import { buildMockRawPacket } from '../../../utils/packet-builder';
 
 describe('CreateSingleUseCodePacket Resilience (Fuzzing)', () => {
   it('FEATURE REGRESSION: should securely reject invalid constructor arguments with BoksProtocolError', () => {

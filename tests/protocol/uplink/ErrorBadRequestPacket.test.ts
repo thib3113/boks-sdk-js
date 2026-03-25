@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { ErrorBadRequestPacket } from '@/protocol/uplink/ErrorBadRequestPacket';
 import { BoksOpcode } from '@/protocol/constants';
+import { buildMockRawPacket } from '../../../utils/packet-builder';
 
 describe('ErrorBadRequestPacket', () => {
   it('should parse correctly', () => {

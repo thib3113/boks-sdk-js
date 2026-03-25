@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { BlockResetHistoryPacket } from '@/protocol/uplink/history/BlockResetHistoryPacket';
 import { BoksOpcode } from '@/protocol/constants';
 import { bytesToHex } from '@/utils/converters';
+import { buildMockRawPacket } from '../../../../utils/packet-builder';
 
 describe('BlockResetHistoryPacket', () => {
   it('should parse correctly with age and info', () => {

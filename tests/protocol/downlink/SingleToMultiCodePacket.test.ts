@@ -3,6 +3,7 @@ import { describe, it, expect } from 'vitest';
 import { SingleToMultiCodePacket } from '@/protocol/downlink/SingleToMultiCodePacket';
 import { BoksOpcode } from '@/protocol/constants';
 import { bytesToHex, stringToBytes } from '@/utils/converters';
+import { buildMockRawPacket } from '../../../utils/packet-builder';
 
 describe('SingleToMultiCodePacket', () => {
   const validKey = '12345678';

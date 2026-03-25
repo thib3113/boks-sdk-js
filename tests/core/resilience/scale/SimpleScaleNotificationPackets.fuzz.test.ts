@@ -13,6 +13,7 @@ import { ScaleReconnectPacket } from '../../../../src/protocol/scale/ScaleReconn
 import { ScaleTareEmptyPacket } from '../../../../src/protocol/scale/ScaleTareEmptyPacket';
 import { ScaleTareLoadedPacket } from '../../../../src/protocol/scale/ScaleTareLoadedPacket';
 import { BoksOpcode } from '../../../../src/protocol/constants';
+import { buildMockRawPacket } from '../../../../utils/packet-builder';
 
 describe('SimpleScaleNotificationPackets Resilience (Fuzzing)', () => {
   it('FEATURE REGRESSION: NotifyScaleBondingErrorPacket should safely parse error code from first byte or default to 0', () => {

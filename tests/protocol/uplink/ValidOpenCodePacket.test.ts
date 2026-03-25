@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { ValidOpenCodePacket } from '@/protocol/uplink/ValidOpenCodePacket';
 import { BoksOpcode } from '@/protocol/constants';
+import { buildMockRawPacket } from '../../../utils/packet-builder';
 
 describe('ValidOpenCodePacket', () => {
   it('should parse correctly', () => {

@@ -3,6 +3,7 @@ import { describe, it, expect } from 'vitest';
 import { AnswerDoorStatusPacket } from '@/protocol/uplink/AnswerDoorStatusPacket';
 import { BoksOpcode } from '@/protocol/constants';
 import { bytesToHex } from '@/utils/converters';
+import { buildMockRawPacket } from '../../../utils/packet-builder';
 
 describe('AnswerDoorStatusPacket', () => {
   it('should detect OPEN state (inv=false, status=true)', () => {

@@ -3,6 +3,7 @@ import { describe, it, expect } from 'vitest';
 import { MasterCodeEditPacket } from '@/protocol/downlink/MasterCodeEditPacket';
 import { BoksOpcode } from '@/protocol/constants';
 import { bytesToHex, stringToBytes } from '@/utils/converters';
+import { buildMockRawPacket } from '../../../utils/packet-builder';
 
 describe('MasterCodeEditPacket', () => {
   const validKey = '12345678';

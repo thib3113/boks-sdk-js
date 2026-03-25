@@ -22,6 +22,7 @@ import { ScalePrepareDfuPacket } from '../../../../src/protocol/scale/ScalePrepa
 import { ScaleReconnectPacket } from '../../../../src/protocol/scale/ScaleReconnectPacket';
 import { ScaleTareEmptyPacket } from '../../../../src/protocol/scale/ScaleTareEmptyPacket';
 import { ScaleTareLoadedPacket } from '../../../../src/protocol/scale/ScaleTareLoadedPacket';
+import { buildMockRawPacket } from '../../../../utils/packet-builder';
 
 const SCALE_PACKETS = [
   NotifyMacAddressBoksScalePacket,

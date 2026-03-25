@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { ScaleReconnectPacket } from '@/protocol/scale/ScaleReconnectPacket';
 import { BoksOpcode } from '@/protocol/constants';
 import { bytesToHex } from '@/utils/converters';
+import { buildMockRawPacket } from '../../../utils/packet-builder';
 
 describe('ScaleReconnectPacket', () => {
   it('should construct and encode correctly', () => {

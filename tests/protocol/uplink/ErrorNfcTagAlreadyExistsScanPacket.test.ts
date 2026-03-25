@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { ErrorNfcTagAlreadyExistsScanPacket } from '@/protocol/uplink/ErrorNfcTagAlreadyExistsScanPacket';
 import { BoksOpcode } from '@/protocol/constants';
+import { buildMockRawPacket } from '../../../utils/packet-builder';
 
 describe('ErrorNfcTagAlreadyExistsScanPacket', () => {
   it('should parse correctly', () => {

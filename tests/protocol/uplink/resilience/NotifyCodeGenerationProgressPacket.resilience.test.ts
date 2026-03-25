@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import fc from 'fast-check';
 import { NotifyCodeGenerationProgressPacket } from '@/protocol/uplink/NotifyCodeGenerationProgressPacket';
 import { BoksOpcode } from '@/protocol/constants';
+import { buildMockRawPacket } from '../../../../utils/packet-builder';
 
 describe('NotifyCodeGenerationProgressPacket - Resilience & Edge Cases', () => {
   describe('fromRaw()', () => {

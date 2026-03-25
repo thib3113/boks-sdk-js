@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { NotifyNfcTagFoundPacket } from '@/protocol/uplink/NotifyNfcTagFoundPacket';
 import { BoksOpcode } from '@/protocol/constants';
 import { bytesToHex } from '@/utils/converters';
+import { buildMockRawPacket } from '../../../utils/packet-builder';
 
 describe('NotifyNfcTagFoundPacket', () => {
   it('should parse correctly', () => {

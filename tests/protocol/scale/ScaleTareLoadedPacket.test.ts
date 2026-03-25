@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { ScaleTareLoadedPacket } from '@/protocol/scale/ScaleTareLoadedPacket';
 import { BoksOpcode } from '@/protocol/constants';
 import { bytesToHex } from '@/utils/converters';
+import { buildMockRawPacket } from '../../../utils/packet-builder';
 
 describe('ScaleTareLoadedPacket', () => {
   it('should construct and encode correctly with data', () => {

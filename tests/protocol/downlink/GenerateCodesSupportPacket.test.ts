@@ -3,6 +3,7 @@ import { GenerateCodesSupportPacket } from '@/protocol/downlink/GenerateCodesSup
 import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';
 import { BoksOpcode } from '@/protocol/constants';
 import { bytesToHex } from '@/utils/converters';
+import { buildMockRawPacket } from '../../../utils/packet-builder';
 
 describe('GenerateCodesSupportPacket', () => {
   const validSeedHex = '000102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F';

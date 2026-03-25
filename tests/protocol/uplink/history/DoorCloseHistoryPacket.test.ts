@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { DoorCloseHistoryPacket } from '@/protocol/uplink/history/DoorCloseHistoryPacket';
 import { BoksOpcode } from '@/protocol/constants';
 import { bytesToHex } from '@/utils/converters';
+import { buildMockRawPacket } from '../../../../utils/packet-builder';
 
 describe('DoorCloseHistoryPacket', () => {
   it('should parse correctly with age', () => {

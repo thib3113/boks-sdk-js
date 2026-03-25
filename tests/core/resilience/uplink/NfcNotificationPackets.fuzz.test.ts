@@ -8,6 +8,7 @@ import { NotifyNfcTagRegisteredErrorAlreadyExistsPacket } from '../../../../src/
 import { NotifyNfcTagUnregisteredPacket } from '../../../../src/protocol/uplink/NotifyNfcTagUnregisteredPacket';
 import { ErrorNfcTagAlreadyExistsScanPacket } from '../../../../src/protocol/uplink/ErrorNfcTagAlreadyExistsScanPacket';
 import { ErrorNfcScanTimeoutPacket } from '../../../../src/protocol/uplink/ErrorNfcScanTimeoutPacket';
+import { buildMockRawPacket } from '../../../../utils/packet-builder';
 
 describe('NfcNotificationPackets Resilience (Fuzzing)', () => {
   it('FEATURE REGRESSION: NotifyNfcTagFoundPacket should safely handle arbitrary payload lengths and parse uid', () => {

@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { PowerOnHistoryPacket } from '@/protocol/uplink/history/PowerOnHistoryPacket';
 import { BoksOpcode } from '@/protocol/constants';
 import { bytesToHex } from '@/utils/converters';
+import { buildMockRawPacket } from '../../../../utils/packet-builder';
 
 describe('PowerOnHistoryPacket', () => {
   it('should parse correctly with age', () => {

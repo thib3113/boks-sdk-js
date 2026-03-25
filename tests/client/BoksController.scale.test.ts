@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, Mock } from 'vitest';
 import { BoksController } from '@/client/BoksController';
 import { BoksClient } from '@/client/BoksClient';
 import { BoksOpcode, NotifyScaleMeasureWeightPacket } from '@/protocol';
+import { buildMockRawPacket } from '../../utils/packet-builder';
 
 // Mock BoksClient
 vi.mock('@/client/BoksClient');

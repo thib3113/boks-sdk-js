@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { ErrorHistoryPacket } from '@/protocol/uplink/history/ErrorHistoryPacket';
 import { BoksOpcode } from '@/protocol/constants';
 import { bytesToHex } from '@/utils/converters';
+import { buildMockRawPacket } from '../../../../utils/packet-builder';
 
 describe('ErrorHistoryPacket', () => {
   it('should parse correctly with age and error code', () => {

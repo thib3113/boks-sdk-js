@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import fc from 'fast-check';
 import { ScaleBondPacket } from '../../../../src/protocol/scale/ScaleBondPacket';
 import { BoksOpcode } from '../../../../src/protocol/constants';
+import { buildMockRawPacket } from '../../../../utils/packet-builder';
 
 describe('ScaleBondPacket Resilience (Fuzzing)', () => {
   it('FEATURE REGRESSION: should safely parse completely arbitrary payloads without crashing', () => {

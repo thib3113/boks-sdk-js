@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import fc from 'fast-check';
 import { CodeKeyValidHistoryPacket } from '../../../../../src/protocol/uplink/history/CodeKeyValidHistoryPacket';
 import { BoksProtocolError } from '../../../../../src/errors/BoksProtocolError';
+import { buildMockRawPacket } from '../../../../../utils/packet-builder';
 
 describe('CodeKeyValidHistoryPacket Resilience (Fuzzing)', () => {
   it('FEATURE REGRESSION: should securely reject malformed binary payloads in fromRaw', () => {

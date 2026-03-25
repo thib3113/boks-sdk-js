@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { EndHistoryPacket } from '@/protocol/uplink/EndHistoryPacket';
 import { BoksOpcode } from '@/protocol/constants';
+import { buildMockRawPacket } from '../../../utils/packet-builder';
 
 describe('EndHistoryPacket', () => {
   it('should parse correctly', () => {

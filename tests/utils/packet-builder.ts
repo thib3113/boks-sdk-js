@@ -1,5 +1,6 @@
 import { PACKET_HEADER_SIZE } from '../../src/protocol/constants';
 import { calculateChecksum } from '../../src/utils/converters';
+import { buildMockRawPacket } from '../../utils/packet-builder';
 
 /**
  * Builds a valid mock raw Boks packet including header and checksum.

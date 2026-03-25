@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { NotifyScaleBondingErrorPacket } from '@/protocol/scale/NotifyScaleBondingErrorPacket';
 import { BoksOpcode } from '@/protocol/constants';
 import { bytesToHex } from '@/utils/converters';
+import { buildMockRawPacket } from '../../../utils/packet-builder';
 
 describe('NotifyScaleBondingErrorPacket', () => {
   it('should parse correctly with error code', () => {

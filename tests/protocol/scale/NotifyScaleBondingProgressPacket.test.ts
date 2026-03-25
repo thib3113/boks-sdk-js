@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { NotifyScaleBondingProgressPacket } from '@/protocol/scale/NotifyScaleBondingProgressPacket';
 import { BoksOpcode } from '@/protocol/constants';
 import { bytesToHex } from '@/utils/converters';
+import { buildMockRawPacket } from '../../../utils/packet-builder';
 
 describe('NotifyScaleBondingProgressPacket', () => {
   it('should parse correctly with progress', () => {

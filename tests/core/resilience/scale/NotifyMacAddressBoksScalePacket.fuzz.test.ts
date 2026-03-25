@@ -3,6 +3,7 @@ import { describe, it, expect } from 'vitest';
 import fc from 'fast-check';
 import { NotifyMacAddressBoksScalePacket } from '../../../../src/protocol/scale/NotifyMacAddressBoksScalePacket';
 import { BoksOpcode } from '../../../../src/protocol/constants';
+import { buildMockRawPacket } from '../../../../utils/packet-builder';
 
 describe('NotifyMacAddressBoksScalePacket Resilience (Fuzzing)', () => {
   it('should not crash on arbitrary random payloads', () => {

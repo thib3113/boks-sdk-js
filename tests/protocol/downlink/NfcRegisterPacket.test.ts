@@ -3,6 +3,7 @@ import { describe, it, expect } from 'vitest';
 import { NfcRegisterPacket } from '@/protocol/downlink/NfcRegisterPacket';
 import { BoksOpcode } from '@/protocol/constants';
 import { bytesToHex, stringToBytes } from '@/utils/converters';
+import { buildMockRawPacket } from '../../../utils/packet-builder';
 
 describe('NfcRegisterPacket', () => {
   const validKey = '12345678';

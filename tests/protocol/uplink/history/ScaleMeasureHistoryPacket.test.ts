@@ -3,6 +3,7 @@ import { ScaleMeasureHistoryPacket } from '@/protocol/uplink/history/ScaleMeasur
 import { BoksOpcode } from '@/protocol/constants';
 import { BoksProtocolError } from '@/errors/BoksProtocolError';
 import { bytesToHex } from '@/utils/converters';
+import { buildMockRawPacket } from '../../../../utils/packet-builder';
 
 describe('ScaleMeasureHistoryPacket', () => {
   it('should parse correctly with age and data', () => {

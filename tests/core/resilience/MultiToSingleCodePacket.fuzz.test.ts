@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import fc from 'fast-check';
 import { MultiToSingleCodePacket } from '../../../src/protocol/downlink/MultiToSingleCodePacket';
 import { BoksProtocolError } from '../../../src/errors/BoksProtocolError';
+import { buildMockRawPacket } from '../../../utils/packet-builder';
 
 describe('MultiToSingleCodePacket Resilience (Fuzzing)', () => {
   it('FEATURE REGRESSION: should securely reject invalid constructor arguments with BoksProtocolError', () => {

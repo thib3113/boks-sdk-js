@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import fc from 'fast-check';
 import { CountCodesPacket } from '../../../src/protocol/downlink/CountCodesPacket';
+import { buildMockRawPacket } from '../../../utils/packet-builder';
 
 describe('CountCodesPacket Resilience (Fuzzing)', () => {
   it('FEATURE REGRESSION: should securely handle malformed binary payloads in fromRaw', () => {

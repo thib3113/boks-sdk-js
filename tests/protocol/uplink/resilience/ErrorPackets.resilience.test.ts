@@ -6,6 +6,7 @@ import { ErrorNfcScanTimeoutPacket } from '@/protocol/uplink/ErrorNfcScanTimeout
 import { ErrorNfcTagAlreadyExistsScanPacket } from '@/protocol/uplink/ErrorNfcTagAlreadyExistsScanPacket';
 import { ErrorUnauthorizedPacket } from '@/protocol/uplink/ErrorUnauthorizedPacket';
 import { BoksOpcode } from '@/protocol/constants';
+import { buildMockRawPacket } from '../../../../utils/packet-builder';
 
 describe('ErrorPackets - Resilience & Edge Cases', () => {
   const PACKETS = [

@@ -3,6 +3,7 @@ import { CreateMultiUseCodePacket } from '@/protocol/downlink/CreateMultiUseCode
 import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';
 import { BoksOpcode } from '@/protocol/constants';
 import { bytesToHex, stringToBytes } from '@/utils/converters';
+import { buildMockRawPacket } from '../../../utils/packet-builder';
 
 describe('CreateMultiUseCodePacket', () => {
   const validKey = '12345678';

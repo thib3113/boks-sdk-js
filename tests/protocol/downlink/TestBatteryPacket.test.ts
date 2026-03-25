@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { TestBatteryPacket } from '@/protocol/downlink/TestBatteryPacket';
 import { BoksOpcode } from '@/protocol/constants';
 import { bytesToHex } from '@/utils/converters';
+import { buildMockRawPacket } from '../../../utils/packet-builder';
 
 describe('TestBatteryPacket', () => {
   it('should construct and encode correctly', () => {

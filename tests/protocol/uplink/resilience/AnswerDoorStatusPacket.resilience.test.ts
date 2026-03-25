@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import fc from 'fast-check';
 import { AnswerDoorStatusPacket } from '@/protocol/uplink/AnswerDoorStatusPacket';
 import { BoksOpcode } from '@/protocol/constants';
+import { buildMockRawPacket } from '../../../../utils/packet-builder';
 
 describe('AnswerDoorStatusPacket - Resilience & Edge Cases', () => {
   describe('fromRaw()', () => {

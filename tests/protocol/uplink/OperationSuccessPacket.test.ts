@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { OperationSuccessPacket } from '@/protocol/uplink/OperationSuccessPacket';
 import { BoksOpcode } from '@/protocol/constants';
+import { buildMockRawPacket } from '../../../utils/packet-builder';
 
 describe('OperationSuccessPacket', () => {
   it('should parse correctly', () => {

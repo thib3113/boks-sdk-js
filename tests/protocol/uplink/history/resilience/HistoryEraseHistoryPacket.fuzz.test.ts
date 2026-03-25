@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import fc from 'fast-check';
 import { HistoryEraseHistoryPacket } from '../../../../../src/protocol/uplink/history/HistoryEraseHistoryPacket';
 import { BoksProtocolError } from '../../../../../src/errors/BoksProtocolError';
+import { buildMockRawPacket } from '../../../../../utils/packet-builder';
 
 describe('HistoryEraseHistoryPacket Resilience (Fuzzing)', () => {
   it('FEATURE REGRESSION: should securely reject malformed binary payloads in fromRaw', () => {

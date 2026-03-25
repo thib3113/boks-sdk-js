@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import fc from 'fast-check';
 import { NotifyNfcTagFoundPacket } from '@/protocol/uplink/NotifyNfcTagFoundPacket';
 import { BoksProtocolError } from '@/errors/BoksProtocolError';
+import { buildMockRawPacket } from '../../../../utils/packet-builder';
 
 describe('NotifyNfcTagFoundPacket - Resilience & Edge Cases', () => {
   describe('fromRaw()', () => {

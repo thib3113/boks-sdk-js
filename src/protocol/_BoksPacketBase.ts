@@ -78,7 +78,7 @@ export abstract class BoksPacket {
     }
     if (data[0] !== opcode) {
       throw new BoksProtocolError(
-        BoksProtocolErrorId.UNEXPECTED_OPCODE,
+        BoksProtocolErrorId.MALFORMED_DATA,
         `Expected opcode ${opcode}, but got ${data[0]}`
       );
     }
@@ -99,7 +99,7 @@ export abstract class BoksPacket {
     }
     if (data[data.length - 1] !== computed) {
       throw new BoksProtocolError(
-        BoksProtocolErrorId.INVALID_CHECKSUM,
+        BoksProtocolErrorId.CHECKSUM_MISMATCH,
         `Checksum mismatch: expected ${computed}, got ${data[data.length - 1]}`
       );
     }

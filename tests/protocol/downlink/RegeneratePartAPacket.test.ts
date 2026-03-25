@@ -3,6 +3,7 @@ import { RegeneratePartAPacket } from '@/protocol/downlink/RegeneratePartAPacket
 import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';
 import { BoksOpcode } from '@/protocol/constants';
 import { bytesToHex, stringToBytes } from '@/utils/converters';
+import { buildMockRawPacket } from '../../../utils/packet-builder';
 
 describe('RegeneratePartAPacket', () => {
   const validKey = '12345678';

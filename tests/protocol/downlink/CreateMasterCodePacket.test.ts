@@ -3,6 +3,7 @@ import { CreateMasterCodePacket } from '@/protocol/downlink/CreateMasterCodePack
 import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';
 import { BoksOpcode } from '@/protocol/constants';
 import { bytesToHex, stringToBytes } from '@/utils/converters';
+import { buildMockRawPacket } from '../../../utils/packet-builder';
 
 describe('CreateMasterCodePacket', () => {
   const validKey = '12345678';

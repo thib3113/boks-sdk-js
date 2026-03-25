@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { NotifyCodeGenerationProgressPacket } from '@/protocol/uplink/NotifyCodeGenerationProgressPacket';
 import { BoksOpcode } from '@/protocol/constants';
 import { bytesToHex } from '@/utils/converters';
+import { buildMockRawPacket } from '../../../utils/packet-builder';
 
 describe('NotifyCodeGenerationProgressPacket', () => {
   it('should parse correctly', () => {

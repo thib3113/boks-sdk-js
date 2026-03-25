@@ -16,6 +16,7 @@ import { NfcRegisteringHistoryPacket } from '@/protocol/uplink/history/NfcRegist
 import { PowerOffHistoryPacket } from '@/protocol/uplink/history/PowerOffHistoryPacket';
 import { PowerOnHistoryPacket } from '@/protocol/uplink/history/PowerOnHistoryPacket';
 import { ScaleMeasureHistoryPacket } from '@/protocol/uplink/history/ScaleMeasureHistoryPacket';
+import { buildMockRawPacket } from '../../../../../utils/packet-builder';
 
 describe('HistoryPackets Resilience (Fuzzing)', () => {
   const classes = [

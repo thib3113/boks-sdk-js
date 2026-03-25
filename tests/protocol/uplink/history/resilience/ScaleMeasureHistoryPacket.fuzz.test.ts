@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import fc from 'fast-check';
 import { ScaleMeasureHistoryPacket } from '../../../../../src/protocol/uplink/history/ScaleMeasureHistoryPacket';
 import { BoksProtocolError } from '../../../../../src/errors/BoksProtocolError';
+import { buildMockRawPacket } from '../../../../../utils/packet-builder';
 
 describe('ScaleMeasureHistoryPacket Resilience (Fuzzing)', () => {
   it('FEATURE REGRESSION: should securely reject malformed binary payloads in fromRaw', () => {

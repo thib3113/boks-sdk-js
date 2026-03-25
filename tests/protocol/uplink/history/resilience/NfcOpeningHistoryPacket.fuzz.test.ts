@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import fc from 'fast-check';
 import { NfcOpeningHistoryPacket } from '../../../../../src/protocol/uplink/history/NfcOpeningHistoryPacket';
 import { BoksProtocolError } from '../../../../../src/errors/BoksProtocolError';
+import { buildMockRawPacket } from '../../../../../utils/packet-builder';
 
 describe('NfcOpeningHistoryPacket Resilience (Fuzzing)', () => {
   it('FEATURE REGRESSION: should securely reject malformed binary payloads in fromRaw', () => {

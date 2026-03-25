@@ -27,6 +27,7 @@ import { SetConfigurationPacket } from '../../../../src/protocol/downlink/SetCon
 import { SingleToMultiCodePacket } from '../../../../src/protocol/downlink/SingleToMultiCodePacket';
 import { TestBatteryPacket } from '../../../../src/protocol/downlink/TestBatteryPacket';
 import { UnregisterNfcTagPacket } from '../../../../src/protocol/downlink/UnregisterNfcTagPacket';
+import { buildMockRawPacket } from '../../../../utils/packet-builder';
 
 const DOWNLINK_PACKETS = [
   AskDoorStatusPacket,

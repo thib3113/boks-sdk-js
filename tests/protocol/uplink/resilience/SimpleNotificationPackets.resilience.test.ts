@@ -9,6 +9,7 @@ import { NotifySetConfigurationSuccessPacket } from '@/protocol/uplink/NotifySet
 import { OperationErrorPacket } from '@/protocol/uplink/OperationErrorPacket';
 import { OperationSuccessPacket } from '@/protocol/uplink/OperationSuccessPacket';
 import { BoksOpcode } from '@/protocol/constants';
+import { buildMockRawPacket } from '../../../../utils/packet-builder';
 
 describe('Simple Notification Packets - Resilience & Edge Cases', () => {
   const PACKETS = [

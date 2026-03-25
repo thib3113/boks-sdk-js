@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { ScaleForgetPacket } from '@/protocol/scale/ScaleForgetPacket';
 import { BoksOpcode } from '@/protocol/constants';
 import { bytesToHex } from '@/utils/converters';
+import { buildMockRawPacket } from '../../../utils/packet-builder';
 
 describe('ScaleForgetPacket', () => {
   it('should construct and encode correctly', () => {

@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import fc from 'fast-check';
 import { NotifyScaleMeasureWeightPacket } from '../../../../src/protocol/scale/NotifyScaleMeasureWeightPacket';
 import { BoksOpcode } from '../../../../src/protocol/constants';
+import { buildMockRawPacket } from '../../../../utils/packet-builder';
 
 describe('NotifyScaleMeasureWeightPacket Resilience (Fuzzing)', () => {
   it('should not crash on arbitrary random payloads', () => {

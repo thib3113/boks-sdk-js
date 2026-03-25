@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { NotifyNfcTagUnregisteredPacket } from '@/protocol/uplink/NotifyNfcTagUnregisteredPacket';
 import { BoksOpcode } from '@/protocol/constants';
+import { buildMockRawPacket } from '../../../utils/packet-builder';
 
 describe('NotifyNfcTagUnregisteredPacket', () => {
   it('should parse correctly', () => {

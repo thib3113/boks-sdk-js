@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { NotifyLogsCountPacket } from '@/protocol/uplink/NotifyLogsCountPacket';
 import { BoksOpcode } from '@/protocol/constants';
 import { bytesToHex } from '@/utils/converters';
+import { buildMockRawPacket } from '../../../utils/packet-builder';
 
 describe('NotifyLogsCountPacket', () => {
   it('should parse correctly', () => {

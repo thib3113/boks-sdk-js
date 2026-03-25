@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { NotifyScaleBondingForgetSuccessPacket } from '@/protocol/scale/NotifyScaleBondingForgetSuccessPacket';
 import { BoksOpcode } from '@/protocol/constants';
+import { buildMockRawPacket } from '../../../utils/packet-builder';
 
 describe('NotifyScaleBondingForgetSuccessPacket', () => {
   it('should parse correctly', () => {

@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { NotifyScaleFaultyPacket } from '@/protocol/scale/NotifyScaleFaultyPacket';
 import { BoksOpcode } from '@/protocol/constants';
 import { bytesToHex } from '@/utils/converters';
+import { buildMockRawPacket } from '../../../utils/packet-builder';
 
 describe('NotifyScaleFaultyPacket', () => {
   it('should parse correctly with data', () => {

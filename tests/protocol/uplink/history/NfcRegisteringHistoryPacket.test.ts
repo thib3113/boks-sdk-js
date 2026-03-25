@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { NfcRegisteringHistoryPacket } from '@/protocol/uplink/history/NfcRegisteringHistoryPacket';
 import { BoksOpcode } from '@/protocol/constants';
 import { bytesToHex } from '@/utils/converters';
+import { buildMockRawPacket } from '../../../../utils/packet-builder';
 
 describe('NfcRegisteringHistoryPacket', () => {
   it('should parse correctly with age and data', () => {

@@ -4,6 +4,7 @@ import { NotifyScaleRawSensorsPacket } from '../../../../src/protocol/scale/Noti
 import { ScaleBondPacket } from '../../../../src/protocol/scale/ScaleBondPacket';
 import { ScaleGetMacPacket } from '../../../../src/protocol/scale/ScaleGetMacPacket';
 import { BoksOpcode } from '../../../../src/protocol/constants';
+import { buildMockRawPacket } from '../../../../utils/packet-builder';
 
 describe('Scale generic packets Resilience (Fuzzing)', () => {
   it('NotifyScaleRawSensorsPacket should handle arbitrary arrays', () => {

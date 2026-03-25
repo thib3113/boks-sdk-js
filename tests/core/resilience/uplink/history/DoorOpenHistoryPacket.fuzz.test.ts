@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import fc from 'fast-check';
 import { DoorOpenHistoryPacket } from '../../../../../src/protocol/uplink/history/DoorOpenHistoryPacket';
 import { BoksProtocolError } from '../../../../../src/errors/BoksProtocolError';
+import { buildMockRawPacket } from '../../../../../utils/packet-builder';
 
 describe('DoorOpenHistoryPacket Resilience (Fuzzing)', () => {
   it('FEATURE REGRESSION: DoorOpenHistoryPacket should safely handle arbitrary payload lengths without native errors', () => {

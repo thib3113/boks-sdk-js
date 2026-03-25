@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { NotifyScaleTareLoadedOkPacket } from '@/protocol/scale/NotifyScaleTareLoadedOkPacket';
 import { BoksOpcode } from '@/protocol/constants';
+import { buildMockRawPacket } from '../../../utils/packet-builder';
 
 describe('NotifyScaleTareLoadedOkPacket', () => {
   it('should parse correctly', () => {

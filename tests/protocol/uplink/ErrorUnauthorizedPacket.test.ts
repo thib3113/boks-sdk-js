@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { ErrorUnauthorizedPacket } from '@/protocol/uplink/ErrorUnauthorizedPacket';
 import { BoksOpcode } from '@/protocol/constants';
+import { buildMockRawPacket } from '../../../utils/packet-builder';
 
 describe('ErrorUnauthorizedPacket', () => {
   it('should parse correctly', () => {

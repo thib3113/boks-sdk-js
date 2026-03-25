@@ -3,6 +3,7 @@ import { CreateSingleUseCodePacket } from '@/protocol/downlink/CreateSingleUseCo
 import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';
 import { BoksOpcode } from '@/protocol/constants';
 import { bytesToHex, stringToBytes } from '@/utils/converters';
+import { buildMockRawPacket } from '../../../utils/packet-builder';
 
 describe('CreateSingleUseCodePacket', () => {
   const validKey = '12345678';

@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { ErrorNfcScanTimeoutPacket } from '@/protocol/uplink/ErrorNfcScanTimeoutPacket';
 import { BoksOpcode } from '@/protocol/constants';
+import { buildMockRawPacket } from '../../../utils/packet-builder';
 
 describe('ErrorNfcScanTimeoutPacket', () => {
   it('should parse correctly', () => {

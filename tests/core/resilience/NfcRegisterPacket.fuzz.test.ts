@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import fc from 'fast-check';
 import { NfcRegisterPacket } from '../../../src/protocol/downlink/NfcRegisterPacket';
 import { BoksProtocolError } from '../../../src/errors/BoksProtocolError';
+import { buildMockRawPacket } from '../../../utils/packet-builder';
 
 describe('NfcRegisterPacket Resilience (Fuzzing)', () => {
   it('FEATURE REGRESSION: should securely reject invalid constructor arguments with BoksProtocolError', () => {

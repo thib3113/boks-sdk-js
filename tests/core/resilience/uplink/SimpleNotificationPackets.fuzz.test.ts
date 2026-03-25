@@ -16,6 +16,7 @@ import { AnswerDoorStatusPacket } from '../../../../src/protocol/uplink/AnswerDo
 import { NotifyDoorStatusPacket } from '../../../../src/protocol/uplink/NotifyDoorStatusPacket';
 import { NotifyCodesCountPacket } from '../../../../src/protocol/uplink/NotifyCodesCountPacket';
 import { NotifyLogsCountPacket } from '../../../../src/protocol/uplink/NotifyLogsCountPacket';
+import { buildMockRawPacket } from '../../../../utils/packet-builder';
 
 describe('SimpleNotificationPackets Resilience (Fuzzing)', () => {
   describe('NotifyCodeGenerationProgressPacket', () => {

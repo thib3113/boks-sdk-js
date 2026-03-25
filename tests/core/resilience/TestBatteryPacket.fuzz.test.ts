@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import fc from 'fast-check';
 import { TestBatteryPacket } from '../../../src/protocol/downlink/TestBatteryPacket';
 import { BoksProtocolError } from '../../../src/errors/BoksProtocolError';
+import { buildMockRawPacket } from '../../../utils/packet-builder';
 
 describe('TestBatteryPacket Resilience (Fuzzing)', () => {
   it('FEATURE REGRESSION: should securely reject malformed binary payloads in fromRaw with BoksProtocolError', () => {

@@ -24,6 +24,7 @@ import { NotifySetConfigurationSuccessPacket } from '../../../../src/protocol/up
 import { OperationErrorPacket } from '../../../../src/protocol/uplink/OperationErrorPacket';
 import { OperationSuccessPacket } from '../../../../src/protocol/uplink/OperationSuccessPacket';
 import { ValidOpenCodePacket } from '../../../../src/protocol/uplink/ValidOpenCodePacket';
+import { buildMockRawPacket } from '../../../../utils/packet-builder';
 
 const UPLINK_PACKETS = [
   AnswerDoorStatusPacket,

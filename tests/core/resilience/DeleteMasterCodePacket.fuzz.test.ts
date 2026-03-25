@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import fc from 'fast-check';
 import { DeleteMasterCodePacket } from '../../../src/protocol/downlink/DeleteMasterCodePacket';
 import { BoksProtocolError } from '../../../src/errors/BoksProtocolError';
+import { buildMockRawPacket } from '../../../utils/packet-builder';
 
 describe('DeleteMasterCodePacket Resilience (Fuzzing)', () => {
   it('FEATURE REGRESSION: should securely reject invalid constructor arguments with BoksProtocolError', () => {

@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { RebootPacket } from '@/protocol/downlink/RebootPacket';
 import { BoksOpcode } from '@/protocol/constants';
 import { bytesToHex } from '@/utils/converters';
+import { buildMockRawPacket } from '../../../utils/packet-builder';
 
 describe('RebootPacket', () => {
   it('should construct and encode correctly', () => {

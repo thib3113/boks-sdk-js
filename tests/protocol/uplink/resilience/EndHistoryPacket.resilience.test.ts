@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import fc from 'fast-check';
 import { EndHistoryPacket } from '@/protocol/uplink/EndHistoryPacket';
 import { BoksOpcode } from '@/protocol/constants';
+import { buildMockRawPacket } from '../../../../utils/packet-builder';
 
 describe('EndHistoryPacket - Resilience & Edge Cases', () => {
   describe('fromRaw()', () => {

@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import fc from 'fast-check';
 import { ScaleGetMacPacket } from '../../../../src/protocol/scale/ScaleGetMacPacket';
 import { BoksOpcode } from '../../../../src/protocol/constants';
+import { buildMockRawPacket } from '../../../../utils/packet-builder';
 
 describe('ScaleGetMacPacket Resilience (Fuzzing)', () => {
   it('FEATURE REGRESSION: should safely parse completely arbitrary payloads without crashing', () => {

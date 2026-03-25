@@ -3,6 +3,7 @@ import { NfcOpeningHistoryPacket } from '@/protocol/uplink/history/NfcOpeningHis
 import { BoksOpcode } from '@/protocol/constants';
 import { BoksProtocolError } from '@/errors/BoksProtocolError';
 import { bytesToHex } from '@/utils/converters';
+import { buildMockRawPacket } from '../../../../utils/packet-builder';
 
 describe('NfcOpeningHistoryPacket', () => {
   it('should parse correctly with age, type and uid', () => {

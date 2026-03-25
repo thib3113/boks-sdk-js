@@ -3,6 +3,7 @@ import { DeleteMasterCodePacket } from '@/protocol/downlink/DeleteMasterCodePack
 import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';
 import { BoksOpcode } from '@/protocol/constants';
 import { bytesToHex, stringToBytes } from '@/utils/converters';
+import { buildMockRawPacket } from '../../../utils/packet-builder';
 
 describe('DeleteMasterCodePacket', () => {
   const validKey = '12345678';
