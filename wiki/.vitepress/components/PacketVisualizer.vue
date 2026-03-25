@@ -1,5 +1,4 @@
-<script setup lang="ts">
-import { ref, computed } from 'vue'
+<script setup lang="ts">import { ref, computed } from 'vue'
 import { useData } from 'vitepress'
 import { BoksPacketFactory } from '../../../src/protocol/BoksPacketFactory'
 import { PayloadMapper } from '../../../src/protocol/decorators/PayloadMapper'
@@ -26,13 +25,14 @@ const t = computed(() => {
     label: 'Label',
     value: isFr ? 'Valeur' : 'Value',
     incompleteHex: isFr ? 'Longueur de chaîne hexadécimale incomplète.' : 'Incomplete hexadecimal string length.',
-    tooShort: isFr ? 'Paquet trop court (minimum 3 octets : Opcode, Taille, Checksum).' : 'Packet too short (minimum 3 bytes: Opcode, Length, Checksum).'
-  }
-})
+    tooShort: isFr ? 'Paquet trop court (minimum 3 octets : Opcode, Taille, Checksum).' : 'Packet too short (minimum 3 bytes: Opcode, Length, Checksum).',
+    lengthTooShort: isFr ? 'Paquet trop court en fonction de sa taille' : 'Packet length too short based on length byte',
+    invalidChecksum: isFr ? 'Somme de contrôle invalide' : 'Invalid checksum',
+    missingChecksum: isFr ? 'Somme de contrôle manquante' : 'Missing checksum'
+  })
 
 const getOpcodeName = (opcode: number): string => {
   return BoksOpcode[opcode] || `UNKNOWN_OPCODE (0x${opcode.toString(16).padStart(2, '0').toUpperCase()})`;
-}
 
 const rawHex = ref('c30700020cffd7')
 
@@ -44,8 +44,7 @@ const rawHexInput = computed({
   set: (val: string) => {
     // Strip non-hex characters and lowercase
     rawHex.value = val.replace(/[^0-9a-fA-F]/g, '').toLowerCase()
-  }
-})
+  })
 
 const handleScroll = () => {
   if (inputRef.value && overlayRef.value) {
@@ -146,6 +145,8 @@ const packetData = computed(() => {
   if (cursor < hexStr.length) {
     const checksumCharsAvailable = Math.min(2, hexStr.length - cursor)
     takeChars(checksumCharsAvailable, { label: t.value.checksum, color: '#FFC107' })
+  } else {
+    segments.push({ text: '??', label: t.value.missingChecksum, color: '#FFC107' })
   }
 
   // 5. Extra bytes
@@ -157,11 +158,37 @@ const packetData = computed(() => {
   let packetObj: any = null
   let parseError = ''
 
-  if (hexStr.length >= 6 && hexStr.length % 2 === 0) {
+  if (hexStr.length >= 4 && hexStr.length % 2 === 0) {
     try {
-      packetObj = BoksPacketFactory.createFromPayload(hexToBytes(hexStr))
+      let packetHex = hexStr;
+      let missingChecksum = false;
+      const expectedTotalHexLength = lengthIncludesHeader ? (lengthByte) * 2 : (lengthByte + 3) * 2;
+
+      if (hexStr.length === expectedTotalHexLength - 2) {
+        missingChecksum = true;
+        packetHex += '00';
+      }
+
+      try {
+         packetObj = BoksPacketFactory.createFromPayload(hexToBytes(packetHex))
+      } catch (e: any) {
+         if (missingChecksum && e.message === 'Invalid checksum') {
+            // We know it's invalid because we appended 00, but we still want the parsed payload
+            // BoksPacketFactory throws checksum error BEFORE returning the packet.
+            // So we can fallback to parsing via PayloadMapper to populate values.
+            if (packetClass) {
+               packetObj = new (packetClass as any)({}, hexToBytes(packetHex));
+               Object.assign(packetObj, PayloadMapper.parse(packetClass, hexToBytes(packetHex)));
+            }
+            parseError = t.value.missingChecksum;
+         } else {
+            throw e;
+         }
+      }
     } catch (e: any) {
       parseError = e.message
+      if (parseError === 'Packet length too short based on length byte') parseError = t.value.lengthTooShort
+      if (parseError === 'Invalid checksum') parseError = t.value.invalidChecksum
     }
   } else if (hexStr.length % 2 !== 0) {
     parseError = t.value.incompleteHex
@@ -220,18 +247,6 @@ const packetData = computed(() => {
 
     <div v-if="packetData?.segments && packetData.segments.length > 0" class="visualization-container">
 
-      <!-- Visual breakdown block -->
-      <div class="hex-blocks">
-        <span
-          v-for="(seg, idx) in packetData.segments"
-          :key="idx"
-          class="hex-segment"
-          :style="{ backgroundColor: seg.color + '22', color: seg.color, borderColor: seg.color }"
-          :title="seg.label"
-        >
-          {{ seg.text.toUpperCase() }}
-        </span>
-      </div>
 
       <!-- Detail table -->
       <table class="detail-table">
@@ -264,17 +279,14 @@ const packetData = computed(() => {
 <style scoped>
 .packet-visualizer {
   background: var(--vp-c-bg-soft);
-  border: 1px solid var(--vp-c-divider);
   border-radius: 8px;
   padding: 1.5rem;
   margin: 1rem 0;
 }
 
 .input-group {
-  display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  margin-bottom: 1.5rem;
 }
 
 .input-group label {
@@ -295,9 +307,7 @@ const packetData = computed(() => {
   right: 0;
   bottom: 0;
   padding: 0.8rem 0.9rem; /* Adjusted padding slightly for font alignment */
-  font-family: monospace;
   font-size: 1.1rem;      /* Use a bigger monospace for better visibility */
-  font-weight: bold;
   letter-spacing: 2px;    /* Letter spacing to align exactly */
   white-space: pre;
   overflow: hidden;
@@ -305,8 +315,6 @@ const packetData = computed(() => {
   display: flex;
   align-items: center;
   border: 1px solid transparent;
-  background: var(--vp-c-bg);
-  border-radius: 6px;
   color: var(--vp-c-text-1);
 }
 
@@ -318,7 +326,6 @@ const packetData = computed(() => {
   width: 100%;
   padding: 0.8rem 0.9rem;
   font-family: monospace;
-  font-size: 1.1rem;
   font-weight: bold;
   letter-spacing: 2px;
   border: 1px solid var(--vp-c-divider);
@@ -348,17 +355,13 @@ const packetData = computed(() => {
 .error-msg {
   color: var(--vp-c-red-1);
   background: rgba(239, 68, 68, 0.1);
-  padding: 1rem;
   border-radius: 6px;
   font-size: 0.9rem;
   font-weight: 600;
   margin-bottom: 1rem;
 }
 
-.hex-blocks {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
   margin-bottom: 1.5rem;
   padding: 1rem;
   background: var(--vp-c-bg);
@@ -366,18 +369,10 @@ const packetData = computed(() => {
   border: 1px solid var(--vp-c-divider);
 }
 
-.hex-segment {
   font-family: monospace;
   font-size: 1.1rem;
   font-weight: bold;
-  padding: 0.3rem 0.6rem;
-  border-radius: 4px;
-  border: 1px solid;
-  cursor: help;
-  transition: transform 0.1s;
 }
-.hex-segment:hover {
-  transform: scale(1.05);
 }
 
 .detail-table {
