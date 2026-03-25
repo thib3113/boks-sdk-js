@@ -231,6 +231,7 @@ export interface BoksHardwareSimulatorOptions {
  * This architecture allows AI and static analysis tools to distinguish between a test mock and a production target.
  */
 export class BoksHardwareSimulator {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public options: any;
   // Internal State
   #isOpen: boolean = false;
@@ -909,6 +910,7 @@ export class BoksHardwareSimulator {
 
     if (this.#packetSubscribers.size > 0) {
       const parsedPacket = BoksPacketFactory.createFromPayload(data, {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         logger: (l: any, e: any, c: any) => this.log(l, e, c),
         strictChecksum: this.options?.strictChecksum ?? true
       });
@@ -988,6 +990,7 @@ export class BoksHardwareSimulator {
 
     if (this.#packetSubscribers.size > 0) {
       const parsedOutPacket = BoksPacketFactory.createFromPayload(data, {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         logger: (l: any, e: any, c: any) => this.log(l, e, c),
         strictChecksum: this.options?.strictChecksum ?? true
       });
