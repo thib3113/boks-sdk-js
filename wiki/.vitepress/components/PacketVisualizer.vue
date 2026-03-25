@@ -208,17 +208,18 @@ const packetData = computed(() => {
         </div>
 
         <!-- The actual input, text is transparent -->
-        <input
+        <textarea
           id="hexInput"
           ref="inputRef"
           v-model="rawHexInput"
           @scroll="handleScroll"
-          type="text"
           :placeholder="`${t.eg} c30700020cffd7`"
           class="hex-input"
           spellcheck="false"
           autocomplete="off"
-        />
+          autocapitalize="off"
+          autocorrect="off"
+        ></textarea>
       </div>
     </div>
 
@@ -279,23 +280,38 @@ const packetData = computed(() => {
 .input-container {
   position: relative;
   width: 100%;
+  font-family: "Roboto Mono", monospace;
+  font-size: 1.2rem;
+  line-height: 1.4;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 6px;
+  background: var(--vp-c-bg);
+  min-height: 3rem;
+  overflow: hidden;
 }
 
 .input-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  padding: 0.8rem 0.9rem; /* Adjusted padding slightly for font alignment */
-  font-size: 1.1rem;      /* Use a bigger monospace for better visibility */
-  letter-spacing: 2px;    /* Letter spacing to align exactly */
-  white-space: pre;
-  overflow: hidden;
+  margin: 0;
+  border: 0;
+  background: none;
+  box-sizing: inherit;
+  display: inherit;
+  font-family: inherit;
+  font-size: inherit;
+  font-style: inherit;
+  font-variant-ligatures: inherit;
+  font-weight: bold;
+  letter-spacing: 2px;
+  line-height: inherit;
+  text-indent: inherit;
+  text-rendering: inherit;
+  text-transform: uppercase;
+  white-space: pre-wrap;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+  position: relative;
   pointer-events: none;
-  display: flex;
-  align-items: center;
-  border: 1px solid transparent;
+  padding: 0.8rem 0.9rem;
   color: var(--vp-c-text-1);
 }
 
@@ -304,19 +320,44 @@ const packetData = computed(() => {
 }
 
 .hex-input {
-  width: 100%;
-  padding: 0.8rem 0.9rem;
-  font-family: monospace;
+  margin: 0;
+  border: 0;
+  background: none;
+  box-sizing: inherit;
+  display: inherit;
+  font-family: inherit;
+  font-size: inherit;
+  font-style: inherit;
+  font-variant-ligatures: inherit;
   font-weight: bold;
   letter-spacing: 2px;
-  border: 1px solid var(--vp-c-divider);
-  border-radius: 6px;
-  background: transparent;
-  color: transparent; /* Make user text transparent so overlay shows through */
+  line-height: inherit;
+  text-indent: inherit;
+  text-rendering: inherit;
+  text-transform: uppercase;
+  white-space: pre-wrap;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  resize: none;
+  color: inherit;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  -webkit-text-fill-color: transparent;
+  padding: 0.8rem 0.9rem;
+  outline: none;
   caret-color: var(--vp-c-text-1);
-  transition: border-color 0.2s;
-  position: relative;
   z-index: 2;
+}
+
+.hex-input::selection {
+  background-color: var(--vp-c-brand-soft);
+  color: var(--vp-c-brand-1);
+  -webkit-text-fill-color: initial;
 }
 
 .hex-input::placeholder {
