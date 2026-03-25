@@ -65,6 +65,7 @@ export interface BoksClientOptions {
   transport?: BoksTransport;
   logger?: BoksLogger;
   device?: BluetoothDevice;
+  strictChecksum?: boolean;
 }
 
 interface TransactionContext {
@@ -90,11 +91,13 @@ export type BoksClientEvents = {
 export class BoksClient {
   private readonly transport: BoksTransport;
   private readonly logger?: BoksLogger;
+  private readonly options?: BoksClientOptions;
   public readonly event: BoksEventRouter<BoksClientEvents> = new BoksEventRouter();
   private commandQueue: Promise<void> = Promise.resolve();
   private currentTransactionContext: TransactionContext | null = null;
 
   constructor(options?: BoksClientOptions) {
+    this.options = options;
     if (options?.transport) {
       this.transport = options.transport;
     } else {
@@ -285,7 +288,10 @@ export class BoksClient {
    */
   private handleNotification(data: Uint8Array) {
     try {
-      const packet = BoksPacketFactory.createFromPayload(data, (l, e, c) => this.log(l, e, c));
+      const packet = BoksPacketFactory.createFromPayload(data, {
+        logger: (l, e, c) => this.log(l, e, c),
+        strictChecksum: this.options?.strictChecksum ?? true
+      });
       if (!packet) {
         return;
       }

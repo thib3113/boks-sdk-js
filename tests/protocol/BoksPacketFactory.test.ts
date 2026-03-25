@@ -413,7 +413,7 @@ describe('BoksPacketFactory', () => {
     it('should call logger and throw if checksum is invalid', () => {
       const invalidData = new Uint8Array([0x01, 0x01, 0x00, 0xff]); // Invalid checksum
       const loggerMock = vi.fn();
-      expect(() => BoksPacketFactory.createFromPayload(invalidData, loggerMock)).toThrow(
+      expect(() => BoksPacketFactory.createFromPayload(invalidData, { logger: loggerMock })).toThrow(
         new BoksProtocolError(BoksProtocolErrorId.CHECKSUM_MISMATCH, 'Invalid checksum', {
           expected: 2,
           received: 255
@@ -458,7 +458,7 @@ describe('BoksPacketFactory', () => {
       const data = new Uint8Array([opcode, length, invalidChecksum]);
       const logger = vi.fn();
 
-      expect(() => BoksPacketFactory.createFromPayload(data, logger)).toThrow(
+      expect(() => BoksPacketFactory.createFromPayload(data, { logger: logger })).toThrow(
         new BoksProtocolError(BoksProtocolErrorId.CHECKSUM_MISMATCH, 'Invalid checksum', {
           expected: 0x77,
           received: 0x00

@@ -26,6 +26,7 @@ export type BoksPacketJSON<T> = {
 export abstract class BoksPacket {
   #raw?: Uint8Array;
   #extractedPayloadCache?: Uint8Array;
+  public validChecksum?: boolean;
 
   constructor(raw?: Uint8Array) {
     this.#raw = raw;

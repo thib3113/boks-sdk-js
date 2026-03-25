@@ -153,12 +153,18 @@ export class BoksPacketFactory {
    */
   static createFromPayload(
     data: Uint8Array,
-    logger?: (
-      level: 'info' | 'warn' | 'error' | 'debug',
-      event: 'checksum_error',
-      context: { opcode: number; expected: number; received: number }
-    ) => void
+    options?: {
+      logger?: (
+        level: 'info' | 'warn' | 'error' | 'debug',
+        event: 'checksum_error',
+        context: { opcode: number; expected: number; received: number }
+      ) => void;
+      strictChecksum?: boolean;
+    }
   ): BoksPacket {
+    const logger = typeof options === 'function' ? options : options?.logger;
+    const strictChecksum = typeof options === 'function' ? true : (options?.strictChecksum ?? true);
+
     if (data.length < PACKET_HEADER_SIZE) {
       throw new BoksProtocolError(
         BoksProtocolErrorId.INVALID_PAYLOAD_LENGTH,
@@ -189,6 +195,8 @@ export class BoksPacketFactory {
 
     // Validate checksum
     const computedChecksum = calculateChecksum(data, 0, expectedTotalLength - 1);
+    let validChecksum = true;
+
     if (checksum !== computedChecksum) {
       if (logger) {
         logger('warn', 'checksum_error', {
@@ -197,13 +205,18 @@ export class BoksPacketFactory {
           received: checksum
         });
       }
-      throw new BoksProtocolError(BoksProtocolErrorId.CHECKSUM_MISMATCH, 'Invalid checksum', {
-        received: checksum,
-        expected: computedChecksum
-      });
+      validChecksum = false;
+      if (strictChecksum) {
+        throw new BoksProtocolError(BoksProtocolErrorId.CHECKSUM_MISMATCH, 'Invalid checksum', {
+          received: checksum,
+          expected: computedChecksum
+        });
+      }
     }
 
-    return this.fromResponse(opcode, data);
+    const packet = this.fromResponse(opcode, data);
+    packet.validChecksum = validChecksum;
+    return packet;
   }
 
   /**

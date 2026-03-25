@@ -231,6 +231,7 @@ export interface BoksHardwareSimulatorOptions {
  * This architecture allows AI and static analysis tools to distinguish between a test mock and a production target.
  */
 export class BoksHardwareSimulator {
+  public options: any;
   // Internal State
   #isOpen: boolean = false;
   #batteryLevel: number = 100;
@@ -907,9 +908,10 @@ export class BoksHardwareSimulator {
     this.log('debug', 'receive', { opcode, length: data.length });
 
     if (this.#packetSubscribers.size > 0) {
-      const parsedPacket = BoksPacketFactory.createFromPayload(data, (l, e, c) =>
-        this.log(l, e, c)
-      );
+      const parsedPacket = BoksPacketFactory.createFromPayload(data, {
+        logger: (l: any, e: any, c: any) => this.log(l, e, c),
+        strictChecksum: this.options?.strictChecksum ?? true
+      });
       if (parsedPacket) {
         this.#packetSubscribers.forEach((cb) =>
           cb({ direction: 'TX', packet: parsedPacket, buffer: data })
@@ -985,9 +987,10 @@ export class BoksHardwareSimulator {
     this.log('debug', 'send', { opcode: data[0], length: data.length });
 
     if (this.#packetSubscribers.size > 0) {
-      const parsedOutPacket = BoksPacketFactory.createFromPayload(data, (l, e, c) =>
-        this.log(l, e, c)
-      );
+      const parsedOutPacket = BoksPacketFactory.createFromPayload(data, {
+        logger: (l: any, e: any, c: any) => this.log(l, e, c),
+        strictChecksum: this.options?.strictChecksum ?? true
+      });
       if (parsedOutPacket) {
         this.#packetSubscribers.forEach((cb) =>
           cb({ direction: 'RX', packet: parsedOutPacket, buffer: data })
