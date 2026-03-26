@@ -4,6 +4,8 @@ import { NotifyScaleRawSensorsPacket } from '../../../../src/protocol/scale/Noti
 import { ScaleBondPacket } from '../../../../src/protocol/scale/ScaleBondPacket';
 import { ScaleGetMacPacket } from '../../../../src/protocol/scale/ScaleGetMacPacket';
 import { BoksOpcode } from '../../../../src/protocol/constants';
+import { BoksPacket } from '../../../../src/protocol/_BoksPacketBase';
+import { PayloadMapper } from '../../../../src/protocol/decorators';
 
 describe('Scale generic packets Resilience (Fuzzing)', () => {
   it('NotifyScaleRawSensorsPacket should handle arbitrary arrays', () => {
@@ -12,7 +14,8 @@ describe('Scale generic packets Resilience (Fuzzing)', () => {
         const packet = NotifyScaleRawSensorsPacket.fromRaw(data);
         expect(packet).toBeInstanceOf(NotifyScaleRawSensorsPacket);
         expect(packet.opcode).toBe(BoksOpcode.NOTIFY_SCALE_RAW_SENSORS);
-        expect(packet.data).toEqual(data);
+        const expectedData = PayloadMapper.parse(NotifyScaleRawSensorsPacket, data).data;
+        expect(packet.data).toEqual(expectedData);
       }),
       { numRuns: 1000 }
     );
@@ -24,8 +27,9 @@ describe('Scale generic packets Resilience (Fuzzing)', () => {
         const packet = ScaleBondPacket.fromRaw(data);
         expect(packet).toBeInstanceOf(ScaleBondPacket);
         expect(packet.opcode).toBe(BoksOpcode.SCALE_BOND);
-        expect(packet.data).toEqual(data);
-        expect(packet.toPayload()).toEqual(data);
+        const expectedData = BoksPacket.extractPayloadData(data, BoksOpcode.SCALE_BOND);
+        expect(packet.data).toEqual(expectedData);
+        expect(packet.toPayload()).toEqual(expectedData);
       }),
       { numRuns: 1000 }
     );

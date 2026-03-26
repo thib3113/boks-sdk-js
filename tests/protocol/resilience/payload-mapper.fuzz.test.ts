@@ -22,7 +22,7 @@ describe('PayloadMapper JIT Fuzzing', () => {
 
   // Generator for valid and malformed JIT schema fields
   const fieldDefinitionArbitrary = fc.record({
-    propertyName: fc.string({ maxLength: 50 }),
+    propertyName: fc.stringMatching(/^[a-zA-Z_$][a-zA-Z0-9_$]*$/).filter(s => s !== 'p' && s !== 'payload'), // Valid JS identifier
     type: fc.constantFrom(...fieldTypes),
     offset: fc.integer({ min: -10, max: 2000 }), // Including some OOB
     length: fc.option(fc.integer({ min: -10, max: 100 }), { nil: undefined }), // Optional length for some types
@@ -40,6 +40,13 @@ describe('PayloadMapper JIT Fuzzing', () => {
           class FuzzPacket {}
 
           // Fuzz the schema definition
+          const uniqueNames = new Set<string>();
+          for (const field of schema) {
+            if (uniqueNames.has(field.propertyName)) {
+               return true; // Skip duplicated property names to avoid 'has already been declared' SyntaxError in JIT
+            }
+            uniqueNames.add(field.propertyName);
+          }
           try {
             PayloadMapper.defineSchema(FuzzPacket, schema);
           } catch (e) {
@@ -72,6 +79,13 @@ describe('PayloadMapper JIT Fuzzing', () => {
         (schema, instanceProps) => {
           class FuzzPacket {}
 
+          const uniqueNames = new Set<string>();
+          for (const field of schema) {
+            if (uniqueNames.has(field.propertyName)) {
+               return true;
+            }
+            uniqueNames.add(field.propertyName);
+          }
           try {
             PayloadMapper.defineSchema(FuzzPacket, schema);
           } catch (e) {

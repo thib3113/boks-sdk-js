@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { NotifyScaleRawSensorsPacket } from '@/protocol/scale/NotifyScaleRawSensorsPacket';
 import { BoksOpcode } from '@/protocol/constants';
 import { bytesToHex } from '@/utils/converters';
+import { PayloadMapper } from '@/protocol/decorators';
 
 describe('NotifyScaleRawSensorsPacket', () => {
   it('should parse correctly with data', () => {
@@ -43,5 +44,14 @@ describe('NotifyScaleRawSensorsPacket', () => {
     } catch (e) {
       // Ignore if dummy payload is invalid for mapped fields
     }
+  });
+
+  describe('Fuzzer coverage edge cases', () => {
+    it('should extract payload from data that coincidentally resembles a valid packet header', () => {
+      const payload = new Uint8Array([BoksOpcode.NOTIFY_SCALE_RAW_SENSORS, 0x03, 0x01, 0x02, 0x03]);
+      const packet = NotifyScaleRawSensorsPacket.fromRaw(payload);
+      const expectedData = PayloadMapper.parse(NotifyScaleRawSensorsPacket, payload).data;
+      expect(packet.data).toEqual(expectedData);
+    });
   });
 });
