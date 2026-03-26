@@ -6,7 +6,6 @@ import { ScaleForgetPacket } from '../../../../src/protocol/scale/ScaleForgetPac
 import { ScaleTareEmptyPacket } from '../../../../src/protocol/scale/ScaleTareEmptyPacket';
 import { ScaleTareLoadedPacket } from '../../../../src/protocol/scale/ScaleTareLoadedPacket';
 import { BoksOpcode } from '../../../../src/protocol/constants';
-import { BoksPacket } from '../../../../src/protocol/_BoksPacketBase';
 
 describe('Scale additional simple packets Resilience (Fuzzing)', () => {
   it('FEATURE REGRESSION: ScaleGetRawSensorsPacket should safely handle arbitrary payload lengths and drop them on toPayload', () => {
