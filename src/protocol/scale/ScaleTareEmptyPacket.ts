@@ -7,9 +7,6 @@ import { BoksOpcode, EMPTY_BUFFER } from '@/protocol/constants';
  * Command to tare the empty scale.
  */
 export class ScaleTareEmptyPacket extends BoksPacket {
-  constructor(raw?: Uint8Array) {
-    super(raw);
-  }
   static readonly opcode = BoksOpcode.SCALE_TARE_EMPTY;
   get opcode() {
     return ScaleTareEmptyPacket.opcode;
