@@ -13,10 +13,14 @@ describe('NotifyCodeGenerationProgressPacket', () => {
     expect(packet.progress).toBe(50);
   });
 
+  it('should throw an error if progress is greater than 100', () => {
+    const payload = new Uint8Array([101]);
+    expect(() => NotifyCodeGenerationProgressPacket.fromRaw(payload)).toThrowError('Bonding progress cannot exceed 100%');
+  });
+
   it('should match fixed hexadecimal reference encoding', () => {
     const packet = new NotifyCodeGenerationProgressPacket(50);
     const encoded = packet.encode();
-    // Opcode 0xC2 (194), Len 1, Progress 50 (0x32), Checksum 0xF5 (194+1+50=245=0xF5)
     expect(bytesToHex(encoded)).toBe('C20132F5');
   });
 
@@ -24,11 +28,10 @@ describe('NotifyCodeGenerationProgressPacket', () => {
     const packet = NotifyCodeGenerationProgressPacket.fromRaw(new Uint8Array([50]));
     const json = packet.toJSON();
     expect(json).toStrictEqual({
-        "opcode": 194,
-        "progress": 50,
-      "validChecksum": null,
-
-      });
+      "opcode": 194,
+      "progress": 50,
+      "validChecksum": null
+    });
   });
 
   it('should retain the exact raw payload when constructed from hex via factory', () => {
@@ -39,7 +42,6 @@ describe('NotifyCodeGenerationProgressPacket', () => {
         expect(bytesToHex(packet.raw).toUpperCase()).toBe(bytesToHex(dummyPayload).toUpperCase());
       }
     } catch (e) {
-      // Ignore if dummy payload is invalid for mapped fields
     }
   });
 });

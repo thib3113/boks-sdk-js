@@ -30,7 +30,7 @@ describe('NotifyCodeGenerationProgressPacket - Resilience & Edge Cases', () => {
 
     it('should correctly handle exactly 1 byte payload', () => {
       fc.assert(
-        fc.property(fc.integer({ min: 0, max: 255 }), (progress) => {
+        fc.property(fc.integer({ min: 0, max: 100 }), (progress) => {
           const payload = new Uint8Array([progress]);
           const packet = NotifyCodeGenerationProgressPacket.fromRaw(payload);
           expect(packet.progress).toBe(progress);
@@ -46,7 +46,7 @@ describe('NotifyCodeGenerationProgressPacket - Resilience & Edge Cases', () => {
     it('should ignore all trailing bytes gracefully', () => {
       fc.assert(
         fc.property(
-          fc.integer({ min: 0, max: 255 }),
+          fc.integer({ min: 0, max: 100 }),
           fc.uint8Array(),
           (progress, trailingBytes) => {
             const payload = new Uint8Array([progress, ...trailingBytes]);

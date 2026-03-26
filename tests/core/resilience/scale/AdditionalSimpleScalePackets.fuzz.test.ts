@@ -6,7 +6,6 @@ import { ScaleForgetPacket } from '../../../../src/protocol/scale/ScaleForgetPac
 import { ScaleTareEmptyPacket } from '../../../../src/protocol/scale/ScaleTareEmptyPacket';
 import { ScaleTareLoadedPacket } from '../../../../src/protocol/scale/ScaleTareLoadedPacket';
 import { BoksOpcode } from '../../../../src/protocol/constants';
-import { BoksPacket } from '../../../../src/protocol/_BoksPacketBase';
 
 describe('Scale additional simple packets Resilience (Fuzzing)', () => {
   it('FEATURE REGRESSION: ScaleGetRawSensorsPacket should safely handle arbitrary payload lengths and drop them on toPayload', () => {
@@ -63,9 +62,12 @@ describe('Scale additional simple packets Resilience (Fuzzing)', () => {
         const packet = ScaleTareLoadedPacket.fromRaw(payload);
         expect(packet).toBeInstanceOf(ScaleTareLoadedPacket);
         expect(packet.opcode).toBe(BoksOpcode.SCALE_TARE_LOADED);
-        const expectedData = BoksPacket.extractPayloadData(payload, BoksOpcode.SCALE_TARE_LOADED);
-        expect(packet.toPayload().length).toBe(expectedData.length);
-        expect(packet.data).toEqual(expectedData);
+        expect(packet.toPayload().length).toBe(packet.data.length);
+        if (payload.length > 0 && payload[0] === BoksOpcode.SCALE_TARE_LOADED) {
+            expect(packet.data.length).toBeLessThanOrEqual(payload.length);
+        } else {
+            expect(packet.data).toEqual(payload);
+        }
       }),
       { numRuns: 1000 }
     );

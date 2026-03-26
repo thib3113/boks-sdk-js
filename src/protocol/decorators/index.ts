@@ -16,3 +16,4 @@ export * from './PayloadByteArray';
 export * from './PayloadSeed';
 export * from './PayloadVarLenHex';
 export * from './PacketDescriptor';
+export * from './PayloadProgress';
