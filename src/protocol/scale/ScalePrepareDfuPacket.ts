@@ -7,7 +7,7 @@ import { BoksOpcode, EMPTY_BUFFER } from '@/protocol/constants';
  * Command to prepare the scale for DFU.
  */
 export class ScalePrepareDfuPacket extends BoksPacket {
-    constructor(raw?: Uint8Array) {
+  constructor(raw?: Uint8Array) {
     super(raw);
   }
   static readonly opcode = BoksOpcode.SCALE_PREPARE_DFU;

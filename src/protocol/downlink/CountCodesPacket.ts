@@ -6,7 +6,7 @@ import { BoksOpcode, EMPTY_BUFFER } from '@/protocol/constants';
  * Command to get the number of active codes.
  */
 export class CountCodesPacket extends BoksPacket {
-    constructor(raw?: Uint8Array) {
+  constructor(raw?: Uint8Array) {
     super(raw);
   }
   static readonly opcode = BoksOpcode.COUNT_CODES;

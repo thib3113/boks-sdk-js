@@ -7,7 +7,7 @@ import { BoksOpcode, EMPTY_BUFFER } from '@/protocol/constants';
  * Command to request a weight measurement.
  */
 export class ScaleMeasureWeightPacket extends BoksPacket {
-    constructor(raw?: Uint8Array) {
+  constructor(raw?: Uint8Array) {
     super(raw);
   }
   static readonly opcode = BoksOpcode.SCALE_MEASURE_WEIGHT;

@@ -6,7 +6,7 @@ import { BoksOpcode, EMPTY_BUFFER } from '@/protocol/constants';
  * Command to trigger a battery test.
  */
 export class TestBatteryPacket extends BoksPacket {
-    constructor(raw?: Uint8Array) {
+  constructor(raw?: Uint8Array) {
     super(raw);
   }
   static readonly opcode = BoksOpcode.TEST_BATTERY;

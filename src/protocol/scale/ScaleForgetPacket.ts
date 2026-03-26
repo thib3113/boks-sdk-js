@@ -7,7 +7,7 @@ import { BoksOpcode, EMPTY_BUFFER } from '@/protocol/constants';
  * Command to forget the bonded scale.
  */
 export class ScaleForgetPacket extends BoksPacket {
-    constructor(raw?: Uint8Array) {
+  constructor(raw?: Uint8Array) {
     super(raw);
   }
   static readonly opcode = BoksOpcode.SCALE_FORGET_BONDING;

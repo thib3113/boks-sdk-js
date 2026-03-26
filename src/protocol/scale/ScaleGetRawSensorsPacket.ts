@@ -7,7 +7,7 @@ import { BoksOpcode, EMPTY_BUFFER } from '@/protocol/constants';
  * Command to get raw sensor data from the scale.
  */
 export class ScaleGetRawSensorsPacket extends BoksPacket {
-    constructor(raw?: Uint8Array) {
+  constructor(raw?: Uint8Array) {
     super(raw);
   }
   static readonly opcode = BoksOpcode.SCALE_GET_RAW_SENSORS;
