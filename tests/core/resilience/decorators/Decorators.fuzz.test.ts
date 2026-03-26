@@ -17,7 +17,8 @@ import {
   PayloadNfcUid,
   PayloadSeed,
   PayloadMasterCodeIndex,
-  PayloadVarLenHex
+  PayloadVarLenHex,
+  PayloadProgress
 } from '../../../../src/protocol/decorators/index';
 import { BoksProtocolError } from '../../../../src/errors/BoksProtocolError';
 
@@ -39,6 +40,7 @@ class FuzzTestPacketAll {
   @PayloadSeed(49) public accessor seedVal!: string;
   @PayloadMasterCodeIndex(53) public accessor masterCodeIdxVal!: number;
   @PayloadVarLenHex(54) public accessor varLenHexVal!: string;
+  @PayloadProgress(64) public accessor progressVal!: number;
 
   constructor(data: Partial<FuzzTestPacketAll>) {
     Object.assign(this, data);
