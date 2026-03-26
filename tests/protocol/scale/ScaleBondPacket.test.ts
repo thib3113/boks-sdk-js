@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { ScaleBondPacket } from '@/protocol/scale/ScaleBondPacket';
 import { BoksOpcode } from '@/protocol/constants';
 import { bytesToHex } from '@/utils/converters';
+import { BoksPacket } from '@/protocol/_BoksPacketBase';
 
 describe('ScaleBondPacket', () => {
   it('should construct and encode correctly', () => {
@@ -43,5 +44,14 @@ describe('ScaleBondPacket', () => {
     } catch (e) {
       // Ignore if dummy payload is invalid for mapped fields
     }
+  });
+
+  describe('Fuzzer coverage edge cases', () => {
+    it('should extract payload from data that coincidentally resembles a valid packet header', () => {
+      const payload = new Uint8Array([BoksOpcode.SCALE_BOND, 0x03, 0x01, 0x02, 0x03]);
+      const packet = ScaleBondPacket.fromRaw(payload);
+      const expectedData = BoksPacket.extractPayloadData(payload, BoksOpcode.SCALE_BOND);
+      expect(packet.data).toEqual(expectedData);
+    });
   });
 });
