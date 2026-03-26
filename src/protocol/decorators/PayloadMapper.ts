@@ -406,12 +406,13 @@ export class PayloadMapper {
         case 'pin_code':
           // Inline validation for 6-char PIN
           fnBody += `
-             const p_ = payload.subarray(${o}, ${o} + 6);
-             const s = String.fromCharCode(p_[0], p_[1], p_[2], p_[3], p_[4], p_[5]).toUpperCase();
+          {
+             const p = payload.subarray(${o}, ${o} + 6);
+             const s = String.fromCharCode(p[0], p[1], p[2], p[3], p[4], p[5]).toUpperCase();
              const isId = ${field.allowIds} && (s.startsWith('MC') || s.startsWith('UC'));
 
              for(let i=0; i<6; i++) {
-               const c = p_[i];
+               const c = p[i];
                const isStd = (c >= 48 && c <= 57) || c === 65 || c === 66;
                if (isStd) continue;
                
@@ -427,11 +428,12 @@ export class PayloadMapper {
                );
              }
              result['${prop}'] = s;
-           `;
+           }
+             `;
           break;
         case 'config_key':
           // Inline validation for 8-char Config Key (Hex: 0-9, A-F)
-          fnBody += `
+          fnBody += `{
              for(let i=0; i<8; i++) {
                const c = payload[${o} + i];
                // '0'-'9' (48-57), 'A'-'F' (65-70), 'a'-'f' (97-102)
@@ -445,7 +447,7 @@ export class PayloadMapper {
                }
              }
              result['${prop}'] = String.fromCharCode(payload[${o}], payload[${o + 1}], payload[${o + 2}], payload[${o + 3}], payload[${o + 4}], payload[${o + 5}], payload[${o + 6}], payload[${o + 7}]).toUpperCase();
-           `;
+           }`;
           break;
         case 'hex_string': {
           if (typeof field.length === 'number') {
