@@ -5,8 +5,8 @@ export class UnknownPacket extends BoksPacket {
   readonly #dynamicOpcode: number;
   private readonly _payload: Uint8Array;
 
-  constructor(opcode: number, payload: Uint8Array, raw?: Uint8Array) {
-    super(raw ?? payload);
+  constructor(opcode: number, payload: Uint8Array) {
+    super(payload);
     this.#dynamicOpcode = opcode;
     this._payload = payload;
   }
@@ -36,7 +36,7 @@ export class UnknownPacket extends BoksPacket {
     throw new Error('Use fromUnknownPayload instead');
   }
 
-  static fromUnknownPayload(opcode: number, payload: Uint8Array, raw?: Uint8Array): UnknownPacket {
-    return new UnknownPacket(opcode, payload, raw ?? payload);
+  static fromUnknownPayload(opcode: number, payload: Uint8Array): UnknownPacket {
+    return new UnknownPacket(opcode, payload);
   }
 }
