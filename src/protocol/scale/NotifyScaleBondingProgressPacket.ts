@@ -2,6 +2,7 @@ import { BoksPacketOptions } from '../_BoksPacketBase';
 import { PayloadMapper, PayloadUint8 } from '@/protocol/decorators';
 import { BoksRXPacket } from '@/protocol/uplink/_BoksRXPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
+import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';
 
 /** ⚠️ This packet is theoretical; it has never been tested in real-world conditions. */
 /**
@@ -23,6 +24,16 @@ export class NotifyScaleBondingProgressPacket extends BoksRXPacket {
     options?: BoksPacketOptions
   ): NotifyScaleBondingProgressPacket {
     const data = PayloadMapper.parse(NotifyScaleBondingProgressPacket, payload, options);
+
+    // Add validation for progress to be strictly <= 100
+    if (data.progress > 100) {
+      throw new BoksProtocolError(
+        BoksProtocolErrorId.INVALID_VALUE,
+        'Bonding progress cannot exceed 100%',
+        { progress: data.progress }
+      );
+    }
+
     return new NotifyScaleBondingProgressPacket(data.progress, payload);
   }
 }
