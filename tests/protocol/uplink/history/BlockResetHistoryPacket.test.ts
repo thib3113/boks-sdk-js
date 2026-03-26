@@ -1,4 +1,3 @@
-import { BoksPacketFactory } from '@/protocol/BoksPacketFactory';
 import { describe, it, expect } from 'vitest';
 import { BlockResetHistoryPacket } from '@/protocol/uplink/history/BlockResetHistoryPacket';
 import { BoksOpcode } from '@/protocol/constants';

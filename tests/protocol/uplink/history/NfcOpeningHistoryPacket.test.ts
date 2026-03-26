@@ -1,4 +1,3 @@
-import { BoksPacketFactory } from '@/protocol/BoksPacketFactory';
 import { describe, expect, it } from 'vitest';
 import { NfcOpeningHistoryPacket } from '@/protocol/uplink/history/NfcOpeningHistoryPacket';
 import { BoksOpcode } from '@/protocol/constants';

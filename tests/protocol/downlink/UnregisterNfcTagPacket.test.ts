@@ -1,9 +1,8 @@
-import { BoksPacketFactory } from '@/protocol/BoksPacketFactory';
+import { bytesToHex, stringToBytes } from '@/utils/converters';
 import { BoksProtocolError } from '@/errors/BoksProtocolError';
 import { describe, it, expect } from 'vitest';
 import { UnregisterNfcTagPacket } from '@/protocol/downlink/UnregisterNfcTagPacket';
 import { BoksOpcode } from '@/protocol/constants';
-import { bytesToHex, stringToBytes } from '@/utils/converters';
 
 describe('UnregisterNfcTagPacket', () => {
   const validKey = '12345678';

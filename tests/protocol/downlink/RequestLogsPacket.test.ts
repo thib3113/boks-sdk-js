@@ -1,4 +1,3 @@
-import { BoksPacketFactory } from '@/protocol/BoksPacketFactory';
 import { describe, it, expect } from 'vitest';
 import { RequestLogsPacket } from '@/protocol/downlink/RequestLogsPacket';
 import { BoksOpcode } from '@/protocol/constants';

@@ -1,9 +1,8 @@
-import { BoksPacketFactory } from '@/protocol/BoksPacketFactory';
+import { bytesToHex, stringToBytes } from '@/utils/converters';
 import { BoksProtocolError } from '@/errors/BoksProtocolError';
 import { describe, it, expect } from 'vitest';
 import { OpenDoorPacket } from '@/protocol/downlink/OpenDoorPacket';
 import { BoksOpcode } from '@/protocol/constants';
-import { bytesToHex, stringToBytes } from '@/utils/converters';
 
 describe('OpenDoorPacket', () => {
   const validPin = '123456';

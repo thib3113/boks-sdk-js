@@ -1,9 +1,8 @@
-import { BoksPacketFactory } from '@/protocol/BoksPacketFactory';
+import { bytesToHex, stringToBytes } from '@/utils/converters';
 import { BoksProtocolError } from '@/errors/BoksProtocolError';
 import { describe, it, expect } from 'vitest';
 import { SingleToMultiCodePacket } from '@/protocol/downlink/SingleToMultiCodePacket';
 import { BoksOpcode } from '@/protocol/constants';
-import { bytesToHex, stringToBytes } from '@/utils/converters';
 
 describe('SingleToMultiCodePacket', () => {
   const validKey = '12345678';

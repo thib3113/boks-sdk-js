@@ -1,4 +1,4 @@
-import { BoksPacketFactory } from '@/protocol/BoksPacketFactory';
+import { bytesToHex } from '@/utils/converters';
 import { describe, it, expect } from 'vitest';
 import { NotifyScaleBondingForgetSuccessPacket } from '@/protocol/scale/NotifyScaleBondingForgetSuccessPacket';
 import { BoksOpcode } from '@/protocol/constants';

@@ -1,4 +1,3 @@
-import { BoksPacketFactory } from '@/protocol/BoksPacketFactory';
 import { describe, it, expect } from 'vitest';
 import { GenerateCodesPacket } from '@/protocol/downlink/GenerateCodesPacket';
 import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';

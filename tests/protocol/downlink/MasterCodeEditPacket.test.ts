@@ -1,9 +1,8 @@
-import { BoksPacketFactory } from '@/protocol/BoksPacketFactory';
+import { bytesToHex, stringToBytes } from '@/utils/converters';
 import { BoksProtocolError } from '@/errors/BoksProtocolError';
 import { describe, it, expect } from 'vitest';
 import { MasterCodeEditPacket } from '@/protocol/downlink/MasterCodeEditPacket';
 import { BoksOpcode } from '@/protocol/constants';
-import { bytesToHex, stringToBytes } from '@/utils/converters';
 
 describe('MasterCodeEditPacket', () => {
   const validKey = '12345678';

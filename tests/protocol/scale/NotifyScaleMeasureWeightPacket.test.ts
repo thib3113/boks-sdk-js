@@ -1,4 +1,3 @@
-import { BoksPacketFactory } from '@/protocol/BoksPacketFactory';
 import { describe, it, expect } from 'vitest';
 import { NotifyScaleMeasureWeightPacket } from '@/protocol/scale/NotifyScaleMeasureWeightPacket';
 import { BoksOpcode } from '@/protocol/constants';

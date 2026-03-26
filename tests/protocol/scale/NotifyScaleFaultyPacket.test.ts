@@ -1,4 +1,3 @@
-import { BoksPacketFactory } from '@/protocol/BoksPacketFactory';
 import { describe, it, expect } from 'vitest';
 import { NotifyScaleFaultyPacket } from '@/protocol/scale/NotifyScaleFaultyPacket';
 import { BoksOpcode } from '@/protocol/constants';

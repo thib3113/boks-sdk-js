@@ -1,4 +1,4 @@
-import { BoksPacketFactory } from '@/protocol/BoksPacketFactory';
+import { bytesToHex } from '@/utils/converters';
 import { describe, it, expect } from 'vitest';
 import { ErrorCrcPacket } from '@/protocol/uplink/ErrorCrcPacket';
 import { BoksOpcode } from '@/protocol/constants';

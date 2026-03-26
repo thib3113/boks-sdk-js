@@ -1,9 +1,8 @@
-import { BoksPacketFactory } from '@/protocol/BoksPacketFactory';
+import { bytesToHex, stringToBytes } from '@/utils/converters';
 import { describe, it, expect } from 'vitest';
 import { RegeneratePartAPacket } from '@/protocol/downlink/RegeneratePartAPacket';
 import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';
 import { BoksOpcode } from '@/protocol/constants';
-import { bytesToHex, stringToBytes } from '@/utils/converters';
 
 describe('RegeneratePartAPacket', () => {
   const validKey = '12345678';
