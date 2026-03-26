@@ -1,0 +1,30 @@
+--- tests/security/PayloadMapperJit.test.ts
++++ tests/security/PayloadMapperJit.test.ts
+@@ -326,4 +326,27 @@
+       expect(parsed.data).toBe(12345);
+     });
+   });
++
++  describe('Double field instances to catch JIT syntax errors', () => {
++    it('should not throw a SyntaxError when multiple pin_code and config_key fields exist', () => {
++      class MultiplePinsConfigKeysPacket {
++        pin1: any;
++        pin2: any;
++        key1: any;
++        key2: any;
++      }
++      PayloadMapper.defineSchema(MultiplePinsConfigKeysPacket as any, [
++        { propertyName: 'pin1', type: 'pin_code', offset: 0 },
++        { propertyName: 'pin2', type: 'pin_code', offset: 6 },
++        { propertyName: 'key1', type: 'config_key', offset: 12 },
++        { propertyName: 'key2', type: 'config_key', offset: 20 },
++      ]);
++
++      // If block scoping was not properly applied in PayloadMapper.ts,
++      // compiling the JIT parser will throw "SyntaxError: Identifier 'p' has already been declared".
++      expect(() => {
++        PayloadMapper.parse(MultiplePinsConfigKeysPacket as any, new Uint8Array(28).fill(48)); // Fill with '0'
++      }).not.toThrow();
++    });
++  });
+ });
