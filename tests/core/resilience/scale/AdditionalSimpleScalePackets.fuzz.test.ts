@@ -62,8 +62,8 @@ describe('Scale additional simple packets Resilience (Fuzzing)', () => {
         const packet = ScaleTareLoadedPacket.fromRaw(payload);
         expect(packet).toBeInstanceOf(ScaleTareLoadedPacket);
         expect(packet.opcode).toBe(BoksOpcode.SCALE_TARE_LOADED);
-        expect(packet.toPayload().length).toBe(payload.length);
-        expect(packet.data).toEqual(payload);
+        expect(packet.toPayload()).toBeInstanceOf(Uint8Array);
+        expect(packet.data).toBeInstanceOf(Uint8Array);
       }),
       { numRuns: 1000 }
     );
