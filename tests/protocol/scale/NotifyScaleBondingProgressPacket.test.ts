@@ -13,7 +13,7 @@ describe('NotifyScaleBondingProgressPacket', () => {
 
   it('should throw an error if progress is greater than 100', () => {
     const payload = new Uint8Array([101]);
-    expect(() => NotifyScaleBondingProgressPacket.fromRaw(payload)).toThrowError('Progress value must be between 0 and 100');
+    expect(() => NotifyScaleBondingProgressPacket.fromRaw(payload)).toThrowError('Bonding progress cannot exceed 100%');
   });
 
   it('should match fixed hexadecimal reference encoding', () => {

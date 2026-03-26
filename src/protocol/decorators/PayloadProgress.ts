@@ -33,7 +33,7 @@ export function PayloadProgress(offset: number) {
         if (val < 0 || val > 100) {
           throw new BoksProtocolError(
             BoksProtocolErrorId.INVALID_VALUE,
-            'Progress value must be between 0 and 100',
+            'Bonding progress cannot exceed 100%',
             { progress: val }
           );
         }

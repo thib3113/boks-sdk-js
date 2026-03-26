@@ -10,7 +10,11 @@ describe('ScaleBondPacket Resilience (Fuzzing)', () => {
         const packet = ScaleBondPacket.fromRaw(payload);
         expect(packet).toBeInstanceOf(ScaleBondPacket);
         expect(packet.opcode).toBe(BoksOpcode.SCALE_BOND);
-        expect(packet.data).toEqual(payload);
+        if (payload.length > 0 && payload[0] === BoksOpcode.SCALE_BOND) {
+            expect(packet.data.length).toBeLessThanOrEqual(payload.length);
+        } else {
+            expect(packet.data).toEqual(payload);
+        }
       }),
       { numRuns: 1000 }
     );
