@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { PayloadMapper, FieldDefinition } from '../../src/protocol/decorators/PayloadMapper';
-import { BoksProtocolError, BoksProtocolErrorId } from '../../src/errors/BoksProtocolError';
+import { BoksProtocolError } from '../../src/errors/BoksProtocolError';
 
 describe('PayloadMapper JIT & Security Tests', () => {
   describe('Security Check: isValidIdentifier', () => {
@@ -209,7 +209,6 @@ describe('PayloadMapper JIT & Security Tests', () => {
         metadata: {}
       };
 
-      const mdKey = Symbol.for('BoksPayloadMapper');
 
       import('../../src/protocol/decorators/PayloadMapper').then(m => {
         const getOrCreateMetadata = m.getOrCreateMetadata;
