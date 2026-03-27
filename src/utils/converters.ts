@@ -186,19 +186,6 @@ export const writeConfigKeyToBuffer = (payload: Uint8Array, offset: number, key:
 };
 
 /**
- * Optimization: Fast path to write a known 6-character ASCII PIN string directly to a buffer
- * at a specific offset.
- */
-export const writePinToBuffer = (payload: Uint8Array, offset: number, pin: string): void => {
-  payload[offset] = pin.charCodeAt(0);
-  payload[offset + 1] = pin.charCodeAt(1);
-  payload[offset + 2] = pin.charCodeAt(2);
-  payload[offset + 3] = pin.charCodeAt(3);
-  payload[offset + 4] = pin.charCodeAt(4);
-  payload[offset + 5] = pin.charCodeAt(5);
-};
-
-/**
  * Optimization: Fast path to read a known 6-character ASCII PIN string directly from a buffer
  * at a specific offset. This avoids creating temporary `Uint8Array` objects via `subarray`
  * and loop overhead, yielding a ~5x performance speedup in V8.

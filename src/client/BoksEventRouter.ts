@@ -77,7 +77,6 @@ export class BoksEventRouter<TEventMap extends Record<string, unknown> = Record<
       }
       return false;
     }
-
     if (typeof filter === 'number') {
       return (
         payload !== null &&

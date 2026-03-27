@@ -1,8 +1,8 @@
-import { bytesToHex, stringToBytes } from '@/utils/converters';
 import { BoksProtocolError } from '@/errors/BoksProtocolError';
 import { describe, it, expect } from 'vitest';
 import { SingleToMultiCodePacket } from '@/protocol/downlink/SingleToMultiCodePacket';
 import { BoksOpcode } from '@/protocol/constants';
+import { bytesToHex, stringToBytes } from '@/utils/converters';
 
 describe('SingleToMultiCodePacket', () => {
   const validKey = '12345678';
@@ -39,7 +39,7 @@ describe('SingleToMultiCodePacket', () => {
     payload.set(stringToBytes(validKey), 0);
     payload.set(stringToBytes(validPin), 8);
 
-    const packet = SingleToMultiCodePacket.fromRaw(payload);
+    const packet = SingleToMultiCodePacket.fromPayload(payload);
     expect(packet.configKey).toBe(validKey);
     expect(packet.pin).toBe(validPin);
   });
@@ -58,7 +58,7 @@ describe('SingleToMultiCodePacket', () => {
 
   it('should fail parsing if payload is too short', () => {
     const shortPayload = new Uint8Array(10);
-    expect(() => SingleToMultiCodePacket.fromRaw(shortPayload)).toThrowError(BoksProtocolError);
+    expect(() => SingleToMultiCodePacket.fromPayload(shortPayload)).toThrowError(BoksProtocolError);
   });
 
   it('should output only mapped payload properties and opcode via toJSON', () => {
@@ -68,20 +68,6 @@ describe('SingleToMultiCodePacket', () => {
         "configKey": "12345678",
         "opcode": 10,
         "pin": "876543",
-      "validChecksum": null,
-
       });
-  });
-
-  it('should retain the exact raw payload when constructed from hex via factory', () => {
-    const dummyPayload = new Uint8Array([SingleToMultiCodePacket.opcode, 0x05, 0x01, 0x02, 0x03, 0x04, 0x05, 0x00]);
-    try {
-      const packet = SingleToMultiCodePacket.fromRaw(dummyPayload, { strict: false });
-      if (packet) {
-        expect(bytesToHex(packet.raw).toUpperCase()).toBe(bytesToHex(dummyPayload).toUpperCase());
-      }
-    } catch (e) {
-      // Ignore if dummy payload is invalid for mapped fields
-    }
   });
 });

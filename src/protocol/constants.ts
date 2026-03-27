@@ -168,18 +168,6 @@ export const PIN_ALGO_CONFIG = {
 export const CHECKSUM_MASK = 0xFF;
 export const INVALID_BYTE = 0xFF;
 
-/**
- * Total size of a standard packet header including the trailing checksum.
- * [Opcode, Length, ...Payload, Checksum]
- */
-export const PACKET_HEADER_SIZE = 3;
-
-/**
- * Minimum bytes required to identify a packet and its length.
- * [Opcode, Length]
- */
-export const PACKET_MIN_HEADER_SIZE = PACKET_HEADER_SIZE - 1;
-
 export const MAX_MASTER_CODE_INDEX = 255;
 
 export enum BoksCodeType {
@@ -195,11 +183,3 @@ export enum BoksConfigType {
 }
 
 export const DEBUG_UNKNOWN_OPCODE = 0xEE;
-
-
-export const CHAR_CODES = {
-  '0': 48, '9': 57,
-  'A': 65, 'B': 66, 'C': 67, 'F': 70,
-  'M': 77, 'U': 85,
-  'a': 97, 'f': 102
-};

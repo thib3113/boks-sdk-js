@@ -11,13 +11,6 @@ import { BoksExpectedReason } from '@/errors/BoksExpectedReason';
 
 describe('validation utils', () => {
   describe('validatePinCode', () => {
-    it('should reject PIN code without allowing IDs if an ID character is passed', () => {
-      expect(() => validatePinCode('M12345')).toThrow();
-      expect(() => validatePinCode('1C2345')).toThrow();
-      expect(() => validatePinCode('MC3456', true)).not.toThrow();
-      expect(() => validatePinCode('U12345')).toThrow();
-      expect(() => validatePinCode('UC3456', true)).not.toThrow();
-    });
     it('should accept valid PIN codes', () => {
       expect(() => validatePinCode('123456')).not.toThrow();
       expect(() => validatePinCode('000000')).not.toThrow();

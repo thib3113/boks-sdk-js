@@ -1,4 +1,3 @@
-import { BoksPacketOptions } from '../_BoksPacketBase';
 import { BoksRXPacket } from '@/protocol/uplink/_BoksRXPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
 
@@ -8,11 +7,11 @@ import { BoksOpcode } from '@/protocol/constants';
 export class OperationSuccessPacket extends BoksRXPacket {
   static readonly opcode = BoksOpcode.CODE_OPERATION_SUCCESS;
 
-  constructor(raw?: Uint8Array) {
-    super(OperationSuccessPacket.opcode, raw);
+  constructor(rawPayload?: Uint8Array) {
+    super(OperationSuccessPacket.opcode, rawPayload);
   }
 
-  static fromRaw(payload: Uint8Array, _options?: BoksPacketOptions): OperationSuccessPacket {
+  static fromPayload(payload: Uint8Array): OperationSuccessPacket {
     return new OperationSuccessPacket(payload);
   }
 }

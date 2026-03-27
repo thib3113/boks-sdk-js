@@ -1,4 +1,3 @@
-import { BoksPacketOptions } from '../_BoksPacketBase';
 import { AuthPacket, AuthPacketProps } from '@/protocol/downlink/_AuthPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
 import { PayloadMapper, PayloadNfcUid } from '@/protocol/decorators';
@@ -19,13 +18,13 @@ export class NfcRegisterPacket extends AuthPacket {
   @PayloadNfcUid(8)
   public accessor uid!: string;
 
-  constructor(props: NfcRegisterPacketProps, raw?: Uint8Array) {
-    super(props, raw);
+  constructor(props: NfcRegisterPacketProps, rawPayload?: Uint8Array) {
+    super(props, rawPayload);
     this.uid = props.uid;
   }
 
-  static fromRaw(payload: Uint8Array, options?: BoksPacketOptions): NfcRegisterPacket {
-    const data = PayloadMapper.parse<NfcRegisterPacketProps>(NfcRegisterPacket, payload, options);
+  static fromPayload(payload: Uint8Array): NfcRegisterPacket {
+    const data = PayloadMapper.parse<NfcRegisterPacketProps>(NfcRegisterPacket, payload);
     return new NfcRegisterPacket(data, payload);
   }
 

@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { i18n } from '../i18n'
+import { boksStore } from '../boksStore'
 import { SecureDfu } from '@thib3113/web-bluetooth-dfu'
+import { WebBluetoothTransport } from '../../src/client/WebBluetoothTransport'
 
 const lang = ref(typeof navigator !== 'undefined' && navigator.language.startsWith('fr') ? 'fr' : 'en')
 const t = computed(() => i18n[lang.value as keyof typeof i18n] || i18n.en)
@@ -11,12 +13,6 @@ const logs = ref<string[]>([])
 const progress = ref(0)
 const fileName = ref<string | null>(null)
 const fileBuffer = ref<ArrayBuffer | null>(null)
-const deviceName = ref<string | null>(null)
-const batteryLevel = ref<number | null>(null)
-const hwVersion = ref<string | null>(null)
-const swVersion = ref<string | null>(null)
-
-let device: BluetoothDevice | null = null
 
 const log = (msg: string) => {
   console.log(msg)
@@ -36,67 +32,45 @@ const onFileChange = (e: Event) => {
   reader.readAsArrayBuffer(file)
 }
 
-const connect = async () => {
-  try {
-    log(t.value.dfu.status.searching)
-    device = await navigator.bluetooth.requestDevice({
-      filters: [{ namePrefix: 'Boks' }, { namePrefix: 'DfuTarg' }],
-      optionalServices: [
-        '0000180f-0000-1000-8000-00805f9b34fb', // Battery
-        '0000180a-0000-1000-8000-00805f9b34fb', // Device Info
-        '0000fe59-0000-1000-8000-00805f9b34fb', // DFU
-      ]
-    })
-
-    log(t.value.dfu.status.connecting)
-    await device.gatt?.connect()
-    deviceName.value = device.name || 'Unknown'
-
-    if (deviceName.value.startsWith('Boks-')) {
-      dfuState.value = 'connected_normal'
-      await readDeviceInfo()
-    } else if (deviceName.value === 'DfuTarg' || deviceName.value === 'Boks_DFU') {
-      dfuState.value = 'connected_dfu'
-      log(t.value.dfu.status.device_in_dfu)
-    }
-  } catch (e: any) {
-    log(`Connection failed: ${e.message}`)
-    dfuState.value = 'error'
+watch(() => boksStore.isConnected, (connected) => {
+  if (connected) {
+    checkConnectionMode()
+  } else {
+    dfuState.value = 'idle'
   }
-}
+}, { immediate: true })
 
-const readDeviceInfo = async () => {
-  try {
-    const batteryService = await device!.gatt!.getPrimaryService('0000180f-0000-1000-8000-00805f9b34fb')
-    const batteryChar = await batteryService.getCharacteristic('00002a19-0000-1000-8000-00805f9b34fb')
-    const batteryVal = await batteryChar.readValue()
-    batteryLevel.value = batteryVal.getUint8(0)
+const checkConnectionMode = () => {
+  if (!boksStore.controller || !boksStore.controller.client.transport) return
 
-    const infoService = await device!.gatt!.getPrimaryService('0000180a-0000-1000-8000-00805f9b34fb')
-    try {
-        const swChar = await infoService.getCharacteristic('00002a28-0000-1000-8000-00805f9b34fb')
-        const swVal = await swChar.readValue()
-        swVersion.value = new TextDecoder().decode(swVal)
-    } catch (e) { }
+  const transport = boksStore.controller.client.transport as WebBluetoothTransport
+  const device = transport.device
 
-    try {
-        const fwChar = await infoService.getCharacteristic('00002a26-0000-1000-8000-00805f9b34fb')
-        const fwVal = await fwChar.readValue()
-        hwVersion.value = new TextDecoder().decode(fwVal)
-    } catch (e) {}
+  if (!device) return
 
-  } catch (e: any) {
-    log(`Error reading device info: ${e.message}`)
+  const deviceNameStr = device.name || 'Unknown'
+
+  if (deviceNameStr.startsWith('DfuTarg') || deviceNameStr.startsWith('Boks_DFU')) {
+    dfuState.value = 'connected_dfu'
+    log(t.value.dfu.status.device_in_dfu)
+  } else {
+    dfuState.value = 'connected_normal'
   }
 }
 
 const rebootToDfu = async () => {
   try {
     log(t.value.dfu.status.rebooting)
-    const dfuService = await device!.gatt!.getPrimaryService('0000fe59-0000-1000-8000-00805f9b34fb')
+    if (!boksStore.controller || !boksStore.controller.client.transport) return
+    const transport = boksStore.controller.client.transport as WebBluetoothTransport
+    const device = transport.device
+    if (!device) return
+
+    const dfuService = await device.gatt!.getPrimaryService('0000fe59-0000-1000-8000-00805f9b34fb')
     const dfuChar = await dfuService.getCharacteristic('8ec90001-f315-4f60-9fb8-838830daea50')
     await dfuChar.writeValueWithoutResponse(new Uint8Array([0x01]))
 
+    // boksStore might auto-disconnect if it detects a link loss. We do not explicitly force store disconnect because DFU disconnect handles it anyway.
     dfuState.value = 'idle'
     log('Device disconnected, ready to reconnect in DFU mode.')
   } catch (e: any) {
@@ -105,7 +79,11 @@ const rebootToDfu = async () => {
 }
 
 const flashFirmware = async () => {
-  if (!fileBuffer.value || !device) return
+  if (!fileBuffer.value) return
+  if (!boksStore.controller || !boksStore.controller.client.transport) return
+  const transport = boksStore.controller.client.transport as WebBluetoothTransport
+  const device = transport.device
+  if (!device) return
 
   try {
     dfuState.value = 'flashing'
@@ -143,9 +121,9 @@ const flashFirmware = async () => {
 
 <template>
   <div class="boks-demo-container boks-theme">
-    <div class="header">
-      <h2>{{ t.dfu.title }}</h2>
-      <p>{{ t.dfu.desc }}</p>
+
+    <div v-if="!boksStore.isConnected" class="warning-box">
+        <span v-html="t.global.notConnectedWarning"></span>
     </div>
 
     <div class="demo-content">
@@ -158,30 +136,26 @@ const flashFirmware = async () => {
           <span v-if="fileName" class="file-name">{{ fileName }}</span>
         </div>
 
-        <div class="device-panel">
+        <div class="device-panel" v-if="boksStore.isConnected">
           <div class="info-row">
             <span class="label">{{ t.dfu.labels.device_name }}:</span>
-            <span class="value">{{ deviceName || t.dfu.labels.unknown }}</span>
+            <span class="value">{{ boksStore.deviceName || t.dfu.labels.unknown }}</span>
           </div>
-          <div class="info-row" v-if="batteryLevel !== null">
+          <div class="info-row">
             <span class="label">{{ t.dfu.labels.battery }}:</span>
-            <span class="value" :class="{ 'warning-text': batteryLevel < 20 }">{{ batteryLevel }}%</span>
+            <span class="value" :class="{ 'warning-text': boksStore.batteryLevel < 20 }">{{ boksStore.batteryLevel }}%</span>
           </div>
-          <div class="info-row" v-if="swVersion">
+          <div class="info-row">
             <span class="label">{{ t.dfu.labels.version }}:</span>
-            <span class="value">{{ swVersion }}</span>
+            <span class="value">{{ boksStore.softwareVersion || t.dfu.labels.not_available }}</span>
           </div>
-          <div class="info-row" v-if="hwVersion">
+          <div class="info-row">
             <span class="label">{{ t.dfu.labels.hw }}:</span>
-            <span class="value">{{ hwVersion }}</span>
+            <span class="value">{{ boksStore.firmwareVersion || t.dfu.labels.not_available }}</span>
           </div>
         </div>
 
-        <div class="action-buttons">
-          <button v-if="dfuState === 'idle'" class="btn" @click="connect">
-            {{ t.dfu.buttons.connect }}
-          </button>
-
+        <div class="action-buttons" v-if="boksStore.isConnected">
           <button v-if="dfuState === 'connected_normal'" class="btn warning" @click="rebootToDfu">
             {{ t.dfu.buttons.prepare }}
           </button>
@@ -196,7 +170,7 @@ const flashFirmware = async () => {
           <span class="progress-text">{{ Math.round(progress) }}%</span>
         </div>
 
-        <div v-if="batteryLevel !== null && batteryLevel < 20" class="warning-box">
+        <div v-if="boksStore.isConnected && boksStore.batteryLevel < 20" class="warning-box">
           ⚠️ Battery level is low! Please change batteries before updating firmware.
         </div>
       </div>

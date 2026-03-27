@@ -1,4 +1,3 @@
-import { BoksPacketOptions } from '../../_BoksPacketBase';
 import { PayloadMapper, PayloadUint8, PayloadNfcUid } from '@/protocol/decorators';
 import {
   BoksHistoryEvent,
@@ -20,17 +19,16 @@ export class NfcOpeningHistoryPacket extends BoksHistoryEvent {
   @PayloadNfcUid(4)
   public accessor uid!: string;
 
-  constructor(props: NfcOpeningHistoryPacketProps, raw?: Uint8Array) {
-    super(NfcOpeningHistoryPacket.opcode, props, raw);
+  constructor(props: NfcOpeningHistoryPacketProps, rawPayload?: Uint8Array) {
+    super(NfcOpeningHistoryPacket.opcode, props, rawPayload);
     this.tagType = props.tagType;
     this.uid = props.uid;
   }
 
-  static fromRaw(payload: Uint8Array, options?: BoksPacketOptions): NfcOpeningHistoryPacket {
+  static fromPayload(payload: Uint8Array): NfcOpeningHistoryPacket {
     const data = PayloadMapper.parse<NfcOpeningHistoryPacketProps>(
       NfcOpeningHistoryPacket,
-      payload,
-      options
+      payload
     );
     return new NfcOpeningHistoryPacket(data, payload);
   }

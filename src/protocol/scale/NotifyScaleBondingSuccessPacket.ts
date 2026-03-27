@@ -1,4 +1,3 @@
-import { BoksPacketOptions } from '../_BoksPacketBase';
 import { BoksRXPacket } from '@/protocol/uplink/_BoksRXPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
 
@@ -9,14 +8,11 @@ import { BoksOpcode } from '@/protocol/constants';
 export class NotifyScaleBondingSuccessPacket extends BoksRXPacket {
   static readonly opcode = BoksOpcode.NOTIFY_SCALE_BONDING_SUCCESS;
 
-  constructor(raw?: Uint8Array) {
-    super(NotifyScaleBondingSuccessPacket.opcode, raw);
+  constructor(rawPayload?: Uint8Array) {
+    super(NotifyScaleBondingSuccessPacket.opcode, rawPayload);
   }
 
-  static fromRaw(
-    payload: Uint8Array,
-    _options?: BoksPacketOptions
-  ): NotifyScaleBondingSuccessPacket {
+  static fromPayload(payload: Uint8Array): NotifyScaleBondingSuccessPacket {
     return new NotifyScaleBondingSuccessPacket(payload);
   }
 }

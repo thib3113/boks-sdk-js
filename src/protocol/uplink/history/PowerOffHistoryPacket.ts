@@ -1,4 +1,3 @@
-import { BoksPacketOptions } from '../../_BoksPacketBase';
 import { PayloadMapper, PayloadUint8 } from '@/protocol/decorators';
 import {
   BoksHistoryEvent,
@@ -19,17 +18,13 @@ export class PowerOffHistoryPacket extends BoksHistoryEvent {
   @PayloadUint8(3)
   public accessor reason!: number;
 
-  constructor(props: PowerOffHistoryPacketProps, raw?: Uint8Array) {
-    super(PowerOffHistoryPacket.opcode, props, raw);
+  constructor(props: PowerOffHistoryPacketProps, rawPayload?: Uint8Array) {
+    super(PowerOffHistoryPacket.opcode, props, rawPayload);
     this.reason = props.reason;
   }
 
-  static fromRaw(payload: Uint8Array, options?: BoksPacketOptions): PowerOffHistoryPacket {
-    const data = PayloadMapper.parse<PowerOffHistoryPacketProps>(
-      PowerOffHistoryPacket,
-      payload,
-      options
-    );
+  static fromPayload(payload: Uint8Array): PowerOffHistoryPacket {
+    const data = PayloadMapper.parse<PowerOffHistoryPacketProps>(PowerOffHistoryPacket, payload);
     return new PowerOffHistoryPacket(data, payload);
   }
 }

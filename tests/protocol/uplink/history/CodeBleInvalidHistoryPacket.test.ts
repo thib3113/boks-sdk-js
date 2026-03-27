@@ -8,7 +8,7 @@ describe('CodeBleInvalidHistoryPacket', () => {
     // Length 17: Age (3), Code (6), Padding (2), Mac (6)
     // Offset 11: 0x66, 0x55, 0x44, 0x33, 0x22, 0x11
     const payload = new Uint8Array([0, 0, 10, 49, 50, 51, 52, 53, 54, 0, 0, 0x66, 0x55, 0x44, 0x33, 0x22, 0x11]);
-    const packet = CodeBleInvalidHistoryPacket.fromRaw(payload);
+    const packet = CodeBleInvalidHistoryPacket.fromPayload(payload);
 
     expect(packet.opcode).toBe(BoksOpcode.LOG_CODE_BLE_INVALID);
     expect(packet.age).toBe(10);
@@ -28,32 +28,18 @@ describe('CodeBleInvalidHistoryPacket', () => {
 
   it('should cover the code branch where length is strictly 17', () => {
     const payload = new Uint8Array([0, 0, 3, 49, 50, 51, 52, 53, 54, 0, 0, 53, 54, 55, 56, 57, 48]);
-    const packet = CodeBleInvalidHistoryPacket.fromRaw(payload);
+    const packet = CodeBleInvalidHistoryPacket.fromPayload(payload);
     expect(packet.connectedMac).toBe('303938373635');
   });
 
   it('should output only mapped payload properties and opcode via toJSON', () => {
-    const packet = CodeBleInvalidHistoryPacket.fromRaw(new Uint8Array([0, 0, 10, 49, 50, 51, 52, 53, 54, 0, 0, 0x66, 0x55, 0x44, 0x33, 0x22, 0x11]));
+    const packet = CodeBleInvalidHistoryPacket.fromPayload(new Uint8Array([0, 0, 10, 49, 50, 51, 52, 53, 54, 0, 0, 0x66, 0x55, 0x44, 0x33, 0x22, 0x11]));
     const json = packet.toJSON();
     expect(json).toStrictEqual({
         "age": 10,
         "code": "123456",
         "connectedMac": "112233445566",
         "opcode": 136,
-      "validChecksum": null,
-
       });
-  });
-
-  it('should retain the exact raw payload when constructed from hex via factory', () => {
-    const dummyPayload = new Uint8Array([CodeBleInvalidHistoryPacket.opcode, 0x05, 0x01, 0x02, 0x03, 0x04, 0x05, 0x00]);
-    try {
-      const packet = CodeBleInvalidHistoryPacket.fromRaw(dummyPayload, { strict: false });
-      if (packet) {
-        expect(bytesToHex(packet.raw).toUpperCase()).toBe(bytesToHex(dummyPayload).toUpperCase());
-      }
-    } catch (e) {
-      // Ignore if dummy payload is invalid for mapped fields
-    }
   });
 });

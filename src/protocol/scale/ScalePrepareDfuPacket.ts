@@ -1,4 +1,3 @@
-import { BoksPacketOptions } from '../_BoksPacketBase';
 import { BoksPacket } from '@/protocol/_BoksPacketBase';
 import { BoksOpcode, EMPTY_BUFFER } from '@/protocol/constants';
 
@@ -11,7 +10,7 @@ export class ScalePrepareDfuPacket extends BoksPacket {
   get opcode() {
     return ScalePrepareDfuPacket.opcode;
   }
-  static fromRaw(payload: Uint8Array, _options?: BoksPacketOptions): ScalePrepareDfuPacket {
+  static fromPayload(payload: Uint8Array): ScalePrepareDfuPacket {
     return new ScalePrepareDfuPacket(payload);
   }
   toPayload() {

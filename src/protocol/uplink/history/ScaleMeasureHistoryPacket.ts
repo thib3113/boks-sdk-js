@@ -1,4 +1,3 @@
-import { BoksPacketOptions } from '../../_BoksPacketBase';
 import {
   BoksHistoryEvent,
   BoksHistoryEventProps
@@ -23,17 +22,13 @@ export class ScaleMeasureHistoryPacket extends BoksHistoryEvent {
   @PayloadByteArray(3)
   public accessor data!: Uint8Array;
 
-  constructor(props: ScaleMeasureHistoryPacketProps, raw?: Uint8Array) {
-    super(ScaleMeasureHistoryPacket.opcode, props, raw);
+  constructor(props: ScaleMeasureHistoryPacketProps, rawPayload?: Uint8Array) {
+    super(ScaleMeasureHistoryPacket.opcode, props, rawPayload);
     this.data = props.data;
   }
 
-  static fromRaw(payload: Uint8Array, options?: BoksPacketOptions): ScaleMeasureHistoryPacket {
-    const data = PayloadMapper.parse<ScaleMeasureHistoryPacket>(
-      ScaleMeasureHistoryPacket,
-      payload,
-      options
-    );
+  static fromPayload(payload: Uint8Array): ScaleMeasureHistoryPacket {
+    const data = PayloadMapper.parse<ScaleMeasureHistoryPacket>(ScaleMeasureHistoryPacket, payload);
     return new ScaleMeasureHistoryPacket(
       {
         age: data.age,

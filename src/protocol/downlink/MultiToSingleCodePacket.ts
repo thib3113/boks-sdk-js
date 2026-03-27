@@ -1,4 +1,3 @@
-import { BoksPacketOptions } from '../_BoksPacketBase';
 import { AuthPacket, AuthPacketProps } from '@/protocol/downlink/_AuthPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
 import { PayloadMapper, PayloadPinCode } from '@/protocol/decorators';
@@ -19,16 +18,15 @@ export class MultiToSingleCodePacket extends AuthPacket {
   @PayloadPinCode(8)
   public accessor pin!: string;
 
-  constructor(props: MultiToSingleCodePacketProps, raw?: Uint8Array) {
-    super(props, raw);
+  constructor(props: MultiToSingleCodePacketProps, rawPayload?: Uint8Array) {
+    super(props, rawPayload);
     this.pin = props.pin;
   }
 
-  static fromRaw(payload: Uint8Array, options?: BoksPacketOptions): MultiToSingleCodePacket {
+  static fromPayload(payload: Uint8Array): MultiToSingleCodePacket {
     const data = PayloadMapper.parse<MultiToSingleCodePacketProps>(
       MultiToSingleCodePacket,
-      payload,
-      options
+      payload
     );
     return new MultiToSingleCodePacket(data, payload);
   }

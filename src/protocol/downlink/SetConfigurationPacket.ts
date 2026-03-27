@@ -1,5 +1,4 @@
 import { PayloadMapper, PayloadUint8, PayloadBoolean } from '@/protocol/decorators';
-import { BoksPacket, BoksPacketOptions } from '@/protocol/_BoksPacketBase';
 import { AuthPacket, AuthPacketProps } from '@/protocol/downlink/_AuthPacketBase';
 import { BoksOpcode, BoksConfigType } from '@/protocol/constants';
 import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';
@@ -25,14 +24,13 @@ export class SetConfigurationPacket extends AuthPacket {
   @PayloadBoolean(9)
   public accessor value!: boolean;
 
-  constructor(props: SetConfigurationPacketProps, raw?: Uint8Array) {
-    super(props, raw);
+  constructor(props: SetConfigurationPacketProps, rawPayload?: Uint8Array) {
+    super(props, rawPayload);
     this.configType = props.configType;
     this.value = props.value;
   }
 
-  static fromRaw(raw: Uint8Array, options?: BoksPacketOptions): SetConfigurationPacket {
-    const payload = BoksPacket.extractPayloadData(raw, SetConfigurationPacket.opcode);
+  static fromPayload(payload: Uint8Array): SetConfigurationPacket {
     if (payload.length !== 10) {
       throw new BoksProtocolError(
         BoksProtocolErrorId.INVALID_PAYLOAD_LENGTH,
@@ -43,8 +41,7 @@ export class SetConfigurationPacket extends AuthPacket {
 
     const parsed = PayloadMapper.parse<SetConfigurationPacketProps>(
       SetConfigurationPacket,
-      payload,
-      options
+      payload
     );
     return new SetConfigurationPacket(parsed, payload);
   }

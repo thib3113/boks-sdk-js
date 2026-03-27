@@ -1,4 +1,3 @@
-import { BoksPacketOptions } from '../../_BoksPacketBase';
 import { PayloadMapper, PayloadPinCode } from '@/protocol/decorators';
 import {
   BoksHistoryEvent,
@@ -16,16 +15,15 @@ export class CodeKeyValidHistoryPacket extends BoksHistoryEvent {
   @PayloadPinCode(3, { allowIds: true })
   public accessor code!: string;
 
-  constructor(props: CodeKeyValidHistoryPacketProps, raw?: Uint8Array) {
-    super(CodeKeyValidHistoryPacket.opcode, props, raw);
+  constructor(props: CodeKeyValidHistoryPacketProps, rawPayload?: Uint8Array) {
+    super(CodeKeyValidHistoryPacket.opcode, props, rawPayload);
     this.code = props.code;
   }
 
-  static fromRaw(payload: Uint8Array, options?: BoksPacketOptions): CodeKeyValidHistoryPacket {
+  static fromPayload(payload: Uint8Array): CodeKeyValidHistoryPacket {
     const data = PayloadMapper.parse<CodeKeyValidHistoryPacketProps>(
       CodeKeyValidHistoryPacket,
-      payload,
-      options
+      payload
     );
     return new CodeKeyValidHistoryPacket(data, payload);
   }

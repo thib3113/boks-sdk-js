@@ -21,7 +21,7 @@
     "LICENSE"
   ],
   "sideEffects": false,
-  "packageManager": "pnpm@10.33.0",
+  "packageManager": "pnpm@10.32.1",
   "main": "dist/cjs/boks-sdk.cjs",
   "module": "dist/esm/boks-sdk.js",
   "types": "dist/types/index.d.ts",
@@ -131,7 +131,7 @@
     "@thib3113/web-bluetooth-dfu": "^2.4.0",
     "@types/node": "24.12.0",
     "@types/web-bluetooth": "0.0.21",
-    "@vitest/coverage-v8": "4.1.2",
+    "@vitest/coverage-v8": "4.1.1",
     "esbuild": "0.27.4",
     "eslint": "10.1.0",
     "eslint-config-prettier": "10.1.8",
@@ -145,7 +145,7 @@
     "typescript-eslint": "8.57.2",
     "vite-plugin-babel": "1.6.0",
     "vitepress": "1.6.4",
-    "vitest": "4.1.2",
-    "vue": "3.5.31"
+    "vitest": "4.1.1",
+    "vue": "3.5.30"
   }
 }

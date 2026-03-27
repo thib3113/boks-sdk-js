@@ -65,7 +65,6 @@ export interface BoksClientOptions {
   transport?: BoksTransport;
   logger?: BoksLogger;
   device?: BluetoothDevice;
-  strictMode?: boolean;
 }
 
 interface TransactionContext {
@@ -94,7 +93,6 @@ export class BoksClient {
   public readonly event: BoksEventRouter<BoksClientEvents> = new BoksEventRouter();
   private commandQueue: Promise<void> = Promise.resolve();
   private currentTransactionContext: TransactionContext | null = null;
-  private readonly strictMode: boolean = true;
 
   constructor(options?: BoksClientOptions) {
     if (options?.transport) {
@@ -111,10 +109,6 @@ export class BoksClient {
 
     if (options?.logger) {
       this.logger = options.logger;
-    }
-
-    if (options?.strictMode !== undefined) {
-      this.strictMode = options.strictMode;
     }
   }
 
@@ -291,10 +285,7 @@ export class BoksClient {
    */
   private handleNotification(data: Uint8Array) {
     try {
-      const packet = BoksPacketFactory.createFromPayload(data, {
-        strict: this.strictMode,
-        logger: (l, e, c) => this.log(l, e, c)
-      });
+      const packet = BoksPacketFactory.createFromPayload(data, (l, e, c) => this.log(l, e, c));
       if (!packet) {
         return;
       }

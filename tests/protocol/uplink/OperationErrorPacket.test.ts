@@ -6,7 +6,7 @@ import { bytesToHex } from '@/utils/converters';
 describe('OperationErrorPacket', () => {
   it('should parse correctly with error code', () => {
     const payload = new Uint8Array([0x01]);
-    const packet = OperationErrorPacket.fromRaw(payload);
+    const packet = OperationErrorPacket.fromPayload(payload);
     expect(packet.opcode).toBe(BoksOpcode.CODE_OPERATION_ERROR);
     expect(packet.errorCode).toBe(1);
   });
@@ -26,29 +26,15 @@ describe('OperationErrorPacket', () => {
   });
 
   it('should throw error if payload is empty', () => {
-    expect(() => OperationErrorPacket.fromRaw(new Uint8Array(0))).toThrowError();
+    expect(() => OperationErrorPacket.fromPayload(new Uint8Array(0))).toThrowError();
   });
 
   it('should output only mapped payload properties and opcode via toJSON', () => {
-    const packet = OperationErrorPacket.fromRaw(new Uint8Array([0x01]));
+    const packet = OperationErrorPacket.fromPayload(new Uint8Array([0x01]));
     const json = packet.toJSON();
     expect(json).toStrictEqual({
         "errorCode": 1,
         "opcode": 120,
-      "validChecksum": null,
-
       });
-  });
-
-  it('should retain the exact raw payload when constructed from hex via factory', () => {
-    const dummyPayload = new Uint8Array([OperationErrorPacket.opcode, 0x05, 0x01, 0x02, 0x03, 0x04, 0x05, 0x00]);
-    try {
-      const packet = OperationErrorPacket.fromRaw(dummyPayload, { strict: false });
-      if (packet) {
-        expect(bytesToHex(packet.raw).toUpperCase()).toBe(bytesToHex(dummyPayload).toUpperCase());
-      }
-    } catch (e) {
-      // Ignore if dummy payload is invalid for mapped fields
-    }
   });
 });

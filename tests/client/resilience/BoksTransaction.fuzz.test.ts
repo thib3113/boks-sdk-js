@@ -6,12 +6,12 @@ import { BoksPacket, BoksOpcode } from '@/protocol';
 class MockPacket extends BoksPacket {
   constructor(
     public opcode: BoksOpcode,
-    private mockPayload: Uint8Array = new Uint8Array(0)
+    private payload: Uint8Array = new Uint8Array(0)
   ) {
     super();
   }
   toPayload() {
-    return this.mockPayload;
+    return this.payload;
   }
 }
 

@@ -1,4 +1,3 @@
-import { BoksPacketOptions } from '../_BoksPacketBase';
 import { PayloadMapper, PayloadBoolean } from '@/protocol/decorators';
 import { BoksRXPacket } from '@/protocol/uplink/_BoksRXPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
@@ -8,7 +7,7 @@ import { BoksOpcode } from '@/protocol/constants';
  */
 export interface AnswerDoorStatusPacketProps {
   inverted: boolean;
-  status: boolean;
+  raw: boolean;
 }
 
 export class AnswerDoorStatusPacket extends BoksRXPacket {
@@ -18,24 +17,20 @@ export class AnswerDoorStatusPacket extends BoksRXPacket {
   public accessor inverted!: boolean;
 
   @PayloadBoolean(1)
-  public accessor status!: boolean;
+  public accessor raw!: boolean;
 
   public get isOpen(): boolean {
-    return this.status === true && this.inverted === false;
+    return this.raw === true && this.inverted === false;
   }
 
-  constructor(props: AnswerDoorStatusPacketProps, raw?: Uint8Array) {
-    super(AnswerDoorStatusPacket.opcode, raw);
+  constructor(props: AnswerDoorStatusPacketProps, rawPayload?: Uint8Array) {
+    super(AnswerDoorStatusPacket.opcode, rawPayload);
     this.inverted = props.inverted;
-    this.status = props.status;
+    this.raw = props.raw;
   }
 
-  static fromRaw(payload: Uint8Array, options?: BoksPacketOptions): AnswerDoorStatusPacket {
-    const data = PayloadMapper.parse<AnswerDoorStatusPacketProps>(
-      AnswerDoorStatusPacket,
-      payload,
-      options
-    );
+  static fromPayload(payload: Uint8Array): AnswerDoorStatusPacket {
+    const data = PayloadMapper.parse<AnswerDoorStatusPacketProps>(AnswerDoorStatusPacket, payload);
     return new AnswerDoorStatusPacket(data, payload);
   }
 }

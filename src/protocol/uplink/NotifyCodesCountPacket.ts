@@ -1,5 +1,4 @@
-import { BoksPacketOptions } from '../_BoksPacketBase';
-import { PayloadMapper, PayloadUint16, PacketDescriptor } from '@/protocol/decorators';
+import { PayloadMapper, PayloadUint16 } from '@/protocol/decorators';
 import { BoksRXPacket } from '@/protocol/uplink/_BoksRXPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
 
@@ -11,7 +10,6 @@ export interface NotifyCodesCountPacketProps {
   otherCount: number;
 }
 
-@PacketDescriptor({ lengthIncludesHeader: true })
 export class NotifyCodesCountPacket extends BoksRXPacket {
   static readonly opcode = BoksOpcode.NOTIFY_CODES_COUNT;
 
@@ -21,18 +19,14 @@ export class NotifyCodesCountPacket extends BoksRXPacket {
   @PayloadUint16(2)
   public accessor otherCount!: number;
 
-  constructor(props: NotifyCodesCountPacketProps, raw?: Uint8Array) {
-    super(NotifyCodesCountPacket.opcode, raw);
+  constructor(props: NotifyCodesCountPacketProps, rawPayload?: Uint8Array) {
+    super(NotifyCodesCountPacket.opcode, rawPayload);
     this.masterCount = props.masterCount;
     this.otherCount = props.otherCount;
   }
 
-  static fromRaw(payload: Uint8Array, options?: BoksPacketOptions): NotifyCodesCountPacket {
-    const data = PayloadMapper.parse<NotifyCodesCountPacketProps>(
-      NotifyCodesCountPacket,
-      payload,
-      options
-    );
+  static fromPayload(payload: Uint8Array): NotifyCodesCountPacket {
+    const data = PayloadMapper.parse<NotifyCodesCountPacketProps>(NotifyCodesCountPacket, payload);
     return new NotifyCodesCountPacket(data, payload);
   }
 }

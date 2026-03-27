@@ -1,4 +1,3 @@
-import { BoksPacketOptions } from '../_BoksPacketBase';
 import { AuthPacket, AuthPacketProps } from '@/protocol/downlink/_AuthPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
 import { PayloadMapper, PayloadPinCode, PayloadMasterCodeIndex } from '@/protocol/decorators';
@@ -23,13 +22,13 @@ export class CreateMasterCodePacket extends AuthPacket {
   @PayloadMasterCodeIndex(14)
   public accessor index!: number;
 
-  constructor(props: CreateMasterCodePacketProps, raw?: Uint8Array) {
-    super(props, raw);
+  constructor(props: CreateMasterCodePacketProps, rawPayload?: Uint8Array) {
+    super(props, rawPayload);
     this.pin = props.pin;
     this.index = props.index;
   }
 
-  static fromRaw(payload: Uint8Array, options?: BoksPacketOptions): CreateMasterCodePacket {
+  static fromPayload(payload: Uint8Array): CreateMasterCodePacket {
     let safePayload = payload;
     if (payload.length === 14) {
       safePayload = new Uint8Array(15);
@@ -37,8 +36,7 @@ export class CreateMasterCodePacket extends AuthPacket {
     }
     const data = PayloadMapper.parse<CreateMasterCodePacketProps>(
       CreateMasterCodePacket,
-      safePayload,
-      options
+      safePayload
     );
     return new CreateMasterCodePacket(data, payload);
   }

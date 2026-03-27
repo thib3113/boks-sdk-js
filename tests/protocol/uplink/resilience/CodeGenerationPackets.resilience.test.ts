@@ -17,21 +17,21 @@ describe('CodeGenerationPackets - Resilience & Edge Cases', () => {
   ];
 
   describe.each(PACKETS)('$packetClass.name', ({ packetClass, opcode }) => {
-    describe('fromRaw()', () => {
+    describe('fromPayload()', () => {
       it('should parse valid arbitrary payloads without crashing', () => {
         fc.assert(
           fc.property(fc.uint8Array(), (payload) => {
-            const packet = packetClass.fromRaw(payload);
+            const packet = packetClass.fromPayload(payload);
             expect(packet).toBeInstanceOf(packetClass);
             expect(packet.opcode).toBe(opcode);
-            expect((packet as any).raw).toEqual(payload);
+            expect((packet as any).rawPayload).toEqual(payload);
           })
         );
       });
 
       it('should instantiate cleanly with empty payload', () => {
         const payload = new Uint8Array(0);
-        const packet = packetClass.fromRaw(payload);
+        const packet = packetClass.fromPayload(payload);
         expect(packet.opcode).toBe(opcode);
       });
     });
@@ -41,7 +41,7 @@ describe('CodeGenerationPackets - Resilience & Edge Cases', () => {
         const packet = new packetClass();
         expect(packet).toBeInstanceOf(packetClass);
         expect(packet.opcode).toBe(opcode);
-        expect((packet as any).raw).toEqual(new Uint8Array(0));
+        expect((packet as any).rawPayload).toEqual(new Uint8Array(0));
       });
     });
   });

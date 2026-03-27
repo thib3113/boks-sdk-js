@@ -7,7 +7,7 @@ describe('PowerOnHistoryPacket', () => {
   it('should parse correctly with age', () => {
     // age 0
     const payload = new Uint8Array([0x00, 0x00, 0x00]);
-    const packet = PowerOnHistoryPacket.fromRaw(payload);
+    const packet = PowerOnHistoryPacket.fromPayload(payload);
     expect(packet.opcode).toBe(BoksOpcode.POWER_ON);
     expect(packet.age).toBe(0);
   });
@@ -26,25 +26,11 @@ describe('PowerOnHistoryPacket', () => {
   });
 
   it('should output only mapped payload properties and opcode via toJSON', () => {
-    const packet = PowerOnHistoryPacket.fromRaw(new Uint8Array([0x00, 0x00, 0x00]));
+    const packet = PowerOnHistoryPacket.fromPayload(new Uint8Array([0x00, 0x00, 0x00]));
     const json = packet.toJSON();
     expect(json).toStrictEqual({
         "age": 0,
         "opcode": 150,
-      "validChecksum": null,
-
       });
-  });
-
-  it('should retain the exact raw payload when constructed from hex via factory', () => {
-    const dummyPayload = new Uint8Array([PowerOnHistoryPacket.opcode, 0x05, 0x01, 0x02, 0x03, 0x04, 0x05, 0x00]);
-    try {
-      const packet = PowerOnHistoryPacket.fromRaw(dummyPayload, { strict: false });
-      if (packet) {
-        expect(bytesToHex(packet.raw).toUpperCase()).toBe(bytesToHex(dummyPayload).toUpperCase());
-      }
-    } catch (e) {
-      // Ignore if dummy payload is invalid for mapped fields
-    }
   });
 });

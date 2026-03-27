@@ -1,8 +1,8 @@
-import { bytesToHex, stringToBytes } from '@/utils/converters';
 import { describe, it, expect } from 'vitest';
 import { SetConfigurationPacket } from '@/protocol/downlink/SetConfigurationPacket';
 import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';
 import { BoksOpcode } from '@/protocol/constants';
+import { bytesToHex, stringToBytes } from '@/utils/converters';
 
 describe('SetConfigurationPacket', () => {
   const validKey = '12345678';
@@ -64,13 +64,13 @@ describe('SetConfigurationPacket', () => {
     payload[8] = type;
     payload[9] = 0x01;
 
-    const packet = SetConfigurationPacket.fromRaw(payload);
+    const packet = SetConfigurationPacket.fromPayload(payload);
     expect(packet.configKey).toBe(validKey);
     expect(packet.configType).toBe(type);
     expect(packet.value).toBe(true);
 
     payload[9] = 0x00;
-    const packet2 = SetConfigurationPacket.fromRaw(payload);
+    const packet2 = SetConfigurationPacket.fromPayload(payload);
     expect(packet2.value).toBe(false);
   });
 
@@ -82,15 +82,15 @@ describe('SetConfigurationPacket', () => {
 
   it('should throw INVALID_PAYLOAD_LENGTH if payload is wrong size', () => {
     const shortPayload = new Uint8Array(9);
-    expect(() => SetConfigurationPacket.fromRaw(shortPayload)).toThrowError(BoksProtocolError);
+    expect(() => SetConfigurationPacket.fromPayload(shortPayload)).toThrowError(BoksProtocolError);
     try {
-      SetConfigurationPacket.fromRaw(shortPayload);
+      SetConfigurationPacket.fromPayload(shortPayload);
     } catch (e) {
       expect((e as BoksProtocolError).id).toBe(BoksProtocolErrorId.INVALID_PAYLOAD_LENGTH);
     }
 
     const longPayload = new Uint8Array(11);
-    expect(() => SetConfigurationPacket.fromRaw(longPayload)).toThrowError(BoksProtocolError);
+    expect(() => SetConfigurationPacket.fromPayload(longPayload)).toThrowError(BoksProtocolError);
   });
 
   it('should throw INVALID_VALUE if value byte is invalid', () => {
@@ -99,9 +99,9 @@ describe('SetConfigurationPacket', () => {
     payload[8] = type;
     payload[9] = 0x02; // Invalid boolean
 
-    expect(() => SetConfigurationPacket.fromRaw(payload)).toThrowError(BoksProtocolError);
+    expect(() => SetConfigurationPacket.fromPayload(payload)).toThrowError(BoksProtocolError);
     try {
-      SetConfigurationPacket.fromRaw(payload);
+      SetConfigurationPacket.fromPayload(payload);
     } catch (e) {
       expect((e as BoksProtocolError).id).toBe(BoksProtocolErrorId.INVALID_VALUE);
     }
@@ -119,20 +119,6 @@ describe('SetConfigurationPacket', () => {
         "configType": 1,
         "opcode": 22,
         "value": true,
-      "validChecksum": null,
-
       });
-  });
-
-  it('should retain the exact raw payload when constructed from hex via factory', () => {
-    const dummyPayload = new Uint8Array([SetConfigurationPacket.opcode, 0x05, 0x01, 0x02, 0x03, 0x04, 0x05, 0x00]);
-    try {
-      const packet = SetConfigurationPacket.fromRaw(dummyPayload, { strict: false });
-      if (packet) {
-        expect(bytesToHex(packet.raw).toUpperCase()).toBe(bytesToHex(dummyPayload).toUpperCase());
-      }
-    } catch (e) {
-      // Ignore if dummy payload is invalid for mapped fields
-    }
   });
 });

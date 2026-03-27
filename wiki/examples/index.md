@@ -13,13 +13,11 @@ The connection state and simulated data are shared across all pages in this sect
 - [**Initialization**](./initialization): Set up a factory-fresh Boks with a new Master Key.
 - [**Seed Regeneration**](./regeneration): Replace the current Master Key with a known one to manage offline codes.
 - [**Open Door**](./open-door): Send a PIN code to unlock the device.
-- [**Access Codes Management**](./codes): Create and manage keypad codes (Master, Single-use, etc.).
 - [**History Sync**](./history): Download and parse the internal event log.
 - [**Offline PIN Generation**](./offline-pins): Generate access codes locally using your Master Key.
 - [**Hardware Health**](./hardware-health): Real-time diagnostic data from battery and temperature sensors.
 - [**NFC Management**](./nfc): Scan and register NFC tags.
 - [**Battery & Hardware**](./battery): Read battery levels and detailed statistics.
 - [**Firmware Update (DFU)**](./dfu): Update Boks internal firmware.
-- [**Packet Visualizer**](./packet-visualizer): Decode and visualize raw Boks protocol packets.
 
 <BoksDashboard />

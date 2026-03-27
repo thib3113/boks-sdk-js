@@ -1,10 +1,8 @@
 # Mise à jour Firmware (DFU)
 
-Cette démo interactive vous permet de mettre à jour le firmware de votre appareil Boks. Elle utilise la bibliothèque `@thib3113/web-bluetooth-dfu` pour flasher de manière sécurisée les paquets de mise à jour `.zip` de Nordic Semiconductor.
+<DfuDemo />
 
-::: warning Contexte Sécurisé Requis
-Web Bluetooth nécessite un contexte sécurisé. Vous devez accéder à cette page via HTTPS (ou localhost) pour que la mise à jour fonctionne.
-:::
+Cette démo interactive vous permet de mettre à jour le firmware de votre appareil Boks. Elle utilise la bibliothèque `@thib3113/web-bluetooth-dfu` pour flasher de manière sécurisée les paquets de mise à jour `.zip` de Nordic Semiconductor.
 
 ## Comment ça marche
 
@@ -16,7 +14,8 @@ La mise à jour du firmware est un processus en deux étapes :
    - En appuyant sur "Passer en mode DFU", l'outil écrit `0x01` dans la caractéristique de contrôle DFU, ce qui provoque le redémarrage de l'appareil dans un état de bootloader spécialisé.
 
 2. **Flashage (Mode DFU)** :
-   - Une fois l'appareil redémarré, il s'annoncera sous le nom de `DfuTarg` ou `Boks_DFU`.
+   - Une fois l'appareil redémarré, vous serez déconnecté.
+   - Rouvrez le panneau de connexion et connectez-vous à nouveau à l'appareil (il s'annoncera sous le nom de `DfuTarg` ou `Boks_DFU`).
    - Vous pouvez immédiatement sélectionner votre fichier `.zip` de firmware et démarrer le processus de flashage.
    - L'appareil redémarrera en fonctionnement normal une fois le transfert vérifié et terminé.
 
@@ -34,7 +33,5 @@ R: Généralement, non. Le bootloader contient une protection contre le downgrad
 
 **Q: Que se passe-t-il si je flashe un firmware non signé par Boks ?**
 R: Le bootloader DFU nécessite des paquets de firmware signés cryptographiquement. Flasher des zips non signés ou mal signés entraînera une Erreur d'Authentification (`0x0C`).
-
-<DfuDemo />
 
 <BoksDashboard />

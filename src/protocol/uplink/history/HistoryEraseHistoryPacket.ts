@@ -1,4 +1,3 @@
-import { BoksPacketOptions } from '../../_BoksPacketBase';
 import { PayloadMapper } from '@/protocol/decorators';
 import {
   BoksHistoryEvent,
@@ -12,16 +11,12 @@ import { BoksOpcode } from '@/protocol/constants';
 export class HistoryEraseHistoryPacket extends BoksHistoryEvent {
   static readonly opcode = BoksOpcode.LOG_HISTORY_ERASE;
 
-  constructor(props: BoksHistoryEventProps, raw?: Uint8Array) {
-    super(HistoryEraseHistoryPacket.opcode, props, raw);
+  constructor(props: BoksHistoryEventProps, rawPayload?: Uint8Array) {
+    super(HistoryEraseHistoryPacket.opcode, props, rawPayload);
   }
 
-  static fromRaw(payload: Uint8Array, options?: BoksPacketOptions): HistoryEraseHistoryPacket {
-    const data = PayloadMapper.parse<BoksHistoryEventProps>(
-      HistoryEraseHistoryPacket,
-      payload,
-      options
-    );
+  static fromPayload(payload: Uint8Array): HistoryEraseHistoryPacket {
+    const data = PayloadMapper.parse<BoksHistoryEventProps>(HistoryEraseHistoryPacket, payload);
     return new HistoryEraseHistoryPacket(data, payload);
   }
 }

@@ -1,20 +1,10 @@
-import { PayloadAnalyzer } from './PayloadAnalyzer';
-const analyzer = new PayloadAnalyzer();
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unsafe-function-type */
 export type PayloadConstructor = abstract new (...args: any[]) => any;
 
 import { BoksProtocolError, BoksProtocolErrorId } from '../../errors/BoksProtocolError';
 import { BoksExpectedReason } from '../../errors/BoksExpectedReason';
-import { EMPTY_BUFFER, PACKET_HEADER_SIZE, PACKET_MIN_HEADER_SIZE } from '../constants';
-import {
-  hexToBytes,
-  bytesToHex,
-  readPinFromBuffer,
-  readConfigKeyFromBuffer,
-  writeConfigKeyToBuffer
-} from '../../utils/converters';
-import { BoksPacketOptions } from '../_BoksPacketBase';
+import { EMPTY_BUFFER } from '../constants';
+import { hexToBytes, bytesToHex } from '../../utils/converters';
 
 /**
  * Metadata key used to store field definitions on the class constructor.
@@ -352,44 +342,139 @@ export class PayloadMapper {
 
       switch (field.type) {
         case 'uint8':
-          fnBody += `result['${prop}'] = analyzer.readUint8(payload, ${o});\n`;
+          fnBody += `result['${prop}'] = payload[${o}];\n`;
           break;
         case 'uint16':
-          fnBody += `result['${prop}'] = analyzer.readUint16(payload, ${o});\n`;
+          // Big Endian parsing
+          fnBody += `result['${prop}'] = (payload[${o}] << 8) | payload[${o + 1}];\n`;
           break;
         case 'uint24':
-          fnBody += `result['${prop}'] = analyzer.readUint24(payload, ${o});\n`;
+          // Big Endian parsing
+          fnBody += `result['${prop}'] = (payload[${o}] << 16) | (payload[${o + 1}] << 8) | payload[${o + 2}];\n`;
           break;
         case 'uint32':
-          fnBody += `result['${prop}'] = analyzer.readUint32(payload, ${o});\n`;
+          // Big Endian parsing (Note: >>> 0 ensures unsigned 32-bit result in JS)
+          fnBody += `result['${prop}'] = ((payload[${o}] << 24) | (payload[${o + 1}] << 16) | (payload[${o + 2}] << 8) | payload[${o + 3}]) >>> 0;\n`;
           break;
-        case 'ascii_string':
-          fnBody += `result['${prop}'] = analyzer.readAsciiString(payload, ${o}, ${typeof field.length === 'number' ? field.length : 'undefined'});\n`;
+        case 'ascii_string': {
+          // Unrolled String.fromCharCode for fast ASCII extraction without Regex allocation
+          // Encapsulated in a block scope to avoid variable name collisions or syntax errors
+          fnBody += `
+          {
+             let s = '';
+             let c;
+          `;
+          for (let i = 0; i < field.length!; i++) {
+            fnBody += `
+             c = payload[${o + i}];
+             if (c) s += String.fromCharCode(c);
+            `;
+          }
+          fnBody += `
+             result['${prop}'] = s;
+          }
+          `;
           break;
+        }
         case 'boolean':
-          fnBody += `result['${prop}'] = analyzer.readBoolean(payload, ${o}, '${prop}');\n`;
+          fnBody += `
+               if (payload[${o}] !== 0x00 && payload[${o}] !== 0x01) {
+                  throw new BoksProtocolError(
+                    BoksProtocolErrorId.INVALID_VALUE,
+                    'Boolean field must be 0x00 or 0x01',
+                    { field: '${prop}', received: payload[${o}], expected: BoksExpectedReason.UINT8 }
+                  );
+               }
+               result['${prop}'] = payload[${o}] === 0x01;
+          `;
           break;
         case 'byte_array':
-          fnBody += `result['${prop}'] = analyzer.readByteArray(payload, ${o}, ${typeof field.length === 'number' ? field.length : 'undefined'});\n`;
+          if (typeof field.length === 'number') {
+            fnBody += `result['${prop}'] = payload.subarray(${o}, ${o} + ${field.length});\n`;
+          } else {
+            fnBody += `result['${prop}'] = payload.subarray(${o});\n`;
+          }
           break;
         case 'mac_address':
-          fnBody += `result['${prop}'] = analyzer.readMacAddress(payload, ${o});\n`;
+          // Reverse Little Endian to Big Endian (Standard Format: XXXXXXXXXXXX)
+          fnBody += `
+            result['${prop}'] = bytesToHex(payload, { reverse: true, start: ${o}, end: ${o} + 6 });
+          `;
           break;
         case 'pin_code':
-          fnBody += `result['${prop}'] = analyzer.readPinCode(payload, ${o}, '${prop}', ${field.allowIds});\n`;
+          // Inline validation for 6-char PIN
+          fnBody += `
+             const p = payload.subarray(${o}, ${o} + 6);
+             const s = String.fromCharCode(p[0], p[1], p[2], p[3], p[4], p[5]).toUpperCase();
+             const isId = ${field.allowIds} && (s.startsWith('MC') || s.startsWith('UC'));
+
+             for(let i=0; i<6; i++) {
+               const c = p[i];
+               const isStd = (c >= 48 && c <= 57) || c === 65 || c === 66;
+               if (isStd) continue;
+
+               if (isId) {
+                 if (i === 0 && (c === 77 || c === 85)) continue;
+                 if (i === 1 && c === 67) continue;
+               }
+
+               throw new BoksProtocolError(
+                 BoksProtocolErrorId.INVALID_PIN_FORMAT,
+                 'Invalid PIN character inline',
+                 { field: '${prop}', received: s, expected: BoksExpectedReason.VALID_HEX_CHAR }
+               );
+             }
+             result['${prop}'] = s;
+           `;
           break;
         case 'config_key':
-          fnBody += `result['${prop}'] = analyzer.readConfigKey(payload, ${o}, '${prop}');\n`;
+          // Inline validation for 8-char Config Key (Hex: 0-9, A-F)
+          fnBody += `
+             for(let i=0; i<8; i++) {
+               const c = payload[${o} + i];
+               // '0'-'9' (48-57), 'A'-'F' (65-70), 'a'-'f' (97-102)
+
+          if ((c < 48 || c > 57) && (c < 65 || c > 70) && (c < 97 || c > 102)) {
+                  throw new BoksProtocolError(
+                    BoksProtocolErrorId.INVALID_CONFIG_KEY,
+                    'Invalid Config Key character inline',
+                    { field: '${prop}', received: c, expected: BoksExpectedReason.VALID_HEX_CHAR }
+                  );
+               }
+             }
+             result['${prop}'] = String.fromCharCode(payload[${o}], payload[${o + 1}], payload[${o + 2}], payload[${o + 3}], payload[${o + 4}], payload[${o + 5}], payload[${o + 6}], payload[${o + 7}]).toUpperCase();
+           `;
           break;
-        case 'hex_string':
-          fnBody += `result['${prop}'] = analyzer.readHexString(payload, ${o}, ${typeof field.length === 'number' ? field.length : 'undefined'});\n`;
+        case 'hex_string': {
+          if (typeof field.length === 'number') {
+            fnBody += `result['${prop}'] = bytesToHex(payload, { start: ${o}, end: ${o} + ${field.length} });\n`;
+          } else {
+            fnBody += `
+            result['${prop}'] = bytesToHex(payload, { start: ${o} });
+            `;
+          }
           break;
-        case 'var_len_hex':
-          fnBody += `result['${prop}'] = analyzer.readVarLenHex(payload, ${o}, '${prop}');\n`;
+        }
+        case 'var_len_hex': {
+          fnBody += `
+          {
+             const len = payload[${o}];
+             if (payload.length < ${o + 1} + len) {
+               throw new BoksProtocolError(
+                 BoksProtocolErrorId.MALFORMED_DATA,
+                 'Payload too short for variable length hex string',
+                 { field: '${prop}', received: payload.length, expected: ${o + 1} + len }
+               );
+             }
+             result['${prop}'] = bytesToHex(payload, { start: ${o + 1}, end: ${o + 1} + len });
+          }
+          `;
           break;
-        case 'bit':
-          fnBody += `result['${prop}'] = analyzer.readBit(payload, ${o}, ${field.bitIndex!});\n`;
+        }
+        case 'bit': {
+          fnBody += `result['${prop}'] = ((payload[${o}] >> ${field.bitIndex!}) & 1) === 1;\n`;
           break;
+        }
       }
     }
 
@@ -398,13 +483,10 @@ export class PayloadMapper {
     // Compile the function, injecting external dependencies into the closure scope.
     return new Function(
       'payload',
-      'analyzer',
       'BoksProtocolError',
       'BoksProtocolErrorId',
       'BoksExpectedReason',
       'bytesToHex',
-      'readPinFromBuffer',
-      'readConfigKeyFromBuffer',
       fnBody
     ) as (...args: any[]) => any;
   }
@@ -477,7 +559,6 @@ export class PayloadMapper {
 
     return new Function(
       'instance',
-      'analyzer',
       'BoksProtocolError',
       'BoksProtocolErrorId',
       'BoksExpectedReason',
@@ -544,8 +625,7 @@ export class PayloadMapper {
 
       if (field.type === 'var_len_hex') {
         // Optimization: calculating the exact byte length during pre-processing using the existing tool
-        // without allocating intermediate Uint8Array
-        dynamicSizeCalc += ` + (instance['${prop}'] && typeof instance['${prop}'] === 'string' ? Math.floor(instance['${prop}'].length / 2) : 0)`;
+        dynamicSizeCalc += ` + (instance['${prop}'] && typeof instance['${prop}'] === 'string' ? hexToBytes(instance['${prop}']).length : 0)`;
       } else if (
         (field.type === 'hex_string' || field.type === 'byte_array') &&
         typeof field.length !== 'number'
@@ -601,43 +681,114 @@ export class PayloadMapper {
 
       switch (field.type) {
         case 'uint8':
-          fnBody += `analyzer.writeUint8(payload, ${o}, ${val});\n`;
+          fnBody += `payload[${o}] = ${val};\n`;
           break;
         case 'uint16':
-          fnBody += `analyzer.writeUint16(payload, ${o}, ${val});\n`;
+          fnBody += `payload[${o}] = (${val} >> 8) & 0xFF;\n`;
+          fnBody += `payload[${o + 1}] = ${val} & 0xFF;\n`;
           break;
         case 'uint24':
-          fnBody += `analyzer.writeUint24(payload, ${o}, ${val});\n`;
+          fnBody += `payload[${o}] = (${val} >> 16) & 0xFF;\n`;
+          fnBody += `payload[${o + 1}] = (${val} >> 8) & 0xFF;\n`;
+          fnBody += `payload[${o + 2}] = ${val} & 0xFF;\n`;
           break;
         case 'uint32':
-          fnBody += `analyzer.writeUint32(payload, ${o}, ${val});\n`;
+          fnBody += `payload[${o}] = (${val} >>> 24) & 0xFF;\n`;
+          fnBody += `payload[${o + 1}] = (${val} >>> 16) & 0xFF;\n`;
+          fnBody += `payload[${o + 2}] = (${val} >>> 8) & 0xFF;\n`;
+          fnBody += `payload[${o + 3}] = ${val} & 0xFF;\n`;
           break;
         case 'ascii_string':
-          fnBody += `analyzer.writeAsciiString(payload, ${o}, ${strVal}, ${typeof field.length === 'number' ? field.length : 'undefined'});\n`;
+          // Unrolled charCodeAt, pads with 0x00 if string is shorter than fixed length
+          for (let i = 0; i < field.length!; i++) {
+            fnBody += `payload[${o + i}] = ${strVal}.length > ${i} ? ${strVal}.charCodeAt(${i}) : 0;\n`;
+          }
           break;
         case 'boolean':
-          fnBody += `analyzer.writeBoolean(payload, ${o}, instance['${prop}']);\n`;
+          fnBody += `payload[${o}] = instance['${prop}'] ? 0x01 : 0x00;\n`;
           break;
         case 'byte_array':
-          fnBody += `analyzer.writeByteArray(payload, ${o}, instance['${prop}'], ${typeof field.length === 'number' ? field.length : 'undefined'});\n`;
+          if (typeof field.length === 'number') {
+            fnBody += `
+              if (instance['${prop}'] && instance['${prop}'] instanceof Uint8Array) {
+                 payload.set(instance['${prop}'].subarray(0, ${field.length}), ${o});
+              }
+            `;
+          } else {
+            fnBody += `
+              if (instance['${prop}'] && instance['${prop}'] instanceof Uint8Array) {
+                 payload.set(instance['${prop}'], ${o});
+              }
+            `;
+          }
           break;
         case 'mac_address':
-          fnBody += `analyzer.writeMacAddress(payload, ${o}, instance['${prop}']);\n`;
+          fnBody += `
+            if (typeof instance['${prop}'] === 'string') {
+              const bytes = hexToBytes(instance['${prop}']);
+              if (bytes.length === 6) {
+                payload[${o}] = bytes[5];
+                payload[${o} + 1] = bytes[4];
+                payload[${o} + 2] = bytes[3];
+                payload[${o} + 3] = bytes[2];
+                payload[${o} + 4] = bytes[1];
+                payload[${o} + 5] = bytes[0];
+              }
+            }
+          `;
           break;
         case 'pin_code':
-          fnBody += `analyzer.writePinCode(payload, ${o}, ${strValRaw});\n`;
+          for (let i = 0; i < 6; i++) {
+            fnBody += `payload[${o + i}] = ${strValRaw}.charCodeAt(${i});\n`;
+          }
           break;
         case 'config_key':
-          fnBody += `analyzer.writeConfigKey(payload, ${o}, ${strValRaw});\n`;
+          for (let i = 0; i < 8; i++) {
+            fnBody += `payload[${o + i}] = ${strValRaw}.charCodeAt(${i});\n`;
+          }
           break;
         case 'hex_string':
-          fnBody += `analyzer.writeHexString(payload, ${o}, instance['${prop}'], ${typeof field.length === 'number' ? field.length : 'undefined'});\n`;
+          if (typeof field.length === 'number') {
+            fnBody += `
+              if (typeof instance['${prop}'] === 'string') {
+                const bytes = hexToBytes(instance['${prop}']);
+                for (let i = 0; i < ${field.length} && i < bytes.length; i++) {
+                  payload[${o} + i] = bytes[i];
+                }
+              } else if (instance['${prop}'] instanceof Uint8Array) {
+                payload.set(instance['${prop}'].subarray(0, ${field.length}), ${o});
+              }
+            `;
+          } else {
+            fnBody += `
+              if (typeof instance['${prop}'] === 'string') {
+                const bytes = hexToBytes(instance['${prop}']);
+                payload.set(bytes, ${o});
+              } else if (instance['${prop}'] instanceof Uint8Array) {
+                payload.set(instance['${prop}'], ${o});
+              }
+            `;
+          }
           break;
         case 'var_len_hex':
-          fnBody += `analyzer.writeVarLenHex(payload, ${o}, instance['${prop}']);\n`;
+          fnBody += `
+            if (typeof instance['${prop}'] === 'string') {
+              const bytes = hexToBytes(instance['${prop}']);
+              payload[${o}] = bytes.length;
+              payload.set(bytes, ${o} + 1);
+            } else {
+              payload[${o}] = 0;
+            }
+          `;
           break;
         case 'bit':
-          fnBody += `analyzer.writeBit(payload, ${o}, ${field.bitIndex!}, instance['${prop}']);\n`;
+          fnBody += `
+            if (instance['${prop}']) {
+              payload[${o}] |= (1 << ${field.bitIndex!});
+            } else {
+              payload[${o}] &= ~(1 << ${field.bitIndex!});
+            }
+          `;
           break;
       }
     }
@@ -645,12 +796,10 @@ export class PayloadMapper {
     fnBody += `return payload;\n`;
     return new Function(
       'instance',
-      'analyzer',
       'BoksProtocolError',
       'BoksProtocolErrorId',
       'BoksExpectedReason',
       'hexToBytes',
-      'writeConfigKeyToBuffer',
       fnBody
     ) as (...args: any[]) => any;
   }
@@ -660,14 +809,10 @@ export class PayloadMapper {
    *
    * @param targetClass The class constructor (e.g., OpenDoorPacket)
    * @param payload The raw buffer
-   * @param options
    * @returns A mapped object containing the extracted properties
    */
-  public static parse<T = any>(
-    targetClass: Function | any,
-    payload: Uint8Array,
-    options?: BoksPacketOptions
-  ): T {
+  /* eslint-disable-next-line @typescript-eslint/no-unsafe-function-type */
+  public static parse<T = any>(targetClass: Function | any, payload: Uint8Array): T {
     if (typeof payload === 'string') {
       throw new BoksProtocolError(
         BoksProtocolErrorId.INVALID_TYPE,
@@ -688,45 +833,17 @@ export class PayloadMapper {
         { received: typeof payload, expected: 'Uint8Array' }
       );
     }
-
-    // Auto-extract payload if we received a full raw packet
-    let dataPart = payload;
-    const opcode = (targetClass as any).opcode;
-    const strict = options?.strict ?? true;
-
-    // Logic for header stripping
-    if (opcode !== undefined && payload.length >= PACKET_MIN_HEADER_SIZE && payload[0] === opcode) {
-      const lengthIncludesHeader = (targetClass as any).lengthIncludesHeader ?? false;
-      const lengthByte = payload[1];
-      const expectedTotalLength = lengthIncludesHeader
-        ? lengthByte
-        : lengthByte + PACKET_HEADER_SIZE;
-
-      // In non-strict mode, we strip the header as long as the opcode matches (for truncated packets).
-      // In strict mode, we only strip if the length is a perfect match.
-      const shouldStrip = !strict || payload.length === expectedTotalLength;
-
-      if (shouldStrip) {
-        const payloadLength = lengthIncludesHeader ? lengthByte - PACKET_HEADER_SIZE : lengthByte;
-        // Extract the data part. Using subarray is safe even if payload is shorter than payloadLength.
-        dataPart = payload.subarray(PACKET_MIN_HEADER_SIZE, PACKET_MIN_HEADER_SIZE + payloadLength);
-      }
-    }
-
     let parser = this.compiledParsers.get(targetClass as PayloadConstructor);
     if (!parser) {
       parser = this.compileParser(targetClass as PayloadConstructor);
       this.compiledParsers.set(targetClass as PayloadConstructor, parser);
     }
     const result = parser(
-      dataPart,
-      analyzer,
+      payload,
       BoksProtocolError,
       BoksProtocolErrorId,
       BoksExpectedReason,
-      bytesToHex,
-      readPinFromBuffer,
-      readConfigKeyFromBuffer
+      bytesToHex
     );
     return result as unknown as T;
   }
@@ -757,12 +874,10 @@ export class PayloadMapper {
     }
     return serializer(
       instance,
-      analyzer,
       BoksProtocolError,
       BoksProtocolErrorId,
       BoksExpectedReason,
-      hexToBytes,
-      writeConfigKeyToBuffer
+      hexToBytes
     );
   }
 
@@ -781,7 +896,7 @@ export class PayloadMapper {
       validator = this.compileValidator(targetClass as PayloadConstructor);
       this.compiledValidators.set(targetClass as PayloadConstructor, validator);
     }
-    validator(instance, analyzer, BoksProtocolError, BoksProtocolErrorId, BoksExpectedReason);
+    validator(instance, BoksProtocolError, BoksProtocolErrorId, BoksExpectedReason);
   }
 
   public static defineSchema(targetClass: any, schema: FieldDefinition[]): void {

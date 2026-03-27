@@ -70,7 +70,6 @@ export default defineConfig({
               text: 'Exemples Interactifs',
               items: [
                 { text: 'Présentation', link: '/fr/examples/' },
-                { text: 'Visualiseur de Paquets', link: '/fr/examples/packet-visualizer' },
                 { text: 'Démo Initialisation', link: '/fr/examples/initialization' },
         { text: 'Régénération Seed', link: '/fr/examples/regeneration' },
                 { text: 'Démo Ouverture', link: '/fr/examples/open-door' },
@@ -146,7 +145,6 @@ export default defineConfig({
           text: 'Interactive Examples',
           items: [
             { text: 'Overview', link: '/examples/' },
-            { text: 'Packet Visualizer', link: '/examples/packet-visualizer' },
             { text: 'Initialization Demo', link: '/examples/initialization' },
         { text: 'Seed Regeneration', link: '/examples/regeneration' },
             { text: 'Open Door Demo', link: '/examples/open-door' },

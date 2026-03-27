@@ -29,12 +29,12 @@ class MockTransport implements BoksTransport {
 class MockPacket extends BoksPacket {
   constructor(
     public opcode: BoksOpcode,
-    private mockPayload: Uint8Array = new Uint8Array(0)
+    private payload: Uint8Array = new Uint8Array(0)
   ) {
     super();
   }
   toPayload() {
-    return this.mockPayload;
+    return this.payload;
   }
   // Override encode to bypass checksum calculation in tests if needed,
   // but base class implementation works if checksum logic is pure.
@@ -44,11 +44,10 @@ class MockPacket extends BoksPacket {
 // Mock Factory
 vi.mock('@/protocol/BoksPacketFactory', () => ({
   BoksPacketFactory: {
-    createFromPayload: (data: Uint8Array, _options?: any) => {
+    createFromPayload: (data: Uint8Array) => {
       return {
         opcode: data[0],
-        encode: () => data,
-        validChecksum: true
+        encode: () => data
       };
     }
   }

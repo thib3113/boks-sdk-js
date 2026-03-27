@@ -1,4 +1,3 @@
-import { BoksPacketOptions } from '../_BoksPacketBase';
 import { BoksPacket } from '@/protocol/_BoksPacketBase';
 import { BoksOpcode, EMPTY_BUFFER } from '@/protocol/constants';
 
@@ -11,7 +10,7 @@ export class ScaleGetMacPacket extends BoksPacket {
   get opcode() {
     return ScaleGetMacPacket.opcode;
   }
-  static fromRaw(payload: Uint8Array, _options?: BoksPacketOptions): ScaleGetMacPacket {
+  static fromPayload(payload: Uint8Array): ScaleGetMacPacket {
     return new ScaleGetMacPacket(payload);
   }
   toPayload() {

@@ -1,8 +1,8 @@
-import { bytesToHex, stringToBytes } from '@/utils/converters';
 import { BoksProtocolError } from '@/errors/BoksProtocolError';
 import { describe, it, expect } from 'vitest';
 import { RegisterNfcTagScanStartPacket } from '@/protocol/downlink/RegisterNfcTagScanStartPacket';
 import { BoksOpcode } from '@/protocol/constants';
+import { bytesToHex, stringToBytes } from '@/utils/converters';
 
 describe('RegisterNfcTagScanStartPacket', () => {
   const validKey = '12345678';
@@ -34,7 +34,7 @@ describe('RegisterNfcTagScanStartPacket', () => {
 
   it('should parse from payload correctly', () => {
     const payload = new Uint8Array([0, ...stringToBytes(validKey)]);
-    const packet = RegisterNfcTagScanStartPacket.fromRaw(payload);
+    const packet = RegisterNfcTagScanStartPacket.fromPayload(payload);
     expect(packet.configKey).toBe(validKey);
   });
 
@@ -49,7 +49,7 @@ describe('RegisterNfcTagScanStartPacket', () => {
 
   it('should fail parsing if payload is too short (bad key)', () => {
     const payload = new Uint8Array(5);
-    expect(() => RegisterNfcTagScanStartPacket.fromRaw(payload)).toThrowError(
+    expect(() => RegisterNfcTagScanStartPacket.fromPayload(payload)).toThrowError(
       BoksProtocolError
     );
   });
@@ -60,20 +60,6 @@ describe('RegisterNfcTagScanStartPacket', () => {
     expect(json).toStrictEqual({
         "configKey": "12345678",
         "opcode": 23,
-      "validChecksum": null,
-
       });
-  });
-
-  it('should retain the exact raw payload when constructed from hex via factory', () => {
-    const dummyPayload = new Uint8Array([RegisterNfcTagScanStartPacket.opcode, 0x05, 0x01, 0x02, 0x03, 0x04, 0x05, 0x00]);
-    try {
-      const packet = RegisterNfcTagScanStartPacket.fromRaw(dummyPayload, { strict: false });
-      if (packet) {
-        expect(bytesToHex(packet.raw).toUpperCase()).toBe(bytesToHex(dummyPayload).toUpperCase());
-      }
-    } catch (e) {
-      // Ignore if dummy payload is invalid for mapped fields
-    }
   });
 });

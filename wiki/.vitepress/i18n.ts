@@ -1,20 +1,5 @@
 export const i18n = {
   en: {
-    visualizer: {
-      title: 'Packet Visualizer',
-      label: 'Raw Hexadecimal Packet:',
-      placeholder: 'e.g. c30700020cffd7',
-      opcode: 'Opcode',
-      length: 'Length',
-      checksum: 'Checksum',
-      unmapped: 'Unmapped Payload',
-      extra: 'Extra Bytes (Invalid)',
-      valid: 'Valid',
-      invalid: 'Invalid',
-      notAvailable: 'N/A',
-      warning: 'Parsing Warning:',
-      checksumError: 'Invalid checksum',
-    },
 
     provision: {
       title: 'Seed Regeneration',
@@ -167,8 +152,7 @@ export const i18n = {
       date: 'Date',
       type: 'Type',
       eventDesc: 'Event Description',
-      noHistory: 'No history fetched yet.',
-      syncPrompt: 'Click "Sync History" to download the events.',
+      noHistory: 'No history fetched yet. Click "Sync History".',
       fetchingMsg: 'Fetching history from device memory...',
       fetchSuccess: 'Successfully fetched {count} events.',
       doorOpened: 'Door Opened',
@@ -178,10 +162,6 @@ export const i18n = {
       validNfcTag: 'Valid NFC Tag',
       physicalKey: 'Physical Key',
       systemPowerOn: 'System Power On',
-      pendingLogs: 'Pending logs on device: {count}',
-      pendingLogsUnknown: 'Pending logs: Unknown',
-      refreshPending: 'Refresh Count',
-      fetchingCount: 'Checking...'
     },
     battery: {
       title: 'Battery & Hardware Info',
@@ -279,21 +259,6 @@ export const i18n = {
     }
   },
   fr: {
-    visualizer: {
-      title: 'Visualiseur de Paquets',
-      label: 'Paquet Hexadécimal Brut :',
-      placeholder: 'ex: c30700020cffd7',
-      opcode: 'Opcode',
-      length: 'Longueur',
-      checksum: 'Somme de contrôle',
-      unmapped: 'Données non mappées',
-      extra: 'Octets en trop (Invalide)',
-      valid: 'Valide',
-      invalid: 'Invalide',
-      notAvailable: 'N/A',
-      warning: 'Avertissement :',
-      checksumError: 'Somme de contrôle invalide',
-    },
 
     provision: {
       title: 'Régénération de Seed',
@@ -446,8 +411,7 @@ export const i18n = {
       date: 'Date',
       type: 'Type',
       eventDesc: 'Description de l\'Événement',
-      noHistory: 'Aucun historique récupéré pour l\'instant.',
-      syncPrompt: 'Cliquez sur "Synchroniser l\'Historique" pour télécharger les événements.',
+      noHistory: 'Aucun historique récupéré pour l\'instant. Cliquez sur "Synchroniser l\'Historique".',
       fetchingMsg: 'Récupération de l\'historique depuis la mémoire de l\'appareil...',
       fetchSuccess: 'Récupération réussie de {count} événements.',
       doorOpened: 'Porte Ouverte',
@@ -457,10 +421,6 @@ export const i18n = {
       validNfcTag: 'Tag NFC Valide',
       physicalKey: 'Clé Physique',
       systemPowerOn: 'Allumage du Système',
-      pendingLogs: 'Journaux en attente sur l\'appareil : {count}',
-      pendingLogsUnknown: 'Journaux en attente : Inconnu',
-      refreshPending: 'Actualiser le Compte',
-      fetchingCount: 'Vérification...'
     },
     battery: {
       title: 'Info Batterie & Matériel',

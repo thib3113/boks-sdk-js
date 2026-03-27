@@ -1,8 +1,8 @@
-import { bytesToHex, stringToBytes } from '@/utils/converters';
 import { BoksProtocolError } from '@/errors/BoksProtocolError';
 import { describe, it, expect } from 'vitest';
 import { UnregisterNfcTagPacket } from '@/protocol/downlink/UnregisterNfcTagPacket';
 import { BoksOpcode } from '@/protocol/constants';
+import { bytesToHex, stringToBytes } from '@/utils/converters';
 
 describe('UnregisterNfcTagPacket', () => {
   const validKey = '12345678';
@@ -42,7 +42,7 @@ describe('UnregisterNfcTagPacket', () => {
     payload[8] = 4;
     payload.set(uidBytes, 9);
 
-    const packet = UnregisterNfcTagPacket.fromRaw(payload);
+    const packet = UnregisterNfcTagPacket.fromPayload(payload);
     expect(packet.configKey).toBe(validKey);
     expect(packet.uid).toBe('01020304');
   });
@@ -62,7 +62,7 @@ describe('UnregisterNfcTagPacket', () => {
   it('should fail parsing if payload is malformed', () => {
     const payload = new Uint8Array(8);
     payload.set(stringToBytes(validKey), 0);
-    expect(() => UnregisterNfcTagPacket.fromRaw(payload)).toThrowError(BoksProtocolError);
+    expect(() => UnregisterNfcTagPacket.fromPayload(payload)).toThrowError(BoksProtocolError);
   });
 
   it('should output only mapped payload properties and opcode via toJSON', () => {
@@ -72,20 +72,6 @@ describe('UnregisterNfcTagPacket', () => {
         "configKey": "12345678",
         "opcode": 25,
         "uid": "04A1B2C3",
-      "validChecksum": null,
-
       });
-  });
-
-  it('should retain the exact raw payload when constructed from hex via factory', () => {
-    const dummyPayload = new Uint8Array([UnregisterNfcTagPacket.opcode, 0x05, 0x01, 0x02, 0x03, 0x04, 0x05, 0x00]);
-    try {
-      const packet = UnregisterNfcTagPacket.fromRaw(dummyPayload, { strict: false });
-      if (packet) {
-        expect(bytesToHex(packet.raw).toUpperCase()).toBe(bytesToHex(dummyPayload).toUpperCase());
-      }
-    } catch (e) {
-      // Ignore if dummy payload is invalid for mapped fields
-    }
   });
 });

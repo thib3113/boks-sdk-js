@@ -565,18 +565,6 @@ export class BoksHardwareSimulator {
     }
   }
 
-  public get batteryLevel(): number {
-    return this.#batteryLevel;
-  }
-
-  public get masterCodesCount(): number {
-    return Array.from(this.#pinCodes.values()).filter((t) => t === BoksCodeType.Master).length;
-  }
-
-  public get singleCodesCount(): number {
-    return Array.from(this.#pinCodes.values()).filter((t) => t === BoksCodeType.Single).length;
-  }
-
   /**
    * Internal method to execute the door opening sequence.
    */
@@ -883,33 +871,29 @@ export class BoksHardwareSimulator {
 
     const opcode = data[0];
     const len = data[1];
-    if (data.length < len + 2) {
+    if (data.length !== len + 3) {
       return;
     }
 
     const payload = data.subarray(2, 2 + len);
+    const checksum = data[data.length - 1];
+    const calculatedChecksum = calculateChecksum(data.subarray(0, data.length - 1));
 
-    // Real hardware isn't demanding on CRCs.
-    // If a CRC byte is present, we calculate and log errors, but we never block processing.
-    if (data.length >= len + 3) {
-      const checksum = data[len + 2];
-      const calculatedChecksum = calculateChecksum(data.subarray(0, len + 2));
-
-      if (checksum !== calculatedChecksum) {
-        this.log('warn', 'checksum_error', {
-          opcode,
-          expected: calculatedChecksum,
-          received: checksum
-        });
-      }
+    if (checksum !== calculatedChecksum) {
+      this.log('warn', 'checksum_error', {
+        opcode,
+        expected: calculatedChecksum,
+        received: checksum
+      });
+      return;
     }
 
     this.log('debug', 'receive', { opcode, length: data.length });
 
     if (this.#packetSubscribers.size > 0) {
-      const parsedPacket = BoksPacketFactory.createFromPayload(data, {
-        logger: (l, e, c) => this.log(l, e, c)
-      });
+      const parsedPacket = BoksPacketFactory.createFromPayload(data, (l, e, c) =>
+        this.log(l, e, c)
+      );
       if (parsedPacket) {
         this.#packetSubscribers.forEach((cb) =>
           cb({ direction: 'TX', packet: parsedPacket, buffer: data })
@@ -985,9 +969,9 @@ export class BoksHardwareSimulator {
     this.log('debug', 'send', { opcode: data[0], length: data.length });
 
     if (this.#packetSubscribers.size > 0) {
-      const parsedOutPacket = BoksPacketFactory.createFromPayload(data, {
-        logger: (l, e, c) => this.log(l, e, c)
-      });
+      const parsedOutPacket = BoksPacketFactory.createFromPayload(data, (l, e, c) =>
+        this.log(l, e, c)
+      );
       if (parsedOutPacket) {
         this.#packetSubscribers.forEach((cb) =>
           cb({ direction: 'RX', packet: parsedOutPacket, buffer: data })
@@ -1074,11 +1058,9 @@ export class BoksHardwareSimulator {
   }
 
   private createResponse(opcode: number, payload: Uint8Array): Uint8Array {
-    const isCodesCount = opcode === BoksOpcode.NOTIFY_CODES_COUNT;
     const response = new Uint8Array(payload.length + 3);
     response[0] = opcode;
-    // Emulate firmware quirk for NOTIFY_CODES_COUNT: length byte is total size, not payload size.
-    response[1] = isCodesCount ? payload.length + 3 : payload.length;
+    response[1] = payload.length;
     response.set(payload, 2);
     response[response.length - 1] = calculateChecksum(response.subarray(0, response.length - 1));
     return response;
