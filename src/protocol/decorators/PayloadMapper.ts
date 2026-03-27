@@ -5,7 +5,13 @@ export type PayloadConstructor = abstract new (...args: any[]) => any;
 import { BoksProtocolError, BoksProtocolErrorId } from '../../errors/BoksProtocolError';
 import { BoksExpectedReason } from '../../errors/BoksExpectedReason';
 import { EMPTY_BUFFER, PACKET_HEADER_SIZE, PACKET_MIN_HEADER_SIZE } from '../constants';
-import { hexToBytes, bytesToHex } from '../../utils/converters';
+import {
+  hexToBytes,
+  bytesToHex,
+  readPinFromBuffer,
+  readConfigKeyFromBuffer,
+  writeConfigKeyToBuffer
+} from '../../utils/converters';
 import { BoksPacketOptions } from '../_BoksPacketBase';
 
 /**
@@ -392,9 +398,9 @@ export class PayloadMapper {
           break;
         case 'byte_array':
           if (typeof field.length === 'number') {
-            fnBody += `result['${prop}'] = payload.subarray(${o}, ${o} + ${field.length});\n`;
+            fnBody += `result['${prop}'] = payload.slice(${o}, ${o} + ${field.length});\n`;
           } else {
-            fnBody += `result['${prop}'] = payload.subarray(${o});\n`;
+            fnBody += `result['${prop}'] = payload.slice(${o});\n`;
           }
           break;
         case 'mac_address':
@@ -404,21 +410,20 @@ export class PayloadMapper {
           `;
           break;
         case 'pin_code':
-          // Inline validation for 6-char PIN
+          // Validation for 6-char PIN using readPinFromBuffer
           fnBody += `
           {
-             const p = payload.subarray(${o}, ${o} + 6);
-             const s = String.fromCharCode(p[0], p[1], p[2], p[3], p[4], p[5]).toUpperCase();
+             const s = readPinFromBuffer(payload, ${o});
              const isId = ${field.allowIds} && (s.startsWith('MC') || s.startsWith('UC'));
 
              for(let i=0; i<6; i++) {
-               const c = p[i];
-               const isStd = (c >= 48 && c <= 57) || c === 65 || c === 66;
+               const c = s.charCodeAt(i);
+               const isStd = (c >= 48 && c <= 57) || c === 65 || c === 66; // 0-9, A, B
                if (isStd) continue;
                
                if (isId) {
-                 if (i === 0 && (c === 77 || c === 85)) continue;
-                 if (i === 1 && c === 67) continue;
+                 if (i === 0 && (c === 77 || c === 85)) continue; // M or U
+                 if (i === 1 && c === 67) continue; // C
                }
 
                throw new BoksProtocolError(
@@ -429,7 +434,7 @@ export class PayloadMapper {
              }
              result['${prop}'] = s;
            }
-             `;
+           `;
           break;
         case 'config_key':
           // Inline validation for 8-char Config Key (Hex: 0-9, A-F)
@@ -491,6 +496,8 @@ export class PayloadMapper {
       'BoksProtocolErrorId',
       'BoksExpectedReason',
       'bytesToHex',
+      'readPinFromBuffer',
+      'readConfigKeyFromBuffer',
       fnBody
     ) as (...args: any[]) => any;
   }
@@ -715,13 +722,20 @@ export class PayloadMapper {
           if (typeof field.length === 'number') {
             fnBody += `
               if (instance['${prop}'] && instance['${prop}'] instanceof Uint8Array) {
-                 payload.set(instance['${prop}'].subarray(0, ${field.length}), ${o});
+                 const src = instance['${prop}'];
+                 const len = Math.min(src.length, ${field.length});
+                 for (let i = 0; i < len; i++) {
+                   payload[${o} + i] = src[i];
+                 }
               }
             `;
           } else {
             fnBody += `
               if (instance['${prop}'] && instance['${prop}'] instanceof Uint8Array) {
-                 payload.set(instance['${prop}'], ${o});
+                 const src = instance['${prop}'];
+                 for (let i = 0; i < src.length; i++) {
+                   payload[${o} + i] = src[i];
+                 }
               }
             `;
           }
@@ -760,7 +774,11 @@ export class PayloadMapper {
                   payload[${o} + i] = bytes[i];
                 }
               } else if (instance['${prop}'] instanceof Uint8Array) {
-                payload.set(instance['${prop}'].subarray(0, ${field.length}), ${o});
+                const src = instance['${prop}'];
+                const len = Math.min(src.length, ${field.length});
+                for (let i = 0; i < len; i++) {
+                  payload[${o} + i] = src[i];
+                }
               }
             `;
           } else {
@@ -804,6 +822,7 @@ export class PayloadMapper {
       'BoksProtocolErrorId',
       'BoksExpectedReason',
       'hexToBytes',
+      'writeConfigKeyToBuffer',
       fnBody
     ) as (...args: any[]) => any;
   }
@@ -876,7 +895,9 @@ export class PayloadMapper {
       BoksProtocolError,
       BoksProtocolErrorId,
       BoksExpectedReason,
-      bytesToHex
+      bytesToHex,
+      readPinFromBuffer,
+      readConfigKeyFromBuffer
     );
     return result as unknown as T;
   }
@@ -910,7 +931,8 @@ export class PayloadMapper {
       BoksProtocolError,
       BoksProtocolErrorId,
       BoksExpectedReason,
-      hexToBytes
+      hexToBytes,
+      writeConfigKeyToBuffer
     );
   }
 
