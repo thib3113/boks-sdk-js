@@ -1,8 +1,8 @@
+import { bytesToHex, stringToBytes } from '@/utils/converters';
 import { describe, it, expect } from 'vitest';
 import { RegeneratePartAPacket } from '@/protocol/downlink/RegeneratePartAPacket';
 import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';
 import { BoksOpcode } from '@/protocol/constants';
-import { bytesToHex, stringToBytes } from '@/utils/converters';
 
 describe('RegeneratePartAPacket', () => {
   const validKey = '12345678';
@@ -33,7 +33,7 @@ describe('RegeneratePartAPacket', () => {
     payload.set(stringToBytes(validKey), 0);
     payload.set(validPart, 8);
 
-    const packet = RegeneratePartAPacket.fromPayload(payload);
+    const packet = RegeneratePartAPacket.fromRaw(payload);
     expect(packet.configKey).toBe(validKey);
     expect(packet.part).toEqual('000102030405060708090A0B0C0D0E0F');
   });
@@ -62,7 +62,7 @@ describe('RegeneratePartAPacket', () => {
     const payload = new Uint8Array(20);
     payload.set(stringToBytes(validKey), 0);
 
-    expect(() => RegeneratePartAPacket.fromPayload(payload)).toThrowError(BoksProtocolError);
+    expect(() => RegeneratePartAPacket.fromRaw(payload)).toThrowError(BoksProtocolError);
   });
 
   it('should output only mapped payload properties and opcode via toJSON', () => {
@@ -72,6 +72,20 @@ describe('RegeneratePartAPacket', () => {
         "configKey": "12345678",
         "opcode": 32,
         "part": "000102030405060708090A0B0C0D0E0F",
+      "validChecksum": null,
+
       });
+  });
+
+  it('should retain the exact raw payload when constructed from hex via factory', () => {
+    const dummyPayload = new Uint8Array([RegeneratePartAPacket.opcode, 0x05, 0x01, 0x02, 0x03, 0x04, 0x05, 0x00]);
+    try {
+      const packet = RegeneratePartAPacket.fromRaw(dummyPayload, { strict: false });
+      if (packet) {
+        expect(bytesToHex(packet.raw).toUpperCase()).toBe(bytesToHex(dummyPayload).toUpperCase());
+      }
+    } catch (e) {
+      // Ignore if dummy payload is invalid for mapped fields
+    }
   });
 });

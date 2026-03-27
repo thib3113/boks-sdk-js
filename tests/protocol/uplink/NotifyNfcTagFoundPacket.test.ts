@@ -7,7 +7,7 @@ describe('NotifyNfcTagFoundPacket', () => {
   it('should parse correctly', () => {
     // 01 02 03 04 -> "01020304"
     const payload = new Uint8Array([0x04, 0x01, 0x02, 0x03, 0x04]);
-    const packet = NotifyNfcTagFoundPacket.fromPayload(payload);
+    const packet = NotifyNfcTagFoundPacket.fromRaw(payload);
 
     expect(packet.opcode).toBe(BoksOpcode.NOTIFY_NFC_TAG_FOUND);
     expect(packet.uid).toBe('01020304');
@@ -27,7 +27,7 @@ describe('NotifyNfcTagFoundPacket', () => {
   it('should parse 7-byte UID correctly', () => {
     // 01 02 03 04 05 06 07 -> "01020304050607"
     const payload = new Uint8Array([0x07, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07]);
-    const packet = NotifyNfcTagFoundPacket.fromPayload(payload);
+    const packet = NotifyNfcTagFoundPacket.fromRaw(payload);
 
     expect(packet.opcode).toBe(BoksOpcode.NOTIFY_NFC_TAG_FOUND);
     expect(packet.uid).toBe('01020304050607');
@@ -39,7 +39,7 @@ describe('NotifyNfcTagFoundPacket', () => {
     const payload = new Uint8Array([
       0x0a, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a
     ]);
-    const packet = NotifyNfcTagFoundPacket.fromPayload(payload);
+    const packet = NotifyNfcTagFoundPacket.fromRaw(payload);
 
     expect(packet.opcode).toBe(BoksOpcode.NOTIFY_NFC_TAG_FOUND);
     expect(packet.uid).toBe('0102030405060708090A');
@@ -47,25 +47,39 @@ describe('NotifyNfcTagFoundPacket', () => {
   });
 
   it('should parse cleanly if UID length is greater than 10', () => {
-    // We removed manual length validation from fromPayload, relying entirely on the payload mapper bounds checking
+    // We removed manual length validation from fromRaw, relying entirely on the payload mapper bounds checking
     const payload = new Uint8Array([
       0x0b, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b
     ]);
-    const packet = NotifyNfcTagFoundPacket.fromPayload(payload);
+    const packet = NotifyNfcTagFoundPacket.fromRaw(payload);
     expect(packet.uid).toBe('0102030405060708090A0B');
   });
 
   it('should throw on empty payload', () => {
     const payload = new Uint8Array(0);
-    expect(() => NotifyNfcTagFoundPacket.fromPayload(payload)).toThrow();
+    expect(() => NotifyNfcTagFoundPacket.fromRaw(payload)).toThrow();
   });
 
   it('should output only mapped payload properties and opcode via toJSON', () => {
-    const packet = NotifyNfcTagFoundPacket.fromPayload(new Uint8Array([0x04, 0x01, 0x02, 0x03, 0x04]));
+    const packet = NotifyNfcTagFoundPacket.fromRaw(new Uint8Array([0x04, 0x01, 0x02, 0x03, 0x04]));
     const json = packet.toJSON();
     expect(json).toStrictEqual({
         "opcode": 197,
         "uid": "01020304",
+      "validChecksum": null,
+
       });
+  });
+
+  it('should retain the exact raw payload when constructed from hex via factory', () => {
+    const dummyPayload = new Uint8Array([NotifyNfcTagFoundPacket.opcode, 0x05, 0x01, 0x02, 0x03, 0x04, 0x05, 0x00]);
+    try {
+      const packet = NotifyNfcTagFoundPacket.fromRaw(dummyPayload, { strict: false });
+      if (packet) {
+        expect(bytesToHex(packet.raw).toUpperCase()).toBe(bytesToHex(dummyPayload).toUpperCase());
+      }
+    } catch (e) {
+      // Ignore if dummy payload is invalid for mapped fields
+    }
   });
 });

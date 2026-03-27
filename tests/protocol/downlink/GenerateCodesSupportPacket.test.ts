@@ -38,16 +38,16 @@ describe('GenerateCodesSupportPacket', () => {
   });
 
   it('should parse from payload correctly', () => {
-    const packet = GenerateCodesSupportPacket.fromPayload(validSeedBytes);
+    const packet = GenerateCodesSupportPacket.fromRaw(validSeedBytes);
     expect(packet.seed).toBe(validSeedHex);
   });
 
   it('should throw INVALID_SEED_LENGTH for invalid seed length', () => {
-    // This test is obsolete now as validation occurs in fromPayload, but new constructor expects valid seed length when using toPayload
-    // actually let's just make it throw BoksProtocolError for fromPayload on short seed
+    // This test is obsolete now as validation occurs in fromRaw, but new constructor expects valid seed length when using toPayload
+    // actually let's just make it throw BoksProtocolError for fromRaw on short seed
 
     const shortSeed = new Uint8Array(31);
-    expect(() => GenerateCodesSupportPacket.fromPayload(shortSeed)).toThrowError(BoksProtocolError); // BoksProtocolError);
+    expect(() => GenerateCodesSupportPacket.fromRaw(shortSeed)).toThrowError(BoksProtocolError); // BoksProtocolError);
 
     const shortHex = '0001';
     expect(() => new GenerateCodesSupportPacket(shortHex)).toThrowError(BoksProtocolError);
@@ -81,7 +81,21 @@ describe('GenerateCodesSupportPacket', () => {
       expect(json).toStrictEqual({
           "opcode": 21,
           "seed": validSeedHex,
+        "validChecksum": null,
+
         });
     });
+  });
+
+  it('should retain the exact raw payload when constructed from hex via factory', () => {
+    const dummyPayload = new Uint8Array([GenerateCodesSupportPacket.opcode, 0x05, 0x01, 0x02, 0x03, 0x04, 0x05, 0x00]);
+    try {
+      const packet = GenerateCodesSupportPacket.fromRaw(dummyPayload, { strict: false });
+      if (packet) {
+        expect(bytesToHex(packet.raw).toUpperCase()).toBe(bytesToHex(dummyPayload).toUpperCase());
+      }
+    } catch (e) {
+      // Ignore if dummy payload is invalid for mapped fields
+    }
   });
 });

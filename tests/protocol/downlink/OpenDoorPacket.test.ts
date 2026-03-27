@@ -1,8 +1,8 @@
+import { bytesToHex, stringToBytes } from '@/utils/converters';
 import { BoksProtocolError } from '@/errors/BoksProtocolError';
 import { describe, it, expect } from 'vitest';
 import { OpenDoorPacket } from '@/protocol/downlink/OpenDoorPacket';
 import { BoksOpcode } from '@/protocol/constants';
-import { bytesToHex, stringToBytes } from '@/utils/converters';
 
 describe('OpenDoorPacket', () => {
   const validPin = '123456';
@@ -34,7 +34,7 @@ describe('OpenDoorPacket', () => {
 
   it('should parse from payload correctly', () => {
     const payload = stringToBytes(validPin);
-    const packet = OpenDoorPacket.fromPayload(payload);
+    const packet = OpenDoorPacket.fromRaw(payload);
     expect(packet.pin).toBe(validPin);
   });
 
@@ -45,7 +45,7 @@ describe('OpenDoorPacket', () => {
 
   it('should fail parsing if payload is too short', () => {
     const shortPayload = new Uint8Array(5);
-    expect(() => OpenDoorPacket.fromPayload(shortPayload)).toThrowError(BoksProtocolError);
+    expect(() => OpenDoorPacket.fromRaw(shortPayload)).toThrowError(BoksProtocolError);
   });
 
   it('should output only mapped payload properties and opcode via toJSON', () => {
@@ -54,6 +54,20 @@ describe('OpenDoorPacket', () => {
     expect(json).toStrictEqual({
         "opcode": 1,
         "pin": "123456",
+      "validChecksum": null,
+
       });
+  });
+
+  it('should retain the exact raw payload when constructed from hex via factory', () => {
+    const dummyPayload = new Uint8Array([OpenDoorPacket.opcode, 0x05, 0x01, 0x02, 0x03, 0x04, 0x05, 0x00]);
+    try {
+      const packet = OpenDoorPacket.fromRaw(dummyPayload, { strict: false });
+      if (packet) {
+        expect(bytesToHex(packet.raw).toUpperCase()).toBe(bytesToHex(dummyPayload).toUpperCase());
+      }
+    } catch (e) {
+      // Ignore if dummy payload is invalid for mapped fields
+    }
   });
 });

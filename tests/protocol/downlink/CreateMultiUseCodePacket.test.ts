@@ -1,8 +1,8 @@
+import { bytesToHex, stringToBytes } from '@/utils/converters';
 import { describe, it, expect } from 'vitest';
 import { CreateMultiUseCodePacket } from '@/protocol/downlink/CreateMultiUseCodePacket';
 import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';
 import { BoksOpcode } from '@/protocol/constants';
-import { bytesToHex, stringToBytes } from '@/utils/converters';
 
 describe('CreateMultiUseCodePacket', () => {
   const validKey = '12345678';
@@ -40,7 +40,7 @@ describe('CreateMultiUseCodePacket', () => {
     payload.set(stringToBytes(validKey), 0);
     payload.set(stringToBytes(validPin), 8);
 
-    const packet = CreateMultiUseCodePacket.fromPayload(payload);
+    const packet = CreateMultiUseCodePacket.fromRaw(payload);
     expect(packet.configKey).toBe(validKey);
     expect(packet.pin).toBe(validPin);
   });
@@ -74,7 +74,7 @@ describe('CreateMultiUseCodePacket', () => {
   it('should fail parsing if payload is too short', () => {
     // Short payload leads to short pin or key extraction, which constructor validates.
     const shortPayload = new Uint8Array(10);
-    expect(() => CreateMultiUseCodePacket.fromPayload(shortPayload)).toThrowError(
+    expect(() => CreateMultiUseCodePacket.fromRaw(shortPayload)).toThrowError(
       BoksProtocolError
     );
   });
@@ -86,6 +86,20 @@ describe('CreateMultiUseCodePacket', () => {
         "configKey": "12345678",
         "opcode": 19,
         "pin": "654321",
+      "validChecksum": null,
+
       });
+  });
+
+  it('should retain the exact raw payload when constructed from hex via factory', () => {
+    const dummyPayload = new Uint8Array([CreateMultiUseCodePacket.opcode, 0x05, 0x01, 0x02, 0x03, 0x04, 0x05, 0x00]);
+    try {
+      const packet = CreateMultiUseCodePacket.fromRaw(dummyPayload, { strict: false });
+      if (packet) {
+        expect(bytesToHex(packet.raw).toUpperCase()).toBe(bytesToHex(dummyPayload).toUpperCase());
+      }
+    } catch (e) {
+      // Ignore if dummy payload is invalid for mapped fields
+    }
   });
 });

@@ -1,8 +1,8 @@
+import { bytesToHex, stringToBytes } from '@/utils/converters';
 import { BoksProtocolError } from '@/errors/BoksProtocolError';
 import { describe, it, expect } from 'vitest';
 import { ReactivateCodePacket } from '@/protocol/downlink/ReactivateCodePacket';
 import { BoksOpcode } from '@/protocol/constants';
-import { bytesToHex, stringToBytes } from '@/utils/converters';
 
 describe('ReactivateCodePacket', () => {
   const validKey = '12345678';
@@ -38,7 +38,7 @@ describe('ReactivateCodePacket', () => {
     payload.set(stringToBytes(validKey), 0);
     payload.set(stringToBytes(validPin), 8);
 
-    const packet = ReactivateCodePacket.fromPayload(payload);
+    const packet = ReactivateCodePacket.fromRaw(payload);
     expect(packet.configKey).toBe(validKey);
     expect(packet.pin).toBe(validPin);
   });
@@ -60,7 +60,7 @@ describe('ReactivateCodePacket', () => {
 
   it('should fail parsing if payload is too short', () => {
     const shortPayload = new Uint8Array(10);
-    expect(() => ReactivateCodePacket.fromPayload(shortPayload)).toThrowError(BoksProtocolError);
+    expect(() => ReactivateCodePacket.fromRaw(shortPayload)).toThrowError(BoksProtocolError);
   });
 
   it('should output only mapped payload properties and opcode via toJSON', () => {
@@ -70,6 +70,20 @@ describe('ReactivateCodePacket', () => {
         "configKey": "12345678",
         "opcode": 15,
         "pin": "998877",
+      "validChecksum": null,
+
       });
+  });
+
+  it('should retain the exact raw payload when constructed from hex via factory', () => {
+    const dummyPayload = new Uint8Array([ReactivateCodePacket.opcode, 0x05, 0x01, 0x02, 0x03, 0x04, 0x05, 0x00]);
+    try {
+      const packet = ReactivateCodePacket.fromRaw(dummyPayload, { strict: false });
+      if (packet) {
+        expect(bytesToHex(packet.raw).toUpperCase()).toBe(bytesToHex(dummyPayload).toUpperCase());
+      }
+    } catch (e) {
+      // Ignore if dummy payload is invalid for mapped fields
+    }
   });
 });

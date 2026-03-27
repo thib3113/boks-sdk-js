@@ -1,4 +1,5 @@
-import { PayloadMapper, PayloadUint8 } from '@/protocol/decorators';
+import { BoksPacketOptions } from '../_BoksPacketBase';
+import { PayloadMapper, PayloadProgress } from '@/protocol/decorators';
 import { BoksRXPacket } from '@/protocol/uplink/_BoksRXPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
 
@@ -9,18 +10,22 @@ import { BoksOpcode } from '@/protocol/constants';
 export class NotifyCodeGenerationProgressPacket extends BoksRXPacket {
   static readonly opcode = BoksOpcode.NOTIFY_CODE_GENERATION_PROGRESS;
 
-  @PayloadUint8(0)
+  @PayloadProgress(0)
   public accessor progress!: number;
 
-  constructor(progress: number, rawPayload?: Uint8Array) {
-    super(NotifyCodeGenerationProgressPacket.opcode, rawPayload);
+  constructor(progress: number, raw?: Uint8Array) {
+    super(NotifyCodeGenerationProgressPacket.opcode, raw);
     this.progress = progress;
   }
 
-  static fromPayload(payload: Uint8Array): NotifyCodeGenerationProgressPacket {
+  static fromRaw(
+    payload: Uint8Array,
+    options?: BoksPacketOptions
+  ): NotifyCodeGenerationProgressPacket {
     const data = PayloadMapper.parse<NotifyCodeGenerationProgressPacket>(
       NotifyCodeGenerationProgressPacket,
-      payload
+      payload,
+      options
     );
     return new NotifyCodeGenerationProgressPacket(data.progress, payload);
   }

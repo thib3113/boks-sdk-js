@@ -1,3 +1,4 @@
+import { BoksPacketOptions } from '../_BoksPacketBase';
 import { AuthPacket, AuthPacketProps } from '@/protocol/downlink/_AuthPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
 import { PayloadMapper, PayloadPinCode } from '@/protocol/decorators';
@@ -18,15 +19,16 @@ export class DeleteMultiUseCodePacket extends AuthPacket {
   @PayloadPinCode(8)
   public accessor pin!: string;
 
-  constructor(props: DeleteMultiUseCodePacketProps, rawPayload?: Uint8Array) {
-    super(props, rawPayload);
+  constructor(props: DeleteMultiUseCodePacketProps, raw?: Uint8Array) {
+    super(props, raw);
     this.pin = props.pin;
   }
 
-  static fromPayload(payload: Uint8Array): DeleteMultiUseCodePacket {
+  static fromRaw(payload: Uint8Array, options?: BoksPacketOptions): DeleteMultiUseCodePacket {
     const data = PayloadMapper.parse<DeleteMultiUseCodePacketProps>(
       DeleteMultiUseCodePacket,
-      payload
+      payload,
+      options
     );
     return new DeleteMultiUseCodePacket(data, payload);
   }

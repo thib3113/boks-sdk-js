@@ -1,3 +1,4 @@
+import { BoksPacketOptions } from '../_BoksPacketBase';
 import { BoksPacket } from '@/protocol/_BoksPacketBase';
 import { BoksOpcode, EMPTY_BUFFER } from '@/protocol/constants';
 
@@ -9,7 +10,7 @@ export class RequestLogsPacket extends BoksPacket {
   get opcode() {
     return RequestLogsPacket.opcode;
   }
-  static fromPayload(payload: Uint8Array): RequestLogsPacket {
+  static fromRaw(payload: Uint8Array, _options?: BoksPacketOptions): RequestLogsPacket {
     return new RequestLogsPacket(payload);
   }
   toPayload() {

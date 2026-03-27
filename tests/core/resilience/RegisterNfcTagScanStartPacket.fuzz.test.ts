@@ -28,15 +28,15 @@ describe('RegisterNfcTagScanStartPacket Resilience (Fuzzing)', () => {
     );
   });
 
-  it('FEATURE REGRESSION: should securely reject malformed binary payloads in fromPayload with BoksProtocolError', () => {
-    // We fuzz the fromPayload binary parser
+  it('FEATURE REGRESSION: should securely reject malformed binary payloads in fromRaw with BoksProtocolError', () => {
+    // We fuzz the fromRaw binary parser
     fc.assert(
       fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (payload) => {
         try {
-          const packet = RegisterNfcTagScanStartPacket.fromPayload(payload);
+          const packet = RegisterNfcTagScanStartPacket.fromRaw(payload);
           expect(packet).toBeInstanceOf(RegisterNfcTagScanStartPacket);
         } catch (e) {
-          // It is an intended FEATURE that fromPayload validation throws a BoksProtocolError
+          // It is an intended FEATURE that fromRaw validation throws a BoksProtocolError
           // when extracting out-of-bounds or malformed string bytes.
           expect(e).toBeInstanceOf(BoksProtocolError);
         }

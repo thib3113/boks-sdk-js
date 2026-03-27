@@ -4,14 +4,14 @@ import { NotifyLogsCountPacket } from '@/protocol/uplink/NotifyLogsCountPacket';
 import { BoksOpcode } from '@/protocol/constants';
 
 describe('NotifyLogsCountPacket - Resilience & Edge Cases', () => {
-  describe('fromPayload()', () => {
+  describe('fromRaw()', () => {
     it('should parse valid arbitrary payloads without crashing', () => {
       fc.assert(
         fc.property(fc.uint8Array({ minLength: 2 }), (payload) => {
-          const packet = NotifyLogsCountPacket.fromPayload(payload);
+          const packet = NotifyLogsCountPacket.fromRaw(payload);
           expect(packet).toBeInstanceOf(NotifyLogsCountPacket);
           expect(packet.opcode).toBe(BoksOpcode.NOTIFY_LOGS_COUNT);
-          expect((packet as any).rawPayload).toEqual(payload);
+          expect((packet as any).raw).toEqual(payload);
 
           if (payload.length >= 2) {
             const view = new DataView(payload.buffer, payload.byteOffset, payload.byteLength);
@@ -26,7 +26,7 @@ describe('NotifyLogsCountPacket - Resilience & Edge Cases', () => {
     it('should throw MALFORMED_DATA on short payload', () => {
       fc.assert(
         fc.property(fc.uint8Array({ maxLength: 1 }), (shortPayload) => {
-          expect(() => NotifyLogsCountPacket.fromPayload(shortPayload)).toThrowError(Error);
+          expect(() => NotifyLogsCountPacket.fromRaw(shortPayload)).toThrowError(Error);
         })
       );
     });
@@ -41,7 +41,7 @@ describe('NotifyLogsCountPacket - Resilience & Edge Cases', () => {
           const payload = new Uint8Array(buffer);
           payload.set(trailingBytes, 2);
 
-          const packet = NotifyLogsCountPacket.fromPayload(payload);
+          const packet = NotifyLogsCountPacket.fromRaw(payload);
           expect(packet.count).toBe(count);
         })
       );

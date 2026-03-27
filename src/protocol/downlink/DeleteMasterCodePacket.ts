@@ -1,3 +1,4 @@
+import { BoksPacketOptions } from '../_BoksPacketBase';
 import { AuthPacket, AuthPacketProps } from '@/protocol/downlink/_AuthPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
 import { PayloadMapper, PayloadMasterCodeIndex } from '@/protocol/decorators';
@@ -18,13 +19,17 @@ export class DeleteMasterCodePacket extends AuthPacket {
   @PayloadMasterCodeIndex(8)
   public accessor index!: number;
 
-  constructor(props: DeleteMasterCodePacketProps, rawPayload?: Uint8Array) {
-    super(props, rawPayload);
+  constructor(props: DeleteMasterCodePacketProps, raw?: Uint8Array) {
+    super(props, raw);
     this.index = props.index;
   }
 
-  static fromPayload(payload: Uint8Array): DeleteMasterCodePacket {
-    const data = PayloadMapper.parse<DeleteMasterCodePacketProps>(DeleteMasterCodePacket, payload);
+  static fromRaw(payload: Uint8Array, options?: BoksPacketOptions): DeleteMasterCodePacket {
+    const data = PayloadMapper.parse<DeleteMasterCodePacketProps>(
+      DeleteMasterCodePacket,
+      payload,
+      options
+    );
     return new DeleteMasterCodePacket(data, payload);
   }
 }

@@ -14,8 +14,8 @@ export abstract class BoksHistoryEvent extends BoksRXPacket {
   public accessor age!: number;
   public readonly date: Date;
 
-  constructor(opcode: BoksOpcode, props: BoksHistoryEventProps, rawPayload?: Uint8Array) {
-    super(opcode, rawPayload);
+  constructor(opcode: BoksOpcode, props: BoksHistoryEventProps, raw?: Uint8Array) {
+    super(opcode, raw);
     this.age = props.age;
     this.date = new Date(Date.now() - this.age * 1000);
   }

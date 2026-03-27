@@ -1,3 +1,4 @@
+import { BoksPacketOptions } from '../_BoksPacketBase';
 import { BoksPacket } from '@/protocol/_BoksPacketBase';
 import { BoksOpcode, EMPTY_BUFFER } from '@/protocol/constants';
 
@@ -10,7 +11,7 @@ export class ScaleMeasureWeightPacket extends BoksPacket {
   get opcode() {
     return ScaleMeasureWeightPacket.opcode;
   }
-  static fromPayload(payload: Uint8Array): ScaleMeasureWeightPacket {
+  static fromRaw(payload: Uint8Array, _options?: BoksPacketOptions): ScaleMeasureWeightPacket {
     return new ScaleMeasureWeightPacket(payload);
   }
   toPayload() {

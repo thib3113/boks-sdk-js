@@ -1,5 +1,5 @@
 import { PayloadMapper, PayloadConfigKey } from '@/protocol/decorators';
-import { BoksPacket } from '@/protocol/_BoksPacketBase';
+import { BoksPacket, BoksPacketOptions } from '@/protocol/_BoksPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
 
 /**
@@ -14,12 +14,13 @@ export class RegisterNfcTagScanStartPacket extends BoksPacket {
   @PayloadConfigKey(1)
   public accessor configKey!: string;
 
-  constructor(configKey: string, rawPayload?: Uint8Array) {
-    super(rawPayload);
+  constructor(configKey: string, raw?: Uint8Array) {
+    super(raw);
     this.configKey = configKey;
   }
 
-  static fromPayload(payload: Uint8Array): RegisterNfcTagScanStartPacket {
+  static fromRaw(raw: Uint8Array, options?: BoksPacketOptions): RegisterNfcTagScanStartPacket {
+    const payload = BoksPacket.extractPayloadData(raw, RegisterNfcTagScanStartPacket.opcode);
     let parsePayload = payload;
     if (payload.length === 8) {
       parsePayload = new Uint8Array([0, ...payload]);
@@ -27,7 +28,8 @@ export class RegisterNfcTagScanStartPacket extends BoksPacket {
 
     const data = PayloadMapper.parse<RegisterNfcTagScanStartPacket>(
       RegisterNfcTagScanStartPacket,
-      parsePayload
+      parsePayload,
+      options
     );
     return new RegisterNfcTagScanStartPacket(data.configKey, payload);
   }

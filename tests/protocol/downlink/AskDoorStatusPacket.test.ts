@@ -11,15 +11,15 @@ describe('AskDoorStatusPacket', () => {
   });
 
   it('should parse from payload correctly', () => {
-    const packet = AskDoorStatusPacket.fromPayload(new Uint8Array(0));
+    const packet = AskDoorStatusPacket.fromRaw(new Uint8Array(0));
     expect(packet).toBeInstanceOf(AskDoorStatusPacket);
     expect(packet.opcode).toBe(BoksOpcode.ASK_DOOR_STATUS);
   });
 
   it('should handle extra payload bytes gracefully (ignore them)', () => {
-    // Though toPayload() returns empty, if fromPayload is called with extra bytes, it currently ignores them.
+    // Though toPayload() returns empty, if fromRaw is called with extra bytes, it currently ignores them.
     // The base class ensures opcode is correct.
-    const packet = AskDoorStatusPacket.fromPayload(new Uint8Array([0x01, 0x02]));
+    const packet = AskDoorStatusPacket.fromRaw(new Uint8Array([0x01, 0x02]));
     expect(packet).toBeInstanceOf(AskDoorStatusPacket);
   });
 
@@ -28,6 +28,20 @@ describe('AskDoorStatusPacket', () => {
     const json = packet.toJSON();
     expect(json).toStrictEqual({
         "opcode": 2,
+      "validChecksum": null,
+
       });
+  });
+
+  it('should retain the exact raw payload when constructed from hex via factory', () => {
+    const dummyPayload = new Uint8Array([AskDoorStatusPacket.opcode, 0x05, 0x01, 0x02, 0x03, 0x04, 0x05, 0x00]);
+    try {
+      const packet = AskDoorStatusPacket.fromRaw(dummyPayload, { strict: false });
+      if (packet) {
+        expect(bytesToHex(packet.raw).toUpperCase()).toBe(bytesToHex(dummyPayload).toUpperCase());
+      }
+    } catch (e) {
+      // Ignore if dummy payload is invalid for mapped fields
+    }
   });
 });

@@ -4,11 +4,11 @@ import { CodeKeyValidHistoryPacket } from '../../../../../src/protocol/uplink/hi
 import { BoksProtocolError } from '../../../../../src/errors/BoksProtocolError';
 
 describe('CodeKeyValidHistoryPacket Resilience (Fuzzing)', () => {
-  it('FEATURE REGRESSION: should securely reject malformed binary payloads in fromPayload', () => {
+  it('FEATURE REGRESSION: should securely reject malformed binary payloads in fromRaw', () => {
     fc.assert(
       fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (payload) => {
         try {
-          const packet = CodeKeyValidHistoryPacket.fromPayload(payload);
+          const packet = CodeKeyValidHistoryPacket.fromRaw(payload);
           expect(packet).toBeInstanceOf(CodeKeyValidHistoryPacket);
         } catch (e) {
           expect(e).toBeInstanceOf(BoksProtocolError);

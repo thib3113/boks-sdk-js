@@ -1,3 +1,4 @@
+import { BoksPacketOptions } from '../_BoksPacketBase';
 import { BoksRXPacket } from '@/protocol/uplink/_BoksRXPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
 
@@ -7,11 +8,11 @@ import { BoksOpcode } from '@/protocol/constants';
 export class ErrorCrcPacket extends BoksRXPacket {
   static readonly opcode = BoksOpcode.ERROR_CRC;
 
-  constructor(rawPayload?: Uint8Array) {
-    super(ErrorCrcPacket.opcode, rawPayload);
+  constructor(raw?: Uint8Array) {
+    super(ErrorCrcPacket.opcode, raw);
   }
 
-  static fromPayload(payload: Uint8Array): ErrorCrcPacket {
+  static fromRaw(payload: Uint8Array, _options?: BoksPacketOptions): ErrorCrcPacket {
     return new ErrorCrcPacket(payload);
   }
 }

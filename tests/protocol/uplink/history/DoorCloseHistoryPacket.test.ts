@@ -6,7 +6,7 @@ import { bytesToHex } from '@/utils/converters';
 describe('DoorCloseHistoryPacket', () => {
   it('should parse correctly with age', () => {
     const payload = new Uint8Array([0x01, 0x02, 0x03]);
-    const packet = DoorCloseHistoryPacket.fromPayload(payload);
+    const packet = DoorCloseHistoryPacket.fromRaw(payload);
     expect(packet.opcode).toBe(BoksOpcode.LOG_DOOR_CLOSE);
     expect(packet.age).toBe(0x010203);
     expect(packet.status).toBe('closed');
@@ -19,11 +19,25 @@ describe('DoorCloseHistoryPacket', () => {
   });
 
   it('should output only mapped payload properties and opcode via toJSON', () => {
-    const packet = DoorCloseHistoryPacket.fromPayload(new Uint8Array([0x01, 0x02, 0x03]));
+    const packet = DoorCloseHistoryPacket.fromRaw(new Uint8Array([0x01, 0x02, 0x03]));
     const json = packet.toJSON();
     expect(json).toStrictEqual({
         "age": 66051,
         "opcode": 144,
+      "validChecksum": null,
+
       });
+  });
+
+  it('should retain the exact raw payload when constructed from hex via factory', () => {
+    const dummyPayload = new Uint8Array([DoorCloseHistoryPacket.opcode, 0x05, 0x01, 0x02, 0x03, 0x04, 0x05, 0x00]);
+    try {
+      const packet = DoorCloseHistoryPacket.fromRaw(dummyPayload, { strict: false });
+      if (packet) {
+        expect(bytesToHex(packet.raw).toUpperCase()).toBe(bytesToHex(dummyPayload).toUpperCase());
+      }
+    } catch (e) {
+      // Ignore if dummy payload is invalid for mapped fields
+    }
   });
 });

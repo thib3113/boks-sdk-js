@@ -4,12 +4,11 @@ import { BoksPacket } from '../../src/protocol/_BoksPacketBase';
 import { BoksProtocolError, BoksProtocolErrorId } from '../../src/errors/BoksProtocolError';
 
 describe('BoksPacketBase', () => {
-  it('should throw NOT_IMPLEMENTED if fromPayload is not implemented', () => {
-    expect(() => BoksPacket.fromPayload(new Uint8Array())).toThrowError(
-      new BoksProtocolError(BoksProtocolErrorId.NOT_IMPLEMENTED, 'fromPayload not implemented')
+  it('should throw NOT_IMPLEMENTED if fromRaw is not implemented', () => {
+    expect(() => BoksPacket.fromRaw(new Uint8Array())).toThrowError(
+      new BoksProtocolError(BoksProtocolErrorId.NOT_IMPLEMENTED, 'fromRaw not implemented')
     );
   });
-});
 
   it('should test missing property in toJSON', () => {
     class DummyPacket extends BoksPacket {
@@ -21,5 +20,6 @@ describe('BoksPacketBase', () => {
     PayloadMapper.defineSchema(DummyPacket, [{ propertyName: 'fakeProp', type: 'uint8', offset: 0 }]);
     const packet = new DummyPacket();
     const json = packet.toJSON();
-    expect(json).toEqual({ opcode: 0x99 });
+    expect(json).toEqual({ opcode: 0x99, validChecksum: null });
   });
+});

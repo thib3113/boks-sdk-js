@@ -1,3 +1,4 @@
+import { BoksPacketOptions } from '../_BoksPacketBase';
 import { BoksPacket } from '@/protocol/_BoksPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
 
@@ -12,12 +13,13 @@ export class ScaleTareLoadedPacket extends BoksPacket {
   }
   constructor(
     public readonly data: Uint8Array,
-    rawPayload?: Uint8Array
+    raw?: Uint8Array
   ) {
-    super(rawPayload);
+    super(raw);
   }
-  static fromPayload(payload: Uint8Array): ScaleTareLoadedPacket {
-    return new ScaleTareLoadedPacket(payload);
+  static fromRaw(payload: Uint8Array, _options?: BoksPacketOptions): ScaleTareLoadedPacket {
+    const data = BoksPacket.extractPayloadData(payload, ScaleTareLoadedPacket.opcode);
+    return new ScaleTareLoadedPacket(data, payload);
   }
   toPayload() {
     return this.data;

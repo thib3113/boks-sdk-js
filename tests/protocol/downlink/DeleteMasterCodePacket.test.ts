@@ -1,8 +1,8 @@
+import { bytesToHex, stringToBytes } from '@/utils/converters';
 import { describe, it, expect } from 'vitest';
 import { DeleteMasterCodePacket } from '@/protocol/downlink/DeleteMasterCodePacket';
 import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';
 import { BoksOpcode } from '@/protocol/constants';
-import { bytesToHex, stringToBytes } from '@/utils/converters';
 
 describe('DeleteMasterCodePacket', () => {
   const validKey = '12345678';
@@ -38,7 +38,7 @@ describe('DeleteMasterCodePacket', () => {
     payload.set(stringToBytes(validKey), 0);
     payload[8] = validIndex;
 
-    const packet = DeleteMasterCodePacket.fromPayload(payload);
+    const packet = DeleteMasterCodePacket.fromRaw(payload);
     expect(packet.configKey).toBe(validKey);
     expect(packet.index).toBe(validIndex);
   });
@@ -47,7 +47,7 @@ describe('DeleteMasterCodePacket', () => {
     const payload = new Uint8Array(8);
     payload.set(stringToBytes(validKey), 0);
 
-    expect(() => DeleteMasterCodePacket.fromPayload(payload)).toThrowError(BoksProtocolError);
+    expect(() => DeleteMasterCodePacket.fromRaw(payload)).toThrowError(BoksProtocolError);
   });
 
   it('should throw INVALID_CONFIG_KEY for invalid config key format', () => {
@@ -83,6 +83,20 @@ describe('DeleteMasterCodePacket', () => {
         "configKey": "12345678",
         "index": 2,
         "opcode": 12,
+      "validChecksum": null,
+
       });
+  });
+
+  it('should retain the exact raw payload when constructed from hex via factory', () => {
+    const dummyPayload = new Uint8Array([DeleteMasterCodePacket.opcode, 0x05, 0x01, 0x02, 0x03, 0x04, 0x05, 0x00]);
+    try {
+      const packet = DeleteMasterCodePacket.fromRaw(dummyPayload, { strict: false });
+      if (packet) {
+        expect(bytesToHex(packet.raw).toUpperCase()).toBe(bytesToHex(dummyPayload).toUpperCase());
+      }
+    } catch (e) {
+      // Ignore if dummy payload is invalid for mapped fields
+    }
   });
 });

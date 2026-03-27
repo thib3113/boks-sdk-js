@@ -1,3 +1,4 @@
+import { BoksPacketOptions } from '../_BoksPacketBase';
 import { PayloadMapper, PayloadHexString } from '@/protocol/decorators';
 import { AuthPacket, AuthPacketProps } from '@/protocol/downlink/_AuthPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
@@ -19,13 +20,17 @@ export class RegeneratePartBPacket extends AuthPacket {
   @PayloadHexString(8, 16)
   public accessor part!: string;
 
-  constructor(props: RegeneratePartBPacketProps, rawPayload?: Uint8Array) {
-    super(props, rawPayload);
+  constructor(props: RegeneratePartBPacketProps, raw?: Uint8Array) {
+    super(props, raw);
     this.part = props.part as string;
   }
 
-  static fromPayload(payload: Uint8Array): RegeneratePartBPacket {
-    const data = PayloadMapper.parse<RegeneratePartBPacketProps>(RegeneratePartBPacket, payload);
+  static fromRaw(payload: Uint8Array, options?: BoksPacketOptions): RegeneratePartBPacket {
+    const data = PayloadMapper.parse<RegeneratePartBPacketProps>(
+      RegeneratePartBPacket,
+      payload,
+      options
+    );
     return new RegeneratePartBPacket(data, payload);
   }
 }

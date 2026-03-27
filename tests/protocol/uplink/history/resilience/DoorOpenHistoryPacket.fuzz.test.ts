@@ -4,11 +4,11 @@ import { DoorOpenHistoryPacket } from '../../../../../src/protocol/uplink/histor
 import { BoksProtocolError } from '../../../../../src/errors/BoksProtocolError';
 
 describe('DoorOpenHistoryPacket Resilience (Fuzzing)', () => {
-  it('FEATURE REGRESSION: should securely reject malformed binary payloads in fromPayload', () => {
+  it('FEATURE REGRESSION: should securely reject malformed binary payloads in fromRaw', () => {
     fc.assert(
       fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (payload) => {
         try {
-          const packet = DoorOpenHistoryPacket.fromPayload(payload);
+          const packet = DoorOpenHistoryPacket.fromRaw(payload);
           expect(packet).toBeInstanceOf(DoorOpenHistoryPacket);
         } catch (e) {
           expect(e).toBeInstanceOf(BoksProtocolError);

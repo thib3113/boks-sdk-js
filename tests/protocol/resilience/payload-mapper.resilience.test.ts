@@ -38,7 +38,7 @@ class DummyPacket {
   @PayloadUint32(40) public accessor valUint32!: number;
   @PayloadVarLenHex(44) public accessor valVarLenHex!: string;
 
-  constructor(public rawPayload?: Uint8Array) {}
+  constructor(public raw?: Uint8Array) {}
 }
 
 class EmptyPacket {}

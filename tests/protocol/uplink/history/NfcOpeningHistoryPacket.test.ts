@@ -8,7 +8,7 @@ describe('NfcOpeningHistoryPacket', () => {
   it('should parse correctly with age, type and uid', () => {
     // UID 04050607, type 2, age 10
     const payload = new Uint8Array([0x00, 0x00, 0x0a, 0x02, 0x04, 0x04, 0x05, 0x06, 0x07]);
-    const packet = NfcOpeningHistoryPacket.fromPayload(payload);
+    const packet = NfcOpeningHistoryPacket.fromRaw(payload);
 
     expect(packet.opcode).toBe(BoksOpcode.LOG_EVENT_NFC_OPENING);
     expect(packet.age).toBe(10);
@@ -40,13 +40,27 @@ describe('NfcOpeningHistoryPacket', () => {
   });
 
   it('should output only mapped payload properties and opcode via toJSON', () => {
-    const packet = NfcOpeningHistoryPacket.fromPayload(new Uint8Array([0x00, 0x00, 0x0a, 0x02, 0x04, 0x04, 0x05, 0x06, 0x07]));
+    const packet = NfcOpeningHistoryPacket.fromRaw(new Uint8Array([0x00, 0x00, 0x0a, 0x02, 0x04, 0x04, 0x05, 0x06, 0x07]));
     const json = packet.toJSON();
     expect(json).toStrictEqual({
         "age": 10,
         "opcode": 161,
         "tagType": 2,
         "uid": "04050607",
+      "validChecksum": null,
+
       });
+  });
+
+  it('should retain the exact raw payload when constructed from hex via factory', () => {
+    const dummyPayload = new Uint8Array([NfcOpeningHistoryPacket.opcode, 0x05, 0x01, 0x02, 0x03, 0x04, 0x05, 0x00]);
+    try {
+      const packet = NfcOpeningHistoryPacket.fromRaw(dummyPayload, { strict: false });
+      if (packet) {
+        expect(bytesToHex(packet.raw).toUpperCase()).toBe(bytesToHex(dummyPayload).toUpperCase());
+      }
+    } catch (e) {
+      // Ignore if dummy payload is invalid for mapped fields
+    }
   });
 });

@@ -1,4 +1,4 @@
-import { BoksPacket } from '../_BoksPacketBase';
+import { BoksPacket, BoksPacketOptions } from '../_BoksPacketBase';
 import { BoksOpcode } from '../constants';
 
 export class UnknownPacket extends BoksPacket {
@@ -27,11 +27,12 @@ export class UnknownPacket extends BoksPacket {
   toJSON(): any {
     return {
       opcode: this.opcode,
+      validChecksum: this.validChecksum,
       payload: this._payload
     };
   }
 
-  static fromPayload(_payload: Uint8Array): UnknownPacket {
+  static fromRaw(_payload: Uint8Array, _options?: BoksPacketOptions): UnknownPacket {
     throw new Error('Use fromUnknownPayload instead');
   }
 

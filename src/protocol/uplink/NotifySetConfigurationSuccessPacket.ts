@@ -1,3 +1,4 @@
+import { BoksPacketOptions } from '../_BoksPacketBase';
 import { BoksRXPacket } from '@/protocol/uplink/_BoksRXPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
 
@@ -7,11 +8,14 @@ import { BoksOpcode } from '@/protocol/constants';
 export class NotifySetConfigurationSuccessPacket extends BoksRXPacket {
   static readonly opcode = BoksOpcode.NOTIFY_SET_CONFIGURATION_SUCCESS;
 
-  constructor(rawPayload?: Uint8Array) {
-    super(NotifySetConfigurationSuccessPacket.opcode, rawPayload);
+  constructor(raw?: Uint8Array) {
+    super(NotifySetConfigurationSuccessPacket.opcode, raw);
   }
 
-  static fromPayload(payload: Uint8Array): NotifySetConfigurationSuccessPacket {
+  static fromRaw(
+    payload: Uint8Array,
+    _options?: BoksPacketOptions
+  ): NotifySetConfigurationSuccessPacket {
     return new NotifySetConfigurationSuccessPacket(payload);
   }
 }
