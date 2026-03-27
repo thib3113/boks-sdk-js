@@ -82,7 +82,11 @@ export class PayloadAnalyzer {
     allowIds: boolean = false
   ): string {
     const s = readPinFromBuffer(payload, offset);
-    const isId = allowIds && (s.startsWith('MC') || s.startsWith('UC'));
+    const isId =
+      allowIds &&
+      s.length >= 2 &&
+      (s.charCodeAt(0) === CHAR_CODES['M'] || s.charCodeAt(0) === CHAR_CODES['U']) &&
+      s.charCodeAt(1) === CHAR_CODES['C'];
 
     for (let i = 0; i < 6; i++) {
       const c = s.charCodeAt(i);
@@ -164,7 +168,11 @@ export class PayloadAnalyzer {
         { field: prop, received: typeof val === 'string' ? val.length : typeof val, expected: 6 }
       );
     }
-    const isId = allowIds && (val.startsWith('MC') || val.startsWith('UC'));
+    const isId =
+      allowIds &&
+      val.length >= 2 &&
+      (val.charCodeAt(0) === CHAR_CODES['M'] || val.charCodeAt(0) === CHAR_CODES['U']) &&
+      val.charCodeAt(1) === CHAR_CODES['C'];
     for (let i = 0; i < 6; i++) {
       const c = val.charCodeAt(i);
       if (isStdPinChar(c)) {
