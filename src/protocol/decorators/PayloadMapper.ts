@@ -544,7 +544,8 @@ export class PayloadMapper {
 
       if (field.type === 'var_len_hex') {
         // Optimization: calculating the exact byte length during pre-processing using the existing tool
-        dynamicSizeCalc += ` + (instance['${prop}'] && typeof instance['${prop}'] === 'string' ? hexToBytes(instance['${prop}']).length : 0)`;
+        // without allocating intermediate Uint8Array
+        dynamicSizeCalc += ` + (instance['${prop}'] && typeof instance['${prop}'] === 'string' ? Math.floor(instance['${prop}'].length / 2) : 0)`;
       } else if (
         (field.type === 'hex_string' || field.type === 'byte_array') &&
         typeof field.length !== 'number'
