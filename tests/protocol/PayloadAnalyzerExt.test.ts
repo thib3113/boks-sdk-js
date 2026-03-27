@@ -30,6 +30,7 @@ describe('PayloadAnalyzer Comprehensive Coverage', () => {
       // "ABC" with a null terminator padded
       const payload = new Uint8Array([0x00, 65, 66, 67, 0, 0, 0x00]);
       expect(analyzer.readAsciiString(payload, 1, 5)).toBe('ABC');
+      expect(analyzer.readAsciiString(payload, 1, 0)).toBe("");
     });
 
     it('readBoolean', () => {
@@ -60,6 +61,8 @@ describe('PayloadAnalyzer Comprehensive Coverage', () => {
 
       const payloadId = new Uint8Array([77, 67, 49, 50, 51, 52]); // "MC1234"
       expect(analyzer.readPinCode(payloadId, 0, 'prop', true)).toBe('MC1234');
+      const payloadIdU = new Uint8Array([85, 67, 49, 50, 51, 52]); // "UC1234"
+      expect(analyzer.readPinCode(payloadIdU, 0, 'prop', true)).toBe('UC1234');
 
       // Invalid
       const payloadInv = new Uint8Array([88, 88, 88, 88, 88, 88]); // "XXXXXX"
@@ -99,6 +102,7 @@ describe('PayloadAnalyzer Comprehensive Coverage', () => {
     it('validatePinCode', () => {
       expect(() => analyzer.validatePinCode('12AB09', 'prop')).not.toThrow();
       expect(() => analyzer.validatePinCode('MC1234', 'prop', true)).not.toThrow();
+      expect(() => analyzer.validatePinCode('UC1234', 'prop', true)).not.toThrow();
 
       expect(() => analyzer.validatePinCode(123456, 'prop')).toThrow(BoksProtocolError);
       expect(() => analyzer.validatePinCode('12345', 'prop')).toThrow(BoksProtocolError);
@@ -183,6 +187,7 @@ describe('PayloadAnalyzer Comprehensive Coverage', () => {
 
       // ignore invalid
       analyzer.writeMacAddress(payload, 0, 123);
+      analyzer.writeMacAddress(payload, 0, "AABBCC"); // Not 6 bytes
     });
 
     it('writePinCode', () => {
