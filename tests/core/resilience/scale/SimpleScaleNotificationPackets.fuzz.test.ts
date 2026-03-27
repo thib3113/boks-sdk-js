@@ -21,7 +21,8 @@ describe('SimpleScaleNotificationPackets Resilience (Fuzzing)', () => {
         const packet = NotifyScaleBondingErrorPacket.fromRaw(payload);
         expect(packet).toBeInstanceOf(NotifyScaleBondingErrorPacket);
         expect(packet.opcode).toBe(BoksOpcode.NOTIFY_SCALE_BONDING_ERROR);
-        if (payload.length > 0) expect(packet.errorCode).toBe(payload[0] & 0xFF);
+        if (payload.length > 2) expect(packet.errorCode).toBe(payload[2] & 0xFF);
+        else expect(packet.errorCode).toBe(0);
         expect((packet as any).raw).toEqual(payload);
       }),
       { numRuns: 1000 }
@@ -64,7 +65,8 @@ describe('SimpleScaleNotificationPackets Resilience (Fuzzing)', () => {
         const packet = NotifyScaleBondingProgressPacket.fromRaw(payload);
         expect(packet).toBeInstanceOf(NotifyScaleBondingProgressPacket);
         expect(packet.opcode).toBe(BoksOpcode.NOTIFY_SCALE_BONDING_PROGRESS);
-        if (payload.length > 0) expect(packet.progress).toBe(payload[0]);
+        if (payload.length > 2) expect(packet.progress).toBe(payload[2]);
+        else expect(packet.progress).toBe(0);
         expect((packet as any).raw).toEqual(payload);
       }),
       { numRuns: 1000 }
