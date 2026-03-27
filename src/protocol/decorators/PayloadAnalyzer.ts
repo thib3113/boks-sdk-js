@@ -1,19 +1,7 @@
+import { CHAR_CODES } from '../constants';
 import { BoksProtocolError, BoksProtocolErrorId } from '../../errors/BoksProtocolError';
 import { BoksExpectedReason } from '../../errors/BoksExpectedReason';
 import { bytesToHex, hexToBytes, readPinFromBuffer } from '../../utils/converters';
-
-const CHAR_CODES = {
-  '0': 48,
-  '9': 57,
-  A: 65,
-  B: 66,
-  C: 67,
-  F: 70,
-  M: 77,
-  U: 85,
-  a: 97,
-  f: 102
-};
 
 function isHexChar(c: number): boolean {
   return (
@@ -227,21 +215,21 @@ export class PayloadAnalyzer {
   }
 
   public writeUint16(payload: Uint8Array, offset: number, val: number): void {
-    payload[offset] = (val >> 8) & 0xFF;
-    payload[offset + 1] = val & 0xFF;
+    payload[offset] = (val >> 8) & 255;
+    payload[offset + 1] = val & 255;
   }
 
   public writeUint24(payload: Uint8Array, offset: number, val: number): void {
-    payload[offset] = (val >> 16) & 0xFF;
-    payload[offset + 1] = (val >> 8) & 0xFF;
-    payload[offset + 2] = val & 0xFF;
+    payload[offset] = (val >> 16) & 255;
+    payload[offset + 1] = (val >> 8) & 255;
+    payload[offset + 2] = val & 255;
   }
 
   public writeUint32(payload: Uint8Array, offset: number, val: number): void {
-    payload[offset] = (val >>> 24) & 0xFF;
-    payload[offset + 1] = (val >>> 16) & 0xFF;
-    payload[offset + 2] = (val >>> 8) & 0xFF;
-    payload[offset + 3] = val & 0xFF;
+    payload[offset] = (val >>> 24) & 255;
+    payload[offset + 1] = (val >>> 16) & 255;
+    payload[offset + 2] = (val >>> 8) & 255;
+    payload[offset + 3] = val & 255;
   }
 
   public writeAsciiString(
