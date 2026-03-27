@@ -44,11 +44,15 @@ export abstract class BoksPacket {
   #raw?: Uint8Array;
   #extractedPayloadCache?: Uint8Array;
   #checksumCache: boolean | null | undefined = undefined;
-  public readonly isGenerated: boolean;
+  #isGenerated: boolean;
 
   constructor(raw?: Uint8Array) {
     this.#raw = raw;
-    this.isGenerated = !raw;
+    this.#isGenerated = !raw;
+  }
+
+  get isGenerated(): boolean {
+    return this.#isGenerated;
   }
 
   /**
