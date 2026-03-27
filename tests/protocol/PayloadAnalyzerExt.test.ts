@@ -233,3 +233,76 @@ describe('PayloadAnalyzer Comprehensive Coverage', () => {
     });
   });
 });
+
+  describe('Detailed validation branches (for 100% branch coverage)', () => {
+    it('readPinCode - should throw on specific indices', () => {
+      const analyzer = new PayloadAnalyzer();
+      // Test invalid char at each index
+      const p0 = new Uint8Array([0x00, 88, 49, 49, 49, 49, 49]); // X11111
+      const p1 = new Uint8Array([0x00, 49, 88, 49, 49, 49, 49]); // 1X1111
+      const p2 = new Uint8Array([0x00, 49, 49, 88, 49, 49, 49]); // 11X111
+      const p3 = new Uint8Array([0x00, 49, 49, 49, 88, 49, 49]); // 111X11
+      const p4 = new Uint8Array([0x00, 49, 49, 49, 49, 88, 49]); // 1111X1
+      const p5 = new Uint8Array([0x00, 49, 49, 49, 49, 49, 88]); // 11111X
+
+      expect(() => analyzer.readPinCode(p0, 1, 'prop')).toThrow(BoksProtocolError);
+      expect(() => analyzer.readPinCode(p1, 1, 'prop')).toThrow(BoksProtocolError);
+      expect(() => analyzer.readPinCode(p2, 1, 'prop')).toThrow(BoksProtocolError);
+      expect(() => analyzer.readPinCode(p3, 1, 'prop')).toThrow(BoksProtocolError);
+      expect(() => analyzer.readPinCode(p4, 1, 'prop')).toThrow(BoksProtocolError);
+      expect(() => analyzer.readPinCode(p5, 1, 'prop')).toThrow(BoksProtocolError);
+
+      // Test allowIds branches
+      const pid0 = new Uint8Array([0x00, 77, 88, 49, 49, 49, 49]); // MX1111 (M but no C)
+      expect(() => analyzer.readPinCode(pid0, 1, 'prop', true)).toThrow(BoksProtocolError);
+
+      const pid1 = new Uint8Array([0x00, 88, 67, 49, 49, 49, 49]); // XC1111 (C but no M/U)
+      expect(() => analyzer.readPinCode(pid1, 1, 'prop', true)).toThrow(BoksProtocolError);
+    });
+
+    it('readConfigKey - should throw on specific indices', () => {
+      const analyzer = new PayloadAnalyzer();
+      const p0 = new Uint8Array([0x00, 88, 65, 65, 65, 65, 65, 65, 65]);
+      const p1 = new Uint8Array([0x00, 65, 88, 65, 65, 65, 65, 65, 65]);
+      const p2 = new Uint8Array([0x00, 65, 65, 88, 65, 65, 65, 65, 65]);
+      const p3 = new Uint8Array([0x00, 65, 65, 65, 88, 65, 65, 65, 65]);
+      const p4 = new Uint8Array([0x00, 65, 65, 65, 65, 88, 65, 65, 65]);
+      const p5 = new Uint8Array([0x00, 65, 65, 65, 65, 65, 88, 65, 65]);
+      const p6 = new Uint8Array([0x00, 65, 65, 65, 65, 65, 65, 88, 65]);
+      const p7 = new Uint8Array([0x00, 65, 65, 65, 65, 65, 65, 65, 88]);
+
+      expect(() => analyzer.readConfigKey(p0, 1, 'prop')).toThrow(BoksProtocolError);
+      expect(() => analyzer.readConfigKey(p1, 1, 'prop')).toThrow(BoksProtocolError);
+      expect(() => analyzer.readConfigKey(p2, 1, 'prop')).toThrow(BoksProtocolError);
+      expect(() => analyzer.readConfigKey(p3, 1, 'prop')).toThrow(BoksProtocolError);
+      expect(() => analyzer.readConfigKey(p4, 1, 'prop')).toThrow(BoksProtocolError);
+      expect(() => analyzer.readConfigKey(p5, 1, 'prop')).toThrow(BoksProtocolError);
+      expect(() => analyzer.readConfigKey(p6, 1, 'prop')).toThrow(BoksProtocolError);
+      expect(() => analyzer.readConfigKey(p7, 1, 'prop')).toThrow(BoksProtocolError);
+    });
+
+    it('validatePinCode - should throw on specific indices', () => {
+      const analyzer = new PayloadAnalyzer();
+      expect(() => analyzer.validatePinCode('X11111', 'prop')).toThrow(BoksProtocolError);
+      expect(() => analyzer.validatePinCode('1X1111', 'prop')).toThrow(BoksProtocolError);
+      expect(() => analyzer.validatePinCode('11X111', 'prop')).toThrow(BoksProtocolError);
+      expect(() => analyzer.validatePinCode('111X11', 'prop')).toThrow(BoksProtocolError);
+      expect(() => analyzer.validatePinCode('1111X1', 'prop')).toThrow(BoksProtocolError);
+      expect(() => analyzer.validatePinCode('11111X', 'prop')).toThrow(BoksProtocolError);
+
+      expect(() => analyzer.validatePinCode('MX1111', 'prop', true)).toThrow(BoksProtocolError);
+      expect(() => analyzer.validatePinCode('XC1111', 'prop', true)).toThrow(BoksProtocolError);
+    });
+
+    it('validateConfigKey - should throw on specific indices', () => {
+      const analyzer = new PayloadAnalyzer();
+      expect(() => analyzer.validateConfigKey('XAAAAAAA', 'prop')).toThrow(BoksProtocolError);
+      expect(() => analyzer.validateConfigKey('AXAAAAAA', 'prop')).toThrow(BoksProtocolError);
+      expect(() => analyzer.validateConfigKey('AAXAAAAA', 'prop')).toThrow(BoksProtocolError);
+      expect(() => analyzer.validateConfigKey('AAAXAAAA', 'prop')).toThrow(BoksProtocolError);
+      expect(() => analyzer.validateConfigKey('AAAAXAAA', 'prop')).toThrow(BoksProtocolError);
+      expect(() => analyzer.validateConfigKey('AAAAAXAA', 'prop')).toThrow(BoksProtocolError);
+      expect(() => analyzer.validateConfigKey('AAAAAAXA', 'prop')).toThrow(BoksProtocolError);
+      expect(() => analyzer.validateConfigKey('AAAAAAAX', 'prop')).toThrow(BoksProtocolError);
+    });
+  });
