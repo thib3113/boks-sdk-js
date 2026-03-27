@@ -1,4 +1,3 @@
-import { BoksPacketOptions } from '../_BoksPacketBase';
 import { BoksRXPacket } from '@/protocol/uplink/_BoksRXPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
 
@@ -8,11 +7,11 @@ import { BoksOpcode } from '@/protocol/constants';
 export class ErrorUnauthorizedPacket extends BoksRXPacket {
   static readonly opcode = BoksOpcode.ERROR_UNAUTHORIZED;
 
-  constructor(raw?: Uint8Array) {
-    super(ErrorUnauthorizedPacket.opcode, raw);
+  constructor(rawPayload?: Uint8Array) {
+    super(ErrorUnauthorizedPacket.opcode, rawPayload);
   }
 
-  static fromRaw(payload: Uint8Array, _options?: BoksPacketOptions): ErrorUnauthorizedPacket {
+  static fromPayload(payload: Uint8Array): ErrorUnauthorizedPacket {
     return new ErrorUnauthorizedPacket(payload);
   }
 }

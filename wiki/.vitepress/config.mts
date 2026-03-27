@@ -70,7 +70,6 @@ export default defineConfig({
               text: 'Exemples Interactifs',
               items: [
                 { text: 'Présentation', link: '/fr/examples/' },
-                { text: 'Visualiseur de Paquets', link: '/fr/examples/packet-visualizer' },
                 { text: 'Démo Initialisation', link: '/fr/examples/initialization' },
         { text: 'Régénération Seed', link: '/fr/examples/regeneration' },
                 { text: 'Démo Ouverture', link: '/fr/examples/open-door' },
@@ -79,7 +78,8 @@ export default defineConfig({
                     { text: 'Santé Matérielle', link: '/fr/examples/hardware-health' },
                     { text: 'Gestion Codes', link: '/fr/examples/codes' },
                 { text: 'Gestion NFC', link: '/fr/examples/nfc' },
-                { text: 'Batterie & Matériel', link: '/fr/examples/battery' }
+                { text: 'Batterie & Matériel', link: '/fr/examples/battery' },
+                { text: 'Mise à jour Firmware (DFU)', link: '/fr/examples/dfu' }
               ]
             }
           ]
@@ -145,7 +145,6 @@ export default defineConfig({
           text: 'Interactive Examples',
           items: [
             { text: 'Overview', link: '/examples/' },
-            { text: 'Packet Visualizer', link: '/examples/packet-visualizer' },
             { text: 'Initialization Demo', link: '/examples/initialization' },
         { text: 'Seed Regeneration', link: '/examples/regeneration' },
             { text: 'Open Door Demo', link: '/examples/open-door' },
@@ -154,7 +153,8 @@ export default defineConfig({
             { text: 'Hardware Health', link: '/examples/hardware-health' },
             { text: 'Code Management', link: '/examples/codes' },
             { text: 'NFC Management', link: '/examples/nfc' },
-            { text: 'Battery & Hardware', link: '/examples/battery' }
+            { text: 'Battery & Hardware', link: '/examples/battery' },
+            { text: 'Firmware Update (DFU)', link: '/examples/dfu' }
           ]
         }
       ]

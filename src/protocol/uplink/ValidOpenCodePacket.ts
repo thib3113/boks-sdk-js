@@ -1,4 +1,3 @@
-import { BoksPacketOptions } from '../_BoksPacketBase';
 import { BoksRXPacket } from '@/protocol/uplink/_BoksRXPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
 
@@ -8,11 +7,11 @@ import { BoksOpcode } from '@/protocol/constants';
 export class ValidOpenCodePacket extends BoksRXPacket {
   static readonly opcode = BoksOpcode.VALID_OPEN_CODE;
 
-  constructor(raw?: Uint8Array) {
-    super(ValidOpenCodePacket.opcode, raw);
+  constructor(rawPayload?: Uint8Array) {
+    super(ValidOpenCodePacket.opcode, rawPayload);
   }
 
-  static fromRaw(payload: Uint8Array, _options?: BoksPacketOptions): ValidOpenCodePacket {
+  static fromPayload(payload: Uint8Array): ValidOpenCodePacket {
     return new ValidOpenCodePacket(payload);
   }
 }

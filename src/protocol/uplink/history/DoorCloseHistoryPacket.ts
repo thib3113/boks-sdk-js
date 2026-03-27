@@ -1,4 +1,3 @@
-import { BoksPacketOptions } from '../../_BoksPacketBase';
 import { PayloadMapper } from '@/protocol/decorators';
 import {
   BoksHistoryEvent,
@@ -13,16 +12,12 @@ export class DoorCloseHistoryPacket extends BoksHistoryEvent {
   static readonly opcode = BoksOpcode.LOG_DOOR_CLOSE;
   public readonly status = 'closed';
 
-  constructor(props: BoksHistoryEventProps, raw?: Uint8Array) {
-    super(DoorCloseHistoryPacket.opcode, props, raw);
+  constructor(props: BoksHistoryEventProps, rawPayload?: Uint8Array) {
+    super(DoorCloseHistoryPacket.opcode, props, rawPayload);
   }
 
-  static fromRaw(payload: Uint8Array, options?: BoksPacketOptions): DoorCloseHistoryPacket {
-    const data = PayloadMapper.parse<BoksHistoryEventProps>(
-      DoorCloseHistoryPacket,
-      payload,
-      options
-    );
+  static fromPayload(payload: Uint8Array): DoorCloseHistoryPacket {
+    const data = PayloadMapper.parse<BoksHistoryEventProps>(DoorCloseHistoryPacket, payload);
     return new DoorCloseHistoryPacket(data, payload);
   }
 }

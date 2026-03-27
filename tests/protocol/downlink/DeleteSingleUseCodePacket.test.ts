@@ -1,8 +1,8 @@
-import { bytesToHex, stringToBytes } from '@/utils/converters';
 import { describe, it, expect } from 'vitest';
 import { DeleteSingleUseCodePacket } from '@/protocol/downlink/DeleteSingleUseCodePacket';
 import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';
 import { BoksOpcode } from '@/protocol/constants';
+import { bytesToHex, stringToBytes } from '@/utils/converters';
 
 describe('DeleteSingleUseCodePacket', () => {
   const validKey = '12345678';
@@ -32,7 +32,7 @@ describe('DeleteSingleUseCodePacket', () => {
     payload.set(stringToBytes(validKey), 0);
     payload.set(stringToBytes(validPin), 8);
 
-    const packet = DeleteSingleUseCodePacket.fromRaw(payload);
+    const packet = DeleteSingleUseCodePacket.fromPayload(payload);
     expect(packet.configKey).toBe(validKey);
     expect(packet.pin).toBe(validPin);
   });
@@ -65,7 +65,7 @@ describe('DeleteSingleUseCodePacket', () => {
 
   it('should fail parsing if payload is too short', () => {
     const shortPayload = new Uint8Array(10);
-    expect(() => DeleteSingleUseCodePacket.fromRaw(shortPayload)).toThrowError(
+    expect(() => DeleteSingleUseCodePacket.fromPayload(shortPayload)).toThrowError(
       BoksProtocolError
     );
   });
@@ -83,20 +83,6 @@ describe('DeleteSingleUseCodePacket', () => {
         "configKey": "12345678",
         "opcode": 13,
         "pin": "998877",
-      "validChecksum": null,
-
       });
-  });
-
-  it('should retain the exact raw payload when constructed from hex via factory', () => {
-    const dummyPayload = new Uint8Array([DeleteSingleUseCodePacket.opcode, 0x05, 0x01, 0x02, 0x03, 0x04, 0x05, 0x00]);
-    try {
-      const packet = DeleteSingleUseCodePacket.fromRaw(dummyPayload, { strict: false });
-      if (packet) {
-        expect(bytesToHex(packet.raw).toUpperCase()).toBe(bytesToHex(dummyPayload).toUpperCase());
-      }
-    } catch (e) {
-      // Ignore if dummy payload is invalid for mapped fields
-    }
   });
 });

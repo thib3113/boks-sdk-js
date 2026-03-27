@@ -6,7 +6,7 @@ import { bytesToHex } from '@/utils/converters';
 describe('NotifyScaleFaultyPacket', () => {
   it('should parse correctly with data', () => {
     const payload = new Uint8Array([0x01, 0x02]);
-    const packet = NotifyScaleFaultyPacket.fromRaw(payload);
+    const packet = NotifyScaleFaultyPacket.fromPayload(payload);
     expect(packet.opcode).toBe(BoksOpcode.NOTIFY_SCALE_FAULTY);
     expect(packet.data).toEqual(payload);
   });
@@ -20,7 +20,7 @@ describe('NotifyScaleFaultyPacket', () => {
   });
 
   it('should output only mapped payload properties and opcode via toJSON', () => {
-    const packet = NotifyScaleFaultyPacket.fromRaw(new Uint8Array([0x01, 0x02]));
+    const packet = NotifyScaleFaultyPacket.fromPayload(new Uint8Array([0x01, 0x02]));
     const json = packet.toJSON();
     expect(json).toStrictEqual({
         "data": new Uint8Array([
@@ -28,20 +28,6 @@ describe('NotifyScaleFaultyPacket', () => {
           2,
         ]),
         "opcode": 186,
-      "validChecksum": null,
-
       });
-  });
-
-  it('should retain the exact raw payload when constructed from hex via factory', () => {
-    const dummyPayload = new Uint8Array([NotifyScaleFaultyPacket.opcode, 0x05, 0x01, 0x02, 0x03, 0x04, 0x05, 0x00]);
-    try {
-      const packet = NotifyScaleFaultyPacket.fromRaw(dummyPayload, { strict: false });
-      if (packet) {
-        expect(bytesToHex(packet.raw).toUpperCase()).toBe(bytesToHex(dummyPayload).toUpperCase());
-      }
-    } catch (e) {
-      // Ignore if dummy payload is invalid for mapped fields
-    }
   });
 });

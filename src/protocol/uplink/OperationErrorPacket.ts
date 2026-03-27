@@ -1,4 +1,3 @@
-import { BoksPacketOptions } from '../_BoksPacketBase';
 import { PayloadMapper, PayloadUint8 } from '@/protocol/decorators';
 import { BoksRXPacket } from '@/protocol/uplink/_BoksRXPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
@@ -12,13 +11,13 @@ export class OperationErrorPacket extends BoksRXPacket {
   @PayloadUint8(0)
   public accessor errorCode!: number;
 
-  constructor(errorCode: number, raw?: Uint8Array) {
-    super(OperationErrorPacket.opcode, raw);
+  constructor(errorCode: number, rawPayload?: Uint8Array) {
+    super(OperationErrorPacket.opcode, rawPayload);
     this.errorCode = errorCode;
   }
 
-  static fromRaw(payload: Uint8Array, options?: BoksPacketOptions): OperationErrorPacket {
-    const data = PayloadMapper.parse<OperationErrorPacket>(OperationErrorPacket, payload, options);
+  static fromPayload(payload: Uint8Array): OperationErrorPacket {
+    const data = PayloadMapper.parse<OperationErrorPacket>(OperationErrorPacket, payload);
     return new OperationErrorPacket(data.errorCode, payload);
   }
 }

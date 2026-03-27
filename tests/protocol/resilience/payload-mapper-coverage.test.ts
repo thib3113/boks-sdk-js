@@ -8,7 +8,7 @@ class TestConfigKeyPacket {
   @PayloadConfigKey(0)
   public accessor configKey: string = '';
 
-  constructor(public raw?: Uint8Array) {}
+  constructor(public rawPayload?: Uint8Array) {}
 }
 
 describe('PayloadMapper Coverage additions', () => {

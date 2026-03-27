@@ -19,6 +19,6 @@ L'état de la connexion et les données simulées sont partagés sur toutes les 
 - [**Gestion des Codes**](./codes) : Créez et gérez les codes clavier (Maître, Usage unique, etc.).
 - [**Gestion NFC**](./nfc) : Enregistrez et supprimez des badges NFC (pour les Boks v4+).
 - [**Batterie & Matériel**](./battery) : Lisez les niveaux de batterie et les statistiques détaillées.
-- [**Visualiseur de Paquets**](./packet-visualizer) : Décodez et visualisez des paquets bruts du protocole Boks.
+- [**Mise à jour Firmware (DFU)**](./dfu) : Mettez à jour le logiciel interne de la Boks.
 
 <BoksDashboard />

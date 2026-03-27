@@ -4,11 +4,11 @@ import { ScaleMeasureHistoryPacket } from '../../../../../src/protocol/uplink/hi
 import { BoksProtocolError } from '../../../../../src/errors/BoksProtocolError';
 
 describe('ScaleMeasureHistoryPacket Resilience (Fuzzing)', () => {
-  it('FEATURE REGRESSION: should securely reject malformed binary payloads in fromRaw', () => {
+  it('FEATURE REGRESSION: should securely reject malformed binary payloads in fromPayload', () => {
     fc.assert(
       fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (payload) => {
         try {
-          const packet = ScaleMeasureHistoryPacket.fromRaw(payload);
+          const packet = ScaleMeasureHistoryPacket.fromPayload(payload);
           expect(packet).toBeInstanceOf(ScaleMeasureHistoryPacket);
         } catch (e) {
           expect(e).toBeInstanceOf(BoksProtocolError);

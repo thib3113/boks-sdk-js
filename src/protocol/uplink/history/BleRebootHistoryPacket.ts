@@ -1,4 +1,3 @@
-import { BoksPacketOptions } from '../../_BoksPacketBase';
 import { PayloadMapper } from '@/protocol/decorators';
 import {
   BoksHistoryEvent,
@@ -12,16 +11,12 @@ import { BoksOpcode } from '@/protocol/constants';
 export class BleRebootHistoryPacket extends BoksHistoryEvent {
   static readonly opcode = BoksOpcode.BLE_REBOOT;
 
-  constructor(props: BoksHistoryEventProps, raw?: Uint8Array) {
-    super(BleRebootHistoryPacket.opcode, props, raw);
+  constructor(props: BoksHistoryEventProps, rawPayload?: Uint8Array) {
+    super(BleRebootHistoryPacket.opcode, props, rawPayload);
   }
 
-  static fromRaw(payload: Uint8Array, options?: BoksPacketOptions): BleRebootHistoryPacket {
-    const data = PayloadMapper.parse<BoksHistoryEventProps>(
-      BleRebootHistoryPacket,
-      payload,
-      options
-    );
+  static fromPayload(payload: Uint8Array): BleRebootHistoryPacket {
+    const data = PayloadMapper.parse<BoksHistoryEventProps>(BleRebootHistoryPacket, payload);
     return new BleRebootHistoryPacket(data, payload);
   }
 }

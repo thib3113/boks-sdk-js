@@ -42,10 +42,10 @@ describe('HistoryPackets Resilience (Fuzzing)', () => {
       fc.assert(
         fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (payload) => {
           try {
-            const packet = PacketClass.fromRaw(payload);
+            const packet = PacketClass.fromPayload(payload);
             expect(packet).toBeInstanceOf(PacketClass);
             expect(packet.opcode).toBe((PacketClass as any).opcode);
-            expect((packet as any).raw).toEqual(payload);
+            expect((packet as any).rawPayload).toEqual(payload);
           } catch (e: any) {
             if (
               e.id === 'MALFORMED_DATA' ||

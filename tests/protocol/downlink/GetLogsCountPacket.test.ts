@@ -12,13 +12,13 @@ describe('GetLogsCountPacket', () => {
   });
 
   it('should parse from payload correctly', () => {
-    const packet = GetLogsCountPacket.fromRaw(new Uint8Array(0));
+    const packet = GetLogsCountPacket.fromPayload(new Uint8Array(0));
     expect(packet).toBeInstanceOf(GetLogsCountPacket);
     expect(packet.opcode).toBe(BoksOpcode.GET_LOGS_COUNT);
   });
 
   it('should handle extra payload bytes gracefully (ignore them)', () => {
-    const packet = GetLogsCountPacket.fromRaw(new Uint8Array([0xff]));
+    const packet = GetLogsCountPacket.fromPayload(new Uint8Array([0xff]));
     expect(packet).toBeInstanceOf(GetLogsCountPacket);
   });
 
@@ -27,20 +27,6 @@ describe('GetLogsCountPacket', () => {
     const json = packet.toJSON();
     expect(json).toStrictEqual({
         "opcode": 7,
-      "validChecksum": null,
-
       });
-  });
-
-  it('should retain the exact raw payload when constructed from hex via factory', () => {
-    const dummyPayload = new Uint8Array([GetLogsCountPacket.opcode, 0x05, 0x01, 0x02, 0x03, 0x04, 0x05, 0x00]);
-    try {
-      const packet = GetLogsCountPacket.fromRaw(dummyPayload, { strict: false });
-      if (packet) {
-        expect(bytesToHex(packet.raw).toUpperCase()).toBe(bytesToHex(dummyPayload).toUpperCase());
-      }
-    } catch (e) {
-      // Ignore if dummy payload is invalid for mapped fields
-    }
   });
 });

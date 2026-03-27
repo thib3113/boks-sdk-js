@@ -1,4 +1,3 @@
-import { BoksPacketOptions } from '../../_BoksPacketBase';
 import { PayloadMapper, PayloadPinCode, PayloadMacAddress } from '@/protocol/decorators';
 import {
   BoksHistoryEvent,
@@ -20,17 +19,16 @@ export class CodeBleValidHistoryPacket extends BoksHistoryEvent {
   @PayloadMacAddress(11)
   public accessor connectedMac!: string;
 
-  constructor(props: CodeBleValidHistoryPacketProps, raw?: Uint8Array) {
-    super(CodeBleValidHistoryPacket.opcode, props, raw);
+  constructor(props: CodeBleValidHistoryPacketProps, rawPayload?: Uint8Array) {
+    super(CodeBleValidHistoryPacket.opcode, props, rawPayload);
     this.code = props.code;
     this.connectedMac = props.connectedMac;
   }
 
-  static fromRaw(payload: Uint8Array, options?: BoksPacketOptions): CodeBleValidHistoryPacket {
+  static fromPayload(payload: Uint8Array): CodeBleValidHistoryPacket {
     const data = PayloadMapper.parse<CodeBleValidHistoryPacketProps>(
       CodeBleValidHistoryPacket,
-      payload,
-      options
+      payload
     );
     return new CodeBleValidHistoryPacket(data, payload);
   }

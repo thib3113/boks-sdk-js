@@ -1,4 +1,3 @@
-import { BoksPacketOptions } from '../../_BoksPacketBase';
 import { PayloadMapper, PayloadUint8 } from '@/protocol/decorators';
 import {
   BoksHistoryEvent,
@@ -19,13 +18,13 @@ export class ErrorHistoryPacket extends BoksHistoryEvent {
   @PayloadUint8(3)
   public accessor errorCode!: number;
 
-  constructor(props: ErrorHistoryPacketProps, raw?: Uint8Array) {
-    super(ErrorHistoryPacket.opcode, props, raw);
+  constructor(props: ErrorHistoryPacketProps, rawPayload?: Uint8Array) {
+    super(ErrorHistoryPacket.opcode, props, rawPayload);
     this.errorCode = props.errorCode;
   }
 
-  static fromRaw(payload: Uint8Array, options?: BoksPacketOptions): ErrorHistoryPacket {
-    const data = PayloadMapper.parse<ErrorHistoryPacketProps>(ErrorHistoryPacket, payload, options);
+  static fromPayload(payload: Uint8Array): ErrorHistoryPacket {
+    const data = PayloadMapper.parse<ErrorHistoryPacketProps>(ErrorHistoryPacket, payload);
     return new ErrorHistoryPacket(data, payload);
   }
 }

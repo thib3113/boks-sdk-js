@@ -37,12 +37,12 @@ describe('MasterCodeEditPacket Resilience (Fuzzing)', () => {
     );
   });
 
-  it('FEATURE REGRESSION: should securely reject malformed binary payloads in fromRaw with BoksProtocolError', () => {
+  it('FEATURE REGRESSION: should securely reject malformed binary payloads in fromPayload with BoksProtocolError', () => {
     // Fuzz the binary parser
     fc.assert(
       fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (payload) => {
         try {
-          const packet = MasterCodeEditPacket.fromRaw(payload);
+          const packet = MasterCodeEditPacket.fromPayload(payload);
           expect(packet).toBeInstanceOf(MasterCodeEditPacket);
         } catch (e) {
           expect(e).toBeInstanceOf(BoksProtocolError);

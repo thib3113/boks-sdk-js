@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest';
 import { ScaleBondPacket } from '@/protocol/scale/ScaleBondPacket';
 import { BoksOpcode } from '@/protocol/constants';
 import { bytesToHex } from '@/utils/converters';
-import { BoksPacket } from '@/protocol/_BoksPacketBase';
 
 describe('ScaleBondPacket', () => {
   it('should construct and encode correctly', () => {
@@ -20,38 +19,15 @@ describe('ScaleBondPacket', () => {
 
   it('should parse from payload correctly', () => {
     const data = new Uint8Array([0x01, 0x02, 0x03]);
-    const packet = ScaleBondPacket.fromRaw(data);
+    const packet = ScaleBondPacket.fromPayload(data);
     expect(packet.data).toEqual(data);
   });
 
   it('should output only mapped payload properties and opcode via toJSON', () => {
-    const packet = ScaleBondPacket.fromRaw(new Uint8Array([0x01, 0x02, 0x03]));
+    const packet = ScaleBondPacket.fromPayload(new Uint8Array([0x01, 0x02, 0x03]));
     const json = packet.toJSON();
     expect(json).toStrictEqual({
         "opcode": 80,
-      "validChecksum": null,
-
       });
-  });
-
-  it('should retain the exact raw payload when constructed from hex via factory', () => {
-    const dummyPayload = new Uint8Array([ScaleBondPacket.opcode, 0x05, 0x01, 0x02, 0x03, 0x04, 0x05, 0x00]);
-    try {
-      const packet = ScaleBondPacket.fromRaw(dummyPayload, { strict: false });
-      if (packet) {
-        expect(bytesToHex(packet.raw).toUpperCase()).toBe(bytesToHex(dummyPayload).toUpperCase());
-      }
-    } catch (e) {
-      // Ignore if dummy payload is invalid for mapped fields
-    }
-  });
-
-  describe('Fuzzer coverage edge cases', () => {
-    it('should extract payload from data that coincidentally resembles a valid packet header', () => {
-      const payload = new Uint8Array([BoksOpcode.SCALE_BOND, 0x03, 0x01, 0x02, 0x03]);
-      const packet = ScaleBondPacket.fromRaw(payload);
-      const expectedData = BoksPacket.extractPayloadData(payload, BoksOpcode.SCALE_BOND);
-      expect(packet.data).toEqual(expectedData);
-    });
   });
 });

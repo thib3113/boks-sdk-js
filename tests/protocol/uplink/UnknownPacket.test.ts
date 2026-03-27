@@ -33,8 +33,8 @@ describe('UnknownPacket', () => {
     expect(packet.payload).toEqual(payload);
   });
 
-  it('should throw an error when fromRaw is called directly', () => {
+  it('should throw an error when fromPayload is called directly', () => {
     const payload = new Uint8Array([0xAA, 0xBB, 0xCC]);
-    expect(() => UnknownPacket.fromRaw(payload)).toThrowError('Use fromUnknownPayload instead');
+    expect(() => UnknownPacket.fromPayload(payload)).toThrowError('Use fromUnknownPayload instead');
   });
 });

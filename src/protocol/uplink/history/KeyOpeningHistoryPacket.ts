@@ -1,4 +1,3 @@
-import { BoksPacketOptions } from '../../_BoksPacketBase';
 import { PayloadMapper } from '@/protocol/decorators';
 import {
   BoksHistoryEvent,
@@ -12,16 +11,12 @@ import { BoksOpcode } from '@/protocol/constants';
 export class KeyOpeningHistoryPacket extends BoksHistoryEvent {
   static readonly opcode = BoksOpcode.LOG_EVENT_KEY_OPENING;
 
-  constructor(props: BoksHistoryEventProps, raw?: Uint8Array) {
-    super(KeyOpeningHistoryPacket.opcode, props, raw);
+  constructor(props: BoksHistoryEventProps, rawPayload?: Uint8Array) {
+    super(KeyOpeningHistoryPacket.opcode, props, rawPayload);
   }
 
-  static fromRaw(payload: Uint8Array, options?: BoksPacketOptions): KeyOpeningHistoryPacket {
-    const data = PayloadMapper.parse<BoksHistoryEventProps>(
-      KeyOpeningHistoryPacket,
-      payload,
-      options
-    );
+  static fromPayload(payload: Uint8Array): KeyOpeningHistoryPacket {
+    const data = PayloadMapper.parse<BoksHistoryEventProps>(KeyOpeningHistoryPacket, payload);
     return new KeyOpeningHistoryPacket(data, payload);
   }
 }

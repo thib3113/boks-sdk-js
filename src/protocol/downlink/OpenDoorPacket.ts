@@ -1,4 +1,3 @@
-import { BoksPacketOptions } from '../_BoksPacketBase';
 import { BoksPacket } from '@/protocol/_BoksPacketBase';
 import { BoksOpcode } from '@/protocol/constants';
 import { PayloadMapper, PayloadPinCode } from '@/protocol/decorators';
@@ -16,14 +15,14 @@ export class OpenDoorPacket extends BoksPacket {
     return OpenDoorPacket.opcode;
   }
 
-  constructor(pin: string, raw?: Uint8Array) {
-    super(raw);
+  constructor(pin: string, rawPayload?: Uint8Array) {
+    super(rawPayload);
 
     this.pin = pin;
   }
 
-  static fromRaw(payload: Uint8Array, options?: BoksPacketOptions): OpenDoorPacket {
-    const data = PayloadMapper.parse<OpenDoorPacket>(OpenDoorPacket, payload, options);
+  static fromPayload(payload: Uint8Array): OpenDoorPacket {
+    const data = PayloadMapper.parse<OpenDoorPacket>(OpenDoorPacket, payload);
     return new OpenDoorPacket(data.pin, payload);
   }
 }

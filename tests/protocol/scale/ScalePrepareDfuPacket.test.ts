@@ -11,7 +11,7 @@ describe('ScalePrepareDfuPacket', () => {
   });
 
   it('should parse from payload correctly', () => {
-    const packet = ScalePrepareDfuPacket.fromRaw(new Uint8Array(0));
+    const packet = ScalePrepareDfuPacket.fromPayload(new Uint8Array(0));
     expect(packet.opcode).toBe(BoksOpcode.SCALE_PREPARE_DFU);
   });
 
@@ -20,20 +20,6 @@ describe('ScalePrepareDfuPacket', () => {
     const json = packet.toJSON();
     expect(json).toStrictEqual({
         "opcode": 96,
-      "validChecksum": null,
-
       });
-  });
-
-  it('should retain the exact raw payload when constructed from hex via factory', () => {
-    const dummyPayload = new Uint8Array([ScalePrepareDfuPacket.opcode, 0x05, 0x01, 0x02, 0x03, 0x04, 0x05, 0x00]);
-    try {
-      const packet = ScalePrepareDfuPacket.fromRaw(dummyPayload, { strict: false });
-      if (packet) {
-        expect(bytesToHex(packet.raw).toUpperCase()).toBe(bytesToHex(dummyPayload).toUpperCase());
-      }
-    } catch (e) {
-      // Ignore if dummy payload is invalid for mapped fields
-    }
   });
 });

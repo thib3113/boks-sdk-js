@@ -1,4 +1,4 @@
-import { BoksPacket, BoksPacketConstructor, BoksPacketOptions } from './_BoksPacketBase';
+import { BoksPacket, BoksPacketConstructor } from './_BoksPacketBase';
 
 // Scale Notifications
 import { NotifyScaleBondingSuccessPacket } from './scale/NotifyScaleBondingSuccessPacket';
@@ -58,7 +58,6 @@ import { NfcRegisteringHistoryPacket } from './uplink/history/NfcRegisteringHist
 
 import { calculateChecksum } from '@/utils/converters';
 import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';
-import { PACKET_HEADER_SIZE, PACKET_MIN_HEADER_SIZE } from '@/protocol/constants';
 import { freeze } from '@/utils/security';
 
 /**
@@ -153,75 +152,52 @@ export class BoksPacketFactory {
    */
   static createFromPayload(
     data: Uint8Array,
-    options?: {
-      strict?: boolean;
-      logger?: (
-        level: 'info' | 'warn' | 'error' | 'debug',
-        event: 'checksum_error',
-        context: { opcode: number; expected: number; received: number }
-      ) => void;
-    }
+    logger?: (
+      level: 'info' | 'warn' | 'error' | 'debug',
+      event: 'checksum_error',
+      context: { opcode: number; expected: number; received: number }
+    ) => void
   ): BoksPacket {
-    if (data.length < PACKET_HEADER_SIZE) {
+    if (data.length < 3) {
       throw new BoksProtocolError(
         BoksProtocolErrorId.INVALID_PAYLOAD_LENGTH,
-        `Packet length too short (needs at least ${PACKET_HEADER_SIZE} bytes)`,
-        { received: data.length, expected: PACKET_HEADER_SIZE }
+        'Packet length too short (needs at least 3 bytes)',
+        { received: data.length, expected: 3 }
       );
     }
-
-    const strict = options?.strict ?? true;
-    const logger = options?.logger;
 
     const opcode = data[0];
-    const lengthByte = data[1];
-    const Ctor = this.getConstructor(opcode);
-    const lengthIncludesHeader = Ctor?.lengthIncludesHeader ?? false;
+    const length = data[1];
 
-    // Standard: length byte = payload size. Total = length + 3 (Opcode, Len, CRC)
-    // Extended (0xC3): length byte = total size. Total = length
-    const expectedTotalLength = lengthIncludesHeader ? lengthByte : lengthByte + PACKET_HEADER_SIZE;
-
-    // Check if we have at least Opcode and Length
-    if (data.length < PACKET_MIN_HEADER_SIZE) {
+    // Ensure we have enough data (Opcode + Length + Payload + Checksum)
+    if (data.length < length + 3) {
       throw new BoksProtocolError(
         BoksProtocolErrorId.INVALID_PAYLOAD_LENGTH,
-        'Packet too short to even have a header',
-        { received: data.length, expected: PACKET_MIN_HEADER_SIZE }
+        'Packet length too short based on length byte',
+        { received: data.length, expected: length + 3 }
       );
     }
 
-    // Validate checksum only if the buffer is long enough to contain it
-    if (data.length >= expectedTotalLength) {
-      const checksum = data[expectedTotalLength - 1];
-      const computedChecksum = calculateChecksum(data, 0, expectedTotalLength - 1);
+    const payload = data.subarray(2, 2 + length);
+    const checksum = data[length + 2];
 
-      if (checksum !== computedChecksum) {
-        if (logger) {
-          logger('warn', 'checksum_error', {
-            opcode,
-            expected: computedChecksum,
-            received: checksum
-          });
-        }
-
-        if (strict) {
-          throw new BoksProtocolError(BoksProtocolErrorId.CHECKSUM_MISMATCH, 'Invalid checksum', {
-            received: checksum,
-            expected: computedChecksum
-          });
-        }
+    // Validate checksum
+    const computedChecksum = calculateChecksum(data, 0, length + 2);
+    if (checksum !== computedChecksum) {
+      if (logger) {
+        logger('warn', 'checksum_error', {
+          opcode,
+          expected: computedChecksum,
+          received: checksum
+        });
       }
-    } else if (strict) {
-      // In strict mode, we require the full packet including checksum
-      throw new BoksProtocolError(
-        BoksProtocolErrorId.INVALID_PAYLOAD_LENGTH,
-        'Packet length too short based on length byte (missing payload or checksum)',
-        { received: data.length, expected: expectedTotalLength }
-      );
+      throw new BoksProtocolError(BoksProtocolErrorId.CHECKSUM_MISMATCH, 'Invalid checksum', {
+        received: checksum,
+        expected: computedChecksum
+      });
     }
 
-    return this.fromResponse(opcode, data, { strict });
+    return this.fromResponse(opcode, payload);
   }
 
   /**
@@ -232,18 +208,14 @@ export class BoksPacketFactory {
   }
 
   /**
-   * Creates a packet instance from an identified opcode and raw payload.
+   * Creates an RX packet instance from an opcode and its payload.
    */
-  static fromResponse(
-    opcode: number,
-    payload: Uint8Array,
-    options?: BoksPacketOptions
-  ): BoksPacket {
+  static fromResponse(opcode: number, payload: Uint8Array): BoksPacket {
     const Ctor = this.getConstructor(opcode);
     if (!Ctor) {
       return UnknownPacket.fromUnknownPayload(opcode, payload);
     }
 
-    return Ctor.fromRaw(payload, options);
+    return Ctor.fromPayload(payload);
   }
 }

@@ -4,11 +4,11 @@ import { PowerOnHistoryPacket } from '../../../../../src/protocol/uplink/history
 import { BoksProtocolError } from '../../../../../src/errors/BoksProtocolError';
 
 describe('PowerOnHistoryPacket Resilience (Fuzzing)', () => {
-  it('FEATURE REGRESSION: should securely reject malformed binary payloads in fromRaw', () => {
+  it('FEATURE REGRESSION: should securely reject malformed binary payloads in fromPayload', () => {
     fc.assert(
       fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (payload) => {
         try {
-          const packet = PowerOnHistoryPacket.fromRaw(payload);
+          const packet = PowerOnHistoryPacket.fromPayload(payload);
           expect(packet).toBeInstanceOf(PowerOnHistoryPacket);
         } catch (e) {
           expect(e).toBeInstanceOf(BoksProtocolError);

@@ -4,11 +4,11 @@ import { HistoryEraseHistoryPacket } from '../../../../../src/protocol/uplink/hi
 import { BoksProtocolError } from '../../../../../src/errors/BoksProtocolError';
 
 describe('HistoryEraseHistoryPacket Resilience (Fuzzing)', () => {
-  it('FEATURE REGRESSION: should securely reject malformed binary payloads in fromRaw', () => {
+  it('FEATURE REGRESSION: should securely reject malformed binary payloads in fromPayload', () => {
     fc.assert(
       fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (payload) => {
         try {
-          const packet = HistoryEraseHistoryPacket.fromRaw(payload);
+          const packet = HistoryEraseHistoryPacket.fromPayload(payload);
           expect(packet).toBeInstanceOf(HistoryEraseHistoryPacket);
         } catch (e) {
           expect(e).toBeInstanceOf(BoksProtocolError);

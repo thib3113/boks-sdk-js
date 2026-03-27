@@ -4,12 +4,12 @@ import { RequestLogsPacket } from '../../../src/protocol/downlink/RequestLogsPac
 import { BoksProtocolError } from '../../../src/errors/BoksProtocolError';
 
 describe('RequestLogsPacket Resilience (Fuzzing)', () => {
-  it('FEATURE REGRESSION: should securely reject malformed binary payloads in fromRaw with BoksProtocolError', () => {
+  it('FEATURE REGRESSION: should securely reject malformed binary payloads in fromPayload with BoksProtocolError', () => {
     // Fuzz the binary parser
     fc.assert(
       fc.property(fc.uint8Array({ minLength: 0, maxLength: 256 }), (payload) => {
         try {
-          const packet = RequestLogsPacket.fromRaw(payload);
+          const packet = RequestLogsPacket.fromPayload(payload);
           expect(packet).toBeInstanceOf(RequestLogsPacket);
         } catch (e) {
           expect(e).toBeInstanceOf(BoksProtocolError);

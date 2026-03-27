@@ -1,8 +1,8 @@
-import { bytesToHex, stringToBytes } from '@/utils/converters';
 import { BoksProtocolError } from '@/errors/BoksProtocolError';
 import { describe, it, expect } from 'vitest';
 import { NfcRegisterPacket } from '@/protocol/downlink/NfcRegisterPacket';
 import { BoksOpcode } from '@/protocol/constants';
+import { bytesToHex, stringToBytes } from '@/utils/converters';
 
 describe('NfcRegisterPacket', () => {
   const validKey = '12345678';
@@ -49,9 +49,9 @@ describe('NfcRegisterPacket', () => {
     payload[8] = 4;
     payload.set(uidBytes, 9);
 
-    const packet = NfcRegisterPacket.fromRaw(payload);
+    const packet = NfcRegisterPacket.fromPayload(payload);
     expect(packet.configKey).toBe(validKey);
-    expect(packet.uid).toBe('01020304'); // formatted with colons by fromRaw logic
+    expect(packet.uid).toBe('01020304'); // formatted with colons by fromPayload logic
   });
 
   it('should throw INVALID_CONFIG_KEY for invalid config key format', () => {
@@ -79,8 +79,8 @@ describe('NfcRegisterPacket', () => {
     const payload = new Uint8Array(8); // Only key
     payload.set(stringToBytes(validKey), 0);
 
-    // fromRaw logic: if length < 8, it returns an empty packet which fails validation.
-    expect(() => NfcRegisterPacket.fromRaw(payload)).toThrowError(BoksProtocolError);
+    // fromPayload logic: if length < 8, it returns an empty packet which fails validation.
+    expect(() => NfcRegisterPacket.fromPayload(payload)).toThrowError(BoksProtocolError);
   });
 
   it('should prove PayloadVarLenHex decorator correctly handles dynamic payload length', () => {
@@ -97,7 +97,7 @@ describe('NfcRegisterPacket', () => {
       0x77 // Data
     ]);
 
-    const packet = NfcRegisterPacket.fromRaw(payload);
+    const packet = NfcRegisterPacket.fromPayload(payload);
     expect(packet.uid).toBe('11223344556677');
   });
 
@@ -108,20 +108,6 @@ describe('NfcRegisterPacket', () => {
         "configKey": "12345678",
         "opcode": 24,
         "uid": "04A1B2C3",
-      "validChecksum": null,
-
       });
-  });
-
-  it('should retain the exact raw payload when constructed from hex via factory', () => {
-    const dummyPayload = new Uint8Array([NfcRegisterPacket.opcode, 0x05, 0x01, 0x02, 0x03, 0x04, 0x05, 0x00]);
-    try {
-      const packet = NfcRegisterPacket.fromRaw(dummyPayload, { strict: false });
-      if (packet) {
-        expect(bytesToHex(packet.raw).toUpperCase()).toBe(bytesToHex(dummyPayload).toUpperCase());
-      }
-    } catch (e) {
-      // Ignore if dummy payload is invalid for mapped fields
-    }
   });
 });

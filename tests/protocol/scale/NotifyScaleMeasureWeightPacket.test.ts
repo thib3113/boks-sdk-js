@@ -7,7 +7,7 @@ describe('NotifyScaleMeasureWeightPacket', () => {
   it('should parse positive weight', () => {
     // 0x00 Sign + Value 0x0003E8 (1000)
     const payload = new Uint8Array([0x00, 0x00, 0x03, 0xe8]);
-    const packet = NotifyScaleMeasureWeightPacket.fromRaw(payload);
+    const packet = NotifyScaleMeasureWeightPacket.fromPayload(payload);
     expect(packet.opcode).toBe(BoksOpcode.NOTIFY_SCALE_MEASURE_WEIGHT);
     expect(packet.weight).toBe(1000);
   });
@@ -23,36 +23,22 @@ describe('NotifyScaleMeasureWeightPacket', () => {
   it('should parse negative weight', () => {
     // 0x01 Sign + Value 0x0003E8 (1000) -> -1000
     const payload = new Uint8Array([0x01, 0x00, 0x03, 0xe8]);
-    const packet = NotifyScaleMeasureWeightPacket.fromRaw(payload);
+    const packet = NotifyScaleMeasureWeightPacket.fromPayload(payload);
     expect(packet.weight).toBe(-1000);
   });
 
   it('should throw error on short payload', () => {
     const payload = new Uint8Array(2);
-    expect(() => NotifyScaleMeasureWeightPacket.fromRaw(payload)).toThrowError();
+    expect(() => NotifyScaleMeasureWeightPacket.fromPayload(payload)).toThrowError();
   });
 
   it('should output only mapped payload properties and opcode via toJSON', () => {
-    const packet = NotifyScaleMeasureWeightPacket.fromRaw(new Uint8Array([0x00, 0x00, 0x03, 0xe8]));
+    const packet = NotifyScaleMeasureWeightPacket.fromPayload(new Uint8Array([0x00, 0x00, 0x03, 0xe8]));
     const json = packet.toJSON();
     expect(json).toStrictEqual({
         "absWeight": 1000,
         "opcode": 183,
         "signNegative": false,
-      "validChecksum": null,
-
       });
-  });
-
-  it('should retain the exact raw payload when constructed from hex via factory', () => {
-    const dummyPayload = new Uint8Array([NotifyScaleMeasureWeightPacket.opcode, 0x05, 0x01, 0x02, 0x03, 0x04, 0x05, 0x00]);
-    try {
-      const packet = NotifyScaleMeasureWeightPacket.fromRaw(dummyPayload, { strict: false });
-      if (packet) {
-        expect(bytesToHex(packet.raw).toUpperCase()).toBe(bytesToHex(dummyPayload).toUpperCase());
-      }
-    } catch (e) {
-      // Ignore if dummy payload is invalid for mapped fields
-    }
   });
 });

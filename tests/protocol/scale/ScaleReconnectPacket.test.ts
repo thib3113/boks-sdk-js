@@ -11,7 +11,7 @@ describe('ScaleReconnectPacket', () => {
   });
 
   it('should parse from payload correctly', () => {
-    const packet = ScaleReconnectPacket.fromRaw(new Uint8Array(0));
+    const packet = ScaleReconnectPacket.fromPayload(new Uint8Array(0));
     expect(packet.opcode).toBe(BoksOpcode.SCALE_RECONNECT);
   });
 
@@ -20,20 +20,6 @@ describe('ScaleReconnectPacket', () => {
     const json = packet.toJSON();
     expect(json).toStrictEqual({
         "opcode": 98,
-      "validChecksum": null,
-
       });
-  });
-
-  it('should retain the exact raw payload when constructed from hex via factory', () => {
-    const dummyPayload = new Uint8Array([ScaleReconnectPacket.opcode, 0x05, 0x01, 0x02, 0x03, 0x04, 0x05, 0x00]);
-    try {
-      const packet = ScaleReconnectPacket.fromRaw(dummyPayload, { strict: false });
-      if (packet) {
-        expect(bytesToHex(packet.raw).toUpperCase()).toBe(bytesToHex(dummyPayload).toUpperCase());
-      }
-    } catch (e) {
-      // Ignore if dummy payload is invalid for mapped fields
-    }
   });
 });

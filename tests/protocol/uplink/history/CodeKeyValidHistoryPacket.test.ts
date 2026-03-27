@@ -6,7 +6,7 @@ import { bytesToHex } from '@/utils/converters';
 describe('CodeKeyValidHistoryPacket', () => {
   it('should parse correctly with age and code', () => {
     const payload = new Uint8Array([0, 0, 10, 49, 50, 51, 52, 53, 54]);
-    const packet = CodeKeyValidHistoryPacket.fromRaw(payload);
+    const packet = CodeKeyValidHistoryPacket.fromPayload(payload);
 
     expect(packet.opcode).toBe(BoksOpcode.LOG_CODE_KEY_VALID);
     expect(packet.age).toBe(10);
@@ -24,26 +24,12 @@ describe('CodeKeyValidHistoryPacket', () => {
   });
 
   it('should output only mapped payload properties and opcode via toJSON', () => {
-    const packet = CodeKeyValidHistoryPacket.fromRaw(new Uint8Array([0, 0, 10, 49, 50, 51, 52, 53, 54]));
+    const packet = CodeKeyValidHistoryPacket.fromPayload(new Uint8Array([0, 0, 10, 49, 50, 51, 52, 53, 54]));
     const json = packet.toJSON();
     expect(json).toStrictEqual({
         "age": 10,
         "code": "123456",
         "opcode": 135,
-      "validChecksum": null,
-
       });
-  });
-
-  it('should retain the exact raw payload when constructed from hex via factory', () => {
-    const dummyPayload = new Uint8Array([CodeKeyValidHistoryPacket.opcode, 0x05, 0x01, 0x02, 0x03, 0x04, 0x05, 0x00]);
-    try {
-      const packet = CodeKeyValidHistoryPacket.fromRaw(dummyPayload, { strict: false });
-      if (packet) {
-        expect(bytesToHex(packet.raw).toUpperCase()).toBe(bytesToHex(dummyPayload).toUpperCase());
-      }
-    } catch (e) {
-      // Ignore if dummy payload is invalid for mapped fields
-    }
   });
 });

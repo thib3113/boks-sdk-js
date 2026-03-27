@@ -1,4 +1,3 @@
-import { BoksPacketOptions } from '../../_BoksPacketBase';
 import { PayloadMapper, PayloadHexString } from '@/protocol/decorators';
 import {
   BoksHistoryEvent,
@@ -19,16 +18,15 @@ export class BlockResetHistoryPacket extends BoksHistoryEvent {
   @PayloadHexString(3, 2)
   public accessor resetInfo!: string;
 
-  constructor(props: BlockResetHistoryPacketProps, raw?: Uint8Array) {
-    super(BlockResetHistoryPacket.opcode, props, raw);
+  constructor(props: BlockResetHistoryPacketProps, rawPayload?: Uint8Array) {
+    super(BlockResetHistoryPacket.opcode, props, rawPayload);
     this.resetInfo = props.resetInfo;
   }
 
-  static fromRaw(payload: Uint8Array, options?: BoksPacketOptions): BlockResetHistoryPacket {
+  static fromPayload(payload: Uint8Array): BlockResetHistoryPacket {
     const data = PayloadMapper.parse<BlockResetHistoryPacketProps>(
       BlockResetHistoryPacket,
-      payload,
-      options
+      payload
     );
     return new BlockResetHistoryPacket(data, payload);
   }
