@@ -22,4 +22,17 @@ describe('BoksPacketBase', () => {
     const json = packet.toJSON();
     expect(json).toEqual({ opcode: 0x99, validChecksum: null });
   });
+
+  it('should correctly expose isGenerated based on instantiation', () => {
+    class DummyPacket extends BoksPacket {
+      get opcode() { return 0x99; }
+      constructor(raw?: Uint8Array) { super(raw); }
+    }
+
+    const generatedPacket = new DummyPacket();
+    expect(generatedPacket.isGenerated).toBe(true);
+
+    const receivedPacket = new DummyPacket(new Uint8Array([0x99, 0x00, 0x00]));
+    expect(receivedPacket.isGenerated).toBe(false);
+  });
 });
