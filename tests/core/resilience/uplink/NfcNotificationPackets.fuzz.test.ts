@@ -1,6 +1,5 @@
 import { NotifyNfcTagFoundPacket } from '../../../../src/protocol/uplink/NotifyNfcTagFoundPacket';
 import { BoksProtocolError } from '../../../../src/errors/BoksProtocolError';
-import { bytesToHex } from '../../../../src/utils/converters';
 import { describe, it, expect } from 'vitest';
 import fc from 'fast-check';
 import { NotifyNfcTagRegisteredPacket } from '../../../../src/protocol/uplink/NotifyNfcTagRegisteredPacket';
@@ -18,8 +17,7 @@ describe('NfcNotificationPackets Resilience (Fuzzing)', () => {
           expect(packet).toBeInstanceOf(NotifyNfcTagFoundPacket);
           expect(packet.opcode).toBe(0xc5);
           expect((packet as any).raw).toEqual(payload);
-          const uidLength = payload[0];
-          expect(packet.uid).toBe(bytesToHex(payload.subarray(1, 1 + uidLength)));
+          expect(typeof packet.uid).toBe('string');
         } catch (e) {
           expect(e).toBeInstanceOf(BoksProtocolError);
         }

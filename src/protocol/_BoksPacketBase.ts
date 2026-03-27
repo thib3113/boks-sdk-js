@@ -44,9 +44,15 @@ export abstract class BoksPacket {
   #raw?: Uint8Array;
   #extractedPayloadCache?: Uint8Array;
   #checksumCache: boolean | null | undefined = undefined;
+  #isGenerated: boolean;
 
   constructor(raw?: Uint8Array) {
     this.#raw = raw;
+    this.#isGenerated = !raw;
+  }
+
+  get isGenerated(): boolean {
+    return this.#isGenerated;
   }
 
   /**
@@ -214,6 +220,8 @@ export abstract class BoksPacket {
     packet[1] = lengthIncludesHeader ? payload.length + PACKET_HEADER_SIZE : payload.length;
     packet.set(payload, PACKET_MIN_HEADER_SIZE);
     packet[packet.length - 1] = calculateChecksum(packet, 0, packet.length - 1);
+    this.#raw = packet;
+    this.#checksumCache = true;
     return packet;
   }
 }
