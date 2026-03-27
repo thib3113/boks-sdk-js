@@ -4,7 +4,7 @@ import { PayloadPinCode } from '../../src/protocol/decorators/PayloadPinCode';
 import { PayloadConfigKey } from '../../src/protocol/decorators/PayloadConfigKey';
 import { PacketDescriptor } from '../../src/protocol/decorators/PacketDescriptor';
 
-@PacketDescriptor(0x99)
+@PacketDescriptor({})
 class MultiFieldPacket {
   @PayloadPinCode(0)
   accessor pin1!: string;

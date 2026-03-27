@@ -72,7 +72,7 @@ export default tseslint.config(
     }
   },
   {
-    files: ['src/protocol/constants.ts'],
+    files: ['src/protocol/constants.ts', 'src/protocol/decorators/PayloadAnalyzer.ts'],
     rules: {
       'prettier/prettier': 'off'
     }

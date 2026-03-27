@@ -1,341 +1,348 @@
-import { FieldDefinition } from './PayloadMapper';
+import { BoksProtocolError, BoksProtocolErrorId } from '../../errors/BoksProtocolError';
+import { BoksExpectedReason } from '../../errors/BoksExpectedReason';
+import { bytesToHex, hexToBytes, readPinFromBuffer } from '../../utils/converters';
+
+const CHAR_CODES = {
+  '0': 48,
+  '9': 57,
+  A: 65,
+  B: 66,
+  C: 67,
+  F: 70,
+  M: 77,
+  U: 85,
+  a: 97,
+  f: 102
+};
+
+function isHexChar(c: number): boolean {
+  return (
+    (c >= CHAR_CODES['0'] && c <= CHAR_CODES['9']) ||
+    (c >= CHAR_CODES['A'] && c <= CHAR_CODES['F']) ||
+    (c >= CHAR_CODES['a'] && c <= CHAR_CODES['f'])
+  );
+}
+
+function isStdPinChar(c: number): boolean {
+  return (
+    (c >= CHAR_CODES['0'] && c <= CHAR_CODES['9']) || c === CHAR_CODES['A'] || c === CHAR_CODES['B']
+  );
+}
 
 export class PayloadAnalyzer {
-  public static generateParserForField(field: FieldDefinition): string {
-    const o = field.offset;
-    const prop = field.propertyName;
-    let fnBody = '';
+  // --- PARSING METHODS ---
 
-    if (field.type === 'bit') {
-      if (typeof field.bitIndex !== 'number' || field.bitIndex < 0 || field.bitIndex > 7) {
-        throw new Error(`Invalid bitIndex: ${field.bitIndex} for property ${prop}`);
-      }
-    }
-
-    switch (field.type) {
-      case 'uint8':
-        fnBody += `result['${prop}'] = payload[${o}];\n`;
-        break;
-      case 'uint16':
-        fnBody += `result['${prop}'] = (payload[${o}] << 8) | payload[${o + 1}];\n`;
-        break;
-      case 'uint24':
-        fnBody += `result['${prop}'] = (payload[${o}] << 16) | (payload[${o + 1}] << 8) | payload[${o + 2}];\n`;
-        break;
-      case 'uint32':
-        fnBody += `result['${prop}'] = ((payload[${o}] << 24) | (payload[${o + 1}] << 16) | (payload[${o + 2}] << 8) | payload[${o + 3}]) >>> 0;\n`;
-        break;
-      case 'ascii_string': {
-        fnBody += `
-        {
-           let s = '';
-           let c;
-        `;
-        for (let i = 0; i < field.length!; i++) {
-          fnBody += `
-           c = payload[${o + i}];
-           if (c) s += String.fromCharCode(c);
-          `;
-        }
-        fnBody += `
-           result['${prop}'] = s;
-        }
-        `;
-        break;
-      }
-      case 'boolean':
-        fnBody += `
-             if (payload[${o}] !== 0x00 && payload[${o}] !== 0x01) {
-                throw new BoksProtocolError(
-                  BoksProtocolErrorId.INVALID_VALUE,
-                  'Boolean field must be 0x00 or 0x01',
-                  { field: '${prop}', received: payload[${o}], expected: BoksExpectedReason.UINT8 }
-                );
-             }
-             result['${prop}'] = payload[${o}] === 0x01;
-        `;
-        break;
-      case 'byte_array':
-        if (typeof field.length === 'number') {
-          fnBody += `result['${prop}'] = payload.slice(${o}, ${o} + ${field.length});\n`;
-        } else {
-          fnBody += `result['${prop}'] = payload.slice(${o});\n`;
-        }
-        break;
-      case 'mac_address':
-        fnBody += `
-          result['${prop}'] = bytesToHex(payload, { reverse: true, start: ${o}, end: ${o} + 6 });
-        `;
-        break;
-      case 'pin_code':
-        fnBody += `
-        {
-           const s = readPinFromBuffer(payload, ${o});
-           const isId = ${field.allowIds} && (s.startsWith('MC') || s.startsWith('UC'));
-
-           for(let i=0; i<6; i++) {
-             const c = s.charCodeAt(i);
-             const isStd = (c >= 48 && c <= 57) || c === 65 || c === 66; // 0-9, A, B
-             if (isStd) continue;
-
-             if (isId) {
-               if (i === 0 && (c === 77 || c === 85)) continue; // M or U
-               if (i === 1 && c === 67) continue; // C
-             }
-
-             throw new BoksProtocolError(
-               BoksProtocolErrorId.INVALID_PIN_FORMAT,
-               'Invalid PIN character inline',
-               { field: '${prop}', received: s, expected: BoksExpectedReason.VALID_HEX_CHAR }
-             );
-           }
-           result['${prop}'] = s;
-         }
-         `;
-        break;
-      case 'config_key':
-        fnBody += `{
-           for(let i=0; i<8; i++) {
-             const c = payload[${o} + i];
-             // '0'-'9' (48-57), 'A'-'F' (65-70), 'a'-'f' (97-102)
-
-        if ((c < 48 || c > 57) && (c < 65 || c > 70) && (c < 97 || c > 102)) {
-                throw new BoksProtocolError(
-                  BoksProtocolErrorId.INVALID_CONFIG_KEY,
-                  'Invalid Config Key character inline',
-                  { field: '${prop}', received: c, expected: BoksExpectedReason.VALID_HEX_CHAR }
-                );
-             }
-           }
-           result['${prop}'] = String.fromCharCode(payload[${o}], payload[${o + 1}], payload[${o + 2}], payload[${o + 3}], payload[${o + 4}], payload[${o + 5}], payload[${o + 6}], payload[${o + 7}]).toUpperCase();
-         }`;
-        break;
-      case 'hex_string': {
-        if (typeof field.length === 'number') {
-          fnBody += `result['${prop}'] = bytesToHex(payload, { start: ${o}, end: ${o} + ${field.length} });\n`;
-        } else {
-          fnBody += `
-          result['${prop}'] = bytesToHex(payload, { start: ${o} });
-          `;
-        }
-        break;
-      }
-      case 'var_len_hex': {
-        fnBody += `
-        {
-           const len = payload[${o}];
-           if (payload.length < ${o + 1} + len) {
-             throw new BoksProtocolError(
-               BoksProtocolErrorId.MALFORMED_DATA,
-               'Payload too short for variable length hex string',
-               { field: '${prop}', received: payload.length, expected: ${o + 1} + len }
-             );
-           }
-           result['${prop}'] = bytesToHex(payload, { start: ${o + 1}, end: ${o + 1} + len });
-        }
-        `;
-        break;
-      }
-      case 'bit': {
-        fnBody += `result['${prop}'] = ((payload[${o}] >> ${field.bitIndex!}) & 1) === 1;\n`;
-        break;
-      }
-    }
-    return fnBody;
+  public readUint8(payload: Uint8Array, offset: number): number {
+    return payload[offset];
   }
 
-  public static generateValidatorForField(field: FieldDefinition): string {
-    const prop = field.propertyName;
-    let fnBody = '';
-    const val = `instance['${prop}']`;
-
-    switch (field.type) {
-      case 'pin_code':
-        fnBody += `
-           if (typeof ${val} !== 'string' || ${val}.length !== 6) {
-              throw new BoksProtocolError(
-                BoksProtocolErrorId.INVALID_PIN_FORMAT,
-                'PIN code must be exactly 6 characters',
-                { field: '${prop}', received: typeof ${val} === 'string' ? ${val}.length : typeof ${val}, expected: 6 }
-              );
-           }
-           const isId_${prop} = ${field.allowIds} && (${val}.startsWith('MC') || ${val}.startsWith('UC'));
-           for (let i = 0; i < 6; i++) {
-              const c = ${val}.charCodeAt(i);
-              const isStd = (c >= 48 && c <= 57) || c === 65 || c === 66; // 0-9, A, B
-              if (isStd) continue;
-
-              if (isId_${prop}) {
-                if (i === 0 && (c === 77 || c === 85)) continue; // M or U
-                if (i === 1 && c === 67) continue; // C
-              }
-
-              throw new BoksProtocolError(
-                BoksProtocolErrorId.INVALID_PIN_FORMAT,
-                'Invalid PIN character inline',
-                { field: '${prop}', received: ${val}, expected: BoksExpectedReason.VALID_HEX_CHAR }
-              );
-           }
-         `;
-        break;
-      case 'config_key':
-        fnBody += `
-           if (typeof ${val} !== 'string' || ${val}.length !== 8) {
-              throw new BoksProtocolError(
-                BoksProtocolErrorId.INVALID_CONFIG_KEY,
-                'Config Key must be exactly 8 characters',
-                { field: '${prop}', received: typeof ${val} === 'string' ? ${val}.length : typeof ${val}, expected: 8 }
-              );
-           }
-           for (let i = 0; i < 8; i++) {
-              const c = ${val}.charCodeAt(i);
-              if ((c < 48 || c > 57) && (c < 65 || c > 70) && (c < 97 || c > 102)) {
-                 throw new BoksProtocolError(
-                   BoksProtocolErrorId.INVALID_CONFIG_KEY,
-                   'Config Key must contain only hex characters',
-                   { field: '${prop}', received: ${val}, expected: BoksExpectedReason.VALID_HEX_CHAR }
-                 );
-              }
-           }
-         `;
-        break;
-    }
-    return fnBody;
+  public readUint16(payload: Uint8Array, offset: number): number {
+    return (payload[offset] << 8) | payload[offset + 1];
   }
 
-  public static generateSerializerForField(field: FieldDefinition): string {
-    const o = field.offset;
-    const prop = field.propertyName;
-    let fnBody = '';
+  public readUint24(payload: Uint8Array, offset: number): number {
+    return (payload[offset] << 16) | (payload[offset + 1] << 8) | payload[offset + 2];
+  }
 
-    const val = `(instance['${prop}'] || 0)`;
-    const strVal = `(String(instance['${prop}'] || ''))`;
-    const strValRaw = `(String(instance['${prop}']))`;
+  public readUint32(payload: Uint8Array, offset: number): number {
+    return (
+      ((payload[offset] << 24) |
+        (payload[offset + 1] << 16) |
+        (payload[offset + 2] << 8) |
+        payload[offset + 3]) >>>
+      0
+    );
+  }
 
-    switch (field.type) {
-      case 'uint8':
-        fnBody += `payload[${o}] = ${val};\n`;
-        break;
-      case 'uint16':
-        fnBody += `payload[${o}] = (${val} >> 8) & 0xFF;\n`;
-        fnBody += `payload[${o + 1}] = ${val} & 0xFF;\n`;
-        break;
-      case 'uint24':
-        fnBody += `payload[${o}] = (${val} >> 16) & 0xFF;\n`;
-        fnBody += `payload[${o + 1}] = (${val} >> 8) & 0xFF;\n`;
-        fnBody += `payload[${o + 2}] = ${val} & 0xFF;\n`;
-        break;
-      case 'uint32':
-        fnBody += `payload[${o}] = (${val} >>> 24) & 0xFF;\n`;
-        fnBody += `payload[${o + 1}] = (${val} >>> 16) & 0xFF;\n`;
-        fnBody += `payload[${o + 2}] = (${val} >>> 8) & 0xFF;\n`;
-        fnBody += `payload[${o + 3}] = ${val} & 0xFF;\n`;
-        break;
-      case 'ascii_string':
-        // Unrolled charCodeAt, pads with 0x00 if string is shorter than fixed length
-        for (let i = 0; i < field.length!; i++) {
-          fnBody += `payload[${o + i}] = ${strVal}.length > ${i} ? ${strVal}.charCodeAt(${i}) : 0;\n`;
-        }
-        break;
-      case 'boolean':
-        fnBody += `payload[${o}] = instance['${prop}'] ? 0x01 : 0x00;\n`;
-        break;
-      case 'byte_array':
-        if (typeof field.length === 'number') {
-          fnBody += `
-            if (instance['${prop}'] && instance['${prop}'] instanceof Uint8Array) {
-               const src = instance['${prop}'];
-               const len = Math.min(src.length, ${field.length});
-               for (let i = 0; i < len; i++) {
-                 payload[${o} + i] = src[i];
-               }
-            }
-          `;
-        } else {
-          fnBody += `
-            if (instance['${prop}'] && instance['${prop}'] instanceof Uint8Array) {
-               const src = instance['${prop}'];
-               for (let i = 0; i < src.length; i++) {
-                 payload[${o} + i] = src[i];
-               }
-            }
-          `;
-        }
-        break;
-      case 'mac_address':
-        fnBody += `
-          if (typeof instance['${prop}'] === 'string') {
-            const bytes = hexToBytes(instance['${prop}']);
-            if (bytes.length === 6) {
-              payload[${o}] = bytes[5];
-              payload[${o + 1}] = bytes[4];
-              payload[${o + 2}] = bytes[3];
-              payload[${o + 3}] = bytes[2];
-              payload[${o + 4}] = bytes[1];
-              payload[${o + 5}] = bytes[0];
-            }
-          }
-        `;
-        break;
-      case 'pin_code':
-        for (let i = 0; i < 6; i++) {
-          fnBody += `payload[${o + i}] = ${strValRaw}.charCodeAt(${i});\n`;
-        }
-        break;
-      case 'config_key':
-        for (let i = 0; i < 8; i++) {
-          fnBody += `payload[${o + i}] = ${strValRaw}.charCodeAt(${i});\n`;
-        }
-        break;
-      case 'hex_string':
-        if (typeof field.length === 'number') {
-          fnBody += `
-            if (typeof instance['${prop}'] === 'string') {
-              const bytes = hexToBytes(instance['${prop}']);
-              for (let i = 0; i < ${field.length} && i < bytes.length; i++) {
-                payload[${o} + i] = bytes[i];
-              }
-            } else if (instance['${prop}'] instanceof Uint8Array) {
-              const src = instance['${prop}'];
-              const len = Math.min(src.length, ${field.length});
-              for (let i = 0; i < len; i++) {
-                payload[${o} + i] = src[i];
-              }
-            }
-          `;
-        } else {
-          fnBody += `
-            if (typeof instance['${prop}'] === 'string') {
-              const bytes = hexToBytes(instance['${prop}']);
-              payload.set(bytes, ${o});
-            } else if (instance['${prop}'] instanceof Uint8Array) {
-              payload.set(instance['${prop}'], ${o});
-            }
-          `;
-        }
-        break;
-      case 'var_len_hex':
-        fnBody += `
-          if (typeof instance['${prop}'] === 'string') {
-            const bytes = hexToBytes(instance['${prop}']);
-            payload[${o}] = bytes.length;
-            payload.set(bytes, ${o} + 1);
-          } else {
-            payload[${o}] = 0;
-          }
-        `;
-        break;
-      case 'bit':
-        fnBody += `
-          if (instance['${prop}']) {
-            payload[${o}] |= (1 << ${field.bitIndex!});
-          } else {
-            payload[${o}] &= ~(1 << ${field.bitIndex!});
-          }
-        `;
-        break;
+  public readAsciiString(payload: Uint8Array, offset: number, length: number): string {
+    let s = '';
+    for (let i = 0; i < length; i++) {
+      const c = payload[offset + i];
+      if (c) {
+        s += String.fromCharCode(c);
+      }
     }
+    return s;
+  }
 
-    return fnBody;
+  public readBoolean(payload: Uint8Array, offset: number, prop: string): boolean {
+    if (payload[offset] !== 0x00 && payload[offset] !== 0x01) {
+      throw new BoksProtocolError(
+        BoksProtocolErrorId.INVALID_VALUE,
+        'Boolean field must be 0x00 or 0x01',
+        { field: prop, received: payload[offset], expected: BoksExpectedReason.UINT8 }
+      );
+    }
+    return payload[offset] === 0x01;
+  }
+
+  public readByteArray(payload: Uint8Array, offset: number, length?: number): Uint8Array {
+    if (typeof length === 'number') {
+      return payload.slice(offset, offset + length);
+    }
+    return payload.slice(offset);
+  }
+
+  public readMacAddress(payload: Uint8Array, offset: number): string {
+    return bytesToHex(payload, { reverse: true, start: offset, end: offset + 6 });
+  }
+
+  public readPinCode(
+    payload: Uint8Array,
+    offset: number,
+    prop: string,
+    allowIds: boolean = false
+  ): string {
+    const s = readPinFromBuffer(payload, offset);
+    const isId = allowIds && (s.startsWith('MC') || s.startsWith('UC'));
+
+    for (let i = 0; i < 6; i++) {
+      const c = s.charCodeAt(i);
+      if (isStdPinChar(c)) {
+        continue;
+      }
+
+      if (isId) {
+        if (i === 0 && (c === CHAR_CODES['M'] || c === CHAR_CODES['U'])) {
+          continue;
+        }
+        if (i === 1 && c === CHAR_CODES['C']) {
+          continue;
+        }
+      }
+
+      throw new BoksProtocolError(
+        BoksProtocolErrorId.INVALID_PIN_FORMAT,
+        'Invalid PIN character inline',
+        { field: prop, received: s, expected: BoksExpectedReason.VALID_HEX_CHAR }
+      );
+    }
+    return s;
+  }
+
+  public readConfigKey(payload: Uint8Array, offset: number, prop: string): string {
+    for (let i = 0; i < 8; i++) {
+      const c = payload[offset + i];
+      if (!isHexChar(c)) {
+        throw new BoksProtocolError(
+          BoksProtocolErrorId.INVALID_CONFIG_KEY,
+          'Invalid Config Key character inline',
+          { field: prop, received: c, expected: BoksExpectedReason.VALID_HEX_CHAR }
+        );
+      }
+    }
+    return String.fromCharCode(
+      payload[offset],
+      payload[offset + 1],
+      payload[offset + 2],
+      payload[offset + 3],
+      payload[offset + 4],
+      payload[offset + 5],
+      payload[offset + 6],
+      payload[offset + 7]
+    ).toUpperCase();
+  }
+
+  public readHexString(payload: Uint8Array, offset: number, length?: number): string {
+    if (typeof length === 'number') {
+      return bytesToHex(payload, { start: offset, end: offset + length });
+    }
+    return bytesToHex(payload, { start: offset });
+  }
+
+  public readVarLenHex(payload: Uint8Array, offset: number, prop: string): string {
+    const len = payload[offset];
+    if (payload.length < offset + 1 + len) {
+      throw new BoksProtocolError(
+        BoksProtocolErrorId.MALFORMED_DATA,
+        'Payload too short for variable length hex string',
+        { field: prop, received: payload.length, expected: offset + 1 + len }
+      );
+    }
+    return bytesToHex(payload, { start: offset + 1, end: offset + 1 + len });
+  }
+
+  public readBit(payload: Uint8Array, offset: number, bitIndex: number): boolean {
+    return ((payload[offset] >> bitIndex) & 1) === 1;
+  }
+
+  // --- VALIDATION METHODS ---
+
+  public validatePinCode(val: unknown, prop: string, allowIds: boolean = false): void {
+    if (typeof val !== 'string' || val.length !== 6) {
+      throw new BoksProtocolError(
+        BoksProtocolErrorId.INVALID_PIN_FORMAT,
+        'PIN code must be exactly 6 characters',
+        { field: prop, received: typeof val === 'string' ? val.length : typeof val, expected: 6 }
+      );
+    }
+    const isId = allowIds && (val.startsWith('MC') || val.startsWith('UC'));
+    for (let i = 0; i < 6; i++) {
+      const c = val.charCodeAt(i);
+      if (isStdPinChar(c)) {
+        continue;
+      }
+
+      if (isId) {
+        if (i === 0 && (c === CHAR_CODES['M'] || c === CHAR_CODES['U'])) {
+          continue;
+        }
+        if (i === 1 && c === CHAR_CODES['C']) {
+          continue;
+        }
+      }
+
+      throw new BoksProtocolError(
+        BoksProtocolErrorId.INVALID_PIN_FORMAT,
+        'Invalid PIN character inline',
+        { field: prop, received: val, expected: BoksExpectedReason.VALID_HEX_CHAR }
+      );
+    }
+  }
+
+  public validateConfigKey(val: unknown, prop: string): void {
+    if (typeof val !== 'string' || val.length !== 8) {
+      throw new BoksProtocolError(
+        BoksProtocolErrorId.INVALID_CONFIG_KEY,
+        'Config Key must be exactly 8 characters',
+        { field: prop, received: typeof val === 'string' ? val.length : typeof val, expected: 8 }
+      );
+    }
+    for (let i = 0; i < 8; i++) {
+      const c = val.charCodeAt(i);
+      if (!isHexChar(c)) {
+        throw new BoksProtocolError(
+          BoksProtocolErrorId.INVALID_CONFIG_KEY,
+          'Config Key must contain only hex characters',
+          { field: prop, received: val, expected: BoksExpectedReason.VALID_HEX_CHAR }
+        );
+      }
+    }
+  }
+
+  // --- SERIALIZATION METHODS ---
+
+  public writeUint8(payload: Uint8Array, offset: number, val: number): void {
+    payload[offset] = val;
+  }
+
+  public writeUint16(payload: Uint8Array, offset: number, val: number): void {
+    payload[offset] = (val >> 8) & 0xFF;
+    payload[offset + 1] = val & 0xFF;
+  }
+
+  public writeUint24(payload: Uint8Array, offset: number, val: number): void {
+    payload[offset] = (val >> 16) & 0xFF;
+    payload[offset + 1] = (val >> 8) & 0xFF;
+    payload[offset + 2] = val & 0xFF;
+  }
+
+  public writeUint32(payload: Uint8Array, offset: number, val: number): void {
+    payload[offset] = (val >>> 24) & 0xFF;
+    payload[offset + 1] = (val >>> 16) & 0xFF;
+    payload[offset + 2] = (val >>> 8) & 0xFF;
+    payload[offset + 3] = val & 0xFF;
+  }
+
+  public writeAsciiString(
+    payload: Uint8Array,
+    offset: number,
+    strVal: string,
+    length: number
+  ): void {
+    for (let i = 0; i < length; i++) {
+      payload[offset + i] = strVal.length > i ? strVal.charCodeAt(i) : 0;
+    }
+  }
+
+  public writeBoolean(payload: Uint8Array, offset: number, val: boolean): void {
+    payload[offset] = val ? 0x01 : 0x00;
+  }
+
+  public writeByteArray(payload: Uint8Array, offset: number, src: unknown, length?: number): void {
+    if (src instanceof Uint8Array) {
+      if (typeof length === 'number') {
+        const len = Math.min(src.length, length);
+        for (let i = 0; i < len; i++) {
+          payload[offset + i] = src[i];
+        }
+      } else {
+        for (let i = 0; i < src.length; i++) {
+          payload[offset + i] = src[i];
+        }
+      }
+    }
+  }
+
+  public writeMacAddress(payload: Uint8Array, offset: number, macVal: unknown): void {
+    if (typeof macVal === 'string') {
+      const bytes = hexToBytes(macVal);
+      if (bytes.length === 6) {
+        payload[offset] = bytes[5];
+        payload[offset + 1] = bytes[4];
+        payload[offset + 2] = bytes[3];
+        payload[offset + 3] = bytes[2];
+        payload[offset + 4] = bytes[1];
+        payload[offset + 5] = bytes[0];
+      }
+    }
+  }
+
+  public writePinCode(payload: Uint8Array, offset: number, strVal: string): void {
+    for (let i = 0; i < 6; i++) {
+      payload[offset + i] = strVal.charCodeAt(i);
+    }
+  }
+
+  public writeConfigKey(payload: Uint8Array, offset: number, strVal: string): void {
+    for (let i = 0; i < 8; i++) {
+      payload[offset + i] = strVal.charCodeAt(i);
+    }
+  }
+
+  public writeHexString(
+    payload: Uint8Array,
+    offset: number,
+    hexVal: unknown,
+    length?: number
+  ): void {
+    if (typeof length === 'number') {
+      if (typeof hexVal === 'string') {
+        const bytes = hexToBytes(hexVal);
+        for (let i = 0; i < length && i < bytes.length; i++) {
+          payload[offset + i] = bytes[i];
+        }
+      } else if (hexVal instanceof Uint8Array) {
+        const len = Math.min(hexVal.length, length);
+        for (let i = 0; i < len; i++) {
+          payload[offset + i] = hexVal[i];
+        }
+      }
+    } else {
+      if (typeof hexVal === 'string') {
+        const bytes = hexToBytes(hexVal);
+        payload.set(bytes, offset);
+      } else if (hexVal instanceof Uint8Array) {
+        payload.set(hexVal, offset);
+      }
+    }
+  }
+
+  public writeVarLenHex(payload: Uint8Array, offset: number, hexVal: unknown): void {
+    if (typeof hexVal === 'string') {
+      const bytes = hexToBytes(hexVal);
+      payload[offset] = bytes.length;
+      payload.set(bytes, offset + 1);
+    } else {
+      payload[offset] = 0;
+    }
+  }
+
+  public writeBit(payload: Uint8Array, offset: number, bitIndex: number, val: boolean): void {
+    if (val) {
+      payload[offset] |= 1 << bitIndex;
+    } else {
+      payload[offset] &= ~(1 << bitIndex);
+    }
   }
 }
