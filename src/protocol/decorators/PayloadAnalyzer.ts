@@ -18,6 +18,22 @@ function isStdPinChar(c: number): boolean {
 }
 
 export class PayloadAnalyzer {
+  private throwInvalidPin(prop: string, received: unknown): never {
+    throw new BoksProtocolError(
+      BoksProtocolErrorId.INVALID_PIN_FORMAT,
+      'Invalid PIN character inline',
+      { field: prop, received, expected: BoksExpectedReason.VALID_HEX_CHAR }
+    );
+  }
+
+  private throwInvalidConfigKey(prop: string, received: unknown): never {
+    throw new BoksProtocolError(
+      BoksProtocolErrorId.INVALID_CONFIG_KEY,
+      'Invalid Config Key character inline',
+      { field: prop, received, expected: BoksExpectedReason.VALID_HEX_CHAR }
+    );
+  }
+
   // --- PARSING METHODS ---
 
   public readUint8(payload: Uint8Array, offset: number): number {
@@ -43,6 +59,12 @@ export class PayloadAnalyzer {
   }
 
   public readAsciiString(payload: Uint8Array, offset: number, length: number): string {
+    if (length === 0) {
+      return '';
+    }
+    // Optimized for small/medium strings (V8 max arguments limit is around ~120k)
+    // We slice the exact length, ignoring trailing nulls if present depending on how it's written.
+    // The previous implementation ignored 0x00 bytes. We need to preserve that behavior.
     let s = '';
     for (let i = 0; i < length; i++) {
       const c = payload[offset + i];
@@ -113,16 +135,31 @@ export class PayloadAnalyzer {
   }
 
   public readConfigKey(payload: Uint8Array, offset: number, prop: string): string {
-    for (let i = 0; i < 8; i++) {
-      const c = payload[offset + i];
-      if (!isHexChar(c)) {
-        throw new BoksProtocolError(
-          BoksProtocolErrorId.INVALID_CONFIG_KEY,
-          'Invalid Config Key character inline',
-          { field: prop, received: c, expected: BoksExpectedReason.VALID_HEX_CHAR }
-        );
-      }
+    if (!isHexChar(payload[offset])) {
+      this.throwInvalidConfigKey(prop, payload[offset]);
     }
+    if (!isHexChar(payload[offset + 1])) {
+      this.throwInvalidConfigKey(prop, payload[offset + 1]);
+    }
+    if (!isHexChar(payload[offset + 2])) {
+      this.throwInvalidConfigKey(prop, payload[offset + 2]);
+    }
+    if (!isHexChar(payload[offset + 3])) {
+      this.throwInvalidConfigKey(prop, payload[offset + 3]);
+    }
+    if (!isHexChar(payload[offset + 4])) {
+      this.throwInvalidConfigKey(prop, payload[offset + 4]);
+    }
+    if (!isHexChar(payload[offset + 5])) {
+      this.throwInvalidConfigKey(prop, payload[offset + 5]);
+    }
+    if (!isHexChar(payload[offset + 6])) {
+      this.throwInvalidConfigKey(prop, payload[offset + 6]);
+    }
+    if (!isHexChar(payload[offset + 7])) {
+      this.throwInvalidConfigKey(prop, payload[offset + 7]);
+    }
+
     return String.fromCharCode(
       payload[offset],
       payload[offset + 1],
@@ -168,31 +205,29 @@ export class PayloadAnalyzer {
         { field: prop, received: typeof val === 'string' ? val.length : typeof val, expected: 6 }
       );
     }
+
+    const c0 = val.charCodeAt(0);
+    const c1 = val.charCodeAt(1);
     const isId =
-      allowIds &&
-      val.length >= 2 &&
-      (val.charCodeAt(0) === CHAR_CODES['M'] || val.charCodeAt(0) === CHAR_CODES['U']) &&
-      val.charCodeAt(1) === CHAR_CODES['C'];
-    for (let i = 0; i < 6; i++) {
-      const c = val.charCodeAt(i);
-      if (isStdPinChar(c)) {
-        continue;
-      }
+      allowIds && (c0 === CHAR_CODES['M'] || c0 === CHAR_CODES['U']) && c1 === CHAR_CODES['C'];
 
-      if (isId) {
-        if (i === 0 && (c === CHAR_CODES['M'] || c === CHAR_CODES['U'])) {
-          continue;
-        }
-        if (i === 1 && c === CHAR_CODES['C']) {
-          continue;
-        }
-      }
-
-      throw new BoksProtocolError(
-        BoksProtocolErrorId.INVALID_PIN_FORMAT,
-        'Invalid PIN character inline',
-        { field: prop, received: val, expected: BoksExpectedReason.VALID_HEX_CHAR }
-      );
+    if (!isStdPinChar(c0) && !(isId && (c0 === CHAR_CODES['M'] || c0 === CHAR_CODES['U']))) {
+      this.throwInvalidPin(prop, val);
+    }
+    if (!isStdPinChar(c1) && !(isId && c1 === CHAR_CODES['C'])) {
+      this.throwInvalidPin(prop, val);
+    }
+    if (!isStdPinChar(val.charCodeAt(2))) {
+      this.throwInvalidPin(prop, val);
+    }
+    if (!isStdPinChar(val.charCodeAt(3))) {
+      this.throwInvalidPin(prop, val);
+    }
+    if (!isStdPinChar(val.charCodeAt(4))) {
+      this.throwInvalidPin(prop, val);
+    }
+    if (!isStdPinChar(val.charCodeAt(5))) {
+      this.throwInvalidPin(prop, val);
     }
   }
 
@@ -204,15 +239,29 @@ export class PayloadAnalyzer {
         { field: prop, received: typeof val === 'string' ? val.length : typeof val, expected: 8 }
       );
     }
-    for (let i = 0; i < 8; i++) {
-      const c = val.charCodeAt(i);
-      if (!isHexChar(c)) {
-        throw new BoksProtocolError(
-          BoksProtocolErrorId.INVALID_CONFIG_KEY,
-          'Config Key must contain only hex characters',
-          { field: prop, received: val, expected: BoksExpectedReason.VALID_HEX_CHAR }
-        );
-      }
+    if (!isHexChar(val.charCodeAt(0))) {
+      this.throwInvalidConfigKey(prop, val);
+    }
+    if (!isHexChar(val.charCodeAt(1))) {
+      this.throwInvalidConfigKey(prop, val);
+    }
+    if (!isHexChar(val.charCodeAt(2))) {
+      this.throwInvalidConfigKey(prop, val);
+    }
+    if (!isHexChar(val.charCodeAt(3))) {
+      this.throwInvalidConfigKey(prop, val);
+    }
+    if (!isHexChar(val.charCodeAt(4))) {
+      this.throwInvalidConfigKey(prop, val);
+    }
+    if (!isHexChar(val.charCodeAt(5))) {
+      this.throwInvalidConfigKey(prop, val);
+    }
+    if (!isHexChar(val.charCodeAt(6))) {
+      this.throwInvalidConfigKey(prop, val);
+    }
+    if (!isHexChar(val.charCodeAt(7))) {
+      this.throwInvalidConfigKey(prop, val);
     }
   }
 
@@ -285,15 +334,23 @@ export class PayloadAnalyzer {
   }
 
   public writePinCode(payload: Uint8Array, offset: number, strVal: string): void {
-    for (let i = 0; i < 6; i++) {
-      payload[offset + i] = strVal.charCodeAt(i);
-    }
+    payload[offset] = strVal.charCodeAt(0);
+    payload[offset + 1] = strVal.charCodeAt(1);
+    payload[offset + 2] = strVal.charCodeAt(2);
+    payload[offset + 3] = strVal.charCodeAt(3);
+    payload[offset + 4] = strVal.charCodeAt(4);
+    payload[offset + 5] = strVal.charCodeAt(5);
   }
 
   public writeConfigKey(payload: Uint8Array, offset: number, strVal: string): void {
-    for (let i = 0; i < 8; i++) {
-      payload[offset + i] = strVal.charCodeAt(i);
-    }
+    payload[offset] = strVal.charCodeAt(0);
+    payload[offset + 1] = strVal.charCodeAt(1);
+    payload[offset + 2] = strVal.charCodeAt(2);
+    payload[offset + 3] = strVal.charCodeAt(3);
+    payload[offset + 4] = strVal.charCodeAt(4);
+    payload[offset + 5] = strVal.charCodeAt(5);
+    payload[offset + 6] = strVal.charCodeAt(6);
+    payload[offset + 7] = strVal.charCodeAt(7);
   }
 
   public writeHexString(
