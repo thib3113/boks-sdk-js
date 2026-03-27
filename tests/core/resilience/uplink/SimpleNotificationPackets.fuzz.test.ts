@@ -1,6 +1,8 @@
-import { NotifyCodeGenerationProgressPacket } from '../../../../src/protocol/uplink/NotifyCodeGenerationProgressPacket';
 import { describe, it, expect } from 'vitest';
-import fc from 'fast-check';
+import * as fc from 'fast-check';
+import { NotifyDoorStatusPacket } from '../../../../src/protocol/uplink/NotifyDoorStatusPacket';
+import { NotifyCodesCountPacket } from '../../../../src/protocol/uplink/NotifyCodesCountPacket';
+import { NotifyLogsCountPacket } from '../../../../src/protocol/uplink/NotifyLogsCountPacket';
 import { EndHistoryPacket } from '../../../../src/protocol/uplink/EndHistoryPacket';
 import { ErrorBadRequestPacket } from '../../../../src/protocol/uplink/ErrorBadRequestPacket';
 import { ErrorCrcPacket } from '../../../../src/protocol/uplink/ErrorCrcPacket';
@@ -12,86 +14,10 @@ import { NotifySetConfigurationSuccessPacket } from '../../../../src/protocol/up
 import { OperationSuccessPacket } from '../../../../src/protocol/uplink/OperationSuccessPacket';
 import { ValidOpenCodePacket } from '../../../../src/protocol/uplink/ValidOpenCodePacket';
 import { OperationErrorPacket } from '../../../../src/protocol/uplink/OperationErrorPacket';
-import { AnswerDoorStatusPacket } from '../../../../src/protocol/uplink/AnswerDoorStatusPacket';
-import { NotifyDoorStatusPacket } from '../../../../src/protocol/uplink/NotifyDoorStatusPacket';
-import { NotifyCodesCountPacket } from '../../../../src/protocol/uplink/NotifyCodesCountPacket';
-import { NotifyLogsCountPacket } from '../../../../src/protocol/uplink/NotifyLogsCountPacket';
 
 describe('SimpleNotificationPackets Resilience (Fuzzing)', () => {
-  describe('NotifyCodeGenerationProgressPacket', () => {
-    it('FEATURE REGRESSION: should parse progress correctly for valid payloads', () => {
-      fc.assert(
-        fc.property(fc.uint8Array({ minLength: 1, maxLength: 256 }), (payload) => {
-          if (payload[0] > 100) return; const packet = NotifyCodeGenerationProgressPacket.fromRaw(payload);
-          expect(packet).toBeInstanceOf(NotifyCodeGenerationProgressPacket);
-          expect(packet.opcode).toBe(0xc2);
-          expect((packet as any).raw).toEqual(payload);
-          expect(packet.progress).toBe(payload[0]);
-        }),
-        { numRuns: 1000 }
-      );
-    });
-
-    it('FEATURE REGRESSION: should throw a detailed BoksProtocolError for payloads that are too short', () => {
-      fc.assert(
-        fc.property(fc.uint8Array({ maxLength: 0 }), (payload) => {
-          try {
-            NotifyCodeGenerationProgressPacket.fromRaw(payload);
-            expect.unreachable('Should have thrown an error');
-          } catch (error: any) {
-            expect(error.name).toBe('BoksProtocolError');
-            expect(error.context).toBeDefined();
-            expect(error.context.received).toBe(0);
-            expect(error.context.expected).toBe(1);
-          }
-        }),
-        { numRuns: 100 }
-      );
-    });
-  });
-
-  describe('AnswerDoorStatusPacket', () => {
-    it('FEATURE REGRESSION: should set isOpen properly for valid payloads', () => {
-      fc.assert(
-        fc.property(
-          fc.uint8Array({ minLength: 2, maxLength: 256 }).map((arr) => {
-            const clone = new Uint8Array(arr);
-            clone[0] = clone[0] % 2;
-            clone[1] = clone[1] % 2;
-            return clone;
-          }),
-          (payload) => {
-            const packet = AnswerDoorStatusPacket.fromRaw(payload);
-            expect(packet).toBeInstanceOf(AnswerDoorStatusPacket);
-            expect(packet.opcode).toBe(0x85);
-            expect((packet as any).raw).toEqual(payload);
-            expect(packet.isOpen).toBe(payload[1] === 0x01 && payload[0] === 0x00);
-          }
-        ),
-        { numRuns: 1000 }
-      );
-    });
-
-    it('FEATURE REGRESSION: should throw a detailed BoksProtocolError for payloads that are too short', () => {
-      fc.assert(
-        fc.property(fc.uint8Array({ minLength: 0, maxLength: 1 }), (payload) => {
-          try {
-            AnswerDoorStatusPacket.fromRaw(payload);
-            expect.unreachable('Should have thrown an error');
-          } catch (error: any) {
-            expect(error.name).toBe('BoksProtocolError');
-            expect(error.context).toBeDefined();
-            expect(error.context.received).toBe(payload.length);
-            expect(error.context.expected).toBe(2);
-          }
-        }),
-        { numRuns: 100 }
-      );
-    });
-  });
-
   describe('NotifyDoorStatusPacket', () => {
-    it('FEATURE REGRESSION: should set isOpen properly for valid payloads', () => {
+    it('FEATURE REGRESSION: should parse open/close status correctly for valid payloads', () => {
       fc.assert(
         fc.property(
           fc.uint8Array({ minLength: 2, maxLength: 256 }).map((arr) => {

@@ -195,3 +195,11 @@ export enum BoksConfigType {
 }
 
 export const DEBUG_UNKNOWN_OPCODE = 0xEE;
+
+
+export const CHAR_CODES = {
+  '0': 48, '9': 57,
+  'A': 65, 'B': 66, 'C': 67, 'F': 70,
+  'M': 77, 'U': 85,
+  'a': 97, 'f': 102
+};
