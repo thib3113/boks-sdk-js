@@ -825,7 +825,7 @@ export class BoksController {
         BoksOpcode.NOTIFY_CODE_GENERATION_SUCCESS,
         BoksOpcode.ERROR_UNAUTHORIZED
       );
-    } catch (e) {
+    } catch {
       return false;
     } finally {
       cleanup();
