@@ -6,7 +6,7 @@ import { BoksProtocolError, BoksProtocolErrorId } from '../errors/BoksProtocolEr
  */
 
 // Optimization: Precompute hex lookup table to avoid expensive toString(16) calls
-const HEX_TABLE = Array.from({ length: 256 }, (_, i) =>
+export const HEX_TABLE = Array.from({ length: 256 }, (_, i) =>
   i.toString(16).padStart(2, '0').toUpperCase()
 );
 
