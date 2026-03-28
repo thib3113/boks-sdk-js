@@ -87,6 +87,16 @@ function downloadKey(key: string) {
   URL.revokeObjectURL(url)
 }
 
+// Disconnect listener to show alert if disconnected during provisioning
+function onDisconnect() {
+  if (isProvisioning.value) {
+    alert(t.value.provision.disconnectionAlert || "WARNING: The Boks disconnected during provisioning! Please check the logs and DO NOT lose your recovery key file.")
+    isProvisioning.value = false
+    boksStore.isProvisioning = false
+    window.removeEventListener('beforeunload', preventNav)
+  }
+}
+
 async function provision() {
   if (!boksStore.controller || !boksStore.isConnected) return
   if (!newMasterKey.value || !currentConfigKey.value) return
@@ -94,6 +104,7 @@ async function provision() {
   if (!confirm(`${t.value.provision.confirm}\n\n${t.value.provision.confirmMultipleDownloads}`)) return
 
   isProvisioning.value = true
+  boksStore.isProvisioning = true // Update global store to stop background polling
   provisionProgress.value = 0
   hasPromptedLogs.value = false
   hasAnnouncedAcceptance.value = false
@@ -104,6 +115,7 @@ async function provision() {
   } catch (err: any) {
     boksStore.log(`Invalid Config Key: ${err.message}`, 'error')
     isProvisioning.value = false
+    boksStore.isProvisioning = false
     return
   }
 
@@ -115,6 +127,15 @@ async function provision() {
 
   boksStore.log('Starting provisioning...', 'warning')
 
+  // Set up disconnection listener
+  const controller = boksStore.controller as any;
+  const client = controller._client || controller.client || controller['#client'] || (controller as any).client;
+
+  // Also listen to the boksStore.isConnected property directly
+  const unwatchConnected = watch(() => boksStore.isConnected, (connected) => {
+      if (!connected) onDisconnect();
+  });
+
   let hasProgress = false
   const progressTimer = setTimeout(() => {
     if (!hasProgress) {
@@ -122,12 +143,35 @@ async function provision() {
     }
   }, 5000)
 
+  // Wait for 0xC0 (Success) or 0xC1 (Error) explicitly, as background polling is suspended
+  let unbindNotification = () => {}
+  const completionPromise = new Promise<boolean>((resolve) => {
+    // client.on is our custom BoksClient method which returns an unsubscribe function
+    try {
+      if (client && typeof client.on === 'function') {
+        unbindNotification = client.on('*', (packet: any) => {
+          if (packet.opcode === 0xC0) {
+            resolve(true)
+          } else if (packet.opcode === 0xC1) {
+            resolve(false)
+          }
+        })
+      }
+    } catch (e) {
+      // ignore
+    }
+  })
+
   try {
-    const success = await boksStore.controller.regenerateMasterKey(newMasterKey.value, (p) => {
+    // We execute regenerateMasterKey
+    const regenPromise = boksStore.controller.regenerateMasterKey(newMasterKey.value, (p) => {
       hasProgress = true
       provisionProgress.value = p
       boksStore.log(`Provisioning: ${p}%`, 'info')
     })
+
+    // If client is bound, await the race, otherwise await regenerateMasterKey directly
+    const success = await (client ? Promise.race([regenPromise, completionPromise]) : regenPromise)
 
     clearTimeout(progressTimer)
 
@@ -142,14 +186,31 @@ async function provision() {
   } catch (err: any) {
     boksStore.log(`Provisioning Error: ${err.message}`, 'error')
   } finally {
+    try {
+      unbindNotification()
+    } catch (e) {
+      // Ignore if unbind fails
+    }
     isProvisioning.value = false
+    boksStore.isProvisioning = false // Resume background polling
     window.removeEventListener('beforeunload', preventNav)
+    unwatchConnected()
   }
 }
 </script>
 
 <template>
   <div class="demo-card">
+    <div v-if="isProvisioning" class="blocking-overlay">
+      <div class="blocking-content">
+        <h2 class="danger-text">⚠️ {{ t.provision.blockingTitle || 'DO NOT TOUCH KEYBOARD' }}</h2>
+        <p>{{ t.provision.blockingDesc || 'Keep this window focused and stay close to the Boks (1-2m). Background tasks have been suspended.' }}</p>
+        <div class="spinner-container">
+            <div class="bar" style="width: 100%; max-width: 300px; margin: 1rem auto;"><div class="fill" :style="{ width: provisionProgress + '%' }"></div></div>
+            <div class="pct" style="margin: 0 auto; text-align: center;">{{ provisionProgress }}%</div>
+        </div>
+      </div>
+    </div>
     <div v-if="!boksStore.isConnected" class="warning-box" v-html="t.global.notConnectedWarning"></div>
     <div v-else-if="!isVersionSupported" class="warning-box">
       <strong>⚠️ {{ t.provision.unsupportedVersion }}</strong><br>
@@ -261,6 +322,33 @@ async function provision() {
   margin-top: 2rem; padding: 1.5rem; border-radius: 12px;
   background: linear-gradient(135deg, var(--vp-c-brand-soft) 0%, var(--vp-c-bg-soft) 100%);
   border: 1px solid var(--vp-c-brand-1);
+}
+
+.blocking-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+}
+.blocking-content {
+  background: var(--vp-c-bg);
+  padding: 2rem;
+  border-radius: 12px;
+  border: 2px solid var(--vp-c-red-1);
+  text-align: center;
+  max-width: 500px;
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
+}
+.danger-text {
+  color: var(--vp-c-red-1);
+  margin-top: 0;
 }
 .sponsor-content { display: flex; gap: 1.5rem; align-items: center; }
 .heart { font-size: 2.5rem; }

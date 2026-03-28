@@ -25,6 +25,7 @@ export const boksStore = reactive({
   isConnected: false,
   isConnecting: false,
   useSimulator: false,
+  isProvisioning: false,
   isExpanded: false,
   deviceName: '',
   logs: [] as BoksLog[],

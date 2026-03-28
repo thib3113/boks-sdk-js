@@ -18,4 +18,12 @@ Afin d'assurer votre sécurité et de permettre une investigation en cas de prob
 
 <RegenerationDemo />
 
+### Dépannage (Troubleshooting)
+
+Si vous avez terminé avec succès le processus de régénération mais que vous constatez que vos nouveaux codes hors ligne **sont rejetés**, alors que votre clé de configuration (Config Key) est toujours acceptée par la Boks (par exemple via le tableau de bord ou lors d'une nouvelle régénération), vous rencontrez peut-être un problème connu avec les firmwares >= 4.5.1.
+
+Sur les firmwares plus récents, la Boks peut subir une réinitialisation Watchdog (Watchdog reset) immédiatement après avoir accepté la nouvelle clé, ce qui fait qu'elle ne sauvegarde que la **seconde moitié** (les 16 derniers octets) de votre clé maître dans sa mémoire non volatile.
+
+**Solution :** Si cela se produit, essayez de remplacer les 32 premiers caractères (16 octets en hexadécimal) de votre nouvelle clé maître de 64 caractères par des zéros (ex. : `00000000000000000000000000000000<seconde_moitie>`). Vos codes devraient alors fonctionner correctement.
+
 <BoksDashboard />

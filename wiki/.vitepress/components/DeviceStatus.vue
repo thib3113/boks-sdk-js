@@ -20,6 +20,7 @@ const editSimForm = ref({
 let interval: any;
 
 function refreshSimState() {
+  if (boksStore.isProvisioning) return; // Stop background polling during provisioning
   if (boksStore.simulator) {
     simState.value = boksStore.simulator.getPublicState()
   }
