@@ -1,15 +1,49 @@
 import { describe, it, expect } from 'vitest';
 import {
+  isHexCode,
   validatePinCode,
   validateMasterCodeIndex,
   validateSeed,
   validateCredentialsKey,
+  validateConfigKeyFormat,
   validateNfcUid
 } from '@/utils/validation';
 import { BoksProtocolError, BoksProtocolErrorId } from '@/errors/BoksProtocolError';
 import { BoksExpectedReason } from '@/errors/BoksExpectedReason';
 
 describe('validation utils', () => {
+  describe('isHexCode', () => {
+    it('should return true for valid numeric hex codes (0-9)', () => {
+      expect(isHexCode(48)).toBe(true); // '0'
+      expect(isHexCode(57)).toBe(true); // '9'
+    });
+
+    it('should return true for valid uppercase hex codes (A-F)', () => {
+      expect(isHexCode(65)).toBe(true); // 'A'
+      expect(isHexCode(70)).toBe(true); // 'F'
+    });
+
+    it('should return true for valid lowercase hex codes (a-f)', () => {
+      expect(isHexCode(97)).toBe(true); // 'a'
+      expect(isHexCode(102)).toBe(true); // 'f'
+    });
+
+    it('should return false for edge cases just outside valid ranges', () => {
+      expect(isHexCode(47)).toBe(false); // '/'
+      expect(isHexCode(58)).toBe(false); // ':'
+      expect(isHexCode(64)).toBe(false); // '@'
+      expect(isHexCode(71)).toBe(false); // 'G'
+      expect(isHexCode(96)).toBe(false); // '`'
+      expect(isHexCode(103)).toBe(false); // 'g'
+    });
+
+    it('should return false for codes far outside valid ranges', () => {
+      expect(isHexCode(0)).toBe(false);
+      expect(isHexCode(255)).toBe(false);
+      expect(isHexCode(-1)).toBe(false);
+    });
+  });
+
   describe('validatePinCode', () => {
     it('should accept valid PIN codes', () => {
       expect(() => validatePinCode('123456')).not.toThrow();
@@ -284,6 +318,48 @@ describe('validation utils', () => {
           );
         }
       });
+    });
+  });
+
+  describe('validateConfigKeyFormat', () => {
+    it('should accept valid 8-character config key strings', () => {
+      expect(() => validateConfigKeyFormat('12345678')).not.toThrow();
+      expect(() => validateConfigKeyFormat('ABCDEF01')).not.toThrow();
+      expect(() => validateConfigKeyFormat('abcdef01')).not.toThrow();
+    });
+
+    it('should reject config keys with invalid length', () => {
+      expect(() => validateConfigKeyFormat('1234567')).toThrowError(
+        new BoksProtocolError(
+          BoksProtocolErrorId.INVALID_CONFIG_KEY,
+          'Config Key must be exactly 8 hexadecimal characters',
+          { received: 7, expected: 8 }
+        )
+      );
+      expect(() => validateConfigKeyFormat('123456789')).toThrowError(
+        new BoksProtocolError(
+          BoksProtocolErrorId.INVALID_CONFIG_KEY,
+          'Config Key must be exactly 8 hexadecimal characters',
+          { received: 9, expected: 8 }
+        )
+      );
+      expect(() => validateConfigKeyFormat('')).toThrowError(
+        new BoksProtocolError(
+          BoksProtocolErrorId.INVALID_CONFIG_KEY,
+          'Config Key must be exactly 8 hexadecimal characters',
+          { received: 0, expected: 8 }
+        )
+      );
+    });
+
+    it('should reject config keys with invalid characters', () => {
+      expect(() => validateConfigKeyFormat('1234567X')).toThrowError(
+        new BoksProtocolError(
+          BoksProtocolErrorId.INVALID_CONFIG_KEY,
+          'Config Key must be exactly 8 hexadecimal characters',
+          { received: '1234567X', expected: BoksExpectedReason.VALID_HEX_CHAR }
+        )
+      );
     });
   });
 
