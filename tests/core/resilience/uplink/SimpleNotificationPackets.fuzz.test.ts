@@ -14,7 +14,6 @@ import { NotifySetConfigurationSuccessPacket } from '../../../../src/protocol/up
 import { OperationSuccessPacket } from '../../../../src/protocol/uplink/OperationSuccessPacket';
 import { ValidOpenCodePacket } from '../../../../src/protocol/uplink/ValidOpenCodePacket';
 import { OperationErrorPacket } from '../../../../src/protocol/uplink/OperationErrorPacket';
-import { BoksProtocolError } from '../../../../src/errors/BoksProtocolError';
 
 describe('SimpleNotificationPackets Resilience (Fuzzing)', () => {
   describe('NotifyDoorStatusPacket', () => {
