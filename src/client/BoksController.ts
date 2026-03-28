@@ -808,12 +808,14 @@ export class BoksController {
 
     try {
       // Part A
-      const successA = await this.performOperation(
+      const partAResponse = await this.performTransaction<NotifyCodeGenerationProgressPacket>(
         new RegeneratePartAPacket({ configKey: configKey, part: partA }),
-        BoksOpcode.NOTIFY_CODE_GENERATION_PROGRESS,
-        BoksOpcode.ERROR_UNAUTHORIZED
+        [BoksOpcode.NOTIFY_CODE_GENERATION_PROGRESS],
+        [BoksOpcode.ERROR_UNAUTHORIZED]
       );
-      if (!successA) {
+
+      // Wait for a return "progress" of 0 before sending part2
+      if (!partAResponse || partAResponse.progress !== 0) {
         return false;
       }
 
@@ -823,6 +825,8 @@ export class BoksController {
         BoksOpcode.NOTIFY_CODE_GENERATION_SUCCESS,
         BoksOpcode.ERROR_UNAUTHORIZED
       );
+    } catch (e) {
+      return false;
     } finally {
       cleanup();
     }
