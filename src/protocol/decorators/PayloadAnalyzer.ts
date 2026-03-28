@@ -1,7 +1,7 @@
 import { CHAR_CODES } from '../constants';
 import { BoksProtocolError, BoksProtocolErrorId } from '../../errors/BoksProtocolError';
 import { BoksExpectedReason } from '../../errors/BoksExpectedReason';
-import { bytesToHex, hexToBytes, readPinFromBuffer } from '../../utils/converters';
+import { bytesToHex, hexToBytes, readPinFromBuffer, HEX_TABLE } from '../../utils/converters';
 
 function isHexChar(c: number): boolean {
   return (
@@ -94,7 +94,18 @@ export class PayloadAnalyzer {
   }
 
   public readMacAddress(payload: Uint8Array, offset: number): string {
-    return bytesToHex(payload, { reverse: true, start: offset, end: offset + 6 });
+    // ⚡ Bolt: Implemented unrolled manual string concatenation using HEX_TABLE
+    // to avoid loop overhead and intermediate allocations formatting MAC strings.
+    // This optimization follows the pattern identified in bolt.md for ~8-9x speedup.
+    // The previous implementation using bytesToHex didn't use colons.
+    return (
+      HEX_TABLE[payload[offset + 5]] +
+      HEX_TABLE[payload[offset + 4]] +
+      HEX_TABLE[payload[offset + 3]] +
+      HEX_TABLE[payload[offset + 2]] +
+      HEX_TABLE[payload[offset + 1]] +
+      HEX_TABLE[payload[offset]]
+    );
   }
 
   public readPinCode(
