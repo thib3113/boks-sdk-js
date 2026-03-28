@@ -22,8 +22,8 @@ To ensure your safety and provide the ability to investigate potential issues, t
 
 If you successfully completed the regeneration process but find that your newly generated offline codes **are rejected**, while your Config Key is still accepted by the Boks (e.g., via the dashboard or when regenerating again), you might be encountering a known issue with firmware >= 4.5.1.
 
-On newer firmwares, the Boks may experience a Watchdog reset immediately after accepting the new key, causing it to only save the **second half** (the last 16 bytes) of your Master Key to non-volatile memory.
+On newer firmwares, the Boks may experience a Watchdog reset immediately after accepting the new key.
 
-**Solution:** If this happens, try replacing the first 32 characters (16 hex bytes) of your new 64-character Master Key with zeros (e.g., `00000000000000000000000000000000<second_half>`). Your codes should then work correctly.
+**Solution:** If this happens, try replacing the **first 16 characters** of your new 64-character Master Key with zeros (e.g., `0000000000000000<rest_of_the_key>`). Your codes should then work correctly.
 
 <BoksDashboard />
