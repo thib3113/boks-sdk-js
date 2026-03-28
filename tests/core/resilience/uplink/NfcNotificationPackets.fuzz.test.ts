@@ -17,7 +17,9 @@ describe('NfcNotificationPackets Resilience (Fuzzing)', () => {
           expect(packet).toBeInstanceOf(NotifyNfcTagFoundPacket);
           expect(packet.opcode).toBe(0xc5);
           expect((packet as any).raw).toEqual(payload);
-          expect(typeof packet.uid).toBe('string');
+          const len = payload[0];
+          let expectedUid = Buffer.from(payload.subarray(1, 1 + len)).toString('hex').toUpperCase();
+          expect(packet.uid).toBe(expectedUid);
         } catch (e) {
           expect(e).toBeInstanceOf(BoksProtocolError);
         }
