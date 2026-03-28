@@ -79,7 +79,8 @@ export default defineConfig({
                     { text: 'Santé Matérielle', link: '/fr/examples/hardware-health' },
                     { text: 'Gestion Codes', link: '/fr/examples/codes' },
                 { text: 'Gestion NFC', link: '/fr/examples/nfc' },
-                { text: 'Batterie & Matériel', link: '/fr/examples/battery' }
+                { text: 'Batterie & Matériel', link: '/fr/examples/battery' },
+                { text: 'Mise à jour Firmware (DFU)', link: '/fr/examples/dfu' }
               ]
             }
           ]
@@ -154,7 +155,8 @@ export default defineConfig({
             { text: 'Hardware Health', link: '/examples/hardware-health' },
             { text: 'Code Management', link: '/examples/codes' },
             { text: 'NFC Management', link: '/examples/nfc' },
-            { text: 'Battery & Hardware', link: '/examples/battery' }
+            { text: 'Battery & Hardware', link: '/examples/battery' },
+            { text: 'Firmware Update (DFU)', link: '/examples/dfu' }
           ]
         }
       ]

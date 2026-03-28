@@ -44,6 +44,7 @@ export const boksStore = reactive({
   // Instances
   controller: shallowRef<BoksController | null>(null),
   simulator: shallowRef<BoksHardwareSimulator | null>(null),
+  dfuDevice: shallowRef<BluetoothDevice | null>(null),
 
   getOpcodeName(opcode: number): string {
     return BoksOpcode[opcode] || `UNKNOWN_${opcode.toString(16).padStart(2, '0').toUpperCase()}`;
@@ -216,8 +217,24 @@ export const boksStore = reactive({
         }
       } else {
         this.log('Requesting Bluetooth device...', 'info');
-        const client = new BoksClient();
+
+        const device = await navigator.bluetooth.requestDevice({
+          filters: [
+            { services: ['00003b01-0000-1000-8000-00805f9b34fb'] }, // Standard Boks service
+            { namePrefix: 'DfuTarg' },
+            { namePrefix: 'Boks_DFU' }
+          ],
+          optionalServices: [
+            '00003b01-0000-1000-8000-00805f9b34fb', // BOKS_UUIDS.SERVICE
+            '0000180f-0000-1000-8000-00805f9b34fb', // BOKS_UUIDS.BATTERY_SERVICE
+            '0000180a-0000-1000-8000-00805f9b34fb', // BOKS_UUIDS.DEVICE_INFO_SERVICE
+            '0000fe59-0000-1000-8000-00805f9b34fb'  // DFU Service
+          ]
+        });
+
+        const client = new BoksClient({ device });
         this.controller = new BoksController(client);
+        this.dfuDevice = device;
 
         client.on('*', (p, dir) => {
           this.logPacket(dir, p.opcode, p.raw.length, p);
@@ -227,22 +244,41 @@ export const boksStore = reactive({
           this.logPacketError(data, error);
         });
 
-        await this.controller.connect();
+        const bleName = device.name || 'Boks Device';
+        const isDfu = bleName.startsWith('DfuTarg') || bleName.startsWith('Boks_DFU');
 
-        // Get the real BLE name if possible
-        const bleName = (this.controller as any).client?.transport?.device?.name || 'Boks Device';
-        this.deviceName = `${bleName} (${this.controller.hardwareInfo?.hardwareVersion || '?'})`;
+        try {
+            await this.controller.connect();
+        } catch (e: any) {
+            if (!isDfu) {
+                throw e;
+            }
+            this.log('BoksController connection failed, but device is in DFU mode. Proceeding.', 'info');
+        }
 
-        // Populate versions
-        this.softwareVersion = this.controller.hardwareInfo?.softwareRevision || '';
-        this.firmwareVersion = this.controller.hardwareInfo?.firmwareRevision || '';
+        if (isDfu) {
+            this.deviceName = `${bleName} (DFU Mode)`;
+            this.softwareVersion = 'DFU Mode';
+            this.firmwareVersion = 'DFU Mode';
+            this.batteryLevel = 100; // Unknown in DFU mode, default to 100 to avoid warning
+        } else {
+            this.deviceName = `${bleName} (${this.controller.hardwareInfo?.hardwareVersion || '?'})`;
 
-        // Fetch initial status if possible (counts)
-        this.controller.getBatteryLevel().then((l) => (this.batteryLevel = l || 0));
-        this.controller.countCodes().then((c) => {
-          this.masterCodesCount = c.master;
-          this.singleCodesCount = c.singleUse;
-        });
+            // Populate versions
+            this.softwareVersion = this.controller.hardwareInfo?.softwareRevision || '';
+            this.firmwareVersion = this.controller.hardwareInfo?.firmwareRevision || '';
+
+            // Fetch initial status if possible (counts)
+            try {
+                this.controller.getBatteryLevel().then((l) => (this.batteryLevel = l || 0));
+                this.controller.countCodes().then((c) => {
+                this.masterCodesCount = c.master;
+                this.singleCodesCount = c.singleUse;
+                });
+            } catch (e) {
+                this.log('Failed to fetch initial stats', 'warning');
+            }
+        }
       }
 
       this.isConnected = true;
@@ -254,7 +290,6 @@ export const boksStore = reactive({
       this.isConnecting = false;
     }
   },
-
   async disconnect() {
     if (this.controller) {
       await this.controller.disconnect();

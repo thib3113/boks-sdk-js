@@ -20,5 +20,6 @@ The connection state and simulated data are shared across all pages in this sect
 - [**NFC Management**](./nfc): Scan and register NFC tags.
 - [**Battery & Hardware**](./battery): Read battery levels and detailed statistics.
 - [**Packet Visualizer**](./packet-visualizer): Decode and visualize raw Boks protocol packets.
+- [**Firmware Update (DFU)**](./dfu): Update your Boks internal software over-the-air.
 
 <BoksDashboard />

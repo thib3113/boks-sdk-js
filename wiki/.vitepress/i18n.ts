@@ -195,9 +195,10 @@ export const i18n = {
       readingLevels: 'Reading battery levels...',
       refreshSuccess: 'Battery and Hardware data refreshed.',
     },
+
     dfu: {
       title: 'Firmware Update (DFU)',
-      desc: 'Wirelessly update your Boks firmware using Web Bluetooth. This process is safe and includes verification checks.',
+      desc: 'Update your Boks internal software over-the-air via Web Bluetooth.',
       selectFile: 'Select Firmware ZIP',
       kbLoaded: '{n} KB loaded',
       status: {
@@ -208,13 +209,13 @@ export const i18n = {
         preparing: 'Preparing DFU mode...',
         rebooting: 'Rebooting to DFU mode...',
         flashing: 'Flashing firmware...',
-        success: 'Update Successful!',
-        error: 'Update Failed',
-        device_in_dfu: 'Device in DFU Mode'
+        success: 'Update successful!',
+        error: 'Update failed',
+        device_in_dfu: 'Device in DFU mode'
       },
       buttons: {
         connect: 'Connect to Boks',
-        prepare: 'Enter DFU Mode',
+        prepare: 'Switch to DFU mode',
         flash: 'Start Flashing',
         reconnect: 'Reconnect (DFU Mode)'
       },
@@ -228,13 +229,20 @@ export const i18n = {
       },
       warnings: {
         https: 'Web Bluetooth requires a secure context (HTTPS).',
-        legal: 'WARNING: Updating firmware is a critical operation. Do not close this tab or turn off the device during the process.',
-        bricking: 'DFU is in progress! Closing this page might brick your device.'
+        legal: 'WARNING: Firmware update is a critical operation. Do not close this tab or power off the device during the process.',
+        bricking: 'Flashing in progress! Closing this page may leave your device temporarily unavailable.'
       },
       logs: {
         placeholder: 'Logs will appear here...',
         firmware_loaded: 'Firmware loaded: {name} ({size} bytes)'
-      }
+      },
+      switch_to_dfu: "Switch to DFU mode",
+      start_flashing: "Start Flashing",
+      firmware_file: "Firmware file (.zip)",
+      dfu_mode_active: "DFU Mode Active",
+      error_invalid_firmware: "The firmware file is invalid or corrupted for this model.",
+      error_wrong_pcb: "This firmware is not compatible with your Boks hardware version.",
+      battery_warning: "Warning: Battery level is below 20%. Please replace batteries before updating."
     },
     logger: {
       title: 'Console',
@@ -474,6 +482,7 @@ export const i18n = {
       readingLevels: 'Lecture du niveau de batterie...',
       refreshSuccess: 'Données Batterie et Matériel actualisées.',
     },
+
     dfu: {
       title: 'Mise à jour Firmware (DFU)',
       desc: 'Mettez à jour le logiciel interne de votre Boks sans fil via Web Bluetooth.',
@@ -498,7 +507,7 @@ export const i18n = {
         reconnect: 'Reconnecter (Mode DFU)'
       },
       labels: {
-        device_name: 'Nom de l\'appareil',
+        device_name: "Nom de l'appareil",
         battery: 'Niveau Batterie',
         version: 'Version Actuelle',
         hw: 'Révision Matériel',
@@ -508,12 +517,19 @@ export const i18n = {
       warnings: {
         https: 'Web Bluetooth nécessite un contexte sécurisé (HTTPS).',
         legal: 'ATTENTION : La mise à jour du firmware est une opération critique. Ne fermez pas cet onglet et n\'éteignez pas l\'appareil pendant le processus.',
-        bricking: 'Le flashage est en cours ! Fermer cette page pourrait rendre votre appareil inutilisable.'
+        bricking: 'Le flashage est en cours ! Fermer cette page pourrait rendre votre appareil temporairement indisponible.'
       },
       logs: {
         placeholder: 'Les journaux apparaîtront ici...',
         firmware_loaded: 'Firmware chargé : {name} ({size} octets)'
-      }
+      },
+      switch_to_dfu: "Passer en mode DFU",
+      start_flashing: "Démarrer le Flashage",
+      firmware_file: "Fichier de firmware (.zip)",
+      dfu_mode_active: "Mode DFU Actif",
+      error_invalid_firmware: "Le fichier de firmware est invalide ou corrompu pour ce modèle.",
+      error_wrong_pcb: "Ce firmware n'est pas compatible avec la version matérielle de votre Boks.",
+      battery_warning: "Attention : Le niveau de batterie est inférieur à 20%. Veuillez remplacer les piles avant la mise à jour."
     },
     logger: {
       title: 'Console',

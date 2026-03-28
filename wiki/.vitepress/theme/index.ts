@@ -9,6 +9,7 @@ import OfflinePinDemo from '../components/OfflinePinDemo.vue';
 import HardwareHealthDemo from '../components/HardwareHealthDemo.vue';
 import BoksDashboard from '../components/BoksDashboard.vue';
 import NfcDemo from '../components/NfcDemo.vue';
+import DfuDemo from '../components/DfuDemo.vue';
 
 export default {
   extends: DefaultTheme,
@@ -53,5 +54,6 @@ export default {
     app.component('HardwareHealthDemo', HardwareHealthDemo);
     app.component('BoksDashboard', BoksDashboard);
     app.component('NfcDemo', NfcDemo);
+    app.component('DfuDemo', DfuDemo);
   }
 };
