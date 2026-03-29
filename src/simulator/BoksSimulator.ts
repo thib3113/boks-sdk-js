@@ -267,6 +267,8 @@ export class BoksHardwareSimulator {
   #chaosMode: boolean = false;
   #chaosInterval: NodeJS.Timeout | null = null;
 
+  public isCrashed: boolean = false;
+
   constructor(storageOrOptions?: SimulatorStorage | BoksHardwareSimulatorOptions) {
     if (storageOrOptions && 'get' in storageOrOptions) {
       this.#storage = storageOrOptions;
@@ -979,6 +981,7 @@ export class BoksHardwareSimulator {
   }
 
   private emit(data: Uint8Array): void {
+    if (this.isCrashed) return;
     if (this.shouldDropPacket()) {
       return;
     }
