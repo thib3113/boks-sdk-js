@@ -236,11 +236,13 @@ export class BoksController {
   private async performOperation(
     packet: BoksPacket,
     successOpcode: BoksOpcode = BoksOpcode.CODE_OPERATION_SUCCESS,
-    errorOpcode: BoksOpcode = BoksOpcode.CODE_OPERATION_ERROR
+    errorOpcode: BoksOpcode = BoksOpcode.CODE_OPERATION_ERROR,
+    timeoutMs?: number
   ): Promise<boolean> {
     const tx = await this.#client.execute(packet, {
       successOpcodes: [successOpcode],
-      errorOpcodes: [errorOpcode]
+      errorOpcodes: [errorOpcode],
+      timeout: timeoutMs
     });
 
     return tx.isSuccess;
@@ -820,10 +822,12 @@ export class BoksController {
       }
 
       // Part B
+      // Increase timeout because generation can take up to 40 seconds
       return await this.performOperation(
         new RegeneratePartBPacket({ configKey: configKey, part: partB }),
         BoksOpcode.NOTIFY_CODE_GENERATION_SUCCESS,
-        BoksOpcode.ERROR_UNAUTHORIZED
+        BoksOpcode.ERROR_UNAUTHORIZED,
+        60000
       );
     } catch {
       return false;

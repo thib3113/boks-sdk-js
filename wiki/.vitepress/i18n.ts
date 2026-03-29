@@ -284,7 +284,8 @@ export const i18n = {
       clearLogsDesc: 'Are you sure you want to clear all packet logs?',
       cancel: 'Cancel',
       confirm: 'Confirm',
-      simTriggered: 'Simulator: Triggered opening via {type}'
+      simTriggered: 'Simulator: Triggered opening via {type}',
+      simulateCrash: '💥 Simulate Crash (Freeze)'
     }
   },
   fr: {
@@ -572,7 +573,8 @@ export const i18n = {
       clearLogsDesc: 'Êtes-vous sûr de vouloir effacer tous les journaux de paquets ?',
       cancel: 'Annuler',
       confirm: 'Confirmer',
-      simTriggered: 'Simulateur : Ouverture déclenchée via {type}'
+      simTriggered: 'Simulateur : Ouverture déclenchée via {type}',
+      simulateCrash: '💥 Simuler un Crash (Figer)'
     }
   }
 }

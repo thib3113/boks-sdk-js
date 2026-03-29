@@ -145,7 +145,7 @@ function saveSimEdit() {
         <div v-if="boksStore.isProvisioning" class="config-grid">
           <div class="config-item row" style="margin-top: 0.5rem;">
             <button @click="boksStore.simulator?.simulateCrash()" class="ctrl-btn warning" style="padding: 1rem; font-size: 0.9rem;" title="Simulate a Watchdog reset (Hardware stops responding)">
-              💥 Simulate Crash (Freeze)
+              {{ t.logger.simulateCrash }}
             </button>
           </div>
         </div>
