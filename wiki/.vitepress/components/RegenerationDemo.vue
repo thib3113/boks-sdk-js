@@ -3,6 +3,8 @@ import { ref, onMounted, computed, watch } from 'vue'
 import { boksStore } from '../boksStore'
 import { useData } from 'vitepress'
 import { i18n } from '../i18n'
+import { precomputeBoksKeyContext, generateBoksPinFromContext } from '../../../src/crypto/pin-algorithm'
+import { hexToBytes } from '../../../src/utils/converters'
 
 const { lang } = useData()
 const t = computed(() => i18n[lang.value as keyof typeof i18n] || i18n.en)
@@ -12,6 +14,9 @@ const provisionProgress = ref(0)
 const newMasterKey = ref('')
 const currentConfigKey = ref('')
 const hasPromptedLogs = ref(false)
+const verificationMode = ref(false)
+const verificationCodeA = ref('')
+const verificationCodeB = ref('')
 
 onMounted(() => {
   if (boksStore.activeMasterKey) {
@@ -150,6 +155,7 @@ async function provision() {
     try {
       if (client && typeof client.on === 'function') {
         unbindNotification = client.on('*', (packet: any) => {
+          // Listen for 0xC2 (Progress) explicitly if needed, but BoksController handles it.
           if (packet.opcode === 0xC0) {
             resolve(true)
           } else if (packet.opcode === 0xC1) {
@@ -162,7 +168,15 @@ async function provision() {
     }
   })
 
+  // 40 second timeout to trigger verification mode
+  let timeoutId: any;
+  const timeoutPromise = new Promise<boolean>((_, reject) => {
+    timeoutId = setTimeout(() => reject(new Error('TIMEOUT_40S')), 40000)
+  })
+
   try {
+    verificationMode.value = false
+
     // We execute regenerateMasterKey
     const regenPromise = boksStore.controller.regenerateMasterKey(newMasterKey.value, (p) => {
       hasProgress = true
@@ -171,8 +185,12 @@ async function provision() {
     })
 
     // If client is bound, await the race, otherwise await regenerateMasterKey directly
-    const success = await (client ? Promise.race([regenPromise, completionPromise]) : regenPromise)
+    const processPromise = client ? Promise.race([regenPromise, completionPromise]) : regenPromise
 
+    // Race against the 40s timeout
+    const success = await Promise.race([processPromise, timeoutPromise])
+
+    clearTimeout(timeoutId)
     clearTimeout(progressTimer)
 
     if (success) {
@@ -180,11 +198,36 @@ async function provision() {
       alert(t.value.provision.successAlert)
       // Update store to reflect the new key as active
       boksStore.setActiveKey(newMasterKey.value)
+
+      // Auto-reboot the Boks
+      try {
+        await boksStore.controller.reboot()
+        boksStore.log('Rebooting device...', 'info')
+      } catch(e) {
+         // ignore if it fails to reboot
+      }
     } else {
       boksStore.log('Provisioning failed (device reported error).', 'error')
     }
   } catch (err: any) {
-    boksStore.log(`Provisioning Error: ${err.message}`, 'error')
+    if (err.message === 'TIMEOUT_40S') {
+       boksStore.log(t.value.provision.timeoutWarning || 'The process took longer than expected, verification is required.', 'warning')
+
+       // Doubt Removal Procedure
+       verificationMode.value = true
+
+       // Code A: From the new chosen master key
+       const newKeyBytes = hexToBytes(newMasterKey.value)
+       const ctxA = precomputeBoksKeyContext(newKeyBytes)
+       verificationCodeA.value = generateBoksPinFromContext(ctxA, 'single-use', 0)
+
+       // Code B: With first 16 characters (8 bytes) as zero
+       const modifiedKeyHex = '0000000000000000' + newMasterKey.value.substring(16)
+       const ctxB = precomputeBoksKeyContext(hexToBytes(modifiedKeyHex))
+       verificationCodeB.value = generateBoksPinFromContext(ctxB, 'single-use', 0)
+    } else {
+       boksStore.log(`Provisioning Error: ${err.message}`, 'error')
+    }
   } finally {
     try {
       unbindNotification()
@@ -261,7 +304,7 @@ async function provision() {
         </button>
       </div>
 
-      <div v-if="hasAnnouncedAcceptance" class="success-panel">
+      <div v-if="hasAnnouncedAcceptance && !verificationMode" class="success-panel">
         <strong>✅ {{ t.provision.acceptedTitle || 'Key Accepted' }}</strong>
         <p>{{ t.provision.acceptedMsg.replace('{key}', boksStore.deriveConfigKey(newMasterKey)) }}</p>
       </div>
@@ -271,6 +314,32 @@ async function provision() {
           <div class="bar"><div class="fill" :style="{ width: provisionProgress + '%' }"></div></div>
           <span class="pct" data-testid="regeneration-progress-pct">{{ provisionProgress }}%</span>
         </div>
+      </div>
+
+      <!-- Verification Mode Panel -->
+      <div v-if="verificationMode" class="warning-box" style="margin-top: 1rem;">
+        <strong>⚠️ {{ t.provision.verificationTitle || 'Doubt Removal Procedure' }}</strong>
+        <p style="font-size: 0.85rem; margin-top: 0.5rem; margin-bottom: 1rem;">
+           {{ t.provision.verificationDesc || 'The device did not confirm the new key in the expected 40-second window. To determine which Master Key was saved, test the following two Single-Use codes on the physical keypad.' }}
+        </p>
+
+        <div class="field" style="margin-top: 0.5rem;">
+          <label>{{ t.provision.codeALabel || 'Code A (New Master Key)' }}</label>
+          <div class="value-row">
+            <input type="text" :value="verificationCodeA" readonly />
+          </div>
+        </div>
+
+        <div class="field" style="margin-top: 0.5rem;">
+          <label>{{ t.provision.codeBLabel || 'Code B (Modified Key with zeroes)' }}</label>
+          <div class="value-row">
+            <input type="text" :value="verificationCodeB" readonly />
+          </div>
+        </div>
+
+        <p style="font-size: 0.85rem; margin-top: 1rem; margin-bottom: 0;">
+           <em>{{ t.provision.verificationInstruction || 'Whichever code opens the door indicates the key that the Boks has saved. If Code B works, see the Troubleshooting section above.' }}</em>
+        </p>
       </div>
     </div>
 
