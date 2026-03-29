@@ -235,3 +235,11 @@ describe('hexToBytes spaces but exact match buffer', () => {
 });
 
 });
+describe('writePinToBuffer', () => {
+  it('writes a pin to buffer at specific offset', async () => {
+    const { writePinToBuffer } = await import('../../src/utils/converters');
+    const payload = new Uint8Array(10);
+    writePinToBuffer(payload, 1, '123456');
+    expect(payload.subarray(1, 7)).toEqual(new Uint8Array([49, 50, 51, 52, 53, 54]));
+  });
+});

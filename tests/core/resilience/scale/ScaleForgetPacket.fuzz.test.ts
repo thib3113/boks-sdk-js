@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import fc from 'fast-check';
 import { ScaleForgetPacket } from '../../../../src/protocol/scale/ScaleForgetPacket';
 import { BoksProtocolError } from '../../../../src/errors/BoksProtocolError';
+import { BoksOpcode } from '../../../../src/protocol/constants';
 
 describe('ScaleForgetPacket Resilience (Fuzzing)', () => {
   it('FEATURE REGRESSION: should securely reject malformed binary payloads in fromRaw with BoksProtocolError', () => {
@@ -11,6 +12,7 @@ describe('ScaleForgetPacket Resilience (Fuzzing)', () => {
         try {
           const packet = ScaleForgetPacket.fromRaw(payload);
           expect(packet).toBeInstanceOf(ScaleForgetPacket);
+          expect(packet.opcode).toBe(BoksOpcode.SCALE_FORGET_BONDING);
         } catch (e) {
           expect(e).toBeInstanceOf(BoksProtocolError);
         }
