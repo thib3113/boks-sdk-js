@@ -195,35 +195,61 @@ async function provision() {
     }
   } catch (err: any) {
     clearTimeout(timeoutId)
-    if (!boksStore.isConnected) {
-       // Disconnected during provisioning
+    if (err.message === 'TIMEOUT_40S') {
+       // Timeout occurs when the device hangs (simulated crash) or doesn't complete the process
        if (provisionProgress.value > 0) {
-         boksStore.log('Connection lost, but generating fake progress to ensure verification.', 'warning')
-         // Calculate remaining time based on a 40s total window
-         const remainingProgress = 100 - provisionProgress.value
-         const timePerPercent = 40000 / 100
-         await new Promise<void>((resolve) => {
-           const interval = setInterval(() => {
-             if (provisionProgress.value >= 100) {
-               clearInterval(interval)
-               resolve()
-             } else {
-               provisionProgress.value += 1
-             }
-           }, timePerPercent)
-         })
+         boksStore.log(t.value.provision.timeoutWarning || 'The process took longer than expected, verification is required.', 'warning')
+
+         // Generate fake progress up to 100% if it stopped mid-way
+         if (provisionProgress.value < 100) {
+           boksStore.log('Generating fake progress to ensure verification...', 'warning')
+           const timePerPercent = 40000 / 100
+           await new Promise<void>((resolve) => {
+             const interval = setInterval(() => {
+               if (provisionProgress.value >= 100) {
+                 clearInterval(interval)
+                 resolve()
+               } else {
+                 provisionProgress.value += 1
+               }
+             }, timePerPercent)
+           })
+         }
+
+         // Add a 5s safety margin before displaying verification mode
          await new Promise(r => setTimeout(r, 5000))
          triggerVerificationMode()
        } else {
-         // Disconnected before progress even started
+         // Timeout before progress even started
+         boksStore.log(`Provisioning Error: ${err.message}`, 'error')
+       }
+    } else if (!boksStore.isConnected) {
+       // Real Disconnection
+       if (provisionProgress.value > 0) {
+         boksStore.log('Connection lost, but generating fake progress to ensure verification.', 'warning')
+
+         // Generate fake progress up to 100% if it stopped mid-way
+         if (provisionProgress.value < 100) {
+           const timePerPercent = 40000 / 100
+           await new Promise<void>((resolve) => {
+             const interval = setInterval(() => {
+               if (provisionProgress.value >= 100) {
+                 clearInterval(interval)
+                 resolve()
+               } else {
+                 provisionProgress.value += 1
+               }
+             }, timePerPercent)
+           })
+         }
+
+         // Add a 5s safety margin before displaying verification mode
+         await new Promise(r => setTimeout(r, 5000))
+         triggerVerificationMode()
+       } else {
          alert(t.value.provision.disconnectionAlert || "WARNING: The Boks disconnected during provisioning! Please check the logs and DO NOT lose your recovery key file.")
          triggerVerificationMode()
        }
-    } else if (err.message === 'TIMEOUT_40S') {
-       boksStore.log(t.value.provision.timeoutWarning || 'The process took longer than expected, verification is required.', 'warning')
-       // Add a 5s safety margin before displaying verification mode
-       await new Promise(r => setTimeout(r, 5000))
-       triggerVerificationMode()
     } else {
        boksStore.log(`Provisioning Error: ${err.message}`, 'error')
     }

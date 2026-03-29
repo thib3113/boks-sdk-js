@@ -266,6 +266,7 @@ export class BoksHardwareSimulator {
   readonly #logger?: BoksSimulatorLogger;
   #chaosMode: boolean = false;
   #chaosInterval: NodeJS.Timeout | null = null;
+  #crashed: boolean = false;
 
   constructor(storageOrOptions?: SimulatorStorage | BoksHardwareSimulatorOptions) {
     if (storageOrOptions && 'get' in storageOrOptions) {
@@ -282,6 +283,14 @@ export class BoksHardwareSimulator {
       // Default initialization with dummy keys if no storage
       this.masterKey = this.#masterKey;
     }
+  }
+
+  /**
+   * Simulates a hard crash (device stops responding completely but stays connected).
+   */
+  public simulateCrash(): void {
+    this.#crashed = true;
+    this.log('warn', 'send', { opcode: 0, length: 0 }); // Just a debug trace
   }
 
   /**
@@ -874,7 +883,7 @@ export class BoksHardwareSimulator {
    * Handles an incoming packet from the transport.
    */
   public async handlePacket(data: Uint8Array): Promise<void> {
-    if (this.shouldDropPacket()) {
+    if (this.#crashed || this.shouldDropPacket()) {
       return;
     }
     if (data.length < 3) {
