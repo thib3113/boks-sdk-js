@@ -38,6 +38,15 @@ export const i18n = {
       unsupportedVersionDesc: 'Master Key Regeneration requires Boks software version >= 4.5.1.',
       currentConfigKey: 'Current Config Key (8 chars)',
       enterConfigKey: 'Enter current 8-char Config Key',
+      blockingTitle: 'DO NOT CLOSE THIS PAGE',
+      blockingDesc: 'Keep this window open and stay close to the Boks (1-2m). Background tasks have been suspended.',
+      disconnectionAlert: 'WARNING: The Boks disconnected during provisioning! Please check the logs and DO NOT lose your recovery key file.',
+      timeoutWarning: 'The process took longer than expected, verification is required.',
+      verificationTitle: 'Doubt Removal Procedure',
+      verificationDesc: 'The device did not confirm the new key in the expected 40-second window. To determine which Master Key was saved, test the following two Single-Use codes on the physical keypad.',
+      codeALabel: 'Code A (New Master Key)',
+      codeBLabel: 'Code B (Modified Key with zeroes)',
+      verificationInstruction: 'Whichever code opens the door indicates the key that the Boks has saved. If Code B works, see the Troubleshooting section above.',
       sponsorTitle: 'Support this development',
       sponsorText: 'Hardware initialization is a critical feature that we currently cannot test on real devices. Your donations help us buy hardware to validate these experimental features safely.',
       sponsorLink: 'Become a Sponsor on GitHub',
@@ -275,7 +284,8 @@ export const i18n = {
       clearLogsDesc: 'Are you sure you want to clear all packet logs?',
       cancel: 'Cancel',
       confirm: 'Confirm',
-      simTriggered: 'Simulator: Triggered opening via {type}'
+      simTriggered: 'Simulator: Triggered opening via {type}',
+      simulateCrash: '💥 Simulate Crash (Freeze)'
     }
   },
   fr: {
@@ -317,6 +327,15 @@ export const i18n = {
       unsupportedVersionDesc: 'La régénération de la Clé Maître nécessite une version logicielle Boks >= 4.5.1.',
       currentConfigKey: 'Clé de Config Actuelle (8 chars)',
       enterConfigKey: 'Entrez la Clé de Config actuelle (8 chars)',
+      blockingTitle: 'NE FERMEZ PAS CETTE PAGE',
+      blockingDesc: 'Gardez cette fenêtre ouverte et restez près de la Boks (1-2m). Les tâches en arrière-plan ont été suspendues.',
+      disconnectionAlert: 'ATTENTION : La Boks s\'est déconnectée pendant le processus ! Veuillez vérifier les journaux et NE PERDEZ PAS votre fichier de clé de récupération.',
+      timeoutWarning: 'Le processus a pris plus de temps que prévu, une vérification est nécessaire.',
+      verificationTitle: 'Procédure de levée de doute',
+      verificationDesc: 'La Boks n\'a pas confirmé la nouvelle clé dans le délai imparti de 40 secondes. Pour déterminer quelle clé a été sauvegardée, testez ces deux codes à usage unique sur le clavier physique.',
+      codeALabel: 'Code A (Nouvelle Clé Maître)',
+      codeBLabel: 'Code B (Clé modifiée avec zéros)',
+      verificationInstruction: 'Le code qui ouvre la porte indique la clé qui a été sauvegardée par la Boks. Si le Code B fonctionne, référez-vous à la section Dépannage (Troubleshooting) ci-dessus.',
       sponsorTitle: 'Soutenez ce développement',
       sponsorText: 'L\'initialisation matérielle est une fonctionnalité critique que nous ne pouvons actuellement pas tester sur de vrais appareils. Vos dons nous aident à acheter du matériel pour valider ces fonctionnalités expérimentales en toute sécurité.',
       sponsorLink: 'Devenir un Sponsor sur GitHub',
@@ -554,7 +573,8 @@ export const i18n = {
       clearLogsDesc: 'Êtes-vous sûr de vouloir effacer tous les journaux de paquets ?',
       cancel: 'Annuler',
       confirm: 'Confirmer',
-      simTriggered: 'Simulateur : Ouverture déclenchée via {type}'
+      simTriggered: 'Simulateur : Ouverture déclenchée via {type}',
+      simulateCrash: '💥 Simuler un Crash (Figer)'
     }
   }
 }

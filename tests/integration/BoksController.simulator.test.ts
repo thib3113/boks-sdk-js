@@ -131,6 +131,13 @@ describe('BoksController Extended Integration', () => {
     await expect(controller.scanNFCTags(1000)).rejects.toThrow('NFC Tag already exists');
   });
 
+  it('should not process packets when simulator is crashed', async () => {
+    // We send a command, then crash the simulator mid-way.
+    // However, it's easier to crash it first and see it timeout.
+    simulator.simulateCrash();
+    await expect(controller.getLogsCount()).rejects.toThrow(/Transaction timed out/i);
+  }, 10000);
+
   it('should timeout when scanning NFC fails with unexpected opcode', async () => {
     // The client ignores invalid opcodes for a transaction, and eventually times out.
     setTimeout(() => simulator.triggerError(BoksOpcode.ERROR_BAD_REQUEST), 5);

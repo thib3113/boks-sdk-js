@@ -3,6 +3,8 @@ import { ref, onMounted, computed, watch } from 'vue'
 import { boksStore } from '../boksStore'
 import { useData } from 'vitepress'
 import { i18n } from '../i18n'
+import { precomputeBoksKeyContext, generateBoksPinFromContext } from '../../../src/crypto/pin-algorithm'
+import { hexToBytes } from '../../../src/utils/converters'
 
 const { lang } = useData()
 const t = computed(() => i18n[lang.value as keyof typeof i18n] || i18n.en)
@@ -12,6 +14,9 @@ const provisionProgress = ref(0)
 const newMasterKey = ref('')
 const currentConfigKey = ref('')
 const hasPromptedLogs = ref(false)
+const verificationMode = ref(false)
+const verificationCodeA = ref('')
+const verificationCodeB = ref('')
 
 onMounted(() => {
   if (boksStore.activeMasterKey) {
@@ -87,6 +92,21 @@ function downloadKey(key: string) {
   URL.revokeObjectURL(url)
 }
 
+function triggerVerificationMode() {
+   // Doubt Removal Procedure
+   verificationMode.value = true
+
+   // Code A: From the new chosen master key
+   const newKeyBytes = hexToBytes(newMasterKey.value)
+   const ctxA = precomputeBoksKeyContext(newKeyBytes)
+   verificationCodeA.value = generateBoksPinFromContext(ctxA, 'single-use', 0)
+
+   // Code B: With first 16 characters (8 bytes) as zero
+   const modifiedKeyHex = '0000000000000000' + newMasterKey.value.substring(16)
+   const ctxB = precomputeBoksKeyContext(hexToBytes(modifiedKeyHex))
+   verificationCodeB.value = generateBoksPinFromContext(ctxB, 'single-use', 0)
+}
+
 async function provision() {
   if (!boksStore.controller || !boksStore.isConnected) return
   if (!newMasterKey.value || !currentConfigKey.value) return
@@ -94,6 +114,7 @@ async function provision() {
   if (!confirm(`${t.value.provision.confirm}\n\n${t.value.provision.confirmMultipleDownloads}`)) return
 
   isProvisioning.value = true
+  boksStore.isProvisioning = true // Update global store to stop background polling
   provisionProgress.value = 0
   hasPromptedLogs.value = false
   hasAnnouncedAcceptance.value = false
@@ -104,6 +125,7 @@ async function provision() {
   } catch (err: any) {
     boksStore.log(`Invalid Config Key: ${err.message}`, 'error')
     isProvisioning.value = false
+    boksStore.isProvisioning = false
     return
   }
 
@@ -122,13 +144,26 @@ async function provision() {
     }
   }, 5000)
 
+  // 40 second timeout to trigger verification mode
+  let timeoutId: any;
+  const timeoutPromise = new Promise<boolean>((_, reject) => {
+    timeoutId = setTimeout(() => reject(new Error('TIMEOUT_40S')), 40000)
+  })
+
   try {
-    const success = await boksStore.controller.regenerateMasterKey(newMasterKey.value, (p) => {
+    verificationMode.value = false
+
+    // We execute regenerateMasterKey
+    const regenPromise = boksStore.controller.regenerateMasterKey(newMasterKey.value, (p) => {
       hasProgress = true
       provisionProgress.value = p
       boksStore.log(`Provisioning: ${p}%`, 'info')
     })
 
+    // Race against the 40s timeout
+    const success = await Promise.race([regenPromise, timeoutPromise])
+
+    clearTimeout(timeoutId)
     clearTimeout(progressTimer)
 
     if (success) {
@@ -136,13 +171,91 @@ async function provision() {
       alert(t.value.provision.successAlert)
       // Update store to reflect the new key as active
       boksStore.setActiveKey(newMasterKey.value)
+
+      // Auto-reboot the Boks
+      try {
+        await boksStore.controller.reboot()
+        boksStore.log('Rebooting device...', 'info')
+
+        // Wait for reboot to initiate
+        await new Promise(r => setTimeout(r, 1000))
+
+        // Check if device is not empty
+        const counts = await boksStore.controller.countCodes()
+        boksStore.log(`Device codes after regeneration: ${counts.masterCount} permanent, ${counts.singleCount} temporary.`, 'info')
+
+        // Update store with new counts
+        boksStore.masterCodesCount = counts.masterCount
+        boksStore.singleCodesCount = counts.singleCount
+      } catch(e) {
+         // ignore if it fails to reboot or count
+      }
     } else {
       boksStore.log('Provisioning failed (device reported error).', 'error')
     }
   } catch (err: any) {
-    boksStore.log(`Provisioning Error: ${err.message}`, 'error')
+    clearTimeout(timeoutId)
+    if (err.message === 'TIMEOUT_40S') {
+       // Timeout occurs when the device hangs (simulated crash) or doesn't complete the process
+       if (provisionProgress.value > 0) {
+         boksStore.log(t.value.provision.timeoutWarning || 'The process took longer than expected, verification is required.', 'warning')
+
+         // Generate fake progress up to 100% if it stopped mid-way
+         if (provisionProgress.value < 100) {
+           boksStore.log('Generating fake progress to ensure verification...', 'warning')
+           const timePerPercent = 40000 / 100
+           await new Promise<void>((resolve) => {
+             const interval = setInterval(() => {
+               if (provisionProgress.value >= 100) {
+                 clearInterval(interval)
+                 resolve()
+               } else {
+                 provisionProgress.value += 1
+               }
+             }, timePerPercent)
+           })
+         }
+
+         // Add a 5s safety margin before displaying verification mode
+         await new Promise(r => setTimeout(r, 5000))
+         triggerVerificationMode()
+       } else {
+         // Timeout before progress even started
+         boksStore.log(`Provisioning Error: ${err.message}`, 'error')
+       }
+    } else if (!boksStore.isConnected) {
+       // Real Disconnection
+       if (provisionProgress.value > 0) {
+         boksStore.log('Connection lost, but generating fake progress to ensure verification.', 'warning')
+
+         // Generate fake progress up to 100% if it stopped mid-way
+         if (provisionProgress.value < 100) {
+           const timePerPercent = 40000 / 100
+           await new Promise<void>((resolve) => {
+             const interval = setInterval(() => {
+               if (provisionProgress.value >= 100) {
+                 clearInterval(interval)
+                 resolve()
+               } else {
+                 provisionProgress.value += 1
+               }
+             }, timePerPercent)
+           })
+         }
+
+         // Add a 5s safety margin before displaying verification mode
+         await new Promise(r => setTimeout(r, 5000))
+         triggerVerificationMode()
+       } else {
+         alert(t.value.provision.disconnectionAlert || "WARNING: The Boks disconnected during provisioning! Please check the logs and DO NOT lose your recovery key file.")
+         triggerVerificationMode()
+       }
+    } else {
+       boksStore.log(`Provisioning Error: ${err.message}`, 'error')
+    }
   } finally {
     isProvisioning.value = false
+    boksStore.isProvisioning = false // Resume background polling
     window.removeEventListener('beforeunload', preventNav)
   }
 }
@@ -150,6 +263,10 @@ async function provision() {
 
 <template>
   <div class="demo-card">
+    <div v-if="isProvisioning" class="warning-box" style="border-color: var(--vp-c-red-1);">
+      <h3 class="danger-text" style="margin-top: 0;">⚠️ {{ t.provision.blockingTitle || 'DO NOT CLOSE THIS PAGE' }}</h3>
+      <p style="margin-bottom: 0;">{{ t.provision.blockingDesc || 'Keep this window open and stay close to the Boks (1-2m). Background tasks have been suspended.' }}</p>
+    </div>
     <div v-if="!boksStore.isConnected" class="warning-box" v-html="t.global.notConnectedWarning"></div>
     <div v-else-if="!isVersionSupported" class="warning-box">
       <strong>⚠️ {{ t.provision.unsupportedVersion }}</strong><br>
@@ -206,7 +323,7 @@ async function provision() {
         </button>
       </div>
 
-      <div v-if="hasAnnouncedAcceptance" class="success-panel">
+      <div v-if="hasAnnouncedAcceptance && !verificationMode" class="success-panel">
         <strong>✅ {{ t.provision.acceptedTitle || 'Key Accepted' }}</strong>
         <p>{{ t.provision.acceptedMsg.replace('{key}', boksStore.deriveConfigKey(newMasterKey)) }}</p>
       </div>
@@ -216,6 +333,32 @@ async function provision() {
           <div class="bar"><div class="fill" :style="{ width: provisionProgress + '%' }"></div></div>
           <span class="pct" data-testid="regeneration-progress-pct">{{ provisionProgress }}%</span>
         </div>
+      </div>
+
+      <!-- Verification Mode Panel -->
+      <div v-if="verificationMode" class="warning-box" style="margin-top: 1rem;">
+        <strong>⚠️ {{ t.provision.verificationTitle || 'Doubt Removal Procedure' }}</strong>
+        <p style="font-size: 0.85rem; margin-top: 0.5rem; margin-bottom: 1rem;">
+           {{ t.provision.verificationDesc || 'The device did not confirm the new key in the expected 40-second window. To determine which Master Key was saved, test the following two Single-Use codes on the physical keypad.' }}
+        </p>
+
+        <div class="field" style="margin-top: 0.5rem;">
+          <label>{{ t.provision.codeALabel || 'Code A (New Master Key)' }}</label>
+          <div class="value-row">
+            <input type="text" :value="verificationCodeA" readonly />
+          </div>
+        </div>
+
+        <div class="field" style="margin-top: 0.5rem;">
+          <label>{{ t.provision.codeBLabel || 'Code B (Modified Key with zeroes)' }}</label>
+          <div class="value-row">
+            <input type="text" :value="verificationCodeB" readonly />
+          </div>
+        </div>
+
+        <p style="font-size: 0.85rem; margin-top: 1rem; margin-bottom: 0;">
+           <em>{{ t.provision.verificationInstruction || 'Whichever code opens the door indicates the key that the Boks has saved. If Code B works, see the Troubleshooting section above.' }}</em>
+        </p>
       </div>
     </div>
 
@@ -261,6 +404,11 @@ async function provision() {
   margin-top: 2rem; padding: 1.5rem; border-radius: 12px;
   background: linear-gradient(135deg, var(--vp-c-brand-soft) 0%, var(--vp-c-bg-soft) 100%);
   border: 1px solid var(--vp-c-brand-1);
+}
+
+.danger-text {
+  color: var(--vp-c-red-1);
+  margin-top: 0;
 }
 .sponsor-content { display: flex; gap: 1.5rem; align-items: center; }
 .heart { font-size: 2.5rem; }
