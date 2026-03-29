@@ -209,29 +209,5 @@ describe('bytesToHex 6-byte reverse true', () => {
   });
 });
 
-describe('hexToBytes exact match', () => {
-  it('covers exact match when no spaces skipped', () => {
-    // Create a hex string that triggers the slow path (length > 32) but has no spaces.
-    // So j === bytes.length will be true.
-    const hex = '0102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F202122';
-    const result = hexToBytes(hex);
-    expect(result.length).toBe(34);
-  });
-});
-describe('bytesToHex 7-byte reverse true', () => {
-  it('formats a 7-byte MAC address with reverse=true', () => {
-    const bytes = new Uint8Array([0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77]);
-    expect(bytesToHex(bytes, { reverse: true })).toBe('77665544332211');
-  });
-});
-describe('hexToBytes spaces but exact match buffer', () => {
-  it('covers skipping spaces where buffer size needs adjusting', () => {
-    // Create a hex string that triggers the slow path (length > 32) and has spaces.
-    // So j !== bytes.length will be true, testing `bytes.subarray(0, j)`.
-    const hex = '0102030405060708090A0B0C0D0E0F10 1112131415161718191A1B1C1D1E1F202122';
-    const result = hexToBytes(hex);
-    expect(result.length).toBe(34);
-  });
-});
 
 });

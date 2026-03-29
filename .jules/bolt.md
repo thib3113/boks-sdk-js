@@ -144,3 +144,7 @@
 ## 2025-03-27 - [Optimized payload dynamic size calc]
 **Learning:** During payload serialization in PayloadMapper, calculating the dynamic payload size by calling `hexToBytes(str).length` to find the byte length of a hexadecimal string creates unnecessary `Uint8Array` allocations on the hot path.
 **Action:** Replace `hexToBytes(str).length` with `Math.floor(str.length / 2)` to calculate the exact byte length without array allocation or processing overhead.
+
+## 2024-05-18 - [Converters] **Optimized:** `bytesToHex` (src/utils/converters.ts)
+**Learning:** During payload serialization and hex string creation in `bytesToHex`, multiple fast-path branch checks `if (len === X)` are actually slower than a single standard loop concatenating from a precomputed 16-bit lookup table due to V8 branch prediction overhead.
+**Action:** When optimizing `bytesToHex`, use a consistent loop without special length-based branches, and use simple loop concatenation for reversed arrays.
