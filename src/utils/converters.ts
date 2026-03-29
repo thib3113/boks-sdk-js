@@ -54,7 +54,7 @@ export const cleanHexString = (hex: string): string => {
 
     if (val === 255 || val === undefined) {
       if (!isDirty) {
-        clean = hex.substring(0, i);
+        clean = hex.substring(0, i).toUpperCase();
         isDirty = true;
       }
       continue;
@@ -66,6 +66,7 @@ export const cleanHexString = (hex: string): string => {
     }
   }
 
+  // The original implementation always returns uppercase
   return isDirty ? clean : hex.toUpperCase();
 };
 
