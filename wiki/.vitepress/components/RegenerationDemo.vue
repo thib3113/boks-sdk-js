@@ -201,15 +201,9 @@ async function provision() {
 
 <template>
   <div class="demo-card">
-    <div v-if="isProvisioning" class="blocking-overlay">
-      <div class="blocking-content">
-        <h2 class="danger-text">⚠️ {{ t.provision.blockingTitle || 'DO NOT TOUCH KEYBOARD' }}</h2>
-        <p>{{ t.provision.blockingDesc || 'Keep this window focused and stay close to the Boks (1-2m). Background tasks have been suspended.' }}</p>
-        <div class="spinner-container">
-            <div class="bar" style="width: 100%; max-width: 300px; margin: 1rem auto;"><div class="fill" :style="{ width: provisionProgress + '%' }"></div></div>
-            <div class="pct" style="margin: 0 auto; text-align: center;">{{ provisionProgress }}%</div>
-        </div>
-      </div>
+    <div v-if="isProvisioning" class="warning-box" style="border-color: var(--vp-c-red-1);">
+      <h3 class="danger-text" style="margin-top: 0;">⚠️ {{ t.provision.blockingTitle || 'DO NOT CLOSE THIS PAGE' }}</h3>
+      <p style="margin-bottom: 0;">{{ t.provision.blockingDesc || 'Keep this window open and stay close to the Boks (1-2m). Background tasks have been suspended.' }}</p>
     </div>
     <div v-if="!boksStore.isConnected" class="warning-box" v-html="t.global.notConnectedWarning"></div>
     <div v-else-if="!isVersionSupported" class="warning-box">
@@ -324,28 +318,6 @@ async function provision() {
   border: 1px solid var(--vp-c-brand-1);
 }
 
-.blocking-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.85);
-  z-index: 9999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  backdrop-filter: blur(4px);
-}
-.blocking-content {
-  background: var(--vp-c-bg);
-  padding: 2rem;
-  border-radius: 12px;
-  border: 2px solid var(--vp-c-red-1);
-  text-align: center;
-  max-width: 500px;
-  box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
-}
 .danger-text {
   color: var(--vp-c-red-1);
   margin-top: 0;
