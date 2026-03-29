@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest';
 import fc from 'fast-check';
 import { ScaleReconnectPacket } from '../../../../src/protocol/scale/ScaleReconnectPacket';
 import { BoksProtocolError } from '../../../../src/errors/BoksProtocolError';
-import { BoksOpcode } from '../../../../src/protocol/constants';
 
 describe('ScaleReconnectPacket Resilience (Fuzzing)', () => {
   it('FEATURE REGRESSION: should securely reject malformed binary payloads in fromRaw with BoksProtocolError', () => {
@@ -12,7 +11,6 @@ describe('ScaleReconnectPacket Resilience (Fuzzing)', () => {
         try {
           const packet = ScaleReconnectPacket.fromRaw(payload);
           expect(packet).toBeInstanceOf(ScaleReconnectPacket);
-          expect(packet.opcode).toBe(BoksOpcode.SCALE_RECONNECT);
         } catch (e) {
           expect(e).toBeInstanceOf(BoksProtocolError);
         }

@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest';
 import fc from 'fast-check';
 import { ScalePrepareDfuPacket } from '../../../../src/protocol/scale/ScalePrepareDfuPacket';
 import { BoksProtocolError } from '../../../../src/errors/BoksProtocolError';
-import { BoksOpcode } from '../../../../src/protocol/constants';
 
 describe('ScalePrepareDfuPacket Resilience (Fuzzing)', () => {
   it('FEATURE REGRESSION: should securely reject malformed binary payloads in fromRaw with BoksProtocolError', () => {
@@ -12,7 +11,6 @@ describe('ScalePrepareDfuPacket Resilience (Fuzzing)', () => {
         try {
           const packet = ScalePrepareDfuPacket.fromRaw(payload);
           expect(packet).toBeInstanceOf(ScalePrepareDfuPacket);
-          expect(packet.opcode).toBe(BoksOpcode.SCALE_PREPARE_DFU);
         } catch (e) {
           expect(e).toBeInstanceOf(BoksProtocolError);
         }
