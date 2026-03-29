@@ -142,7 +142,14 @@ function saveSimEdit() {
       </div>
 
       <div class="config-body no-top-padding" v-if="showSimControls">
-        <div class="config-grid">
+        <div v-if="boksStore.isProvisioning" class="config-grid">
+          <div class="config-item row" style="margin-top: 0.5rem;">
+            <button @click="boksStore.disconnect()" class="ctrl-btn warning" style="padding: 1rem; font-size: 0.9rem;" title="Simulate a Watchdog reset by disconnecting">
+              💥 Simulate Crash (Disconnect)
+            </button>
+          </div>
+        </div>
+        <div v-else class="config-grid">
           <div class="config-item row">
             <button @click="boksStore.simulator?.setDoorStatus(!simState.isOpen)" :class="['ctrl-btn', { active: simState.isOpen }]" data-testid="sim-toggle-door-button">
               {{ simState.isOpen ? t.logger.closeDoor : t.logger.openDoor }}

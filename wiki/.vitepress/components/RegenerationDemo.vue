@@ -92,14 +92,19 @@ function downloadKey(key: string) {
   URL.revokeObjectURL(url)
 }
 
-// Disconnect listener to show alert if disconnected during provisioning
-function onDisconnect() {
-  if (isProvisioning.value) {
-    alert(t.value.provision.disconnectionAlert || "WARNING: The Boks disconnected during provisioning! Please check the logs and DO NOT lose your recovery key file.")
-    isProvisioning.value = false
-    boksStore.isProvisioning = false
-    window.removeEventListener('beforeunload', preventNav)
-  }
+function triggerVerificationMode() {
+   // Doubt Removal Procedure
+   verificationMode.value = true
+
+   // Code A: From the new chosen master key
+   const newKeyBytes = hexToBytes(newMasterKey.value)
+   const ctxA = precomputeBoksKeyContext(newKeyBytes)
+   verificationCodeA.value = generateBoksPinFromContext(ctxA, 'single-use', 0)
+
+   // Code B: With first 16 characters (8 bytes) as zero
+   const modifiedKeyHex = '0000000000000000' + newMasterKey.value.substring(16)
+   const ctxB = precomputeBoksKeyContext(hexToBytes(modifiedKeyHex))
+   verificationCodeB.value = generateBoksPinFromContext(ctxB, 'single-use', 0)
 }
 
 async function provision() {
@@ -132,41 +137,12 @@ async function provision() {
 
   boksStore.log('Starting provisioning...', 'warning')
 
-  // Set up disconnection listener
-  const controller = boksStore.controller as any;
-  const client = controller._client || controller.client || controller['#client'] || (controller as any).client;
-
-  // Also listen to the boksStore.isConnected property directly
-  const unwatchConnected = watch(() => boksStore.isConnected, (connected) => {
-      if (!connected) onDisconnect();
-  });
-
   let hasProgress = false
   const progressTimer = setTimeout(() => {
     if (!hasProgress) {
       alert(t.value.provision.noProgressError || 'No response from the box after 5 seconds.\nPlease double-check that your Config Key is correct.\nNote: The box ignores invalid keys silently. You can use an NFC tag to easily retrieve the correct Config Key (NFC demo coming soon!).')
     }
   }, 5000)
-
-  // Wait for 0xC0 (Success) or 0xC1 (Error) explicitly, as background polling is suspended
-  let unbindNotification = () => {}
-  const completionPromise = new Promise<boolean>((resolve) => {
-    // client.on is our custom BoksClient method which returns an unsubscribe function
-    try {
-      if (client && typeof client.on === 'function') {
-        unbindNotification = client.on('*', (packet: any) => {
-          // Listen for 0xC2 (Progress) explicitly if needed, but BoksController handles it.
-          if (packet.opcode === 0xC0) {
-            resolve(true)
-          } else if (packet.opcode === 0xC1) {
-            resolve(false)
-          }
-        })
-      }
-    } catch (e) {
-      // ignore
-    }
-  })
 
   // 40 second timeout to trigger verification mode
   let timeoutId: any;
@@ -184,11 +160,8 @@ async function provision() {
       boksStore.log(`Provisioning: ${p}%`, 'info')
     })
 
-    // If client is bound, await the race, otherwise await regenerateMasterKey directly
-    const processPromise = client ? Promise.race([regenPromise, completionPromise]) : regenPromise
-
     // Race against the 40s timeout
-    const success = await Promise.race([processPromise, timeoutPromise])
+    const success = await Promise.race([regenPromise, timeoutPromise])
 
     clearTimeout(timeoutId)
     clearTimeout(progressTimer)
@@ -203,41 +176,61 @@ async function provision() {
       try {
         await boksStore.controller.reboot()
         boksStore.log('Rebooting device...', 'info')
+
+        // Wait for reboot to initiate
+        await new Promise(r => setTimeout(r, 1000))
+
+        // Check if device is not empty
+        const counts = await boksStore.controller.countCodes()
+        boksStore.log(`Device codes after regeneration: ${counts.masterCount} permanent, ${counts.singleCount} temporary.`, 'info')
+
+        // Update store with new counts
+        boksStore.masterCodesCount = counts.masterCount
+        boksStore.singleCodesCount = counts.singleCount
       } catch(e) {
-         // ignore if it fails to reboot
+         // ignore if it fails to reboot or count
       }
     } else {
       boksStore.log('Provisioning failed (device reported error).', 'error')
     }
   } catch (err: any) {
-    if (err.message === 'TIMEOUT_40S') {
+    clearTimeout(timeoutId)
+    if (!boksStore.isConnected) {
+       // Disconnected during provisioning
+       if (provisionProgress.value > 0) {
+         boksStore.log('Connection lost, but generating fake progress to ensure verification.', 'warning')
+         // Calculate remaining time based on a 40s total window
+         const remainingProgress = 100 - provisionProgress.value
+         const timePerPercent = 40000 / 100
+         await new Promise<void>((resolve) => {
+           const interval = setInterval(() => {
+             if (provisionProgress.value >= 100) {
+               clearInterval(interval)
+               resolve()
+             } else {
+               provisionProgress.value += 1
+             }
+           }, timePerPercent)
+         })
+         await new Promise(r => setTimeout(r, 5000))
+         triggerVerificationMode()
+       } else {
+         // Disconnected before progress even started
+         alert(t.value.provision.disconnectionAlert || "WARNING: The Boks disconnected during provisioning! Please check the logs and DO NOT lose your recovery key file.")
+         triggerVerificationMode()
+       }
+    } else if (err.message === 'TIMEOUT_40S') {
        boksStore.log(t.value.provision.timeoutWarning || 'The process took longer than expected, verification is required.', 'warning')
-
-       // Doubt Removal Procedure
-       verificationMode.value = true
-
-       // Code A: From the new chosen master key
-       const newKeyBytes = hexToBytes(newMasterKey.value)
-       const ctxA = precomputeBoksKeyContext(newKeyBytes)
-       verificationCodeA.value = generateBoksPinFromContext(ctxA, 'single-use', 0)
-
-       // Code B: With first 16 characters (8 bytes) as zero
-       const modifiedKeyHex = '0000000000000000' + newMasterKey.value.substring(16)
-       const ctxB = precomputeBoksKeyContext(hexToBytes(modifiedKeyHex))
-       verificationCodeB.value = generateBoksPinFromContext(ctxB, 'single-use', 0)
+       // Add a 5s safety margin before displaying verification mode
+       await new Promise(r => setTimeout(r, 5000))
+       triggerVerificationMode()
     } else {
        boksStore.log(`Provisioning Error: ${err.message}`, 'error')
     }
   } finally {
-    try {
-      unbindNotification()
-    } catch (e) {
-      // Ignore if unbind fails
-    }
     isProvisioning.value = false
     boksStore.isProvisioning = false // Resume background polling
     window.removeEventListener('beforeunload', preventNav)
-    unwatchConnected()
   }
 }
 </script>
